@@ -1,0 +1,29 @@
+version: 43
+jobs:
+- name: Pull GitHub
+  steps:
+  - type: CheckoutStep
+    name: checkout
+    cloneCredential:
+      type: DefaultCredential
+    withLfs: false
+    withSubmodules: false
+    condition: ALWAYS
+    optional: false
+  - type: PullRepository
+    name: pull
+    remoteUrl: https://github.com/raphaelschuhmann/zenith.git
+    passwordSecret: GitHub-PAT
+    targetProject: Zenith
+    refs: refs/heads/* refs/tags/*
+    withLfs: false
+    force: true
+    condition: SUCCESSFUL
+    optional: false
+  triggers:
+  - type: ScheduleTrigger
+    cronExpression: 0 0/15 * * * ?
+  retryCondition: never
+  maxRetries: 3
+  retryDelay: 30
+  timeout: 14400
