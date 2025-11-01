@@ -85,7 +85,7 @@ Database credentials stored securely inside Electron backend (or encrypted confi
 4. Tech Stack
 Layer	Technology	Notes
 Desktop framework	Electron	Cross-platform GUI
-Frontend	React + TailwindCSS	Clean, modular UI
+Frontend	Angular.js + TailwindCSS	Clean, modular UI
 Backend	Node.js + Express.js	Local API service
 ORM / DB	Prisma + MySQL 8	Easy schema management and queries
 PDF generation	Puppeteer / pdfmake / pdfkit	Templates for reports
