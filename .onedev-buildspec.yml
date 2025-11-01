@@ -12,9 +12,9 @@ jobs:
     optional: false
   - type: PullRepository
     name: pull
-    remoteUrl: https://github.com/raphaelschuhmann/zenith.git
+    remoteUrl: https://github.com/raphaelschuhmann/gvw-office.git
     passwordSecret: GitHub-PAT
-    targetProject: Zenith
+    targetProject: GVW-Office
     refs: refs/heads/* refs/tags/*
     withLfs: false
     force: true
