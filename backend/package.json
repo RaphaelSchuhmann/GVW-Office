@@ -1,0 +1,37 @@
+{
+  "name": "gvw-office-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "nodemon --watch src -e ts --exec ts-node src/index.ts",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RaphaelSchuhmann/GVW-Office.git"
+  },
+  "author": "Raphael Schuhmann <raphael221@outlook.de>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RaphaelSchuhmann/GVW-Office/issues"
+  },
+  "homepage": "https://github.com/RaphaelSchuhmann/GVW-Office#readme",
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "prisma": "^6.18.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.9.2",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
