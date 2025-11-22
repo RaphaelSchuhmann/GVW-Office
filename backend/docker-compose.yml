@@ -1,0 +1,15 @@
+services:
+  couchdb:
+    image: couchdb:latest
+    container_name: gvw-couchdb
+    ports:
+      - "5984:5984"
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: admin
+    volumes:
+      - couchdb-data:/opt/couchdb/data
+    restart: unless-stopped
+
+volumes:
+  couchdb-data:
