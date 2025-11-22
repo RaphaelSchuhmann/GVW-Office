@@ -2,6 +2,14 @@ const { app, BrowserWindow } = require('electron');
 const url = require('url');
 const path = require('path');
 
+// ! DEVELOPMENT ONLY
+if (process.env.NODE_ENV !== 'production') {
+  require('electron-reload')(__dirname, {
+    electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
+    hardResetMethod: 'exit',
+  });
+}
+
 let mainWindow;
 
 function createWindow() {
@@ -15,13 +23,13 @@ function createWindow() {
 
   mainWindow.maximize();
 
-  mainWindow.loadURL(
-    url.format({
-      pathname: path.join(__dirname, `/dist/frontend/browser/index.html`),
-      protocol: 'file:',
-      slashes: true,
-    })
-  );
+  // If using ng serve in dev:
+  if (process.env.NODE_ENV !== 'production') {
+    mainWindow.loadURL('http://localhost:4200');
+  } else {
+    // Production: load built Angular files
+    mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
+  }
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
 

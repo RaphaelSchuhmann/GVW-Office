@@ -4,15 +4,17 @@
   /* Colors */
   --color-gv-dark-turquoise: #17ABB4;
   --color-gv-bg: #FFFFFF;
+  --color-secondary-btn-hover: #d4d4d4ff;
   --color-gv-bg-bar: #ECF9F9;
   --color-border: #E5E5E5;
   --color-border-bar: #6CE9EA;
   --color-text: #141414;
-  --color-text-light: #C6C6C6;
+  --color-text-light: #6C6C6C;
   --color-input-bg: #E6E6E6;
   --color-input-placeholder: #707070;
   --color-primary: #00CFD1;
   --color-primary-text: #FFFFFF;
+  --color-primary-hover: #06abadff;
   --color-secondary: #C8FCFF;
   --color-secondary-text: #25DCE4;
   --color-delete: #DB0000;
