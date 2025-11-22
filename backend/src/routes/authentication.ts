@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { dbService } from "../db.service";
-import { compare } from "bcrypt";
+import { compare, hash } from "bcrypt";
 import { sign } from "jsonwebtoken";
 import authMiddleware from "../middlewares/authMiddleware";
 
@@ -121,45 +121,60 @@ authRouter.post("/tempPassword", async (req, resp) => {
 });
 
 /**
- * Generate a human-friendly temporary password composed of capitalized words
- * and digits.
+ * Generate a temporary password from capitalized words and digits, then
+ * hash it with bcrypt and return the hash.
+ *
+ * The function composes a plaintext password by selecting `wordCount`
+ * capitalized words and `numberCount` digits, shuffles the parts, and
+ * returns a bcrypt hash of the resulting plaintext. The plaintext
+ * password is not returned by this function — callers receive the
+ * hashed password suitable for storing in the database.
+ *
+ * Note: the function uses 12 bcrypt salt rounds when hashing.
  *
  * @param wordCount - number of words to include (default: 3)
  * @param numberCount - number of digits to include (default: 2)
- * @returns generated password string
+ * @returns A Promise resolving to the bcrypt hash of the generated password.
+ *          On error the function logs the error and resolves to an empty
+ *          string.
  */
-function generateTempPassword(wordCount = 3, numberCount = 2): string {
-    const words = [
-        "apple",
-        "banana",
-        "chorus",
-        "melody",
-        "note",
-        "voice",
-        "sing",
-        "harmony",
-        "music",
-        "choir",
-        "pineapple",
-        "gvw",
-    ];
+async function generateTempPassword(wordCount = 3, numberCount = 2): Promise<string> {
+    try {
+        const words = [
+            "apple",
+            "banana",
+            "chorus",
+            "melody",
+            "note",
+            "voice",
+            "sing",
+            "harmony",
+            "music",
+            "choir",
+            "pineapple",
+            "gvw",
+        ];
 
-    const chosenWords = Array.from({ length: wordCount }, () => {
-        const word = words[Math.floor(Math.random() * words.length)];
-        return word.charAt(0).toUpperCase() + word.slice(1);
-    });
+        const chosenWords = Array.from({ length: wordCount }, () => {
+            const word = words[Math.floor(Math.random() * words.length)];
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        });
 
-    const digits = Array.from({ length: numberCount }, () =>
-        Math.floor(Math.random() * 10).toString()
-    );
+        const digits = Array.from({ length: numberCount }, () =>
+            Math.floor(Math.random() * 10).toString()
+        );
 
-    const combined = [...chosenWords, ...digits];
-    for (let i = combined.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [combined[i], combined[j]] = [combined[j], combined[i]];
-    }
-
-    return combined.join("");
+        const combined = [...chosenWords, ...digits];
+        for (let i = combined.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [combined[i], combined[j]] = [combined[j], combined[i]];
+        }
+		
+        return await hash(combined.join(""), 12);
+    } catch (err: any) {
+		console.error("Error generating temporary password: ", err);
+		return "";
+	}
 }
 
 /**
@@ -176,4 +191,4 @@ function generateAuthToken(userId: string) {
     return sign({ userId }, secretKey, { expiresIn: "7d" });
 }
 
-export {authRouter, generateTempPassword};
+export { authRouter, generateTempPassword };
