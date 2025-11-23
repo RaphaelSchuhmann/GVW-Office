@@ -2,6 +2,7 @@ import { Router } from "express";
 import { dbService } from "../db.service";
 import { compare, hash } from "bcrypt";
 import { sign } from "jsonwebtoken";
+import { v4 as uuidv4 } from "uuid";
 import authMiddleware from "../middlewares/authMiddleware";
 
 const authRouter = Router();
@@ -28,19 +29,63 @@ authRouter.post("/login", async (req, resp) => {
             limit: 1,
         });
 
-        if (users.length === 0) return resp.status(404); // No user with this email
+        if (users.length === 0) return resp.status(404).json({ ok: false }); // No user with this email
 
         const user = users[0];
 
         const isPWMatch = await compare(password, user.password);
-        if (!isPWMatch) return resp.status(401); // Invalid PW
+        if (!isPWMatch) return resp.status(401).json({ ok: false }); // Invalid PW
 
         const token = generateAuthToken(user.userId);
 
-        resp.status(200).json({ authToken: token });
+        return resp.status(200).json({ authToken: token, changePassword: user.changePassword, firstLogin: user.firstLogin });
     } catch (error: any) {
         console.error("Login route error: ", error);
-        return resp.status(500);
+        return resp.status(500).json({ ok: false });
+    }
+});
+
+// ! TODO REMOVE THIS FOR PROD
+authRouter.post("/dev", async (req, resp) => {
+    try {
+        const users = await dbService.list("users");
+        users.forEach(async (user) => {
+            await dbService.delete("users", user._id, user._rev);
+        });
+
+        await dbService.create("users", {
+            email: "raphael221@outlook.de",
+            password: await hash("123", 12),
+            changePassword: true,
+			firstLogin: true,
+            userId: uuidv4(),
+			role: "member",
+        });
+        return resp.status(200).json({ ok: true });
+    } catch (err: any) {
+        console.error("Error generating development user: ", err);
+        return resp.status(500).json({ ok: false });
+    }
+});
+
+authRouter.get("/auto", authMiddleware, async (req, resp) => {
+    try {
+        const userId = req.user;
+        if (!userId) return resp.status(401).json({ ok: false }); // UserId should not be empty: invalid auth token
+
+        const users = await dbService.find("users", {
+            selector: { userId: userId },
+            limit: 1,
+        });
+
+        if (users.length === 0) return resp.status(404).json({ ok: false });
+
+		const user = users[0];
+
+        resp.status(200).json({ email: user.email, role: user.role, changePassword: user.changePassword });
+    } catch (err: any) {
+        console.error("Error auto getting user: ", err);
+        return resp.status(500).json({ ok: false });
     }
 });
 
@@ -60,28 +105,32 @@ authRouter.post("/login", async (req, resp) => {
  */
 authRouter.post("/changePW", async (req, resp) => {
     try {
-        const { email, newPw } = req.body;
+        const { email, oldPw, newPw } = req.body;
 
         const users = await dbService.find("users", {
             selector: { email: email },
             limit: 1,
         });
 
-        if (users.length === 0) return resp.status(404);
+        if (users.length === 0) return resp.status(404).json({ ok: false });
 
         const user = users[0];
 
         // Check if old password is same as new one
         const isPWMatch = await compare(newPw, user.password);
-        if (isPWMatch) return resp.status(409);
+        if (isPWMatch) return resp.status(409).json({ ok: false });
 
-        const updatedDoc = { ...user, password: newPw };
+        // Authenticate user
+        const validPW = await compare(oldPw, user.password);
+        if (!validPW) return resp.status(401).json({ ok: false });
+
+        const updatedDoc = { ...user, password: await hash(newPw, 12), changePassword: false, firstLogin: false };
         await dbService.update("users", updatedDoc);
 
-        resp.status(200);
+        return resp.status(200).json({ ok: true });
     } catch (err: any) {
         console.error("Change Password route error: ", err);
-        return resp.status(500);
+        return resp.status(500).json({ ok: false });
     }
 });
 
@@ -106,17 +155,17 @@ authRouter.post("/tempPassword", async (req, resp) => {
             limit: 1,
         });
 
-        if (users.length === 0) return resp.status(404);
+        if (users.length === 0) return resp.status(404).json({ ok: false });
 
         const user = users[0];
 
         const updatedDoc = { ...user, password: generateTempPassword() };
         await dbService.update("users", updatedDoc);
 
-        resp.status(200);
+        return resp.status(200).json({ ok: true });
     } catch (err: any) {
         console.error("Temp Password route error: ", err);
-        return resp.status(500);
+        return resp.status(500).json({ ok: false });
     }
 });
 
@@ -138,7 +187,10 @@ authRouter.post("/tempPassword", async (req, resp) => {
  *          On error the function logs the error and resolves to an empty
  *          string.
  */
-async function generateTempPassword(wordCount = 3, numberCount = 2): Promise<string> {
+async function generateTempPassword(
+    wordCount = 3,
+    numberCount = 2
+): Promise<string> {
     try {
         const words = [
             "apple",
@@ -169,12 +221,12 @@ async function generateTempPassword(wordCount = 3, numberCount = 2): Promise<str
             const j = Math.floor(Math.random() * (i + 1));
             [combined[i], combined[j]] = [combined[j], combined[i]];
         }
-		
+
         return await hash(combined.join(""), 12);
     } catch (err: any) {
-		console.error("Error generating temporary password: ", err);
-		return "";
-	}
+        console.error("Error generating temporary password: ", err);
+        return "";
+    }
 }
 
 /**
