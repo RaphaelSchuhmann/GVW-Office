@@ -1,15 +1,10 @@
 import dotenv from "dotenv";
 import app from "./app";
-import { findFreePort } from "./port-server";
+dotenv.config();
 
 async function bootstrap() {
-    const { port, host } = await findFreePort({
-        portStart: 3500,
-        portEnd: 3600,
-    });
-
-    app.listen(port, host, () => {
-        console.log(`API running on port ${port}`);
+    app.listen(process.env.PORT, () => {
+        console.log(`API running on port ${process.env.PORT}`);
     });
 }
 

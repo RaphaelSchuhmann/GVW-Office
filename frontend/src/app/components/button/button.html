@@ -1,7 +1,1 @@
-<!-- <button class="w-full h-full bg-primary text-primary-text text-dt-5 rounded-1"><ng-content></ng-content></button> -->
-<button [attr.class]="buttonClasses"><ng-content></ng-content></button>
-<!-- @if (type == "primary") {
-    <button class="w-full h-full bg-primary text-primary-text text-dt-5 rounded-1"><ng-content></ng-content></button>
-} @else if (type == "secondary") {
-    <button class="w-full h-full"><ng-content></ng-content></button>
-} -->
+<button [attr.class]="buttonClasses" (click)="handleClick()"><ng-content></ng-content></button>

@@ -2,10 +2,15 @@ const { app, BrowserWindow } = require('electron');
 const url = require('url');
 const path = require('path');
 
+// `__dirname` is undefined in some ESM / bundled contexts. Use a safe
+// fallback so the same file works when executed as CommonJS or when
+// `__dirname` is unavailable (e.g. certain bundlers or ESM runtimes).
+const appDir = typeof __dirname !== 'undefined' ? __dirname : process.cwd();
+
 // ! DEVELOPMENT ONLY
 if (process.env.NODE_ENV !== 'production') {
-  require('electron-reload')(__dirname, {
-    electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
+  require('electron-reload')(appDir, {
+    electron: path.join(appDir, 'node_modules', '.bin', 'electron'),
     hardResetMethod: 'exit',
   });
 }
@@ -28,7 +33,7 @@ function createWindow() {
     mainWindow.loadURL('http://localhost:4200');
   } else {
     // Production: load built Angular files
-    mainWindow.loadFile(path.join(__dirname, 'dist/index.html'));
+    mainWindow.loadFile(path.join(appDir, 'dist/index.html'));
   }
   // Open the DevTools.
   mainWindow.webContents.openDevTools();

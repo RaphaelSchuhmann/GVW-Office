@@ -2,15 +2,16 @@
   <p class="font-semibold text-dt-6">{{ fieldName }}</p>
   <div class="w-full flex items-center justify-start">
     <input
-      type="{{inputType}}"
+      type="{{ inputType }}"
       class="w-full h-7/8 outline-gv-dark-turquoise bg-input-bg p-3 rounded-tl-1 rounded-bl-1 mt-2 text-dt-6 placeholder-input-placeholder"
       placeholder="{{ placeholder }}"
+      (input)="onInput($event)"
     />
     <button
       class="w-1/8 h-7/8 p-3 cursor-pointer bg-input-bg rounded-tr-1 rounded-br-1 mt-2 flex items-center justify-center text-dt-6 hover:bg-secondary-btn-hover duration-500"
       (click)="togglePassword()"
     >
-      <span class="material-symbols-rounded">{{viewPw}}</span>
+      <span class="material-symbols-rounded">{{ viewPw }}</span>
     </button>
   </div>
 </div>

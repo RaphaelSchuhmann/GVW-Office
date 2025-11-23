@@ -44,6 +44,25 @@ authRouter.post("/login", async (req, resp) => {
     }
 });
 
+// TODO REMOVE THIS FOR PROD
+authRouter.post("/dev", async (req, resp) => {
+    try {
+		const users = await dbService.list("users");
+		users.forEach(async user => {
+			await dbService.delete("users", user._id, user._rev);
+		});
+
+        await dbService.create("users", {
+            email: "raphael221@outlook.de",
+            password: await hash("123", 12),
+        });
+        resp.status(200);
+    } catch (err: any) {
+        console.error("Error generating development user: ", err);
+        return resp.status(500);
+    }
+});
+
 /**
  * POST /changePW
  * Change a user's password to a new value. This endpoint expects the
@@ -138,7 +157,10 @@ authRouter.post("/tempPassword", async (req, resp) => {
  *          On error the function logs the error and resolves to an empty
  *          string.
  */
-async function generateTempPassword(wordCount = 3, numberCount = 2): Promise<string> {
+async function generateTempPassword(
+    wordCount = 3,
+    numberCount = 2
+): Promise<string> {
     try {
         const words = [
             "apple",
@@ -169,12 +191,12 @@ async function generateTempPassword(wordCount = 3, numberCount = 2): Promise<str
             const j = Math.floor(Math.random() * (i + 1));
             [combined[i], combined[j]] = [combined[j], combined[i]];
         }
-		
+
         return await hash(combined.join(""), 12);
     } catch (err: any) {
-		console.error("Error generating temporary password: ", err);
-		return "";
-	}
+        console.error("Error generating temporary password: ", err);
+        return "";
+    }
 }
 
 /**
