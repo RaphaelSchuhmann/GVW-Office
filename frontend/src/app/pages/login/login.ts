@@ -65,6 +65,8 @@ export class Login {
                     this.router.navigate(['/change-password'], {
                         queryParams: { firstLogin: resp.firstLogin },
                     });
+                else
+                    this.router.navigate(['/dashboard']);
             },
             error: (err) => console.error('Login failed: ', err), // Pass err.status to notifications
         });
