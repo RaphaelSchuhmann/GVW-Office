@@ -16,10 +16,10 @@ interface JwtPayload {
  */
 function authMiddleware(req: Request, resp: Response, next: NextFunction) {
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return resp.status(401);
+    if (!token) return resp.status(401).json({ errorMessage: "InvalidToken" });
 
     const payload = verifyAuthToken(token);
-    if (!payload) return resp.status(401);
+    if (!payload) return resp.status(401).json({ errorMessage: "InvalidToken" });
 
     // Attach the authenticated user id to the request for downstream handlers
     req.user = payload.userId;
