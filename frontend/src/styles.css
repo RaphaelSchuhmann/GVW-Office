@@ -1,58 +1,97 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Colors */
-  --color-gv-dark-turquoise: #17ABB4;
-  --color-gv-bg: #FFFFFF;
-  --color-secondary-btn-hover: #d4d4d4ff;
-  --color-gv-bg-bar: #ECF9F9;
-  --color-border: #E5E5E5;
-  --color-border-bar: #6CE9EA;
-  --color-text: #141414;
-  --color-text-light: #6C6C6C;
-  --color-input-bg: #E6E6E6;
-  --color-input-placeholder: #707070;
-  --color-primary: #00CFD1;
-  --color-primary-text: #FFFFFF;
-  --color-primary-hover: #06abadff;
-  --color-secondary: #C8FCFF;
-  --color-secondary-text: #25DCE4;
-  --color-delete: #DB0000;
-  --color-overlay: rgba(0, 0, 0, 0.5);
-  /* Font Sizes */
-  --text-dt-1: 40px;
-  --text-dt-2: 35px;
-  --text-dt-3: 25px;
-  --text-dt-4: 23px;
-  --text-dt-5: 20px;
-  --text-dt-6: 18px;
-  --text-dt-7: 16px;
-  --text-dt-8: 14px;
-  --text-dt-9: 12px;
-  --icon-dt-1: 56px;
-  --icon-dt-2: 33px;
-  --icon-dt-3: 30px;
-  --icon-dt-4: 24px;
-  --icon-dt-5: 17px;
-  /* Border Radius */
-  --radius-1: 14px;
-  --radius-2: 7px;
-  --radius-rfull: 100px;
+    /* Colors */
+    --color-gv-dark-turquoise: #17abb4;
+    --color-gv-bg: #ffffff;
+    --color-secondary-btn-hover: #d4d4d4ff;
+    --color-gv-bg-bar: #ecf9f9;
+    --color-border: #e5e5e5;
+    --color-border-bar: #6ce9ea;
+    --color-text: #141414;
+    --color-text-light: #6c6c6c;
+    --color-input-bg: #e6e6e6;
+    --color-input-placeholder: #707070;
+    --color-primary: #00cfd1;
+    --color-primary-text: #ffffff;
+    --color-primary-hover: #06abadff;
+    --color-secondary: #c8fcff;
+    --color-secondary-text: #25dce4;
+    --color-delete: #db0000;
+    --color-overlay: rgba(0, 0, 0, 0.5);
+    /* Font Sizes */
+    --text-dt-1: 40px;
+    --text-dt-2: 35px;
+    --text-dt-3: 25px;
+    --text-dt-4: 23px;
+    --text-dt-5: 20px;
+    --text-dt-6: 18px;
+    --text-dt-7: 16px;
+    --text-dt-8: 14px;
+    --text-dt-9: 12px;
+    --text-icon-dt-1: 56px;
+    --text-icon-dt-2: 40px;
+    --text-icon-dt-3: 38px;
+    --text-icon-dt-4: 33px;
+    --text-icon-dt-5: 30px;
+    --text-icon-dt-6: 24px;
+    --text-icon-dt-7: 17px;
+    /* Border Radius */
+    --radius-1: 14px;
+    --radius-2: 7px;
+    --radius-full: 100px;
 }
 
 :root {
-  font-family: 'Inter', sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-family: 'Inter', sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 body.no-scroll {
-  overflow: hidden;
+    overflow: hidden;
 }
 
-.icon {
-  font-family: 'Material Symobls Rounded' !important;
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+.text-icon-dt-1 {
+	font-size: var(--text-icon-dt-1) !important;
 }
+
+.text-icon-dt-2 {
+	font-size: var(--text-icon-dt-2) !important;
+}
+
+.text-icon-dt-3 {
+	font-size: var(--text-icon-dt-3) !important;
+}
+
+.text-icon-dt-4 {
+	font-size: var(--text-icon-dt-4) !important;
+}
+
+.text-icon-dt-5 {
+	font-size: var(--text-icon-dt-5) !important;
+}
+
+.text-icon-dt-6 {
+	font-size: var(--text-icon-dt-6) !important;
+}
+
+.text-icon-dt-7 {
+	font-size: var(--text-icon-dt-7) !important;
+}
+
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 48;
+}
+

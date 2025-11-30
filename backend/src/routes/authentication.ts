@@ -4,6 +4,7 @@ import { compare, hash } from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import authMiddleware from "../middlewares/authMiddleware";
+import { error } from "console";
 
 const authRouter = Router();
 
@@ -29,19 +30,19 @@ authRouter.post("/login", async (req, resp) => {
             limit: 1,
         });
 
-        if (users.length === 0) return resp.status(404).json({ ok: false }); // No user with this email
+        if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" }); // No user with this email
 
         const user = users[0];
 
         const isPWMatch = await compare(password, user.password);
-        if (!isPWMatch) return resp.status(401).json({ ok: false }); // Invalid PW
+        if (!isPWMatch) return resp.status(401).json({ errorMessage: "InvalidPassword" }); // Invalid PW
 
         const token = generateAuthToken(user.userId);
 
         return resp.status(200).json({ authToken: token, changePassword: user.changePassword, firstLogin: user.firstLogin });
-    } catch (error: any) {
-        console.error("Login route error: ", error);
-        return resp.status(500).json({ ok: false });
+    } catch (errorMessage: any) {
+        console.error("Login route errorMessage: ", error);
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
 
@@ -71,21 +72,21 @@ authRouter.post("/dev", async (req, resp) => {
 authRouter.get("/auto", authMiddleware, async (req, resp) => {
     try {
         const userId = req.user;
-        if (!userId) return resp.status(401).json({ ok: false }); // UserId should not be empty: invalid auth token
+        if (!userId) return resp.status(401).json({ errorMessage: "InvalidToken" }); // UserId should not be empty: invalid auth token
 
         const users = await dbService.find("users", {
             selector: { userId: userId },
             limit: 1,
         });
 
-        if (users.length === 0) return resp.status(404).json({ ok: false });
+        if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" });
 
 		const user = users[0];
 
         resp.status(200).json({ email: user.email, role: user.role, changePassword: user.changePassword });
     } catch (err: any) {
         console.error("Error auto getting user: ", err);
-        return resp.status(500).json({ ok: false });
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
 
@@ -118,19 +119,19 @@ authRouter.post("/changePW", async (req, resp) => {
 
         // Check if old password is same as new one
         const isPWMatch = await compare(newPw, user.password);
-        if (isPWMatch) return resp.status(409).json({ ok: false });
+        if (isPWMatch) return resp.status(409).json({ errorMessage: "SamePasswordAsOld" });
 
         // Authenticate user
         const validPW = await compare(oldPw, user.password);
-        if (!validPW) return resp.status(401).json({ ok: false });
+        if (!validPW) return resp.status(401).json({ errorMessage: "InvalidPassword" });
 
         const updatedDoc = { ...user, password: await hash(newPw, 12), changePassword: false, firstLogin: false };
         await dbService.update("users", updatedDoc);
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        console.error("Change Password route error: ", err);
-        return resp.status(500).json({ ok: false });
+        console.error("Change Password route errorMessage: ", err);
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
 
@@ -155,7 +156,7 @@ authRouter.post("/tempPassword", async (req, resp) => {
             limit: 1,
         });
 
-        if (users.length === 0) return resp.status(404).json({ ok: false });
+        if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" });
 
         const user = users[0];
 
@@ -164,8 +165,8 @@ authRouter.post("/tempPassword", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        console.error("Temp Password route error: ", err);
-        return resp.status(500).json({ ok: false });
+        console.error("Temp Password route errorMessage: ", err);
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
 
