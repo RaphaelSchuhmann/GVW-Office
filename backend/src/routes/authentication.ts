@@ -40,7 +40,7 @@ authRouter.post("/login", async (req, resp) => {
         const token = generateAuthToken(user.userId);
 
         return resp.status(200).json({ authToken: token, changePassword: user.changePassword, firstLogin: user.firstLogin });
-    } catch (errorMessage: any) {
+    } catch (error: any) {
         console.error("Login route errorMessage: ", error);
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
@@ -56,6 +56,7 @@ authRouter.post("/dev", async (req, resp) => {
 
         await dbService.create("users", {
             email: "raphael221@outlook.de",
+            name: "Raphael Schuhmann",
             password: await hash("123", 12),
             changePassword: true,
 			firstLogin: true,
@@ -83,7 +84,7 @@ authRouter.get("/auto", authMiddleware, async (req, resp) => {
 
 		const user = users[0];
 
-        resp.status(200).json({ email: user.email, role: user.role, changePassword: user.changePassword });
+        resp.status(200).json({ email: user.email, changePassword: user.changePassword });
     } catch (err: any) {
         console.error("Error auto getting user: ", err);
         return resp.status(500).json({ errorMessage: "InternalServerError" });

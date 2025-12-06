@@ -23,7 +23,7 @@ export function getValue(key: string): string {
     }
 }
 
-export function clearAuthToken(key: string) {
+export function clearValue(key: string) {
     try {
         localStorage.removeItem(key);
     } catch (err) {
