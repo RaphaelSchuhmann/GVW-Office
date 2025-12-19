@@ -1,4 +1,7 @@
-<script> 
+<script>
+    // Output value
+    export let value = "";
+
     export let title = "Title";
     export let type = "text";
     export let placeholder = "";
@@ -10,7 +13,7 @@
     // View password icon
     let icon;
     $: icon = passwordVisible ? "visibility_off" : "visibility";
-    
+
     // Check if type is valid else default to "text"
     const validTypes = ["text", "email", "password"];
     if (!validTypes.includes(type)) {
@@ -23,6 +26,21 @@
         passwordInput = true;
     }
 
+    const marginMap = {
+        "0": "mt-0",
+        "": "mt-0",
+        "1": "mt-1",
+        "2": "mt-2",
+        "3": "mt-3",
+        "4": "mt-4",
+        "5": "mt-5",
+        "6": "mt-6",
+        "7": "mt-7",
+        "8": "mt-8",
+        "9": "mt-9",
+        "10": "mt-10",
+    };
+
     // Toggle password visibility
     function togglePasswordView() {
         passwordVisible = !passwordVisible;
@@ -30,10 +48,11 @@
     }
 </script>
 
-<div class="flex flex-col items-start w-full mt-{marginTop}">
+<div class={`flex flex-col items-start w-full ${marginMap[marginTop]}`}>
     <p class="text-dt-6 font-medium">{title}</p>
     {#if !passwordInput}
         <input
+            bind:value
             {type}
             {placeholder}
             class="rounded-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6"
@@ -41,6 +60,7 @@
     {:else}
         <div class="flex items-stretch w-full">
             <input
+                bind:value
                 {type}
                 {placeholder}
                 class="rounded-tl-1 rounded-bl-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6"
