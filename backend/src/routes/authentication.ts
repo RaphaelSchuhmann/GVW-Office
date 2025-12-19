@@ -50,9 +50,10 @@ authRouter.post("/login", async (req, resp) => {
 authRouter.post("/dev", async (req, resp) => {
     try {
         const users = await dbService.list("users");
-        users.forEach(async (user) => {
+
+        for (const user of users) {
             await dbService.delete("users", user._id, user._rev);
-        });
+        }
 
         await dbService.create("users", {
             email: "raphael221@outlook.de",
