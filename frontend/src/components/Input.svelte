@@ -5,36 +5,34 @@
     export let marginTop = "";
 
     let passwordInput = false;
-    let icon = "visibility";
-
-    if (type === "password") {
-        passwordInput = true;
-    }
-
     let passwordVisible = false;
 
+    // View password icon
+    let icon;
+    $: icon = passwordVisible ? "visibility_off" : "visibility";
+    
+    // Check if type is valid else default to "text"
     const validTypes = ["text", "email", "password"];
     if (!validTypes.includes(type)) {
         console.warn(`Type ${type} is not a valid input type`);
         type = "text";
     }
 
+    // Check if original type is password to set a flag
+    if (type === "password") {
+        passwordInput = true;
+    }
+
+    // Toggle password visibility
     function togglePasswordView() {
         passwordVisible = !passwordVisible;
-
-        if (passwordVisible) {
-            type = "text";
-            icon = "visibility_off";
-        } else {
-            type = "password";
-            icon = "visibility"
-        }
+        type = passwordVisible ? "text" : "password";
     }
 </script>
 
 <div class="flex flex-col items-start w-full mt-{marginTop}">
     <p class="text-dt-6 font-medium">{title}</p>
-    {#if type !== "password" && !passwordInput}
+    {#if !passwordInput}
         <input
             {type}
             {placeholder}
