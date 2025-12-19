@@ -4,22 +4,21 @@
     /* Colors */
     --color-gv-dark-turquoise: #17abb4;
     --color-gv-bg: #ffffff;
-    --color-secondary-btn-hover: #d4d4d4ff;
+    --color-gv-secondary-btn-hover: #d4d4d4ff;
     --color-gv-bg-bar: #ecf9f9;
-    --color-border: #e5e5e5;
-    --color-border-bar: #6ce9ea;
-    --color-border-header: #CFCFCF;
-    --color-text: #141414;
-    --color-text-light: #6c6c6c;
-    --color-input-bg: #e6e6e6;
-    --color-input-placeholder: #707070;
-    --color-primary: #00cfd1;
-    --color-primary-text: #ffffff;
-    --color-primary-hover: #06abadff;
-    --color-secondary: #c8fcff;
-    --color-secondary-text: #25dce4;
-    --color-delete: #db0000;
-    --color-overlay: rgba(0, 0, 0, 0.5);
+    --color-gv-border: #e5e5e5;
+    --color-gv-border-bar: #6ce9ea;
+    --color-gv-dark-text: #141414;
+    --color-gv-light-text: #6c6c6c;
+    --color-gv-input-bg: #e6e6e6;
+    --color-gv-input-placeholder: #707070;
+    --color-gv-primary: #00cfd1;
+    --color-gv-primary-text: #ffffff;
+    --color-gv-primary-hover: #06abadff;
+    --color-gv-secondary: #c8fcff;
+    --color-gv-secondary-text: #25dce4;
+    --color-gv-delete: #db0000;
+    --color-gv-overlay: rgba(0, 0, 0, 0.5);
     /* Font Sizes */
     --text-dt-1: 40px;
     --text-dt-2: 35px;
