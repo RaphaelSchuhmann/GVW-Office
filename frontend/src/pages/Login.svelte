@@ -9,6 +9,7 @@
     import { login, authenticate } from "../services/auth.js";
     import { getValue, setValue } from "../services/store";
 
+    /** @type {import("../components/ToastStack.svelte").default} */
     let toastStack;
 
     let email = "";
@@ -18,15 +19,16 @@
         let authToken = getValue("authToken");
         if (authToken) {
             let response = await authenticate(authToken);
+            let body = await response.json();
 
-            if (response) {
-                setValue("email", response.email);
-                setValue("role", response.role);
-                if (response.changePassword) {
-                    push(`/changePassword?firstLogin=${response.firstLogin}`);
+            if (response && body) {
+                setValue("email", body.email);
+                setValue("role", body.role);
+                if (body.changePassword) {
+                    await push(`/changePassword?firstLogin=${body.firstLogin}`);
                 }
 
-                push("/dashboard");
+                await push("/dashboard");
             }
         }
     });
@@ -43,17 +45,25 @@
             return;
         }
 
-        // try to login
+        // Try to log in
         let response = await login(email, password);
-        
+        let body = await response.json();
+
+        console.log(response);
+        console.log(response.status);
+
         if (!response) {
             toastStack.addToast("error", "Interner Serverfehler", "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
             return;
         }
 
         if (response.status === 200) {
-            toastStack.addToast(
-                "success", "Erfolgreich angemeldet", "Sie wurden erfolgreich angemeldet und werden nun zum Dashboard weitergeleitet.");
+            setValue("authToken", body.authToken);
+            if (body.changePassword) {
+                await push(`/changePassword?firstLogin=${body.firstLogin}`);
+            }
+
+            await push("/dashboard");
         } else if (response.status === 404) {
             toastStack.addToast("error", "Benutzer nicht gefunden", "Es wurde kein Konto mit der angegebenen E-Mail-Adresse gefunden. Bitte prüfen Sie die Eingabe oder registrieren Sie sich.");
         } else if (response.status === 401) {
@@ -61,13 +71,6 @@
         } else {
             toastStack.addToast("error", "Interner Serverfehler", "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
         }
-
-        setValue("authToken", response.authToken);
-        if (response.changePassword) {
-            push(`/changePassword?firstLogin=${response.firstLogin}`);
-        }
-
-        push("/dashboard");
     }
 </script>
 
@@ -98,7 +101,7 @@
             marginTop="10"
         />
         <Button type="primary" marginTop="10" on:click={btnLogin}
-            ><span class="material-symbols-rounded">login</span>
+        ><span class="material-symbols-rounded">login</span>
             <p class="ml-3">Anmelden</p></Button
         >
     </Form>
