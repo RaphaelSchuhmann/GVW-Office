@@ -17,7 +17,7 @@ class DBService {
      * Create a new DBService instance.
      * The CouchDB URL is read from `process.env.DB_URL` or falls back to
      * `http://admin:admin@localhost:5984` for local development.
-     * 
+     *
      * @example
      * ```typescript
      * const db = new DBService();
@@ -35,7 +35,7 @@ class DBService {
      * Initialize the database connection and verify connectivity.
      * This method should be called after creating a DBService instance
      * to ensure the CouchDB connection is established.
-     * 
+     *
      * @throws {Error} Exits the process if connection fails
      * @example
      * ```typescript
@@ -58,7 +58,7 @@ class DBService {
     /**
      * Get a `nano` database scope for the provided database name.
      * This is a private helper method used internally by other operations.
-     * 
+     *
      * @param dbName - Name of the CouchDB database
      * @returns Nano document scope for the specified database
      * @private
@@ -70,7 +70,7 @@ class DBService {
     /**
      * Insert a new document into the specified database.
      * CouchDB will automatically generate an `_id` if not provided.
-     * 
+     *
      * @param dbName - Target database name (e.g., "users", "members", "events")
      * @param doc - Document data to insert
      * @returns Promise resolving to nano insert response containing `ok`, `id` and `rev`
@@ -89,13 +89,18 @@ class DBService {
         dbName: string,
         doc: DocumentData
     ): Promise<Nano.DocumentInsertResponse> {
-        return this.db(dbName).insert(doc);
+        try {
+            return this.db(dbName).insert(doc);
+        } catch (err: any) {
+            if (err.code === "ECONNREFUSED") throw new Error("Database unavailable"); // TODO: Add logger call
+            throw err;
+        }
     }
 
     /**
      * Read a document by ID from the database.
      * Returns null if the document is not found instead of throwing an error.
-     * 
+     *
      * @param dbName - Target database name
      * @param id - Document ID to retrieve
      * @returns Promise resolving to the document data or null if not found
@@ -114,6 +119,9 @@ class DBService {
         try {
             return await this.db(dbName).get(id);
         } catch (err: any) {
+            if (err.code === "ECONNREFUSED") {
+                throw new Error("Database unavailable"); // TODO: Add logger call
+            }
             if (err.statusCode == 404) return null;
             throw err; // TODO: add logger call and structured error handling
         }
@@ -122,7 +130,7 @@ class DBService {
     /**
      * Update an existing document in the database.
      * The provided document must contain both `_id` and `_rev` fields for conflict detection.
-     * 
+     *
      * @param dbName - Target database name
      * @param doc - Document data including required `_id` and `_rev` fields
      * @returns Promise resolving to nano insert response with new revision
@@ -141,15 +149,19 @@ class DBService {
         dbName: string,
         doc: DocumentData
     ): Promise<Nano.DocumentInsertResponse> {
-        if (!doc._id || !doc._rev)
-            throw new Error("Document must contain _id and _rev for update");
-        return this.db(dbName).insert(doc);
+        try {
+            if (!doc._id || !doc._rev) throw new Error("Document must contain _id and _rev for update");
+            return this.db(dbName).insert(doc);
+        } catch (err: any) {
+            if (err.code === "ECONNREFUSED") throw new Error("Database unavailable"); // TODO: Add logger call
+            throw err;
+        }
     }
 
     /**
      * Delete a document by ID and revision.
      * Both ID and revision are required for conflict detection in CouchDB.
-     * 
+     *
      * @param dbName - Target database name
      * @param id - Document ID to delete
      * @param rev - Document revision to delete (for conflict detection)
@@ -169,13 +181,18 @@ class DBService {
         id: string,
         rev: string
     ): Promise<Nano.DocumentDestroyResponse> {
-        return this.db(dbName).destroy(id, rev);
+        try {
+            return this.db(dbName).destroy(id, rev);
+        } catch (err: any) {
+            if (err.code === "ECONNREFUSED") throw new Error("Database unavailable"); // TODO: Add logger call
+            throw err;
+        }
     }
 
     /**
      * List all documents in the database and return their document data.
      * This method retrieves all documents including their full content.
-     * 
+     *
      * @param dbName - Target database name
      * @returns Promise resolving to array of all documents in the database
      * @throws {Error} If the database operation fails
@@ -187,14 +204,19 @@ class DBService {
      * ```
      */
     async list(dbName: string): Promise<DocumentData[]> {
-        const res = await this.db(dbName).list({ include_docs: true });
-        return res.rows.map((r) => r.doc!) as DocumentData[];
+        try {
+            const res = await this.db(dbName).list({ include_docs: true });
+            return res.rows.map((r) => r.doc!) as DocumentData[];
+        } catch (err: any) {
+            if (err.code === "ECONNREFUSED") throw new Error("Database unavailable"); // TODO: Add logger call
+            throw err;
+        }
     }
 
     /**
      * Find documents using a Mango query object.
      * Supports complex queries with selectors, sorting, limits, and more.
-     * 
+     *
      * @param dbName - Target database name
      * @param query - Mango query object with selector, limit, sort, etc.
      * @returns Promise resolving to array of documents matching the query
@@ -207,7 +229,7 @@ class DBService {
      *   sort: [{ date: "asc" }],
      *   limit: 10
      * });
-     * 
+     *
      * // Find users by role
      * const admins = await dbService.find("users", {
      *   selector: { role: "admin" }
@@ -218,8 +240,13 @@ class DBService {
         dbName: string,
         query: Nano.MangoQuery
     ): Promise<DocumentData[]> {
-        const res = await this.db(dbName).find(query);
-        return res.docs as DocumentData[];
+        try {
+            const res = await this.db(dbName).find(query);
+            return res.docs as DocumentData[];
+        } catch (err: any) {
+            if (err.code === "ECONNREFUSED") throw new Error("Database unavailable"); // TODO: Add logger call
+            throw err;
+        }
     }
 }
 
