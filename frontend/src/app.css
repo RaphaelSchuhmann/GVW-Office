@@ -23,6 +23,7 @@
     --color-gv-toast-info: #2563EB;
     --color-gv-toast-warning: #D47F00;
     --color-gv-toast-error: #DC2626;
+    --color-gv-hover-effect: rgba(188, 188, 188, 30%);
     /* Font Sizes */
     --text-dt-1: 40px;
     --text-dt-2: 35px;

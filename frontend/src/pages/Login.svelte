@@ -8,6 +8,8 @@
     import ToastStack from "../components/ToastStack.svelte";
     import { login, authenticate } from "../services/auth.js";
     import { getValue, setValue } from "../services/store";
+    import { auth } from "../stores/auth";
+    import { user } from "../stores/user";
 
     /** @type {import("../components/ToastStack.svelte").default} */
     let toastStack;
@@ -22,8 +24,6 @@
             let body = await response.json();
 
             if (response && body) {
-                setValue("email", body.email);
-                setValue("role", body.role);
                 if (body.changePassword) {
                     await push(`/changePassword?firstLogin=${body.firstLogin}`);
                 }
@@ -75,10 +75,13 @@
                 // cause this would allow the user to move back one page and automatically login
                 // and bypass the changePassword page
                 setValue("authToken_BCPW", body.authToken);
-                setValue("email", email);
+                user.update(u => ({ ...u, email: email }));
+                auth.set({token: body.authToken});
                 await push(`/changePassword?firstLogin=${body.firstLogin}`);
             } else {
                 setValue("authToken", body.authToken);
+                auth.set({token: body.authToken});
+                user.update(u => ({ ...u, email: email }));
                 await push("/dashboard");
             }
         } else if (response.status === 404) {

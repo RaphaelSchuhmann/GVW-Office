@@ -13,11 +13,14 @@ userRouter.post("/data", async (req, resp) => {
             limit: 1
         });
 
+        if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" });
+
         const user = users[0];
 
         return resp
             .status(200)
             .json({ email: user.email, role: user.role, name: user.name });
+
     } catch (err: any) {
         logger.error({ err }, "Login route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
