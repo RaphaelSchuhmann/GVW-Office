@@ -1,5 +1,6 @@
-import { Jwt, verify } from "jsonwebtoken";
+import { verify } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
+import { logger } from "../logger";
 
 /**
  * Minimal JWT payload used by this application.
@@ -35,11 +36,14 @@ function authMiddleware(req: Request, resp: Response, next: NextFunction) {
 function verifyAuthToken(token: string): JwtPayload | null {
     try {
         const secretKey = process.env.SECRET_KEY;
-        if (!secretKey) throw new Error("SECRET_KEY is empty!");
+        if (!secretKey) {
+            logger.error("SECRET_KEY is empty!");
+            return null;
+        }
 
         return verify(token, secretKey) as JwtPayload;
     } catch (error: any) {
-        console.error("verifyAuthToken failed: ", error);
+        logger.error({ error }, "verifyAuthToken failed");
         return null;
     }
 }
