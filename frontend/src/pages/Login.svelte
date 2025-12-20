@@ -31,6 +31,21 @@
                 await push("/dashboard");
             }
         }
+
+        const hash = window.location.hash;
+        const queryString = hash.split("?")[1];
+        if (!queryString) return;
+
+        const params = new URLSearchParams(queryString);
+        let cpwError = params.get("cpwErr") === "true";
+
+        if (cpwError) {
+            toastStack.addToast(
+                "error",
+                "Sitzung ungültig",
+                "Ihre E-Mail-Adresse konnte nicht eindeutig zugeordnet werden. Bitte melden Sie sich erneut an, um den Vorgang fortzusetzen."
+            );
+        }
     });
 
     async function btnLogin() {
@@ -49,21 +64,23 @@
         let response = await login(email, password);
         let body = await response.json();
 
-        console.log(response);
-        console.log(response.status);
-
         if (!response) {
             toastStack.addToast("error", "Interner Serverfehler", "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
             return;
         }
 
         if (response.status === 200) {
-            setValue("authToken", body.authToken);
             if (body.changePassword) {
+                // Note that the auth token cannot be stored under the key "authToken",
+                // cause this would allow the user to move back one page and automatically login
+                // and bypass the changePassword page
+                setValue("authToken_BCPW", body.authToken);
+                setValue("email", email);
                 await push(`/changePassword?firstLogin=${body.firstLogin}`);
+            } else {
+                setValue("authToken", body.authToken);
+                await push("/dashboard");
             }
-
-            await push("/dashboard");
         } else if (response.status === 404) {
             toastStack.addToast("error", "Benutzer nicht gefunden", "Es wurde kein Konto mit der angegebenen E-Mail-Adresse gefunden. Bitte prüfen Sie die Eingabe oder registrieren Sie sich.");
         } else if (response.status === 401) {

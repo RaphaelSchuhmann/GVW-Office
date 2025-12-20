@@ -16,7 +16,7 @@ export async function changePw(oldPw, newPw, email) {
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ oldPw, newPw, email })
+        body: JSON.stringify({ email, oldPw, newPw })
     });
 }
 
