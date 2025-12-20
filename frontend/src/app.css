@@ -19,6 +19,10 @@
     --color-gv-secondary-text: #25dce4;
     --color-gv-delete: #db0000;
     --color-gv-overlay: rgba(0, 0, 0, 0.5);
+    --color-gv-toast-success: #16A34A;
+    --color-gv-toast-info: #2563EB;
+    --color-gv-toast-warning: #D47F00;
+    --color-gv-toast-error: #DC2626;
     /* Font Sizes */
     --text-dt-1: 40px;
     --text-dt-2: 35px;
@@ -83,7 +87,7 @@ body.no-scroll {
 }
 
 .material-symbols-rounded {
-  font-family: 'Material Symbols Rounded';
+    font-family: "Material Symbols Rounded", serif;
   font-weight: normal;
   font-style: normal;
   line-height: 1;

@@ -40,7 +40,7 @@ class DBService {
      */
     constructor() {
         const COUCHDB_URL =
-            process.env.DB_URL || "http://localhost:5985"; // Add 
+            process.env.DB_URL || "http://admin:admin@localhost:5984";
         console.log(COUCHDB_URL);
         this.nano = Nano(COUCHDB_URL);
     }

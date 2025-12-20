@@ -1,4 +1,6 @@
 <script>
+    import { marginMap } from "../dynamicStyles";
+
     // Output value
     export let value = "";
 
@@ -25,21 +27,6 @@
     if (type === "password") {
         passwordInput = true;
     }
-
-    const marginMap = {
-        "0": "mt-0",
-        "": "mt-0",
-        "1": "mt-1",
-        "2": "mt-2",
-        "3": "mt-3",
-        "4": "mt-4",
-        "5": "mt-5",
-        "6": "mt-6",
-        "7": "mt-7",
-        "8": "mt-8",
-        "9": "mt-9",
-        "10": "mt-10",
-    };
 
     // Toggle password visibility
     function togglePasswordView() {

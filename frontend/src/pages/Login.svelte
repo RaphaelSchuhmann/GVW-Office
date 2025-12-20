@@ -5,6 +5,7 @@
     import Logo from "../assets/logo.svg";
     import Input from "../components/Input.svelte";
     import Button from "../components/Button.svelte";
+    import ToastStack from "../components/ToastStack.svelte";
     import { login, authenticate } from "../services/auth.js";
     import { getValue, setValue } from "../services/store";
 
@@ -57,6 +58,7 @@
     }
 </script>
 
+<ToastStack></ToastStack>
 <main class="bg-gv-bg-bar w-dvw h-dvh flex items-center justify-center">
     <Form padding="10" height="auto">
         <img
