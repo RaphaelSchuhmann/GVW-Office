@@ -4,7 +4,7 @@ import { compare, hash } from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import authMiddleware from "../middlewares/authMiddleware";
-import { error } from "console";
+import { logger } from "../logger";
 
 const authRouter = Router();
 
@@ -27,7 +27,7 @@ authRouter.post("/login", async (req, resp) => {
 
         const users = await dbService.find("users", {
             selector: { email: email },
-            limit: 1,
+            limit: 1
         });
 
         if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" }); // No user with this email
@@ -39,9 +39,13 @@ authRouter.post("/login", async (req, resp) => {
 
         const token = generateAuthToken(user.userId);
 
-        return resp.status(200).json({ authToken: token, changePassword: user.changePassword, firstLogin: user.firstLogin });
+        return resp.status(200).json({
+            authToken: token,
+            changePassword: user.changePassword,
+            firstLogin: user.firstLogin
+        });
     } catch (error: any) {
-        console.error("Login route errorMessage: ", error);
+        logger.error({ error }, "Login route errorMessage");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -60,13 +64,13 @@ authRouter.post("/dev", async (req, resp) => {
             name: "Raphael Schuhmann",
             password: await hash("123", 12),
             changePassword: true,
-			firstLogin: true,
+            firstLogin: true,
             userId: uuidv4(),
-			role: "member",
+            role: "member"
         });
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        console.error("Error generating development user: ", err);
+        logger.error({ err }, "Error generating development user");
         return resp.status(500).json({ ok: false });
     }
 });
@@ -78,16 +82,16 @@ authRouter.get("/auto", authMiddleware, async (req, resp) => {
 
         const users = await dbService.find("users", {
             selector: { userId: userId },
-            limit: 1,
+            limit: 1
         });
 
         if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" });
 
-		const user = users[0];
+        const user = users[0];
 
         resp.status(200).json({ email: user.email, changePassword: user.changePassword });
     } catch (err: any) {
-        console.error("Error auto getting user: ", err);
+        logger.error({ err }, "Error auto getting user: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -112,7 +116,7 @@ authRouter.post("/changePW", async (req, resp) => {
 
         const users = await dbService.find("users", {
             selector: { email: email },
-            limit: 1,
+            limit: 1
         });
 
         if (users.length === 0) return resp.status(404).json({ ok: false });
@@ -132,7 +136,7 @@ authRouter.post("/changePW", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        console.error("Change Password route errorMessage: ", err);
+        logger.error({ err }, "Change Password route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -155,7 +159,7 @@ authRouter.post("/tempPassword", async (req, resp) => {
 
         const users = await dbService.find("users", {
             selector: { email: email },
-            limit: 1,
+            limit: 1
         });
 
         if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" });
@@ -167,7 +171,7 @@ authRouter.post("/tempPassword", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        console.error("Temp Password route errorMessage: ", err);
+        logger.error({ err }, "Temp Password route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -207,7 +211,7 @@ async function generateTempPassword(
             "music",
             "choir",
             "pineapple",
-            "gvw",
+            "gvw"
         ];
 
         const chosenWords = Array.from({ length: wordCount }, () => {
@@ -227,7 +231,7 @@ async function generateTempPassword(
 
         return await hash(combined.join(""), 12);
     } catch (err: any) {
-        console.error("Error generating temporary password: ", err);
+        logger.error({ err }, "Error generating temporary password: ");
         return "";
     }
 }
@@ -241,7 +245,10 @@ async function generateTempPassword(
  */
 function generateAuthToken(userId: string) {
     const secretKey = process.env.SECRET_KEY;
-    if (!secretKey) throw new Error("SECRET_KEY is empty!");
+    if (!secretKey) {
+        logger.error("SECRET_KEY is empty!");
+        throw new Error("SECRET_KEY is empty!");
+    }
 
     return sign({ userId }, secretKey, { expiresIn: "7d" });
 }

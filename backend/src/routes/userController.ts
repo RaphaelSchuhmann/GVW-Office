@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { dbService } from "../db.service";
+import { logger } from "../logger";
 
 const userRouter = Router();
 
@@ -9,7 +10,7 @@ userRouter.post("/data", async (req, resp) => {
 
         const users = await dbService.find("users", {
             selector: { email: email },
-            limit: 1,
+            limit: 1
         });
 
         const user = users[0];
@@ -18,7 +19,7 @@ userRouter.post("/data", async (req, resp) => {
             .status(200)
             .json({ email: user.email, role: user.role, name: user.name });
     } catch (err: any) {
-        console.error("Login route errorMessage: ", err);
+        logger.error({ err }, "Login route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });

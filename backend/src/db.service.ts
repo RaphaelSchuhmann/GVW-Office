@@ -1,4 +1,5 @@
 import Nano from "nano";
+import { logger } from "./logger";
 
 type DocumentData = Record<string, any>;
 
@@ -46,11 +47,9 @@ class DBService {
     async init(): Promise<void> {
         try {
             const info = await this.nano.info();
-            console.log("Connected to CouchDB: ", info);
-            // Logger call
+            logger.info({ info }, "Connected to Database");
         } catch (err) {
-            console.error("Failed to connect to CouchDB: ", err);
-            // Logger call
+            logger.error("Failed to connect to CouchDB: " + err);
             process.exit(1);
         }
     }
@@ -92,7 +91,7 @@ class DBService {
         try {
             return this.db(dbName).insert(doc);
         } catch (err: any) {
-            if (err.code === "ECONNREFUSED") throw new Error("Database unavailable"); // TODO: Add logger call
+            if (err.code === "ECONNREFUSED") logger.error("Database unavailable");
             throw err;
         }
     }
@@ -119,11 +118,10 @@ class DBService {
         try {
             return await this.db(dbName).get(id);
         } catch (err: any) {
-            if (err.code === "ECONNREFUSED") {
-                throw new Error("Database unavailable"); // TODO: Add logger call
-            }
+            if (err.code === "ECONNREFUSED") logger.error("Database unavailable");
             if (err.statusCode == 404) return null;
-            throw err; // TODO: add logger call and structured error handling
+            logger.error(err);
+            throw err;
         }
     }
 
@@ -150,10 +148,13 @@ class DBService {
         doc: DocumentData
     ): Promise<Nano.DocumentInsertResponse> {
         try {
-            if (!doc._id || !doc._rev) throw new Error("Document must contain _id and _rev for update");
+            if (!doc._id || !doc._rev) {
+                return Promise.reject(new Error("Document must contain _id and _rev for update"));
+            }
             return this.db(dbName).insert(doc);
         } catch (err: any) {
-            if (err.code === "ECONNREFUSED") throw new Error("Database unavailable"); // TODO: Add logger call
+            if (err.code === "ECONNREFUSED") logger.error("Database unavailable");
+            logger.error(err);
             throw err;
         }
     }
@@ -184,7 +185,8 @@ class DBService {
         try {
             return this.db(dbName).destroy(id, rev);
         } catch (err: any) {
-            if (err.code === "ECONNREFUSED") throw new Error("Database unavailable"); // TODO: Add logger call
+            if (err.code === "ECONNREFUSED") logger.error("Database unavailable");
+            logger.error(err);
             throw err;
         }
     }
@@ -208,7 +210,8 @@ class DBService {
             const res = await this.db(dbName).list({ include_docs: true });
             return res.rows.map((r) => r.doc!) as DocumentData[];
         } catch (err: any) {
-            if (err.code === "ECONNREFUSED") throw new Error("Database unavailable"); // TODO: Add logger call
+            if (err.code === "ECONNREFUSED") logger.error("Database unavailable");
+            logger.error(err);
             throw err;
         }
     }
@@ -244,7 +247,8 @@ class DBService {
             const res = await this.db(dbName).find(query);
             return res.docs as DocumentData[];
         } catch (err: any) {
-            if (err.code === "ECONNREFUSED") throw new Error("Database unavailable"); // TODO: Add logger call
+            if (err.code === "ECONNREFUSED") logger.error("Database unavailable");
+            logger.error(err);
             throw err;
         }
     }
