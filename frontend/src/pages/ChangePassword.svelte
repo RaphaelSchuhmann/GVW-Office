@@ -8,6 +8,7 @@
     import ToastStack from "../components/ToastStack.svelte";
     import { changePw } from "../services/auth";
     import { getValue, setValue, clearValue } from "../services/store";
+    import { user } from "../stores/user";
 
     /** @type {import("../components/ToastStack.svelte").default} */
     let toastStack;
@@ -78,11 +79,12 @@
             return;
         }
 
-        let email = getValue("email");
+        let email = $user.email;
         if (!email || email.length === 0) {
             // Invalid Email
             // Route back to log in with error parameter set to true to be displayed as a toast
             await push(`/?cpwErr=true`);
+            user.set({ name: "", email: "", role: "", loaded: false });
             return;
         }
 

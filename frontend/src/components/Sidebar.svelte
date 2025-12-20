@@ -1,17 +1,18 @@
 <script>
     import { logout } from "../services/user";
     import { push } from "svelte-spa-router";
+    import { user } from "../stores/user";
     import SidebarButton from "./SidebarButton.svelte";
 
-    export let userName = "";
-    export let email = "";
-    export let role = "member";
     export let currentPage = "";
-    export let onSettingsClick = () => {};
+    export let onSettingsClick = () => {
+    };
 
     // Needed role for each sidebar button
     let mitgliederAccess = ["admin", "vorstand"];
     let reportsAccess = ["admin", "schriftführer"];
+
+    let role = $user.role;
 
     let minimized = false;
     let toggleIcon = "arrow_menu_close";
@@ -79,7 +80,8 @@
         </SidebarButton>
 
         {#if mitgliederAccess.includes(role)}
-            <SidebarButton selected={currentPage === "members"} marginTop="5" minimized={minimized} on:click={handleMembers}>
+            <SidebarButton selected={currentPage === "members"} marginTop="5" minimized={minimized}
+                           on:click={handleMembers}>
                 <span class="material-symbols-rounded text-icon-dt-4">group</span>
                 {#if !minimized}
                     <p class="ml-2">Mitglieder</p>
@@ -95,7 +97,8 @@
         </SidebarButton>
 
         {#if reportsAccess.includes(role)}
-            <SidebarButton selected={currentPage === "reports"} marginTop="5" minimized={minimized} on:click={handleReports}>
+            <SidebarButton selected={currentPage === "reports"} marginTop="5" minimized={minimized}
+                           on:click={handleReports}>
                 <span class="material-symbols-rounded text-icon-dt-4">docs</span>
                 {#if !minimized}
                     <p class="ml-2">Berichte</p>
@@ -103,21 +106,26 @@
             </SidebarButton>
         {/if}
 
-        <SidebarButton selected={currentPage === "musicLibrary"} marginTop="5" minimized={minimized} on:click={handleMusicLibrary}>
+        <SidebarButton selected={currentPage === "musicLibrary"} marginTop="5" minimized={minimized}
+                       on:click={handleMusicLibrary}>
             <span class="material-symbols-rounded text-icon-dt-4">music_note</span>
             {#if !minimized}
                 <p class="ml-2">Notenbibliothek</p>
             {/if}
         </SidebarButton>
-
         <div class="flex flex-col items-center w-full mt-auto">
             {#if !minimized}
                 <div class="relative inline-block text-left">
                     <button on:click={toggleUserOptions}
                             class="flex items-center bg-white border border-gv-border rounded-1 p-3 cursor-pointer hover:bg-gv-secondary-btn-hover duration-200">
                         <div class="flex flex-col items-start justify-around">
-                            <p class="text-dt-5 text-gv-dark-text text-nowrap truncate">{userName}</p>
-                            <p class="text-dt-8 text-gv-light-text text-nowrap truncate">{email}</p>
+                            {#if $user.loaded}
+                                <p class="text-dt-5 text-gv-dark-text text-nowrap truncate">{$user.name}</p>
+                                <p class="text-dt-8 text-gv-light-text text-nowrap truncate">{$user.email}</p>
+                            {:else}
+                                <div class="animate-pulse h-5 w-40 bg-gray-200 rounded"></div>
+                                <div class="animate-pulse h-5 w-24 bg-gray-200 rounded mt-2"></div>
+                            {/if}
                         </div>
                         <span class="material-symbols-rounded text-icon-dt-2 ml-3">{userOptionsIcon}</span>
                     </button>
