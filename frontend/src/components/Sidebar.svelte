@@ -6,8 +6,8 @@
     export let userName = "";
     export let email = "";
     export let role = "member";
-    export let onSetingsClick = () => {
-    };
+    export let currentPage = "";
+    export let onSettingsClick = () => {};
 
     // Needed role for each sidebar button
     let mitgliederAccess = ["admin", "vorstand"];
@@ -33,6 +33,26 @@
         logout();
         await push("/");
     }
+
+    async function handleDashboard() {
+        await push("/dashboard");
+    }
+
+    async function handleMembers() {
+        await push("/members");
+    }
+
+    async function handleEvents() {
+        await push("/events");
+    }
+
+    async function handleReports() {
+        await push("/reports");
+    }
+
+    async function handleMusicLibrary() {
+        await push("/library");
+    }
 </script>
 
 <div
@@ -51,7 +71,7 @@
 
     <!--  Content  -->
     <div class="w-full h-full flex flex-col items-center p-5 flex-1">
-        <SidebarButton selected={true} minimized={minimized}>
+        <SidebarButton selected={currentPage === "dashboard"} minimized={minimized} on:click={handleDashboard}>
             <span class="material-symbols-rounded text-icon-dt-4">dashboard</span>
             {#if !minimized}
                 <p class="ml-2">Dashboard</p>
@@ -59,7 +79,7 @@
         </SidebarButton>
 
         {#if mitgliederAccess.includes(role)}
-            <SidebarButton selected={false} marginTop="5" minimized={minimized}>
+            <SidebarButton selected={currentPage === "members"} marginTop="5" minimized={minimized} on:click={handleMembers}>
                 <span class="material-symbols-rounded text-icon-dt-4">group</span>
                 {#if !minimized}
                     <p class="ml-2">Mitglieder</p>
@@ -67,7 +87,7 @@
             </SidebarButton>
         {/if}
 
-        <SidebarButton selected={false} marginTop="5" minimized={minimized}>
+        <SidebarButton selected={currentPage === "events"} marginTop="5" minimized={minimized} on:click={handleEvents}>
             <span class="material-symbols-rounded text-icon-dt-4">calendar_today</span>
             {#if !minimized}
                 <p class="ml-2">Veranstaltungen</p>
@@ -75,7 +95,7 @@
         </SidebarButton>
 
         {#if reportsAccess.includes(role)}
-            <SidebarButton selected={false} marginTop="5" minimized={minimized}>
+            <SidebarButton selected={currentPage === "reports"} marginTop="5" minimized={minimized} on:click={handleReports}>
                 <span class="material-symbols-rounded text-icon-dt-4">docs</span>
                 {#if !minimized}
                     <p class="ml-2">Berichte</p>
@@ -83,7 +103,7 @@
             </SidebarButton>
         {/if}
 
-        <SidebarButton selected={false} marginTop="5" minimized={minimized}>
+        <SidebarButton selected={currentPage === "musicLibrary"} marginTop="5" minimized={minimized} on:click={handleMusicLibrary}>
             <span class="material-symbols-rounded text-icon-dt-4">music_note</span>
             {#if !minimized}
                 <p class="ml-2">Notenbibliothek</p>
@@ -104,7 +124,7 @@
                     {#if userOptionsVisible}
                         <div
                             class="absolute bottom-22 w-full bg-white border border-gv-border rounded-1 p-2 flex flex-col items-center">
-                            <button on:click={onSetingsClick}
+                            <button on:click={onSettingsClick}
                                     class="w-full text-dt-3 flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150">
                                 <span class="material-symbols-rounded text-icon-dt-5 mr-2">settings</span>
                                 Einstellungen
@@ -119,7 +139,7 @@
                 </div>
             {:else}
                 <div class="flex flex-col items-center mb-5">
-                    <SidebarButton marginTop="5" minimized={minimized} on:click={onSetingsClick}>
+                    <SidebarButton marginTop="5" minimized={minimized} on:click={onSettingsClick}>
                         <span class="material-symbols-rounded text-icon-dt-3">settings</span>
                     </SidebarButton>
                     <SidebarButton marginTop="5" minimized={minimized} on:click={handleLogout}>
