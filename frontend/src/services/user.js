@@ -1,3 +1,5 @@
+import { clearValue } from "./store";
+
 const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
 
 export async function getData(email, token) {
@@ -9,4 +11,11 @@ export async function getData(email, token) {
         },
         body: JSON.stringify({ email })
     });
+}
+
+export function logout() {
+    clearValue("authToken");
+    clearValue("email");
+    clearValue("name");
+    clearValue("role");
 }

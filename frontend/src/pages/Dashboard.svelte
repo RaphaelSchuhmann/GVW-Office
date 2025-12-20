@@ -5,6 +5,7 @@
     import { getValue, setValue } from "../services/store";
     import { delay } from "../services/utils";
     import ToastStack from "../components/ToastStack.svelte";
+    import Sidebar from "../components/Sidebar.svelte";
 
     /** @type {import("../components/ToastStack.svelte").default} */
     let toastStack;
@@ -41,9 +42,13 @@
             toastStack.addToast("error", "Interner Serverfehler", "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
         }
     });
+
+    function settingsClick() {
+        console.log("Hello World");
+    }
 </script>
 
 <ToastStack bind:this={toastStack}></ToastStack>
 <main class="flex overflow-hidden">
-
+    <Sidebar userName={getValue("name")} email={getValue("email")} onSetingsClick={settingsClick} role={getValue("role")}></Sidebar>
 </main>
