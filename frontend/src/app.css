@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@theme {
+    /* Colors */
+    --color-gv-dark-turquoise: #17abb4;
+    --color-gv-bg: #ffffff;
+    --color-gv-secondary-btn-hover: #d4d4d4ff;
+    --color-gv-bg-bar: #ecf9f9;
+    --color-gv-border: #e5e5e5;
+    --color-gv-border-bar: #6ce9ea;
+    --color-gv-dark-text: #141414;
+    --color-gv-light-text: #6c6c6c;
+    --color-gv-input-bg: #e6e6e6;
+    --color-gv-input-placeholder: #707070;
+    --color-gv-primary: #00cfd1;
+    --color-gv-primary-text: #ffffff;
+    --color-gv-primary-hover: #06abadff;
+    --color-gv-secondary: #c8fcff;
+    --color-gv-secondary-text: #25dce4;
+    --color-gv-delete: #db0000;
+    --color-gv-overlay: rgba(0, 0, 0, 0.5);
+    --color-gv-toast-success: #16A34A;
+    --color-gv-toast-info: #2563EB;
+    --color-gv-toast-warning: #D47F00;
+    --color-gv-toast-error: #DC2626;
+    /* Font Sizes */
+    --text-dt-1: 40px;
+    --text-dt-2: 35px;
+    --text-dt-3: 25px;
+    --text-dt-4: 23px;
+    --text-dt-5: 20px;
+    --text-dt-6: 18px;
+    --text-dt-7: 16px;
+    --text-dt-8: 14px;
+    --text-dt-9: 12px;
+    --text-icon-dt-1: 56px;
+    --text-icon-dt-2: 40px;
+    --text-icon-dt-3: 38px;
+    --text-icon-dt-4: 33px;
+    --text-icon-dt-5: 30px;
+    --text-icon-dt-6: 24px;
+    --text-icon-dt-7: 17px;
+    /* Border Radius */
+    --radius-1: 14px;
+    --radius-2: 7px;
+    --radius-full: 100px;
+}
+
+:root {
+    font-family: 'Inter', sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body.no-scroll {
+    overflow: hidden;
+}
+
+.text-icon-dt-1 {
+    font-size: var(--text-icon-dt-1) !important;
+}
+
+.text-icon-dt-2 {
+    font-size: var(--text-icon-dt-2) !important;
+}
+
+.text-icon-dt-3 {
+    font-size: var(--text-icon-dt-3) !important;
+}
+
+.text-icon-dt-4 {
+    font-size: var(--text-icon-dt-4) !important;
+}
+
+.text-icon-dt-5 {
+    font-size: var(--text-icon-dt-5) !important;
+}
+
+.text-icon-dt-6 {
+    font-size: var(--text-icon-dt-6) !important;
+}
+
+.text-icon-dt-7 {
+    font-size: var(--text-icon-dt-7) !important;
+}
+
+.material-symbols-rounded {
+    font-family: "Material Symbols Rounded", serif;
+    font-weight: normal;
+    font-style: normal;
+    line-height: 1;
+
+    font-variation-settings: 'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 48;
+}

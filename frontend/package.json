@@ -1,60 +1,26 @@
 {
   "name": "gvw-office-frontend",
   "version": "0.0.1",
-  "main": "app.js",
-  "scripts": {
-    "ng": "ng",
-    "start": "concurrently \"ng serve\" \"wait-on http://localhost:4200/login && electron .\"",
-    "build": "ng build --base-href ./",
-    "electron-build": "npm run build && electron .",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
-  },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "overrides": [
-      {
-        "files": "*.html",
-        "options": {
-          "parser": "angular"
-        }
-      }
-    ]
-  },
+  "main": "main.js",
   "private": true,
-  "dependencies": {
-    "@angular/common": "^20.3.0",
-    "@angular/compiler": "^20.3.0",
-    "@angular/core": "^20.3.0",
-    "@angular/forms": "^20.3.0",
-    "@angular/platform-browser": "^20.3.0",
-    "@angular/router": "^20.3.0",
-    "@tailwindcss/postcss": "^4.1.16",
-    "@types/bcrypt": "^6.0.0",
-    "electron-store": "^11.0.2",
-    "path": "^0.12.7",
-    "postcss": "^8.5.6",
-    "rxjs": "~7.8.0",
-    "tailwindcss": "^4.1.16",
-    "tslib": "^2.3.0",
-    "zone.js": "~0.15.0"
+  "scripts": {
+    "dev:vite": "vite",
+    "dev:electron": "wait-on http://localhost:5173 && electron .",
+    "start": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
+    "build": "vite build",
+    "electron-build": "npm run build && electron ."
   },
   "devDependencies": {
-    "@angular/build": "^20.3.8",
-    "@angular/cli": "^20.3.8",
-    "@angular/compiler-cli": "^20.3.0",
-    "@types/jasmine": "~5.1.0",
+    "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@tailwindcss/vite": "^4.1.18",
     "concurrently": "^9.2.1",
-    "electron": "^39.0.0",
-    "electron-reload": "^2.0.0-alpha.1",
-    "jasmine-core": "~5.9.0",
-    "karma": "~6.4.0",
-    "karma-chrome-launcher": "~3.2.0",
-    "karma-coverage": "~2.2.0",
-    "karma-jasmine": "~5.1.0",
-    "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.9.2",
+    "electron": "^39.2.7",
+    "svelte": "^5.43.8",
+    "tailwindcss": "^4.1.18",
+    "vite": "^7.2.4",
     "wait-on": "^9.0.3"
+  },
+  "dependencies": {
+    "svelte-spa-router": "^4.0.1"
   }
 }
