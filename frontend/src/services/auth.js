@@ -9,7 +9,6 @@ export async function login(email, password) {
         body: JSON.stringify({ email, password })
     });
 
-    if (!resp.ok) throw new Error(`Login failed: ${resp.statusText}`);
     return resp.json();
 }
 
@@ -22,7 +21,6 @@ export async function changePw(oldPw, newPw, email) {
         body: JSON.stringify({ oldPw, newPw, email })
     });
 
-    if (!resp.ok) throw new Error(`Password change failed: ${resp.statusText}`);
     return resp.json();
 }
 
@@ -34,6 +32,5 @@ export async function authenticate(token) {
         },
     });
 
-    if (!resp.ok) throw new Error(`Authentication failed: ${resp.statusText}`);
     return resp.json();
 }

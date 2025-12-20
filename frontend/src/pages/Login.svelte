@@ -9,6 +9,8 @@
     import { login, authenticate } from "../services/auth.js";
     import { getValue, setValue } from "../services/store";
 
+    let toastStack;
+
     let email = "";
     let password = "";
 
@@ -32,12 +34,12 @@
     async function btnLogin() {
         // Ensure neither email nor password is empty
         if (!email) {
-            // throw error that email cannot be empty
+            toastStack.addToast("error", "Ungültige Eingabe!", "Die E-Mail darf nicht leer sein! Bitte geben Sie eine gültige E-Mail-Adresse ein, um fortzufahren.");
             return;
         }
 
         if (!password) {
-            // throw error that password cannot be empty
+            toastStack.addToast("error", "Ungültige Eingabe!", "Das Passwort darf nicht leer sein! Bitte geben Sie ihr Passwort ein, um fortzufahren.");
             return;
         }
 
@@ -45,8 +47,19 @@
         let response = await login(email, password);
         
         if (!response) {
-            // throw error internal server error (response is empty)
+            toastStack.addToast("error", "Interner Serverfehler", "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
             return;
+        }
+
+        if (response.status === 200) {
+            toastStack.addToast(
+                "success", "Erfolgreich angemeldet", "Sie wurden erfolgreich angemeldet und werden nun zum Dashboard weitergeleitet.");
+        } else if (response.status === 404) {
+            toastStack.addToast("error", "Benutzer nicht gefunden", "Es wurde kein Konto mit der angegebenen E-Mail-Adresse gefunden. Bitte prüfen Sie die Eingabe oder registrieren Sie sich.");
+        } else if (response.status === 401) {
+            toastStack.addToast("error", "Ungültiges Passwort", "Das eingegebene Passwort ist falsch. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.");
+        } else {
+            toastStack.addToast("error", "Interner Serverfehler", "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
         }
 
         setValue("authToken", response.authToken);
@@ -58,7 +71,7 @@
     }
 </script>
 
-<ToastStack></ToastStack>
+<ToastStack bind:this={toastStack}></ToastStack>
 <main class="bg-gv-bg-bar w-dvw h-dvh flex items-center justify-center">
     <Form padding="10" height="auto">
         <img
