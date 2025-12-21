@@ -14,6 +14,15 @@ type DocumentData = Record<string, any>;
 class DBService {
     private nano: Nano.ServerScope;
 
+    private DBS: string[] = ["users", "members", "app_settings"];
+    private APP_SETTINGS_DB: string = "app_settings";
+    private SETTINGS_DOC_ID: string = "general";
+
+    private DEFAULT_SETTINGS = {
+        _id: this.SETTINGS_DOC_ID,
+        maxMembers: 10,
+    };
+
     /**
      * Create a new DBService instance.
      * The CouchDB URL is read from `process.env.DB_URL` or falls back to
@@ -251,6 +260,39 @@ class DBService {
             logger.error(err);
             throw err;
         }
+    }
+
+    async generateDatabases(): Promise<void> {
+        for (const dbName of this.DBS) {
+            try {
+                await dbService.nano.db.create(dbName);
+                console.log(`Database "${dbName}" created`);
+            } catch (err: any) {
+                if (err.statusCode === 412) {
+                    // Database already exists
+                    console.log(`Database "${dbName}" already exists`);
+                } else {
+                    console.error(`Failed to create database "${dbName}":`, err);
+                    throw err;
+                }
+            }
+        }
+
+        // Ensure default settings document exists in app_settings
+        try {
+            const existingSettings = await dbService.read(this.APP_SETTINGS_DB, this.SETTINGS_DOC_ID);
+            if (!existingSettings) {
+                await dbService.create(this.APP_SETTINGS_DB, this.DEFAULT_SETTINGS);
+                console.log("Default app settings document created");
+            } else {
+                console.log("App settings document already exists");
+            }
+        } catch (err) {
+            console.error("Failed to initialize app settings document:", err);
+            throw err;
+        }
+
+        console.log("All databases initialized successfully");
     }
 }
 

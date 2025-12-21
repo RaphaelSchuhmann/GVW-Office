@@ -65,8 +65,8 @@
                 <p class="text-dt-8 text-gv-light-text">Weppersdorf</p>
             </div>
         {/if}
-        <button class="cursor-pointer ml-auto" on:click={toggleSidebarState}><span
-            class="material-symbols-rounded text-icon-dt-1 text-gv-dark-text hover:text-gv-light-text duration-150">{toggleIcon}</span>
+        <button class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center rounded-2 pt-2 pb-2" on:click={toggleSidebarState}><span
+            class="material-symbols-rounded text-icon-dt-1 text-gv-dark-text duration-150">{toggleIcon}</span>
         </button>
     </div>
 
@@ -117,7 +117,7 @@
             {#if !minimized}
                 <div class="relative inline-block text-left">
                     <button on:click={toggleUserOptions}
-                            class="flex items-center bg-white border border-gv-border rounded-1 p-3 cursor-pointer hover:bg-gv-secondary-btn-hover duration-200">
+                            class="flex items-center bg-white border border-gv-border rounded-1 p-3 cursor-pointer hover:bg-gv-secondary-btn-hover duration-200 overflow-hidden">
                         <div class="flex flex-col items-start justify-around">
                             {#if $user.loaded}
                                 <p class="text-dt-5 text-gv-dark-text text-nowrap truncate">{$user.name}</p>
@@ -132,7 +132,7 @@
                     {#if userOptionsVisible}
                         <div
                             class="absolute bottom-22 w-full bg-white border border-gv-border rounded-1 p-2 flex flex-col items-center">
-                            <button on:click={onSettingsClick}
+                            <button on:click={() => {toggleUserOptions(); onSettingsClick();}}
                                     class="w-full text-dt-3 flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150">
                                 <span class="material-symbols-rounded text-icon-dt-5 mr-2">settings</span>
                                 Einstellungen

@@ -1,4 +1,5 @@
 import { clearValue } from "./store";
+import { get } from "svelte/store";
 import { user } from "../stores/user";
 import { auth } from "../stores/auth";
 
@@ -12,6 +13,26 @@ export async function getData(email, token) {
             Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ email })
+    });
+}
+
+export async function updateData(originalEmail) {
+    const currentUser = get(user);
+    const currentAuth = get(auth);
+
+    return await fetch(`${apiUrl}/user/update`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentAuth.token}`
+        },
+        body: JSON.stringify({
+            originalEmail: originalEmail,
+            email: currentUser.email,
+            name: currentUser.name,
+            phone: currentUser.phone,
+            address: currentUser.address
+        })
     });
 }
 

@@ -27,4 +27,27 @@ userRouter.post("/data", async (req, resp) => {
     }
 });
 
+userRouter.post("/update", async (req, resp) => {
+    try {
+        const { originalEmail, email, phone, address } = req.body;
+
+        const users = await dbService.find("users", {
+            selector: { email: originalEmail },
+            limit: 1
+        });
+
+        if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" });
+
+        // Update user data
+        const user = users[0];
+        const updatedDoc = { ...user, email: email, phone: phone, address: address };
+        await dbService.update("users", updatedDoc);
+
+        return resp.status(200).json({ ok: true });
+    } catch (err: any) {
+        logger.error({ err }, "Login route errorMessage: ");
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
+    }
+});
+
 export { userRouter };

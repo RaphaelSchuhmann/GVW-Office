@@ -8,9 +8,14 @@
     export let type = "text";
     export let placeholder = "";
     export let marginTop = "";
+    export let readonly = false;
+    export let disabled = false;
+    export let width = "w-full";
 
     let passwordInput = false;
     let passwordVisible = false;
+
+    let inputEl;
 
     // View password icon
     let icon;
@@ -33,23 +38,35 @@
         passwordVisible = !passwordVisible;
         type = passwordVisible ? "text" : "password";
     }
+
+    export function focus() {
+        inputEl.focus();
+    }
 </script>
 
-<div class={`flex flex-col items-start w-full ${marginMap[marginTop]}`}>
+<div class={`flex flex-col items-start ${width} ${marginMap[marginTop]}`}>
     <p class="text-dt-6 font-medium">{title}</p>
     {#if !passwordInput}
         <input
             bind:value
-            {type}
-            {placeholder}
+            bind:this={inputEl}
+            on:blur
+            type={type}
+            placeholder={placeholder}
+            readonly={readonly}
+            disabled={disabled}
             class="rounded-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6"
         />
     {:else}
-        <div class="flex items-stretch w-full">
+        <div class={`flex items-stretch ${width}`}>
             <input
                 bind:value
-                {type}
-                {placeholder}
+                bind:this={inputEl}
+                on:blur
+                type={type}
+                placeholder={placeholder}
+                readonly={readonly}
+                disabled={disabled}
                 class="rounded-tl-1 rounded-bl-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6"
             />
             <button
@@ -57,7 +74,7 @@
                 on:click={togglePasswordView}
             >
                 <span class="material-symbols-rounded text-icon-dt-3"
-                    >{icon}</span
+                >{icon}</span
                 >
             </button>
         </div>
