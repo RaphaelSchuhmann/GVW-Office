@@ -19,6 +19,7 @@
     --color-gv-secondary-text: #25dce4;
     --color-gv-delete: #db0000;
     --color-gv-overlay: rgba(0, 0, 0, 0.5);
+    --color-gv-overlay-blocker: rgba(0, 0, 0, 0.1);
     --color-gv-toast-success: #16A34A;
     --color-gv-toast-info: #2563EB;
     --color-gv-toast-warning: #D47F00;
@@ -85,6 +86,10 @@ body.no-scroll {
 
 .text-icon-dt-7 {
     font-size: var(--text-icon-dt-7) !important;
+}
+
+* {
+    outline-color: var(--color-gv-primary);
 }
 
 *::-webkit-scrollbar {

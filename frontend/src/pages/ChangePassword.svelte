@@ -9,9 +9,7 @@
     import { changePw } from "../services/auth";
     import { getValue, setValue, clearValue } from "../services/store";
     import { user } from "../stores/user";
-
-    /** @type {import("../components/ToastStack.svelte").default} */
-    let toastStack;
+    import { addToast } from "../stores/toasts";
 
     let message = "";
 
@@ -37,45 +35,45 @@
     async function updatePassword() {
         // Validate inputs
         if (!currentPw) {
-            toastStack.addToast(
-                "error",
-                "Ungültige Eingabe",
-                "Bitte geben Sie Ihr aktuelles Passwort ein, damit wir Ihre Identität überprüfen und die Passwortänderung durchführen können."
-            );
+            addToast({
+                title: "Ungültige Eingabe",
+                subTitle: "Bitte geben Sie Ihr aktuelles Passwort ein, damit wir Ihre Identität überprüfen und die Passwortänderung durchführen können.",
+                type: "error"
+            });
             return;
         } else if (!newPw) {
-            toastStack.addToast(
-                "error",
-                "Ungültige Eingabe",
-                "Bitte geben Sie ein neues Passwort ein, das künftig für die Anmeldung verwendet werden soll."
-            );
+            addToast({
+                title: "Ungültige Eingabe",
+                subTitle: "Bitte geben Sie ein neues Passwort ein, das künftig für die Anmeldung verwendet werden soll.",
+                type: "error"
+            });
             return;
         } else if (!confirmNewPw) {
-            toastStack.addToast(
-                "error",
-                "Ungültige Eingabe",
-                "Bitte bestätigen Sie Ihr neues Passwort, um sicherzustellen, dass keine Tippfehler vorliegen."
-            );
+            addToast({
+                title: "Ungültige Eingabe",
+                subTitle: "Bitte bestätigen Sie Ihr neues Passwort, um sicherzustellen, dass keine Tippfehler vorliegen.",
+                type: "error"
+            });
             return;
         }
 
         // Ensure new password is at least 8 characters
         if (newPw.length < 8) {
-            toastStack.addToast(
-                "error",
-                "Passwort zu kurz",
-                "Das neue Passwort muss mindestens 8 Zeichen lang sein, um den Sicherheitsanforderungen zu entsprechen."
-            );
+            addToast({
+                title: "Passwort zu kurz",
+                subTitle: "Das neue Passwort muss mindestens 8 Zeichen lang sein, um den Sicherheitsanforderungen zu entsprechen.",
+                type: "error"
+            });
             return;
         }
 
         // Ensure new password and confirm password match
         if (newPw !== confirmNewPw) {
-            toastStack.addToast(
-                "error",
-                "Passwörter stimmen nicht überein",
-                "Das neue Passwort und die Passwortbestätigung sind nicht identisch. Bitte überprüfen Sie Ihre Eingabe."
-            );
+            addToast({
+                title: "Passwörter stimmen nicht überein",
+                subTitle: "Das neue Passwort und die Passwortbestätigung sind nicht identisch. Bitte überprüfen Sie Ihre Eingabe.",
+                type: "error"
+            });
             return;
         }
 
@@ -84,7 +82,7 @@
             // Invalid Email
             // Route back to log in with error parameter set to true to be displayed as a toast
             await push(`/?cpwErr=true`);
-            user.set({ name: "", email: "", role: "", loaded: false });
+            user.update(u => ({...u, name: "", email: "", role: "", loaded: false }));
             return;
         }
 
@@ -103,30 +101,30 @@
             await push("/login?cpwErr=true");
         } else if (response.status === 409) {
             // New password is the same as the old
-            toastStack.addToast(
-                "error",
-                "Ungültiges Passwort",
-                "Das neue Passwort darf nicht mit dem aktuellen Passwort übereinstimmen. Bitte wählen Sie ein anderes Passwort."
-            );
+            addToast({
+                title: "Ungültiges Passwort",
+                subTitle: "Das neue Passwort darf nicht mit dem aktuellen Passwort übereinstimmen. Bitte wählen Sie ein anderes Passwort.",
+                type: "error"
+            });
         } else if (response.status === 401) {
             // Current password is invalid
-            toastStack.addToast(
-                "error",
-                "Falsches Passwort",
-                "Das eingegebene aktuelle Passwort ist nicht korrekt. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut."
-            );
+            addToast({
+                title: "Falsches Passwort",
+                subTitle: "Das eingegebene aktuelle Passwort ist nicht korrekt. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
+                type: "error"
+            });
         } else {
             // Internal server error / unknown error
-            toastStack.addToast(
-                "error",
-                "Interner Serverfehler",
-                "Beim Ändern Ihres Passworts ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-            );
+            addToast({
+                title: "Interner Serverfehler",
+                subTitle: "Beim Ändern Ihres Passworts ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+                type: "error"
+            });
         }
     }
 </script>
 
-<ToastStack bind:this={toastStack}></ToastStack>
+<ToastStack></ToastStack>
 <main class="bg-gv-bg-bar w-dvw h-dvh flex items-center justify-center">
     <Form padding="10" height="auto">
         <img

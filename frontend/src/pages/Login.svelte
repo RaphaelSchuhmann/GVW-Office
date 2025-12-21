@@ -10,9 +10,7 @@
     import { clearValue, getValue, setValue } from "../services/store";
     import { auth } from "../stores/auth";
     import { user } from "../stores/user";
-
-    /** @type {import("../components/ToastStack.svelte").default} */
-    let toastStack;
+    import { addToast } from "../stores/toasts";
 
     let email = "";
     let password = "";
@@ -45,23 +43,31 @@
         let cpwError = params.get("cpwErr") === "true";
 
         if (cpwError) {
-            toastStack.addToast(
-                "error",
-                "Sitzung ungültig",
-                "Ihre E-Mail-Adresse konnte nicht eindeutig zugeordnet werden. Bitte melden Sie sich erneut an, um den Vorgang fortzusetzen."
-            );
+            addToast({
+                title: "Sitzung ungültig",
+                subTitle: "Ihre E-Mail-Adresse konnte nicht eindeutig zugeordnet werden. Bitte melden Sie sich erneut an, um den Vorgang fortzusetzen.",
+                type: "error"
+            });
         }
     });
 
     async function btnLogin() {
         // Ensure neither email nor password is empty
         if (!email) {
-            toastStack.addToast("error", "Ungültige Eingabe!", "Die E-Mail darf nicht leer sein! Bitte geben Sie eine gültige E-Mail-Adresse ein, um fortzufahren.");
+            addToast({
+                title: "Ungültige Eingabe!",
+                subTitle: "Die E-Mail darf nicht leer sein! Bitte geben Sie eine gültige E-Mail-Adresse ein, um fortzufahren.",
+                type: "error"
+            });
             return;
         }
 
         if (!password) {
-            toastStack.addToast("error", "Ungültige Eingabe!", "Das Passwort darf nicht leer sein! Bitte geben Sie ihr Passwort ein, um fortzufahren.");
+            addToast({
+                title: "Ungültige Eingabe!",
+                subTitle: "Das Passwort darf nicht leer sein! Bitte geben Sie ihr Passwort ein, um fortzufahren.",
+                type: "error"
+            });
             return;
         }
 
@@ -70,7 +76,11 @@
         let body = await response.json();
 
         if (!response) {
-            toastStack.addToast("error", "Interner Serverfehler", "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
+            addToast({
+                title: "Interner Serverfehler",
+                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+                type: "error"
+            });
             return;
         }
 
@@ -90,16 +100,28 @@
                 await push("/dashboard");
             }
         } else if (response.status === 404) {
-            toastStack.addToast("error", "Benutzer nicht gefunden", "Es wurde kein Konto mit der angegebenen E-Mail-Adresse gefunden. Bitte prüfen Sie die Eingabe oder registrieren Sie sich.");
+            addToast({
+                title: "Benutzer nicht gefunden",
+                subTitle: "Es wurde kein Konto mit der angegebenen E-Mail-Adresse gefunden. Bitte prüfen Sie die Eingabe oder registrieren Sie sich.",
+                type: "error"
+            });
         } else if (response.status === 401) {
-            toastStack.addToast("error", "Ungültiges Passwort", "Das eingegebene Passwort ist falsch. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.");
+            addToast({
+                title: "Ungültiges Passwort",
+                subTitle: "Das eingegebene Passwort ist falsch. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
+                type: "error",
+            });
         } else {
-            toastStack.addToast("error", "Interner Serverfehler", "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.");
+            addToast({
+                title: "Interner Serverfehler",
+                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+                type: "error"
+            });
         }
     }
 </script>
 
-<ToastStack bind:this={toastStack}></ToastStack>
+<ToastStack></ToastStack>
 <main class="bg-gv-bg-bar w-dvw h-dvh flex items-center justify-center">
     <Form padding="10" height="auto">
         <img

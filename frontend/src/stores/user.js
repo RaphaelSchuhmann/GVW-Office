@@ -4,5 +4,7 @@ export const user = writable({
     name: "",
     email: "",
     role: "",
+    phone: "",
+    address: "",
     loaded: false
 });

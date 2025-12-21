@@ -63,6 +63,8 @@ authRouter.post("/dev", async (req, resp) => {
             email: "raphael221@outlook.de",
             name: "Raphael Schuhmann",
             password: await hash("123", 12),
+            phone: "01701234 5678",
+            address: "Musterstraße 1, 12345 Musterstadt",
             changePassword: true,
             firstLogin: true,
             userId: uuidv4(),
