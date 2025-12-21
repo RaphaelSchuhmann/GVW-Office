@@ -27,3 +27,23 @@ export const paddingMap = {
     "9": "p-9",
     "10": "p-10",
 };
+
+export const justifyMap = {
+    "justify-start": "justify-start",
+    "justify-end": "justify-end",
+    "justify-center": "justify-center",
+    "justify-between": "justify-between",
+    "justify-around": "justify-around",
+    "justify-evenly": "justify-evenly",
+    "justify-stretch": "justify-stretch",
+    "justify-items-start": "justify-items-start",
+    "justify-items-end": "justify-items-end",
+    "justify-items-center": "justify-items-center",
+    "justify-items-stretch": "justify-items-stretch",
+    "justify-self-auto": "justify-self-auto",
+    "justify-self-start": "justify-self-start",
+    "justify-self-end": "justify-self-end",
+    "justify-self-center": "justify-self-center",
+    "justify-self-stretch": "justify-self-stretch",
+    "": "justify-start",
+};

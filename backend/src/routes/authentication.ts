@@ -89,7 +89,7 @@ authRouter.get("/auto", authMiddleware, async (req, resp) => {
 
         const user = users[0];
 
-        resp.status(200).json({ changePassword: user.changePassword });
+        resp.status(200).json({ email: user.email, changePassword: user.changePassword });
     } catch (err: any) {
         logger.error({ err }, "Error auto getting user: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });

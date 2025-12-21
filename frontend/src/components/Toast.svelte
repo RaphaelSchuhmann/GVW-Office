@@ -58,7 +58,7 @@
 </script>
 
 {#if title && subTitle}
-    <div class={`flex items-start justify-around w-full rounded-2 border ${borderColor} ${marginMap[marginTop]} p-2`}>
+    <div class={`flex bg-white items-start justify-around w-full rounded-2 border ${borderColor} ${marginMap[marginTop]} p-2`}>
         <span class={`material-symbols-rounded text-icon-dt-4 ${iconColor}`}>{icon}</span>
         <div class="flex flex-col items-start justify-around ml-2">
             <p class="text-dt-5 font-semibold">{title}</p>
