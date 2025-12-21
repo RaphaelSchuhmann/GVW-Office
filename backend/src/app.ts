@@ -18,6 +18,6 @@ app.use(pinoHttp({ logger, autoLogging: true }));
 app.use('/health', healthRoutes);
 app.use('/auth', authRouter);
 app.use('/user', authMiddleware, userRouter);
-app.use('/settings', authMiddleware, appSettingsRouter);
+app.use('/settings', appSettingsRouter);
 
 export default app;

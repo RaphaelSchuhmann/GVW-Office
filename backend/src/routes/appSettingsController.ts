@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { dbService } from "../db.service";
 import { logger } from "../logger";
+import authMiddleware from "../middlewares/authMiddleware";
 
 const appSettingsRouter = Router();
 
@@ -20,7 +21,7 @@ appSettingsRouter.get("/get", async (_, resp) => {
     }
 });
 
-appSettingsRouter.post("/update/max-members", async (req, resp) => {
+appSettingsRouter.post("/update/max-members", authMiddleware, async (req, resp) => {
     try {
         const { maxMembers } = req.body;
         const settings = await dbService.read("app_settings", "general");
