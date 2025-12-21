@@ -7,7 +7,7 @@
     import Button from "../components/Button.svelte";
     import ToastStack from "../components/ToastStack.svelte";
     import { login, authenticate } from "../services/auth.js";
-    import { getValue, setValue } from "../services/store";
+    import { clearValue, getValue, setValue } from "../services/store";
     import { auth } from "../stores/auth";
     import { user } from "../stores/user";
 
@@ -23,8 +23,13 @@
             let response = await authenticate(authToken);
             let body = await response.json();
 
-            if (response && body) {
+            if (response && body && response.status === 200) {
+                auth.set({ token: authToken });
+                user.update(u => ({ ...u, email: body.email }));
+
                 if (body.changePassword) {
+                    clearValue("authToken");
+                    setValue("authToken_BCPW", authToken);
                     await push(`/changePassword?firstLogin=${body.firstLogin}`);
                 }
 
@@ -76,11 +81,11 @@
                 // and bypass the changePassword page
                 setValue("authToken_BCPW", body.authToken);
                 user.update(u => ({ ...u, email: email }));
-                auth.set({token: body.authToken});
+                auth.set({ token: body.authToken });
                 await push(`/changePassword?firstLogin=${body.firstLogin}`);
             } else {
                 setValue("authToken", body.authToken);
-                auth.set({token: body.authToken});
+                auth.set({ token: body.authToken });
                 user.update(u => ({ ...u, email: email }));
                 await push("/dashboard");
             }
