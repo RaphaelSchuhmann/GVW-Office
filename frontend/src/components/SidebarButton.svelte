@@ -1,5 +1,5 @@
 <script>
-    import { marginMap } from "../dynamicStyles";
+    import { marginMap } from "../lib/dynamicStyles";
 
     export let selected = false;
     export let marginTop = "";

@@ -252,7 +252,7 @@
                     <VoiceDistribution voice="1. Bass" voiceMembers={5} totalMembers={$appSettings.maxMembers} />
                     <VoiceDistribution voice="2. Bass" voiceMembers={4} totalMembers={$appSettings.maxMembers} />
                 </div>
-                {#if $user.role === "vorstand" || $user.role === "admin" || $user.role === "member"}
+                {#if $user.role === "vorstand" || $user.role === "admin"}
                     <div class="w-full flex items-center justify-end pr-2 mt-5">
                         <button
                             class="cursor-pointer flex items-center justify-center rounded-2 p-2 hover:bg-gv-hover-effect"

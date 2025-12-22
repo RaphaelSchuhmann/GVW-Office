@@ -1,5 +1,5 @@
 <script>
-    import { marginMap } from "../dynamicStyles";
+    import { marginMap } from "../lib/dynamicStyles";
     import { capitalizeWords } from "../services/utils";
     import Chip from "./Chip.svelte";
     export let title = "";

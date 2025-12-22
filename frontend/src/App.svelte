@@ -8,7 +8,7 @@
     const routes = {
         "/": Login,
         "/dashboard": Dashboard,
-        "/changePassword": ChangePassword
+        "/changePassword": ChangePassword,
     };
 </script>
 <Router {routes}/>

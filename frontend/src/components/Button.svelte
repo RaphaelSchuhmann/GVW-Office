@@ -1,8 +1,6 @@
 <script>
     import { onMount, onDestroy } from "svelte";
-    import { marginMap } from "../dynamicStyles";
-
-    7;
+    import { marginMap } from "../lib/dynamicStyles";
 
     export let type = "primary";
     export let marginTop = "";
