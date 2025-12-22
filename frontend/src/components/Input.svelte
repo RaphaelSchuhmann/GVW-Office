@@ -1,5 +1,5 @@
 <script>
-    import { marginMap } from "../dynamicStyles";
+    import { marginMap } from "../lib/dynamicStyles";
 
     // Output value
     export let value = "";

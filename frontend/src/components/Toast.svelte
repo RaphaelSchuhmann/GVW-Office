@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { marginMap } from "../dynamicStyles";
+    import { marginMap } from "../lib/dynamicStyles";
 
     export let type = "info";
     export let marginTop = "";

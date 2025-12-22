@@ -1,5 +1,5 @@
 <script>
-    import { paddingMap } from "../dynamicStyles";
+    import { paddingMap } from "../lib/dynamicStyles";
 
     export let height = "3/5";
     export let padding = "5";

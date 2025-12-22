@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { dbService } from "../db.service";
+import { logger } from "../logger";
 
 const router = Router();
 
@@ -13,6 +14,7 @@ router.get('/generateDBs', async (_, resp) => {
 
         resp.status(200).json({ status: "ok" });
     } catch (err) {
+        logger.error({ err }, "Error generating databases");
         resp.status(500).json({ status: "error", error: err });
     }
 })

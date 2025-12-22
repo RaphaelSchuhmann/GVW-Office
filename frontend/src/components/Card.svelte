@@ -1,5 +1,5 @@
 <script>
-    import { paddingMap, justifyMap } from "../dynamicStyles";
+    import { paddingMap, justifyMap } from "../lib/dynamicStyles";
 
     export let padding = "3";
     export let justify = "justify-start";
