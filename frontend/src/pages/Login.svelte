@@ -109,7 +109,7 @@
             addToast({
                 title: "Ungültiges Passwort",
                 subTitle: "Das eingegebene Passwort ist falsch. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
-                type: "error",
+                type: "error"
             });
         } else {
             addToast({
@@ -147,9 +147,9 @@
             title="Passwort"
             marginTop="10"
         />
-        <Button type="primary" marginTop="10" on:click={btnLogin}
-        ><span class="material-symbols-rounded">login</span>
-            <p class="ml-3">Anmelden</p></Button
-        >
+        <Button type="primary" marginTop="10" on:click={btnLogin} isSubmit={true}>
+            <span class="material-symbols-rounded">login</span>
+            <p class="ml-3">Anmelden</p>
+        </Button>
     </Form>
 </main>

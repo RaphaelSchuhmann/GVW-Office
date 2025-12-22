@@ -114,6 +114,6 @@
 
     <div class="w-full flex items-center justify-end mt-5 gap-2">
         <Button type="secondary" on:click={modal.hideModal}>Abbrechen</Button>
-        <Button type="primary" on:click={updateUserData}>Speichern</Button>
+        <Button type="primary" on:click={updateUserData} isSubmit={true}>Speichern</Button>
     </div>
 </Modal>
