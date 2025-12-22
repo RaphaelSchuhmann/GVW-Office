@@ -12,8 +12,6 @@
     let mitgliederAccess = ["admin", "vorstand"];
     let reportsAccess = ["admin", "schriftführer"];
 
-    let role = $user.role;
-
     let minimized = false;
     let toggleIcon = "arrow_menu_close";
 
@@ -79,7 +77,7 @@
             {/if}
         </SidebarButton>
 
-        {#if mitgliederAccess.includes(role)}
+        {#if mitgliederAccess.includes($user.role)}
             <SidebarButton selected={currentPage === "members"} marginTop="5" minimized={minimized}
                            on:click={handleMembers}>
                 <span class="material-symbols-rounded text-icon-dt-4">group</span>
@@ -96,7 +94,7 @@
             {/if}
         </SidebarButton>
 
-        {#if reportsAccess.includes(role)}
+        {#if reportsAccess.includes($user.role)}
             <SidebarButton selected={currentPage === "reports"} marginTop="5" minimized={minimized}
                            on:click={handleReports}>
                 <span class="material-symbols-rounded text-icon-dt-4">docs</span>

@@ -68,7 +68,7 @@ authRouter.post("/dev", async (req, resp) => {
             changePassword: true,
             firstLogin: true,
             userId: uuidv4(),
-            role: "member"
+            role: "admin"
         });
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
