@@ -22,7 +22,7 @@ userRouter.post("/data", async (req, resp) => {
             .json({ email: user.email, role: user.role, name: user.name });
 
     } catch (err: any) {
-        logger.error({ err }, "Login route errorMessage: ");
+        logger.error({ err }, "user/data route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -45,7 +45,7 @@ userRouter.post("/update", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        logger.error({ err }, "Login route errorMessage: ");
+        logger.error({ err }, "user/update route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });

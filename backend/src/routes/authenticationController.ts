@@ -45,7 +45,7 @@ authRouter.post("/login", async (req, resp) => {
             firstLogin: user.firstLogin
         });
     } catch (error: any) {
-        logger.error({ error }, "Login route errorMessage");
+        logger.error({ error }, "auth/login route errorMessage");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -93,7 +93,7 @@ authRouter.get("/auto", authMiddleware, async (req, resp) => {
 
         resp.status(200).json({ email: user.email, changePassword: user.changePassword });
     } catch (err: any) {
-        logger.error({ err }, "Error auto getting user: ");
+        logger.error({ err }, "auth/auto route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -138,7 +138,7 @@ authRouter.post("/changePW", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        logger.error({ err }, "Change Password route errorMessage: ");
+        logger.error({ err }, "auth/changePW route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -173,7 +173,7 @@ authRouter.post("/tempPassword", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        logger.error({ err }, "Temp Password route errorMessage: ");
+        logger.error({ err }, "auth/tempPassword route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });

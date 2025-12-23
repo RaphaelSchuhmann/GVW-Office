@@ -37,14 +37,14 @@
 
 {#if type === "primary"}
     <button
-        class={`flex items-center justify-center bg-gv-primary rounded-1 text-dt-5 ${width} pt-2 pb-2 text-white ${marginMap[marginTop]} cursor-pointer hover:bg-gv-primary-hover duration-200`}
+        class={`flex items-center justify-center bg-gv-primary rounded-1 text-dt-5 ${width} p-2 pr-4 text-white ${marginMap[marginTop]} cursor-pointer hover:bg-gv-primary-hover duration-200`}
         on:click bind:this={buttonEl}>
         <slot />
     </button
     >
 {:else}
     <button
-        class={`flex items-center justify-center bg-white border-2 border-gv-border rounded-1 text-dt-5 ${width} pt-2 pb-2 text-gv-dark-text ${marginMap[marginTop]} cursor-pointer hover:bg-gv-input-bg duration-200`}
+        class={`flex items-center justify-center bg-white border-2 border-gv-border rounded-1 text-dt-5 ${width} p-2 pr-4 text-gv-dark-text ${marginMap[marginTop]} cursor-pointer hover:bg-gv-input-bg duration-200`}
         on:click bind:this={buttonEl}>
         <slot />
     </button
