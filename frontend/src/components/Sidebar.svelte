@@ -106,7 +106,7 @@
 
         <SidebarButton selected={currentPage === "musicLibrary"} marginTop="5" minimized={minimized}
                        on:click={handleMusicLibrary}>
-            <span class="material-symbols-rounded text-icon-dt-4">music_note</span>
+            <span class="material-symbols-rounded text-icon-dt-4">music_note_2</span>
             {#if !minimized}
                 <p class="ml-2">Notenbibliothek</p>
             {/if}
