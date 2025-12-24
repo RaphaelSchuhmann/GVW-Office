@@ -50,7 +50,7 @@
         {#if open && options.length > 0}
             <div class={`absolute w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} flex flex-col items-center rounded-b-1 z-999`}>
                 {#each options as option}
-                    <button class="text-left p-2 pl-4 pr-4 border-t border-gv-border cursor-pointer hover:bg-gv-hover-effect w-full rounded-1"
+                    <button class="text-left p-2 pl-4 pr-4 cursor-pointer hover:bg-gv-hover-effect w-full rounded-1"
                             on:click={() => selectOption(option)}>{capitalizeWords(option)}</button>
                 {/each}
             </div>
