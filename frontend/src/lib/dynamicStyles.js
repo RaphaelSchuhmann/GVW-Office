@@ -28,6 +28,66 @@ export const paddingMap = {
     "10": "p-10",
 };
 
+export const paddingLeftMap = {
+    "0": "pl-0",
+    "": "pl-0",
+    "1": "pl-1",
+    "2": "pl-2",
+    "3": "pl-3",
+    "4": "pl-4",
+    "5": "pl-5",
+    "6": "pl-6",
+    "7": "pl-7",
+    "8": "pl-8",
+    "9": "pl-9",
+    "10": "pl-10",
+};
+
+export const paddingRightMap = {
+    "0": "pr-0",
+    "": "pr-0",
+    "1": "pr-1",
+    "2": "pr-2",
+    "3": "pr-3",
+    "4": "pr-4",
+    "5": "pr-5",
+    "6": "pr-6",
+    "7": "pr-7",
+    "8": "pr-8",
+    "9": "pr-9",
+    "10": "pr-10",
+};
+
+export const paddingTopMap = {
+    "0": "pt-0",
+    "": "pt-0",
+    "1": "pt-1",
+    "2": "pt-2",
+    "3": "pt-3",
+    "4": "pt-4",
+    "5": "pt-5",
+    "6": "pt-6",
+    "7": "pt-7",
+    "8": "pt-8",
+    "9": "pt-9",
+    "10": "pt-10",
+};
+
+export const paddingBottomMap = {
+    "0": "pb-0",
+    "": "pb-0",
+    "1": "pb-1",
+    "2": "pb-2",
+    "3": "pb-3",
+    "4": "pb-4",
+    "5": "pb-5",
+    "6": "pb-6",
+    "7": "pb-7",
+    "8": "pb-8",
+    "9": "pb-9",
+    "10": "pb-10",
+};
+
 export const justifyMap = {
     "justify-start": "justify-start",
     "justify-end": "justify-end",

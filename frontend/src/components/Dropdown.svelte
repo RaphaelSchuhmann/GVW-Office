@@ -9,14 +9,16 @@
     export let padding = "3";
     export let title = "";
     export let bgWhite = false;
+    export let onChange = () => {};
 
     let open = false;
     let dropdownRef;
 
     function selectOption(option) {
-        console.log("Here");
         selected = option;
         open = false;
+
+        onChange(option);
     }
 
     function handleClickOutside(event) {
@@ -48,7 +50,7 @@
             </div>
         </button>
         {#if open && options.length > 0}
-            <div class={`absolute w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} flex flex-col items-center rounded-b-1 z-999`}>
+            <div class={`absolute w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} max-h-[20vh] flex flex-col items-center rounded-b-1 z-999 overflow-y-auto`}>
                 {#each options as option}
                     <button class="text-left p-2 pl-4 pr-4 cursor-pointer hover:bg-gv-hover-effect w-full rounded-1"
                             on:click={() => selectOption(option)}>{capitalizeWords(option)}</button>
