@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { dbService } from "../db.service";
 import { logger } from "../logger";
+import { hash } from "bcrypt";
+import { v4 as uuidv4 } from "uuid";
+import { generateTempPassword } from "./authenticationController";
 
 const membersRouter = Router();
 
@@ -42,6 +45,21 @@ membersRouter.post("/add", async (req, resp) => {
             birthdate: birthdate,
             joined: joined
         });
+
+        // Add actual user account
+        await dbService.create("users", {
+            email: email,
+            name: `${name} ${surname}`,
+            password: await hash(await generateTempPassword(), 12),
+            phone: phone,
+            address: address,
+            changePassword: true,
+            firstLogin: true,
+            userId: uuidv4(),
+            role: role
+        });
+
+        // TODO: Send email with temporary password to given email
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {

@@ -6,6 +6,7 @@
 
     export let selected = "";
     export let marginTop = "";
+    export let onChange = () => {};
 
     let open = false;
     let datepickerRef;
@@ -103,6 +104,7 @@
     }
 
     $: selected = `${selectedDate}.${usedMonth + 1}.${usedYear}`;
+    $: onChange(selected);
 </script>
 
 <div class={`relative w-full ${marginMap[marginTop]}`} bind:this={datepickerRef}>

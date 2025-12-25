@@ -4,7 +4,8 @@
     import { getData, logout } from "../services/user";
     import { user } from "../stores/user";
     import { auth } from "../stores/auth";
-    import { membersStore, voiceMap, statusMap } from "../stores/members";
+    import { membersStore } from "../stores/members";
+    import { addMember, roleMap, voiceMap, statusMap } from "../services/members";
     import { addToast } from "../stores/toasts";
 
     import ToastStack from "../components/ToastStack.svelte";
@@ -18,17 +19,37 @@
     import Modal from "../components/Modal.svelte";
     import Input from "../components/Input.svelte";
     import Dropdown from "../components/Dropdown.svelte";
+    import DefaultDatepicker from "../components/DefaultDatepicker.svelte";
+    import YearDatepicker from "../components/YearDatepicker.svelte";
+    import { marginMap } from "../lib/dynamicStyles";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
 
+    let searchBar;
+
+    // ADD MEMBER
     /** @type {import("../components/Modal.svelte").default} */
     let addMemberModal;
 
-    /** @type {import("../components/Dropdown.svelte").default} */
-    let voiceSelect;
-    let statusSelect;
-    let roleSelect;
+    let voiceInput;
+    let statusInput;
+    let roleInput;
+    let birthdayInput;
+    let joinedInput;
+    let nameInput = "";
+    let surnameInput = "";
+    let emailInput = "";
+    let phoneInput = "";
+    let addressInput = "";
+
+    function resetInputs() {
+        nameInput = "";
+        surnameInput = "";
+        emailInput = "";
+        phoneInput = "";
+        addressInput = "";
+    }
 
     onMount(async () => {
         await loadUserData();
@@ -69,6 +90,49 @@
         }
     }
 
+    async function submitMember() {
+        if (!birthdayInput || !joinedInput || !nameInput || !surnameInput || !emailInput || !phoneInput || !addressInput) return;
+        if (voiceInput === "wählen" || statusInput === "wählen" || roleInput === "wählen") return;
+
+        const resp = await addMember(nameInput, surnameInput, emailInput, phoneInput, addressInput, voiceMap[voiceInput], statusMap[statusInput], roleMap[roleInput], birthdayInput, joinedInput);
+
+        if (resp.status === 200) {
+            addToast({
+                title: "Mitglied hinzugefügt",
+                subTitle: "Das neue Mitglied wurde erfolgreich angelegt und ist ab sofort in der Mitgliederübersicht verfügbar.",
+                type: "success"
+            });
+
+            addMemberModal.hideModal();
+            await searchBar.fetchData();
+        } else if (resp.status === 401) {
+            // Auth token invalid / unauthorized
+            addToast({
+                title: "Ungültiges Token",
+                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+                type: "error"
+            });
+            logout();
+            await push("/?cpwErr=false");
+        } else if (resp.status === 400) {
+            // user not found route back to log in
+            addToast({
+                title: "Eingaben unvollständig",
+                subTitle: "Bitte überprüfen Sie Ihre Angaben. Einige Pflichtfelder sind entweder leer oder enthalten ungültige Werte.",
+                type: "error"
+            });
+            addMemberModal.hideModal();
+        } else {
+            // internal server error / unknown error
+            addToast({
+                title: "Interner Serverfehler",
+                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+                type: "error"
+            });
+            addMemberModal.hideModal();
+        }
+    }
+
     function settingsClick() {
         settingsModal.showModal();
     }
@@ -76,18 +140,35 @@
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
-<Modal bind:this={addMemberModal} title="Neues Mitglied hinzufügen" subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5" height="3/4">
+<Modal bind:this={addMemberModal} extraFunction={resetInputs} title="Neues Mitglied hinzufügen"
+       subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5" height="3/4">
     <div class="flex items-center gap-4 mt-5">
-        <Input title="Vorname" placeholder="Max"/>
-        <Input title="Nachname" placeholder="Mustermann"/>
+        <Input bind:value={nameInput} title="Vorname" placeholder="Max" />
+        <Input bind:value={surnameInput} title="Nachname" placeholder="Mustermann" />
     </div>
-    <Input marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com"/>
-    <Input marginTop="5" title="Telefon" placeholder="01701234 5678"/>
-    <Input marginTop="5" title="Adresse" placeholder="Hauptstraße 1, 12345 Musterstadt"/>
-    <div class="w-full flex items-center gap-4">
-        <Dropdown bind:this={voiceSelect} marginTop="5" title="Stimmlage" options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]}/>
-        <Dropdown bind:this={statusSelect} marginTop="5" title="Status"  options={["Aktiv", "Passiv"]}/>
-        <Dropdown bind:this={roleSelect} marginTop="5" title="Rolle"  options={["Mitglied", "Vorstand", "Schriftführer"]}/>
+    <Input bind:value={emailInput} marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com" />
+    <Input bind:value={phoneInput} marginTop="5" title="Telefon" placeholder="01701234 5678" />
+    <Input bind:value={addressInput} marginTop="5" title="Adresse" placeholder="Hauptstraße 1, 12345 Musterstadt" />
+    <div class="w-full flex items-center gap-4 mt-5">
+        <Dropdown onChange={(value) => voiceInput = value} title="Stimmlage"
+                  options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
+        <Dropdown onChange={(value) => statusInput = value} title="Status" options={["Aktiv", "Passiv"]} />
+        <Dropdown onChange={(value) => roleInput = value} title="Rolle"
+                  options={["Mitglied", "Vorstand", "Schriftführer"]} />
+    </div>
+    <div class="w-full flex items-center gap-4 mt-5 max-[1700px]:flex-col">
+        <div class="flex flex-col items-start w-full">
+            <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>
+            <DefaultDatepicker onChange={(value) => birthdayInput = value} />
+        </div>
+        <div class="flex flex-col items-start w-full">
+            <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>
+            <YearDatepicker onChange={(value) => joinedInput = value} />
+        </div>
+    </div>
+    <div class="w-full flex items-center justify-end mt-5 gap-4">
+        <Button type="secondary" on:click={addMemberModal.hideModal}>Abbrechen</Button>
+        <Button type="primary" on:click={submitMember} isSubmit={true}>Speichern</Button>
     </div>
 </Modal>
 <main class="flex overflow-hidden">
@@ -104,7 +185,7 @@
             </Button>
         </PageHeader>
 
-        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" />
+        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" bind:this={searchBar} />
 
         <Card padding="0" marginTop="5">
             {#if $membersStore.results.length !== 0}

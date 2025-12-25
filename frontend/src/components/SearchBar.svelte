@@ -21,7 +21,7 @@
     const config = searchRegistry[page];
     const { store, endpoint, fuse: fuseConfig } = config;
 
-    async function fetchData() {
+    export async function fetchData() {
         store.update(u => ({ ...u, loading: true }));
 
         const resp = await fetch(endpoint, {
