@@ -71,6 +71,7 @@
 
     function itemClicked(value) {
         selectedDate = value;
+        open = false;
     }
 
     function next() {
