@@ -121,8 +121,6 @@
         const resp = await deleteMember(activeMemberId);
         const body = await resp.json();
 
-        console.log(resp.status);
-
         if (resp.status === 200) {
             addToast({
                 title: "Mitglied gelöscht",
@@ -176,6 +174,7 @@
 
     function openContextMenu(event, memberId) {
         event.preventDefault();
+        event.stopPropagation();
 
         activeMemberId = memberId;
 
@@ -183,6 +182,25 @@
             menuX = Math.min(event.clientX, window.innerWidth - 200);
             menuY = Math.min(event.clientY, window.innerHeight - 150);
             menuOpen = true;
+        });
+    }
+
+    function openContextMenuFromButton(event, memberId) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        activeMemberId = memberId;
+
+        const rect = event.currentTarget.getBoundingClientRect();
+
+        menuOpen = true;
+
+        requestAnimationFrame(() => {
+            const menuWidth = 170;
+            const menuHeight = 150;
+
+            menuX = rect.left - menuWidth;
+            menuY = Math.min(rect.bottom, window.innerHeight - menuHeight);
         });
     }
 
@@ -283,7 +301,7 @@
 
 <!-- Add member modal -->
 <Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
-       subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5" height="3/4">
+       subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5">
     <div class="flex items-center gap-4 mt-5">
         <Input bind:value={nameInput} title="Vorname" placeholder="Max" />
         <Input bind:value={surnameInput} title="Nachname" placeholder="Mustermann" />
@@ -441,7 +459,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                                            on:click={(e) => openContextMenu(e, member.id)}>
+                                            on:click={(e) => openContextMenuFromButton(e, member.id)}>
                                         <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">
                                             more_horiz
                                         </span>

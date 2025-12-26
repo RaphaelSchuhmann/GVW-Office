@@ -1,98 +1,56 @@
 <script>
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
+    import { get } from "svelte/store";
     import { getData, logout } from "../services/user";
     import { user } from "../stores/user";
     import { auth } from "../stores/auth";
-    import { appSettings } from "../stores/appSettings";
     import { addToast } from "../stores/toasts";
+    import { roleMap, voiceMap, statusMap } from "../services/members";
+    import { membersStore } from "../stores/members";
 
     import ToastStack from "../components/ToastStack.svelte";
     import Sidebar from "../components/Sidebar.svelte";
     import PageHeader from "../components/PageHeader.svelte";
-    import Card from "../components/Card.svelte";
-    import ComingEvent from "../components/ComingEvent.svelte";
-    import VoiceDistribution from "../components/VoiceDistribution.svelte";
     import SettingsModal from "../components/SettingsModal.svelte";
     import Modal from "../components/Modal.svelte";
     import Input from "../components/Input.svelte";
     import Button from "../components/Button.svelte";
-    import { updateMaxMembers } from "../services/appSettings";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
 
-    /** @type {import("../components/Modal.svelte").default} */
-    let voiceDistributionSettingsModal;
-    let maxMembers;
+    let member = {
+        name: "",
+        surname: "",
+        email: "",
+        phone: "",
+        address: "",
+        voice: "",
+        status: "",
+        role: "",
+        birthdate: "",
+        joined: "",
+        id: "",
+    };
 
-    let block = false;
-    let events = [];
+    let edited = false;
 
     onMount(async () => {
         await loadUserData();
-        DEVPopulateEvents();
-        maxMembers = $appSettings.maxMembers.toString();
+
+        const hash = window.location.hash;
+        const queryString = hash.split("?")[1];
+        if (!queryString) return;
+
+        const params = new URLSearchParams(queryString);
+        let memberId = params.get("id");
+
+        if (memberId) {
+            let members = get(membersStore);
+            member = members.raw.find(item => item.id === memberId);
+        }
     });
-
-    function DEVPopulateEvents() {
-        events[0] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Probe"
-        };
-        events[1] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Konzert"
-        };
-        events[2] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Meeting"
-        };
-
-        events[3] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Probe"
-        };
-        events[4] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Konzert"
-        };
-        events[5] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Meeting"
-        };
-
-        events[6] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Probe"
-        };
-        events[7] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Konzert"
-        };
-        events[8] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Meeting"
-        };
-    }
 
     async function loadUserData() {
         // Get user data
@@ -129,43 +87,6 @@
         }
     }
 
-    async function updateMaxMembersVoiceDistribution() {
-        let updatedMaxMembers = Number(maxMembers);
-
-        if (isNaN(updatedMaxMembers)) updatedMaxMembers = $appSettings.maxMembers;
-        if (maxMembers.length === 0) updatedMaxMembers = $appSettings.maxMembers;
-        if (Number(maxMembers) < 1) updatedMaxMembers = $appSettings.maxMembers;
-
-        appSettings.update(u => ({...u, maxMembers: updatedMaxMembers}));
-
-        voiceDistributionSettingsModal.hideModal();
-        const response = await updateMaxMembers();
-
-        if (response.status === 200) {
-            addToast({
-                title: "Erfolgreich gespeichert",
-                subTitle: "Die maximale Anzahl and Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert.",
-                type: "success"
-            });
-        } else if (response.status === 401) {
-            // Auth token invalid / unauthorized
-            addToast({
-                title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
-        } else {
-            // internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
-            });
-        }
-    }
-
     function settingsClick() {
         settingsModal.showModal();
     }
@@ -176,8 +97,39 @@
 <main class="flex overflow-hidden">
     <Sidebar onSettingsClick={settingsClick} currentPage="members"></Sidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
-        <PageHeader title="Dashboard" subTitle="Willkommen in GVW Office - Übersicht Gesangverein Weppersdorf">
-
+        <PageHeader title="Mitglied bearbeiten" subTitle={`Bearbeitung von Mitglied: "${member?.name ?? ""} ${member?.surname ?? ""}"`}>
+            <Button type="secondary" on:click={async () => await push("/members")}>
+                <p class="text-dt-4 ml-3">Abbrechen</p>
+            </Button>
+            <Button type="primary" disabled={!edited}>
+                <span class="material-symbols-rounded text-icon-dt-5">person_edit</span>
+                <p class="text-dt-4 ml-3">Speichern</p>
+            </Button>
         </PageHeader>
+        <div class="flex flex-col w-2/3 gap-5 mt-10">
+            <div class="flex items-center gap-4 w-full">
+                <Input title="Vorname" bind:value={member.name} readonly={true}/>
+                <Input title="Vorname" bind:value={member.surname} readonly={true}/>
+            </div>
+            <Input title="E-Mail" bind:value={member.email} readonly={true}/>
+            <Input title="Telefon" bind:value={member.phone} readonly={true}/>
+            <Input title="Adresse" bind:value={member.address} readonly={true}/>
+            <div class="flex items-center gap-4 w-full">
+                <Input title="Stimmlage" bind:value={voiceMap[member.voice]} readonly={true}/>
+                <Input title="Status" bind:value={statusMap[member.status]} readonly={true}/>
+                <Input title="Rolle" bind:value={roleMap[member.role]} readonly={true}/>
+            </div>
+            <div class="flex items-center gap-4 w-full">
+                <Input title="Geburtsdatum" bind:value={member.birthdate} readonly={true}/>
+                <Input title="Mitglied seit" bind:value={member.joined} readonly={true}/>
+            </div>
+            <div class="flex items-center gap-4 w-full">
+                <Button type="primary">Passwort zurücksetzen</Button>
+                <Button type="secondary" fontColor="text-gv-delete">
+                    <span class="material-symbols-rounded text-icon-dt-6">delete</span>
+                    <p class="text-dt-5 ml-3">Löschen</p>
+                </Button>
+            </div>
+        </div>
     </div>
 </main>

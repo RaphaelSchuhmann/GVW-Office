@@ -20,18 +20,9 @@
     let phoneInput;
     let addressInput;
 
-    let email;
-    let phone;
-    let address;
-
-    // temporarily set a phone number and address
-    onMount(() => {
-        user.update(u => ({ ...u, phone: "01701234 5678", address: "Hauptstraße 1, 12345 Musterstadt" }));
-
-        email = $user.email;
-        phone = $user.phone;
-        address = $user.address;
-    });
+    let email = $user.email;
+    let phone = $user.phone;
+    let address = $user.address;
 
     async function updateUserData() {
         let originalEmail = $user.email;
@@ -79,12 +70,22 @@
         modal.hideModal();
     }
 
+    function resetStates() {
+        readonlyMail = true;
+        readonlyPhone = true;
+        readonlyAddress = true;
+    }
+
     export function showModal() {
         modal.showModal();
+
+        email = $user.email;
+        phone = $user.phone;
+        address = $user.address;
     }
 </script>
 
-<Modal title="Benutzer Einstellungen" subTitle="Ihre persönlichen Daten" bind:this={modal}>
+<Modal title="Benutzer Einstellungen" subTitle="Ihre persönlichen Daten" bind:this={modal} extraFunction={resetStates}>
     <Input title="Name" value={$user.name} readonly={true} marginTop="5" />
 
     <div class="flex items-end w-full mt-5 gap-2">

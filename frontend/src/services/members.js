@@ -5,7 +5,10 @@ export const roleMap = {
     "Mitglied": "member",
     "Vorstand": "vorstand",
     "Schriftführer": "schriftführer",
-    "admin": "admin"
+    "admin": "admin",
+    "schriftführer": "Schriftführer",
+    "vorstand": "Vorstand",
+    "member": "Mitglied"
 };
 
 export const voiceMap = {
@@ -61,6 +64,18 @@ export async function updateStatus(id) {
             Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ id })
+    });
+}
+
+export async function resetPassword(id) {
+    const token = get(auth).token;
+    return await fetch(`${apiUrl}/user/reset/password`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ memberId: id })
     });
 }
 

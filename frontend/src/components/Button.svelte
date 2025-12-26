@@ -57,7 +57,7 @@
     </button>
 {:else}
     <button
-        class={`flex items-center justify-center bg-white border-2 border-gv-border rounded-1 text-dt-5 ${width} p-2 pr-4 text-gv-dark-text ${marginMap[marginTop]} cursor-pointer hover:bg-gv-input-bg duration-200`}
+        class={`flex items-center justify-center bg-white border-2 border-gv-border rounded-1 text-dt-5 ${width} p-2 pr-4 ${fontColorMap[fontColor]} ${marginMap[marginTop]} cursor-pointer hover:bg-gv-input-bg duration-200`}
         on:click bind:this={buttonEl} disabled={disabled}>
         <slot />
     </button>

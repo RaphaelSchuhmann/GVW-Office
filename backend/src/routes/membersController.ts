@@ -70,6 +70,8 @@ membersRouter.post("/add", async (req, resp) => {
             memberId: memberId
         });
 
+        console.log(tempPassword); // Replace this with mailer call
+
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
         if (memberId && memberRev) {
