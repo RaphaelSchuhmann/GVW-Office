@@ -12,9 +12,11 @@ function createWindow() {
     webPreferences: {
       contextIsolation: true,
     },
+    title: "GVW Office"
   });
 
   mainWindow.maximize();
+  mainWindow.setMenuBarVisibility(false);
 
   if (process.env.NODE_ENV !== 'production') {
     mainWindow.loadURL('http://localhost:5173');
