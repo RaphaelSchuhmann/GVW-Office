@@ -111,19 +111,19 @@ membersRouter.post("/delete", async (req, resp) => {
 });
 
 membersRouter.post("/update", async (req, resp) => {
-    // TODO: Update user data
     try {
-        const { updatedMember } = req.body;
-        if (!updatedMember?.id) {
+        const { id, name, surname, email, phone, address, voice, status, role, birthdate, joined } = req.body;
+        if (!validInputs(name, surname, email, phone, address, voice, status, role, birthdate, joined) || !id) {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
-        const member = await dbService.read("members", updatedMember.id);
-        if (!member) {
-            return resp.status(404).json({ errorMessage: "MemberNotFound" });
-        }
+        const member = await dbService.read("members", id);
+        if (!member) return resp.status(404).json({ errorMessage: "MemberNotFound" });
 
-        const { name, surname, email, phone, address, voice, status, role, birthdate, joined } = updatedMember;
+        const users = await dbService.find("users", { selector: { memberId: id }, limit: 1 });
+
+        const user = users[0];
+        if (!user) return resp.status(404).json({ errorMessage: "UserNotFound" });
 
         await dbService.update("members", {
             ...member,
@@ -137,6 +137,16 @@ membersRouter.post("/update", async (req, resp) => {
             role,
             birthdate,
             joined
+        });
+
+        await dbService.update("users", {
+            ...user,
+            name: `${name} ${surname}`,
+            email,
+            phone,
+            address,
+            role,
+            memberId: id
         });
 
         return resp.status(200).json({ ok: true });

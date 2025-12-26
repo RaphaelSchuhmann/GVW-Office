@@ -47,7 +47,6 @@
     function startDeleteMember() {
         confirmDeleteMemberModal?.showModal();
 
-        let membersRaw = get(membersStore).raw;
         let name = member.name;
         let surname = member.surname;
 
@@ -216,7 +215,7 @@
                 <span class="material-symbols-rounded text-icon-dt-5">arrow_back</span>
                 <p class="text-dt-4 ml-3">Zurück</p>
             </Button>
-            <Button type="primary">
+            <Button type="primary" on:click={async () => await push(`/members/edit?id=${member.id}`)}>
                 <span class="material-symbols-rounded text-icon-dt-5">person_edit</span>
                 <p class="text-dt-4 ml-3">Bearbeiten</p>
             </Button>
