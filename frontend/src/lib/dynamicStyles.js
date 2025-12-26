@@ -177,3 +177,30 @@ export const heightMap = {
     "fit": "h-fit",
     "": "h-full",
 };
+
+export const fontColorMap = {
+    "": "text-gv-dark-text",
+    "text-gv-dark-text": "text-gv-dark-text",
+    "text-gv-light-text": "text-gv-light-text",
+    "text-gv-delete": "text-gv-delete",
+    "text-gv-secondary": "text-gv-secondary",
+    "text-gv-secondary-text": "text-gv-secondary-text",
+    "text-gv-primary": "text-gv-primary",
+    "text-gv-success": "text-gv-success",
+    "text-gv-warning": "text-gv-warning",
+    "text-gv-info": "text-gv-info",
+    "text-gv-light": "text-gv-light",
+    "text-gv-dark": "text-gv-dark",
+    "text-gv-white": "text-gv-white",
+    "text-gv-black": "text-gv-black",
+    "text-gv-transparent": "text-gv-transparent",
+    "text-gv-current": "text-gv-current",
+    "text-gv-inherit": "text-gv-inherit",
+    "text-gv-initial": "text-gv-initial",
+    "text-gv-unset": "text-gv-unset",
+    "text-gv-revert": "text-gv-revert",
+    "text-gv-revert-layer": "text-gv-revert-layer",
+    "text-gv-inherit-layer": "text-gv-inherit-layer",
+    "text-gv-unset-layer": "text-gv-unset-layer",
+    "text-gv-dark-turquoise": "text-gv-dark-turquoise"
+};

@@ -4,7 +4,7 @@
 
     export let title = "";
     export let subTitle = "";
-    export let height = "3/5";
+    export let height = "auto";
     export let width = "1/3";
 
     export let extraFunction = () => {};

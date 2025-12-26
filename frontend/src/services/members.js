@@ -1,11 +1,5 @@
-import { clearValue } from "./store";
 import { get } from "svelte/store";
 import { auth } from "../stores/auth";
-import Fuse from "fuse.js";
-import { addToast } from "../stores/toasts";
-import { logout } from "./user";
-import { push } from "svelte-spa-router";
-import { membersStore } from "../stores/members";
 
 export const roleMap = {
     "Mitglied": "member",
@@ -43,5 +37,41 @@ export async function addMember(name, surname, email, phone, address, voice, sta
             Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({ name, surname, email, phone, address, voice, status, role, birthdate: birthday, joined })
+    });
+}
+
+export async function updateMember(id, name, surname, email, phone, address, voice, status, role, birthday, joined) {
+    const token = get(auth).token;
+    return await fetch(`${apiUrl}/members/update`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id, name, surname, email, phone, address, voice, status, role, birthdate: birthday, joined })
+    });
+}
+
+export async function updateStatus(id) {
+    const token = get(auth).token;
+    return await fetch(`${apiUrl}/members/update/status`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id })
+    });
+}
+
+export async function deleteMember(id) {
+    const token = get(auth).token;
+    return await fetch(`${apiUrl}/members/delete`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id })
     });
 }
