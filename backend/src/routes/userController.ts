@@ -28,6 +28,7 @@ userRouter.post("/data", async (req, resp) => {
 });
 
 userRouter.post("/update", async (req, resp) => {
+    // TODO: Update member data (email, phone, address)
     try {
         const { originalEmail, email, phone, address } = req.body;
 

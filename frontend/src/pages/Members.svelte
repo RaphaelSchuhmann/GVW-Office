@@ -1,11 +1,12 @@
 <script>
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
+    import { get } from "svelte/store";
     import { getData, logout } from "../services/user";
     import { user } from "../stores/user";
     import { auth } from "../stores/auth";
     import { membersStore } from "../stores/members";
-    import { addMember, roleMap, voiceMap, statusMap } from "../services/members";
+    import { addMember, updateStatus, deleteMember, roleMap, voiceMap, statusMap } from "../services/members";
     import { addToast } from "../stores/toasts";
 
     import ToastStack from "../components/ToastStack.svelte";
@@ -21,7 +22,7 @@
     import Dropdown from "../components/Dropdown.svelte";
     import DefaultDatepicker from "../components/DefaultDatepicker.svelte";
     import YearDatepicker from "../components/YearDatepicker.svelte";
-    import { marginMap } from "../lib/dynamicStyles";
+    import ContextMenu from "../components/ContextMenu.svelte";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
@@ -43,51 +44,12 @@
     let phoneInput = "";
     let addressInput = "";
 
-    function resetInputs() {
+    function resetAddInputs() {
         nameInput = "";
         surnameInput = "";
         emailInput = "";
         phoneInput = "";
         addressInput = "";
-    }
-
-    onMount(async () => {
-        await loadUserData();
-    });
-
-    async function loadUserData() {
-        // Get user data
-        const response = await getData($user.email, $auth.token);
-        const body = await response.json();
-
-        if (response.status === 200) {
-            user.update(u => ({ ...u, name: body.name, email: body.email, role: body.role, loaded: true }));
-        } else if (response.status === 401) {
-            // Auth token invalid / unauthorized
-            addToast({
-                title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
-        } else if (response.status === 404) {
-            // user not found route back to log in
-            addToast({
-                title: "Konto nicht gefunden",
-                subTitle: "Ihr Konto konnte nicht gefunden werden. Bitte melden Sie sich erneut an, um fortzufahren.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
-        } else {
-            // internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
-            });
-        }
     }
 
     async function submitMember() {
@@ -133,14 +95,194 @@
         }
     }
 
+    // DELETE MEMBER
+    /** @type {import("../components/Modal.svelte").default} */
+    let confirmDeleteMemberModal;
+
+    let confirmInput = "";
+    let memberName = "";
+    let invalidConfirm = true;
+
+    $: (confirmInput === memberName && memberName) ? invalidConfirm = false : invalidConfirm = true;
+
+    function startDeleteMember() {
+        menuOpen = false;
+        confirmDeleteMemberModal?.showModal();
+
+        let membersRaw = get(membersStore).raw;
+        let name = membersRaw.find(item => item.id === activeMemberId)?.name;
+        let surname = membersRaw.find(item => item.id === activeMemberId)?.surname;
+
+        memberName = `${name} ${surname}`;
+    }
+
+    async function handleDeleteMember() {
+        confirmDeleteMemberModal?.hideModal();
+        const resp = await deleteMember(activeMemberId);
+        const body = await resp.json();
+
+        console.log(resp.status);
+
+        if (resp.status === 200) {
+            addToast({
+                title: "Mitglied gelöscht",
+                subTitle: "Das Mitglied und der zugehörige Benutzeraccount wurden erfolgreich aus dem System entfernt.",
+                type: "success"
+            });
+        } else if (resp.status === 401) {
+            // Auth token invalid / unauthorized
+            addToast({
+                title: "Ungültiges Token",
+                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+                type: "error"
+            });
+            logout();
+            await push("/?cpwErr=false");
+            return;
+        } else if (resp.status === 404) {
+            // member not found
+            if (body.errorMessage === "UserNotFound") {
+                addToast({
+                    title: "Benutzer nicht gefunden",
+                    subTitle: "Der Benutzer des angegebenen Mitglieds konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Mitglied nicht gefunden",
+                    subTitle: "Das angegebene Mitglied konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+                    type: "error"
+                });
+            }
+        } else {
+            // internal server error / unknown error
+            addToast({
+                title: "Interner Serverfehler",
+                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+                type: "error"
+            });
+        }
+
+        menuOpen = false;
+        activeMemberId = null;
+        await searchBar.fetchData();
+    }
+
+    // CONTEXT MENU
+    let menuOpen = false;
+    let menuX = 0;
+    let menuY = 0;
+    let activeMemberId = null;
+
+    function openContextMenu(event, memberId) {
+        event.preventDefault();
+
+        activeMemberId = memberId;
+
+        requestAnimationFrame(() => {
+            menuX = Math.min(event.clientX, window.innerWidth - 200);
+            menuY = Math.min(event.clientY, window.innerHeight - 150);
+            menuOpen = true;
+        });
+    }
+
+    async function switchStatus() {
+        const resp = await updateStatus(activeMemberId);
+
+        if (resp.status === 200) {
+            addToast({
+                title: "Status aktualisiert",
+                subTitle: "Der Status des Mitglieds wurde erfolgreich geändert und im System übernommen.",
+                type: "success"
+            });
+        } else if (resp.status === 400) {
+            addToast({
+                title: "Mitglied nicht gefunden",
+                subTitle: "Das angegebene Mitglied konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+                type: "error"
+            });
+        } else if (resp.status === 401) {
+            // Auth token invalid / unauthorized
+            addToast({
+                title: "Ungültiges Token",
+                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+                type: "error"
+            });
+            logout();
+            await push("/?cpwErr=false");
+            return;
+        } else if (resp.status === 404) {
+            // member not found
+            addToast({
+                title: "Mitglied nicht gefunden",
+                subTitle: "Das angegebene Mitglied konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+                type: "error"
+            });
+        } else {
+            // internal server error / unknown error
+            addToast({
+                title: "Interner Serverfehler",
+                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+                type: "error"
+            });
+        }
+        menuOpen = false;
+        activeMemberId = null;
+        await searchBar.fetchData();
+    }
+
+    onMount(async () => {
+        await loadUserData();
+    });
+
+    // TODO: Move loadUserData() function to external .js file
+    async function loadUserData() {
+        // Get user data
+        const response = await getData($user.email, $auth.token);
+        const body = await response.json();
+
+        if (response.status === 200) {
+            user.update(u => ({ ...u, name: body.name, email: body.email, role: body.role, loaded: true }));
+        } else if (response.status === 401) {
+            // Auth token invalid / unauthorized
+            addToast({
+                title: "Ungültiges Token",
+                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+                type: "error"
+            });
+            logout();
+            await push("/?cpwErr=false");
+        } else if (response.status === 404) {
+            // user not found route back to log in
+            addToast({
+                title: "Konto nicht gefunden",
+                subTitle: "Ihr Konto konnte nicht gefunden werden. Bitte melden Sie sich erneut an, um fortzufahren.",
+                type: "error"
+            });
+            logout();
+            await push("/?cpwErr=false");
+        } else {
+            // internal server error / unknown error
+            addToast({
+                title: "Interner Serverfehler",
+                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+                type: "error"
+            });
+        }
+    }
+
     function settingsClick() {
         settingsModal.showModal();
     }
 </script>
 
+<svelte:window on:contextmenu={() => (menuOpen = false)} />
+
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
-<Modal bind:this={addMemberModal} extraFunction={resetInputs} title="Neues Mitglied hinzufügen"
+
+<!-- Add member modal -->
+<Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
        subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5" height="3/4">
     <div class="flex items-center gap-4 mt-5">
         <Input bind:value={nameInput} title="Vorname" placeholder="Max" />
@@ -168,17 +310,32 @@
     </div>
     <div class="w-full flex items-center justify-end mt-5 gap-4">
         <Button type="secondary" on:click={addMemberModal.hideModal}>Abbrechen</Button>
-        <Button type="primary" on:click={submitMember} isSubmit={true}>Speichern</Button>
+        <Button type="primary" on:click={submitMember} isSubmit={true}>Hinzufügen</Button>
     </div>
 </Modal>
+
+<!-- Confirm delete member modal -->
+<!-- TODO: Move this into its own modal component -->
+<Modal bind:this={confirmDeleteMemberModal} extraFunction={() => {confirmInput = ""}} title="Mitglied löschen"
+       subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?" width="2/5">
+    <Input marginTop="5" bind:value={confirmInput} title={`Geben Sie: "${memberName}" ein um fortzufahren`}
+           placeholder="Max Mustermann" />
+    <div class="w-full flex items-center justify-end mt-5 gap-4">
+        <Button type="secondary" on:click={confirmDeleteMemberModal.hideModal}>Abbrechen</Button>
+        <Button type="delete" on:click={handleDeleteMember} disabled={invalidConfirm}>Löschen</Button>
+    </div>
+</Modal>
+
+<ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
+    <Button on:click={async () =>  await push(`/members/view?id=${activeMemberId}`)} type="contextMenu">Bearbeiten</Button>
+    <Button on:click={switchStatus} type="contextMenu">Status ändern</Button>
+    <Button on:click={startDeleteMember} type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
+</ContextMenu>
+
 <main class="flex overflow-hidden">
     <Sidebar onSettingsClick={settingsClick} currentPage="members"></Sidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder">
-            <Button type="secondary">
-                <span class="material-symbols-rounded text-icon-dt-4">download</span>
-                <p class="text-dt-5">Exportieren</p>
-            </Button>
             <Button type="primary" on:click={addMemberModal.showModal}>
                 <span class="material-symbols-rounded text-icon-dt-4">add</span>
                 <p class="text-dt-5 text-nowrap">Mitglied hinzufügen</p>
@@ -207,7 +364,12 @@
                         <th scope="col" class="px-6 py-3 font-bold">
                             Status
                         </th>
-                        <th scope="col" class="px-6 py-3"></th>
+                        <th scope="col" class="px-6 py-3">
+                            <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
+                                    on:click={searchBar.fetchData}>
+                                <span class="material-symbols-rounded text-icon-dt-5 font-bold text-gv-dark-text">refresh</span>
+                            </button>
+                        </th>
                     </tr>
                     </thead>
                     <tbody>
@@ -246,7 +408,8 @@
                         </tr>
                     {:else}
                         {#each $membersStore.results as member}
-                            <tr class="border-t-2 border-gv-border">
+                            <tr class="border-t-2 border-gv-border"
+                                on:contextmenu={(e) => openContextMenu(e, member.id)}>
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col items-start h-full overflow-hidden gap-1">
                                         <p class="text-dt-6 text-gv-dark-text text-nowrap truncate">{`${member.name} ${member.surname}`}</p>
@@ -277,10 +440,11 @@
                                     <Chip text={statusMap[member.status]} />
                                 </td>
                                 <td class="px-6 py-4">
-                                    <button
-                                        class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect">
-                                <span
-                                    class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">more_horiz</span>
+                                    <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
+                                            on:click={(e) => openContextMenu(e, member.id)}>
+                                        <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">
+                                            more_horiz
+                                        </span>
                                     </button>
                                 </td>
                             </tr>
