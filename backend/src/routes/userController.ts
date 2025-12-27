@@ -3,6 +3,8 @@ import { dbService } from "../db.service";
 import { logger } from "../logger";
 import { generateTempPassword } from "./authenticationController";
 import { hash } from "bcrypt";
+import { sendMail } from "../mailer/mailer";
+import { loadTemplate } from "../mailer/loadTemplate";
 
 const userRouter = Router();
 
@@ -75,7 +77,6 @@ userRouter.post("/update", async (req, resp) => {
  * - `500` : on unexpected server error
  */
 userRouter.post("/reset/password", async (req, resp) => {
-    // TODO: Send new temporary password to users email
     try {
         const { memberId } = req.body;
 
@@ -93,7 +94,13 @@ userRouter.post("/reset/password", async (req, resp) => {
         const updatedDoc = { ...user, password: await hash(temporaryPassword, 12), changePassword: true };
         await dbService.update("users", updatedDoc);
 
-        console.log(temporaryPassword); // Replace this with mailer call
+        const html = await loadTemplate("newUser", { tempPassword: temporaryPassword });
+
+        await sendMail({
+            to: user.email,
+            subject: "Neuer Benutzer",
+            content: html
+        });
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {

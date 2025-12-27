@@ -4,6 +4,8 @@ import { logger } from "../logger";
 import { hash } from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
 import { generateTempPassword } from "./authenticationController";
+import { loadTemplate } from "../mailer/loadTemplate";
+import { sendMail } from "../mailer/mailer";
 
 const membersRouter = Router();
 
@@ -25,8 +27,6 @@ membersRouter.get("/all", async (_, resp) => {
 });
 
 membersRouter.post("/add", async (req, resp) => {
-    // TODO: Send email with temporary password to given email
-
     let memberId: string | null = null;
     let memberRev: string | null = null;
 
@@ -36,6 +36,10 @@ membersRouter.post("/add", async (req, resp) => {
         // Validate inputs
         if (!validInputs(name, surname, email, phone, address, voice, status, role, birthdate, joined))
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
+
+        // Check if there is already a user with the given email
+        const users = await dbService.find("users", { selector: { email: email }, limit: 1 });
+        if (users.length > 0) return resp.status(409).json({ errorMessage: "EmailAlreadyInUse" });
 
         let tempPassword = await generateTempPassword();
 
@@ -70,7 +74,13 @@ membersRouter.post("/add", async (req, resp) => {
             memberId: memberId
         });
 
-        console.log(tempPassword); // Replace this with mailer call
+        const html = await loadTemplate("resetPassword", { tempPassword: tempPassword });
+
+        await sendMail({
+            to: email,
+            subject: "Temporäres Passwort",
+            content: html
+        });
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
@@ -98,10 +108,10 @@ membersRouter.post("/delete", async (req, resp) => {
         const user = users[0];
 
         if (!member) return resp.status(404).json({ errorMessage: "MemberNotFound" });
-        // if (!user) return resp.status(404).json({ errorMessage: "UserNotFound" });
+        if (!user) return resp.status(404).json({ errorMessage: "UserNotFound" });
 
         await dbService.delete("members", member._id, member._rev);
-        // await dbService.delete("users", user._id, user._rev);
+        await dbService.delete("users", user._id, user._rev);
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {

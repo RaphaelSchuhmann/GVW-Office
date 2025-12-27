@@ -62,7 +62,7 @@
         <span class={`material-symbols-rounded text-icon-dt-4 ${iconColor}`}>{icon}</span>
         <div class="flex flex-col items-start justify-around ml-2">
             <p class="text-dt-5 font-semibold">{title}</p>
-            <p class="text-dt-6 line-clamp-3">{subTitle}</p>
+            <p class="text-dt-6 line-clamp-5">{subTitle}</p>
         </div>
         <button class="flex items-center justify-center bg-transparent border-0 ml-2 cursor-pointer"
                 on:click={closeToast}><span
