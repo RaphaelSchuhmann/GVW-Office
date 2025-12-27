@@ -45,7 +45,7 @@ authRouter.post("/login", async (req, resp) => {
             firstLogin: user.firstLogin
         });
     } catch (error: any) {
-        logger.error({ error }, "Login route errorMessage");
+        logger.error({ error }, "auth/login route errorMessage");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -54,9 +54,14 @@ authRouter.post("/login", async (req, resp) => {
 authRouter.post("/dev", async (req, resp) => {
     try {
         const users = await dbService.list("users");
+        const members = await dbService.list("members");
 
         for (const user of users) {
             await dbService.delete("users", user._id, user._rev);
+        }
+
+        for (const member of members) {
+            await dbService.delete("members", member._id, member._rev);
         }
 
         await dbService.create("users", {
@@ -68,7 +73,8 @@ authRouter.post("/dev", async (req, resp) => {
             changePassword: true,
             firstLogin: true,
             userId: uuidv4(),
-            role: "member"
+            role: "admin",
+            memberId: "1"
         });
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
@@ -93,7 +99,7 @@ authRouter.get("/auto", authMiddleware, async (req, resp) => {
 
         resp.status(200).json({ email: user.email, changePassword: user.changePassword });
     } catch (err: any) {
-        logger.error({ err }, "Error auto getting user: ");
+        logger.error({ err }, "auth/auto route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -138,42 +144,7 @@ authRouter.post("/changePW", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        logger.error({ err }, "Change Password route errorMessage: ");
-        return resp.status(500).json({ errorMessage: "InternalServerError" });
-    }
-});
-
-/**
- * POST /tempPassword
- * Generate and assign a temporary password for the user identified by email.
- *
- * Request body:
- * - `{ email: string }`
- *
- * Responses:
- * - `200` : when temporary password was set
- * - `404` : when user not found
- * - `500` : on unexpected server error
- */
-authRouter.post("/tempPassword", async (req, resp) => {
-    try {
-        const { email } = req.body;
-
-        const users = await dbService.find("users", {
-            selector: { email: email },
-            limit: 1
-        });
-
-        if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" });
-
-        const user = users[0];
-
-        const updatedDoc = { ...user, password: generateTempPassword() };
-        await dbService.update("users", updatedDoc);
-
-        return resp.status(200).json({ ok: true });
-    } catch (err: any) {
-        logger.error({ err }, "Temp Password route errorMessage: ");
+        logger.error({ err }, "auth/changePW route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -231,7 +202,7 @@ async function generateTempPassword(
             [combined[i], combined[j]] = [combined[j], combined[i]];
         }
 
-        return await hash(combined.join(""), 12);
+        return combined.join("");
     } catch (err: any) {
         logger.error({ err }, "Error generating temporary password: ");
         return "";

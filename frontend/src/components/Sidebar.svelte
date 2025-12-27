@@ -12,8 +12,6 @@
     let mitgliederAccess = ["admin", "vorstand"];
     let reportsAccess = ["admin", "schriftführer"];
 
-    let role = $user.role;
-
     let minimized = false;
     let toggleIcon = "arrow_menu_close";
 
@@ -79,7 +77,7 @@
             {/if}
         </SidebarButton>
 
-        {#if mitgliederAccess.includes(role)}
+        {#if mitgliederAccess.includes($user.role)}
             <SidebarButton selected={currentPage === "members"} marginTop="5" minimized={minimized}
                            on:click={handleMembers}>
                 <span class="material-symbols-rounded text-icon-dt-4">group</span>
@@ -96,7 +94,7 @@
             {/if}
         </SidebarButton>
 
-        {#if reportsAccess.includes(role)}
+        {#if reportsAccess.includes($user.role)}
             <SidebarButton selected={currentPage === "reports"} marginTop="5" minimized={minimized}
                            on:click={handleReports}>
                 <span class="material-symbols-rounded text-icon-dt-4">docs</span>
@@ -108,7 +106,7 @@
 
         <SidebarButton selected={currentPage === "musicLibrary"} marginTop="5" minimized={minimized}
                        on:click={handleMusicLibrary}>
-            <span class="material-symbols-rounded text-icon-dt-4">music_note</span>
+            <span class="material-symbols-rounded text-icon-dt-4">music_note_2</span>
             {#if !minimized}
                 <p class="ml-2">Notenbibliothek</p>
             {/if}
@@ -163,7 +161,7 @@
         <div class="flex items-center justify-center p-5 border-t border-gv-border-bar w-full">
             <div class="flex flex-col items-start w-full bg-gv-secondary rounded-1 p-5">
                 <p class="text-dt-5 text-gv-dark-text text-base/6">Gesangverein<br>Weppersdorf</p>
-                <p class="text-dt-8 text-gv-light-text mt-3">© 2026 GVW</p>
+                <p class="text-dt-8 text-gv-light-text mt-3">© 2026 GVW Office</p>
             </div>
         </div>
     {/if}

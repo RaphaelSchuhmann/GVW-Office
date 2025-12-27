@@ -1,6 +1,7 @@
 import { verify } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { logger } from "../logger";
+import { dbService } from "../db.service";
 
 /**
  * Minimal JWT payload used by this application.
@@ -15,16 +16,29 @@ interface JwtPayload {
  *
  * If the token is missing or invalid the middleware responds with `401`.
  */
-function authMiddleware(req: Request, resp: Response, next: NextFunction) {
+async function authMiddleware(req: Request, resp: Response, next: NextFunction) {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) return resp.status(401).json({ errorMessage: "InvalidToken" });
 
     const payload = verifyAuthToken(token);
     if (!payload) return resp.status(401).json({ errorMessage: "InvalidToken" });
 
+    if (await checkForPasswordReset(payload.userId)) return resp.status(401).json({ errorMessage: "ResetPassword" });
+
     // Attach the authenticated user id to the request for downstream handlers
     req.user = payload.userId;
     next();
+}
+
+async function checkForPasswordReset(userId: string) {
+    try {
+        const user = await dbService.find("users", { selector: { userId: userId }, limit: 1 });
+        if (!user) return true;
+        return !!user[0].changePassword;
+    } catch (error) {
+        logger.error({ error }, "checkForPasswordReset failed");
+        return true;
+    }
 }
 
 /**

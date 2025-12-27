@@ -21,7 +21,7 @@
     const config = searchRegistry[page];
     const { store, endpoint, fuse: fuseConfig } = config;
 
-    async function fetchData() {
+    export async function fetchData() {
         store.update(u => ({ ...u, loading: true }));
 
         const resp = await fetch(endpoint, {
@@ -35,9 +35,9 @@
         const data = json.data || json;
 
         if (resp.status === 200) {
-            fuse = new Fuse(data, fuseConfig);
+            fuse = new Fuse(data.members, fuseConfig);
 
-            store.set({ raw: data, results: data, loading: false });
+            store.set({ raw: data.members, results: data.members, loading: false });
         } else if (resp.status === 401) {
             // Auth token invalid / unauthorized
             addToast({

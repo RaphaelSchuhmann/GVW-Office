@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { dbService } from "../db.service";
 import { logger } from "../logger";
+import { generateTempPassword } from "./authenticationController";
+import { hash } from "bcrypt";
 
 const userRouter = Router();
 
@@ -19,10 +21,10 @@ userRouter.post("/data", async (req, resp) => {
 
         return resp
             .status(200)
-            .json({ email: user.email, role: user.role, name: user.name });
+            .json({ email: user.email, role: user.role, name: user.name, address: user.address, phone: user.phone });
 
     } catch (err: any) {
-        logger.error({ err }, "Login route errorMessage: ");
+        logger.error({ err }, "user/data route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -36,16 +38,66 @@ userRouter.post("/update", async (req, resp) => {
             limit: 1
         });
 
-        if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" });
-
-        // Update user data
         const user = users[0];
-        const updatedDoc = { ...user, email: email, phone: phone, address: address };
-        await dbService.update("users", updatedDoc);
+        if (!user) return resp.status(404).json({ errorMessage: "UserNotFound" });
+
+        const members = await dbService.find("members", {
+            selector: { _id: user.memberId },
+            limit: 1
+        });
+
+        const member = members[0];
+        if (!member) return resp.status(404).json({ errorMessage: "MemberNotFound" });
+
+        // Update user
+        await dbService.update("users", { ...user, email: email, phone: phone, address: address });
+
+        // Update member
+        await dbService.update("members", { ...member, email: email, phone: phone, address: address });
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        logger.error({ err }, "Login route errorMessage: ");
+        logger.error({ err }, "user/update route errorMessage: ");
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
+    }
+});
+
+/**
+ * POST /reset/password
+ * Generate and assign a temporary password for the user identified by memberId.
+ *
+ * Request body:
+ * - `{ memberId: string }`
+ *
+ * Responses:
+ * - `200` : when temporary password was set
+ * - `404` : when user not found
+ * - `500` : on unexpected server error
+ */
+userRouter.post("/reset/password", async (req, resp) => {
+    // TODO: Send new temporary password to users email
+    try {
+        const { memberId } = req.body;
+
+        const users = await dbService.find("users", {
+            selector: { memberId: memberId },
+            limit: 1
+        });
+
+        if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" });
+
+        const user = users[0];
+
+        let temporaryPassword = await generateTempPassword();
+
+        const updatedDoc = { ...user, password: await hash(temporaryPassword, 12), changePassword: true };
+        await dbService.update("users", updatedDoc);
+
+        console.log(temporaryPassword); // Replace this with mailer call
+
+        return resp.status(200).json({ ok: true });
+    } catch (err: any) {
+        logger.error({ err }, "auth/tempPassword route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });

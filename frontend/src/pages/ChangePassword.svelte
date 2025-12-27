@@ -160,7 +160,7 @@
             title="Neues Passwort bestätigen"
             marginTop="5"
         />
-        <Button type="primary" marginTop="10" on:click={updatePassword}
+        <Button type="primary" marginTop="10" on:click={updatePassword} isSubmit={true}
         ><span class="material-symbols-rounded">login</span>
             <p class="ml-3">Anmelden</p></Button
         >

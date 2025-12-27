@@ -11,6 +11,7 @@
     export let readonly = false;
     export let disabled = false;
     export let width = "w-full";
+    export let onChange = () => {};
 
     let passwordInput = false;
     let passwordVisible = false;
@@ -55,6 +56,7 @@
             placeholder={placeholder}
             readonly={readonly}
             disabled={disabled}
+            on:change={onChange}
             class="rounded-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6"
         />
     {:else}
@@ -67,6 +69,7 @@
                 placeholder={placeholder}
                 readonly={readonly}
                 disabled={disabled}
+                on:change={onChange}
                 class="rounded-tl-1 rounded-bl-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6"
             />
             <button
