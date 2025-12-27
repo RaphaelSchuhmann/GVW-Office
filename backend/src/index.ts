@@ -1,10 +1,11 @@
 /// <reference path="./types/express.d.ts" />
 import dotenv from "dotenv";
+dotenv.config();
+
 import app from "./app";
 import { dbService } from "./db.service";
 import { cleanupLogs } from "./logCleanup";
 import { logger } from "./logger";
-dotenv.config();
 
 async function bootstrap() {
     cleanupLogs("../logs");
