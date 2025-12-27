@@ -64,9 +64,6 @@
                 subTitle: "Das neue Mitglied wurde erfolgreich angelegt und ist ab sofort in der Mitgliederübersicht verfügbar.",
                 type: "success"
             });
-
-            addMemberModal.hideModal();
-            await searchBar.fetchData();
         } else if (resp.status === 401) {
             // Auth token invalid / unauthorized
             addToast({
@@ -76,6 +73,7 @@
             });
             logout();
             await push("/?cpwErr=false");
+            return;
         } else if (resp.status === 400) {
             // user not found route back to log in
             addToast({
@@ -83,7 +81,12 @@
                 subTitle: "Bitte überprüfen Sie Ihre Angaben. Einige Pflichtfelder sind entweder leer oder enthalten ungültige Werte.",
                 type: "error"
             });
-            addMemberModal.hideModal();
+        } else if (resp.status === 409) {
+            addToast({
+                title: "Eingabe ungültig",
+                subTitle: `Es gibt bereits einen Benutzer mit der E-Mail ${emailInput}. Bitte verwenden Sie eine andere E-Mail-Adresse.`,
+                type: "error"
+            });
         } else {
             // internal server error / unknown error
             addToast({
@@ -91,8 +94,10 @@
                 subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
                 type: "error"
             });
-            addMemberModal.hideModal();
         }
+
+        addMemberModal.hideModal();
+        await searchBar.fetchData();
     }
 
     // DELETE MEMBER

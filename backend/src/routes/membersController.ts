@@ -37,6 +37,10 @@ membersRouter.post("/add", async (req, resp) => {
         if (!validInputs(name, surname, email, phone, address, voice, status, role, birthdate, joined))
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
 
+        // Check if there is already a user with the given email
+        const users = await dbService.find("users", { selector: { email: email }, limit: 1 });
+        if (users.length > 0) return resp.status(409).json({ errorMessage: "EmailAlreadyInUse" });
+
         let tempPassword = await generateTempPassword();
 
         // Create new member
