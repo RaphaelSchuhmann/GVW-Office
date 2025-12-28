@@ -71,7 +71,9 @@ membersRouter.post("/add", async (req, resp) => {
             firstLogin: true,
             userId: uuidv4(),
             role: role,
-            memberId: memberId
+            memberId: memberId,
+            failedLoginAttempts: 0,
+            lockUntil: null
         });
 
         const html = await loadTemplate("resetPassword", { tempPassword: tempPassword });

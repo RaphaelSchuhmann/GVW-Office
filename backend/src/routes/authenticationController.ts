@@ -34,8 +34,22 @@ authRouter.post("/login", async (req, resp) => {
 
         const user = users[0];
 
+        if (user.lockUntil && user.lockUntil > Date.now()) {
+            return resp.status(429).json({ errorMessage: "AccountLocked", retryAfter: user.lockUntil });
+        }
+
         const isPWMatch = await compare(password, user.password);
-        if (!isPWMatch) return resp.status(401).json({ errorMessage: "InvalidPassword" }); // Invalid PW
+        if (!isPWMatch) {
+            if (user.failedLoginAttempts >= 5) {
+                await dbService.update("users", { ...user, lockUntil: Date.now() + 15 * 60 * 1000 });
+                return resp.status(429).json({ errorMessage: "AccountLocked", retryAfter: user.lockUntil });
+            } else {
+                await dbService.update("users", { ...user, failedLoginAttempts: user.failedLoginAttempts + 1 });
+                return resp.status(401).json({ errorMessage: "InvalidPassword" });
+            }
+        } else {
+            await dbService.update("users", { ...user, failedLoginAttempts: 0, lockUntil: null });
+        }
 
         const token = generateAuthToken(user.userId);
 
@@ -74,7 +88,9 @@ authRouter.post("/dev", async (req, resp) => {
             firstLogin: true,
             userId: uuidv4(),
             role: "admin",
-            memberId: "1"
+            memberId: "1",
+            failedLoginAttempts: 0,
+            lockUntil: null
         });
         return resp.status(200).json({ ok: true });
     } catch (err: any) {

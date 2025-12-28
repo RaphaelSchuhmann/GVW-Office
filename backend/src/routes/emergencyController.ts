@@ -9,8 +9,7 @@ import { generateTempPassword } from "./authenticationController";
 import { hash } from "bcrypt";
 
 const emergencyRouter = Router();
-const TOKEN_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
-
+const TOKEN_TTL_MS = 30 * 24 * 60 * 60* 1000; // 30 days
 
 emergencyRouter.post("/use", requireLocalhost, async (req, resp) => {
     try {
