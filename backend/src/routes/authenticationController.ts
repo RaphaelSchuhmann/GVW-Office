@@ -239,7 +239,7 @@ function generateAuthToken(userId: string) {
         throw new Error("SECRET_KEY is empty!");
     }
 
-    return sign({ userId }, secretKey, { expiresIn: "7d" });
+    return sign({ userId }, secretKey, { expiresIn: 7 * 24 * 60 * 60 * 1000 });
 }
 
 export { authRouter, generateTempPassword };
