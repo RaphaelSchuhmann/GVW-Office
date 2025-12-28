@@ -14,7 +14,7 @@ type DocumentData = Record<string, any>;
 class DBService {
     private nano: Nano.ServerScope;
 
-    private DBS: string[] = ["users", "members", "app_settings"];
+    private DBS: string[] = ["users", "members", "app_settings", "emergency_token"];
     private APP_SETTINGS_DB: string = "app_settings";
     private SETTINGS_DOC_ID: string = "general";
 
@@ -266,13 +266,13 @@ class DBService {
         for (const dbName of this.DBS) {
             try {
                 await dbService.nano.db.create(dbName);
-                console.log(`Database "${dbName}" created`);
+                logger.info(`Database "${dbName}" created`);
             } catch (err: any) {
                 if (err.statusCode === 412) {
                     // Database already exists
-                    console.log(`Database "${dbName}" already exists`);
+                    logger.info(`Database "${dbName}" already exists`);
                 } else {
-                    console.error(`Failed to create database "${dbName}":`, err);
+                    logger.error({err}, `Failed to create database "${dbName}"`);
                     throw err;
                 }
             }
@@ -283,16 +283,16 @@ class DBService {
             const existingSettings = await dbService.read(this.APP_SETTINGS_DB, this.SETTINGS_DOC_ID);
             if (!existingSettings) {
                 await dbService.create(this.APP_SETTINGS_DB, this.DEFAULT_SETTINGS);
-                console.log("Default app settings document created");
+                logger.info("Default app settings document created");
             } else {
-                console.log("App settings document already exists");
+                logger.info("App settings document already exists");
             }
         } catch (err) {
-            console.error("Failed to initialize app settings document:", err);
+            logger.error({err}, "Failed to initialize app settings document:");
             throw err;
         }
 
-        console.log("All databases initialized successfully");
+        logger.info("All databases initialized successfully");
     }
 }
 
