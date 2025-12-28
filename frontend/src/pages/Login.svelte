@@ -99,6 +99,18 @@
                 user.update(u => ({ ...u, email: email }));
                 await push("/dashboard");
             }
+        } else if (response.status === 429) {
+            const lockUntil = new Date(body.retryAfter).getTime();
+            const now = Date.now();
+
+            const remainingMs = lockUntil - now;
+            const remainingMinutes = Math.ceil(remainingMs / 60000);
+
+            addToast({
+                title: "Zu viele Anmeldeversuche",
+                subTitle: `Ihr Konto wurde vorübergehend gesperrt. Bitte versuchen Sie es in ${remainingMinutes} Minute${remainingMinutes !== 1 ? "n" : ""} erneut.`,
+                type: "warning",
+            });
         } else if (response.status === 404) {
             addToast({
                 title: "Benutzer nicht gefunden",
