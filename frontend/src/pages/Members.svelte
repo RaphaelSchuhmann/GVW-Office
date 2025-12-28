@@ -4,7 +4,7 @@
     import { get } from "svelte/store";
     import { loadUserData, logout } from "../services/user";
     import { membersStore } from "../stores/members";
-    import { addMember, updateStatus, deleteMember, roleMap, voiceMap, statusMap } from "../services/members";
+    import { addMember, updateStatus, roleMap, voiceMap, statusMap } from "../services/members";
     import { addToast } from "../stores/toasts";
 
     import ToastStack from "../components/ToastStack.svelte";
@@ -21,6 +21,7 @@
     import DefaultDatepicker from "../components/DefaultDatepicker.svelte";
     import YearDatepicker from "../components/YearDatepicker.svelte";
     import ContextMenu from "../components/ContextMenu.svelte";
+    import DeleteMemberModal from "../components/DeleteMemberModal.svelte";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
@@ -99,74 +100,20 @@
     }
 
     // DELETE MEMBER
-    /** @type {import("../components/Modal.svelte").default} */
+    /** @type {import("../components/DeleteMemberModal.svelte").default} */
     let confirmDeleteMemberModal;
 
-    let confirmInput = "";
     let memberName = "";
-    let invalidConfirm = true;
-
-    $: (confirmInput === memberName && memberName) ? invalidConfirm = false : invalidConfirm = true;
 
     function startDeleteMember() {
         menuOpen = false;
-        confirmDeleteMemberModal?.showModal();
 
         let membersRaw = get(membersStore).raw;
         let name = membersRaw.find(item => item.id === activeMemberId)?.name;
         let surname = membersRaw.find(item => item.id === activeMemberId)?.surname;
 
         memberName = `${name} ${surname}`;
-    }
-
-    async function handleDeleteMember() {
-        confirmDeleteMemberModal?.hideModal();
-        const resp = await deleteMember(activeMemberId);
-        const body = await resp.json();
-
-        if (resp.status === 200) {
-            addToast({
-                title: "Mitglied gelöscht",
-                subTitle: "Das Mitglied und der zugehörige Benutzeraccount wurden erfolgreich aus dem System entfernt.",
-                type: "success"
-            });
-        } else if (resp.status === 401) {
-            // Auth token invalid / unauthorized
-            addToast({
-                title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
-            return;
-        } else if (resp.status === 404) {
-            // member not found
-            if (body.errorMessage === "UserNotFound") {
-                addToast({
-                    title: "Benutzer nicht gefunden",
-                    subTitle: "Der Benutzer des angegebenen Mitglieds konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Mitglied nicht gefunden",
-                    subTitle: "Das angegebene Mitglied konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
-                    type: "error"
-                });
-            }
-        } else {
-            // internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
-            });
-        }
-
-        menuOpen = false;
-        activeMemberId = null;
-        await searchBar.fetchData();
+        confirmDeleteMemberModal.startDeleteMember();
     }
 
     // CONTEXT MENU
@@ -300,16 +247,10 @@
 </Modal>
 
 <!-- Confirm delete member modal -->
-<!-- TODO: Move this into its own modal component -->
-<Modal bind:this={confirmDeleteMemberModal} extraFunction={() => {confirmInput = ""}} title="Mitglied löschen"
-       subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?" width="2/5">
-    <Input marginTop="5" bind:value={confirmInput} title={`Geben Sie: "${memberName}" ein um fortzufahren`}
-           placeholder="Max Mustermann" />
-    <div class="w-full flex items-center justify-end mt-5 gap-4">
-        <Button type="secondary" on:click={confirmDeleteMemberModal.hideModal}>Abbrechen</Button>
-        <Button type="delete" on:click={handleDeleteMember} disabled={invalidConfirm}>Löschen</Button>
-    </div>
-</Modal>
+<DeleteMemberModal memberName={memberName} memberId={activeMemberId}
+                   onClose={async () => {menuOpen = false; activeMemberId = null; await searchBar.fetchData();}}
+                   bind:this={confirmDeleteMemberModal}
+/>
 
 <ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
     <Button on:click={async () =>  await push(`/members/view?id=${activeMemberId}`)} type="contextMenu">Bearbeiten</Button>
