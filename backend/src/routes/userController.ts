@@ -98,7 +98,7 @@ userRouter.post("/reset/password", async (req, resp) => {
 
         await sendMail({
             to: user.email,
-            subject: "Neuer Benutzer",
+            subject: "Passwort zurückgesetzt",
             content: html
         });
 

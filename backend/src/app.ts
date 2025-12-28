@@ -8,6 +8,7 @@ import authMiddleware from './middlewares/authMiddleware';
 import { logger } from "./logger";
 import pinoHttp from "pino-http";
 import { membersRouter } from "./routes/membersController";
+import emergencyRouter from "./routes/emergencyController";
 
 const app = express();
 
@@ -21,5 +22,6 @@ app.use('/auth', authRouter);
 app.use('/user', authMiddleware, userRouter);
 app.use('/settings', appSettingsRouter);
 app.use('/members', authMiddleware, membersRouter);
+app.use('/emergency', emergencyRouter);
 
 export default app;
