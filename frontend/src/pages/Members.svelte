@@ -21,7 +21,7 @@
     import DefaultDatepicker from "../components/DefaultDatepicker.svelte";
     import YearDatepicker from "../components/YearDatepicker.svelte";
     import ContextMenu from "../components/ContextMenu.svelte";
-    import DeleteMemberModal from "../components/DeleteMemberModal.svelte";
+    import ConfirmDeleteModal from "../components/ConfirmDeleteModal.svelte";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
@@ -100,10 +100,22 @@
     }
 
     // DELETE MEMBER
-    /** @type {import("../components/DeleteMemberModal.svelte").default} */
+    /** @type {import("../components/ConfirmDeleteModal.svelte").default} */
     let confirmDeleteMemberModal;
 
     let memberName = "";
+    let deleteMemberToast = {
+        success: {
+            title: "Mitglied gelöscht",
+            subTitle: "Das Mitglied und der zugehörige Benutzeraccount wurden erfolgreich aus dem System entfernt.",
+            type: "success"
+        },
+        notFound: {
+            title: "Nicht gefunden",
+            subTitle: "Das angegebene Mitglied oder der zugehörige Benutzer konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+            type: "error"
+        },
+    };
 
     function startDeleteMember() {
         menuOpen = false;
@@ -113,7 +125,7 @@
         let surname = membersRaw.find(item => item.id === activeMemberId)?.surname;
 
         memberName = `${name} ${surname}`;
-        confirmDeleteMemberModal.startDeleteMember();
+        confirmDeleteMemberModal.startDelete();
     }
 
     // CONTEXT MENU
@@ -247,13 +259,16 @@
 </Modal>
 
 <!-- Confirm delete member modal -->
-<DeleteMemberModal memberName={memberName} memberId={activeMemberId}
-                   onClose={async () => {menuOpen = false; activeMemberId = null; await searchBar.fetchData();}}
-                   bind:this={confirmDeleteMemberModal}
+<ConfirmDeleteModal expectedInput={memberName} id={activeMemberId}
+                    title="Mitglied löschen" subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?"
+                    toastMap={deleteMemberToast} action="deleteMember"
+                    onClose={async () => {menuOpen = false; activeMemberId = null; await searchBar.fetchData();}}
+                    bind:this={confirmDeleteMemberModal}
 />
 
 <ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
-    <Button on:click={async () =>  await push(`/members/view?id=${activeMemberId}`)} type="contextMenu">Bearbeiten</Button>
+    <Button on:click={async () =>  await push(`/members/view?id=${activeMemberId}`)} type="contextMenu">Bearbeiten
+    </Button>
     <Button on:click={switchStatus} type="contextMenu">Status ändern</Button>
     <Button on:click={startDeleteMember} type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
 </ContextMenu>
@@ -291,8 +306,9 @@
                             Status
                         </th>
                         <th scope="col" class="px-6 py-3">
-                            <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                                    on:click={searchBar.fetchData}>
+                            <button
+                                class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
+                                on:click={searchBar.fetchData}>
                                 <span class="material-symbols-rounded text-icon-dt-5 font-bold text-gv-dark-text">refresh</span>
                             </button>
                         </th>
@@ -366,8 +382,9 @@
                                     <Chip text={statusMap[member.status]} />
                                 </td>
                                 <td class="px-6 py-4">
-                                    <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                                            on:click={(e) => openContextMenuFromButton(e, member.id)}>
+                                    <button
+                                        class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
+                                        on:click={(e) => openContextMenuFromButton(e, member.id)}>
                                         <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">
                                             more_horiz
                                         </span>

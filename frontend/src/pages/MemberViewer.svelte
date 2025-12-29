@@ -13,7 +13,7 @@
     import SettingsModal from "../components/SettingsModal.svelte";
     import Input from "../components/Input.svelte";
     import Button from "../components/Button.svelte";
-    import DeleteMemberModal from "../components/DeleteMemberModal.svelte";
+    import ConfirmDeleteModal from "../components/ConfirmDeleteModal.svelte";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
@@ -33,14 +33,26 @@
     };
 
     // DELETE MEMBER
-    /** @type {import("../components/DeleteMemberModal.svelte").default} */
+    /** @type {import("../components/ConfirmDeleteModal.svelte").default} */
     let confirmDeleteMemberModal;
 
     let memberName = "";
+    let deleteMemberToast = {
+        success: {
+            title: "Mitglied gelöscht",
+            subTitle: "Das Mitglied und der zugehörige Benutzeraccount wurden erfolgreich aus dem System entfernt.",
+            type: "success"
+        },
+        notFound: {
+            title: "Nicht gefunden",
+            subTitle: "Das angegebene Mitglied oder der zugehörige Benutzer konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+            type: "error"
+        },
+    };
 
     function startDeleteMember() {
         memberName = `${member.name} ${member.surname}`;
-        confirmDeleteMemberModal.startDeleteMember();
+        confirmDeleteMemberModal.startDelete();
     }
 
     async function resetMemberPassword() {
@@ -105,9 +117,11 @@
 <ToastStack></ToastStack>
 
 <!-- Confirm delete member modal -->
-<DeleteMemberModal memberName={memberName} memberId={member.id}
-                   onClose={async () => {await push("/members")}}
-                   bind:this={confirmDeleteMemberModal}
+<ConfirmDeleteModal expectedInput={memberName} id={member.id}
+                    title="Mitglied löschen" subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?"
+                    toastMap={deleteMemberToast} action="deleteMember"
+                    onClose={async () => {await push("/members")}}
+                    bind:this={confirmDeleteMemberModal}
 />
 
 <main class="flex overflow-hidden">
