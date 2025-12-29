@@ -279,7 +279,7 @@
         <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder">
             <Button type="primary" on:click={addMemberModal.showModal}>
                 <span class="material-symbols-rounded text-icon-dt-4">add</span>
-                <p class="text-dt-5 text-nowrap">Mitglied hinzufügen</p>
+                <p class="text-dt-4 text-nowrap">Mitglied hinzufügen</p>
             </Button>
         </PageHeader>
 

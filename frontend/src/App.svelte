@@ -7,6 +7,7 @@
     import Members from "./pages/Members.svelte";
     import MemberViewer from "./pages/MemberViewer.svelte";
     import MemberEditor from "./pages/MemberEditor.svelte";
+    import Events from "./pages/Events.svelte";
 
     const routes = {
         "/": Login,
@@ -15,6 +16,7 @@
         "/members": Members,
         "/members/view": MemberViewer,
         "/members/edit": MemberEditor,
+        "/events": Events,
     };
 </script>
 <Router {routes}/>
