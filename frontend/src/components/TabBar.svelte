@@ -28,7 +28,7 @@
     const { store, endpoint, tabMap, applyFilters } = config;
     let intervalId;
     let isFetching = false;
-    
+
     // Animation variables
     let tabElements = [];
     let sliderStyle = "";
@@ -38,7 +38,7 @@
         if (selectedIndex >= 0 && tabElements[selectedIndex]) {
             const selectedTab = tabElements[selectedIndex];
             const { offsetLeft, offsetWidth } = selectedTab;
-            sliderStyle = `transform: translateX(${offsetLeft}px); width: ${offsetWidth}px;`;
+            sliderStyle = `transform: translateX(${offsetLeft - 3}px); width: ${offsetWidth}px;`;
         }
     }
 
@@ -98,7 +98,7 @@
         }
 
         const filterFor = tabMap[selected];
-        
+
         // Update status filter state and apply combined filters
         store.update(u => ({ ...u, statusFilter: filterFor }));
         applyFilters(store);
@@ -126,15 +126,16 @@
         clearInterval(intervalId);
     });
 </script>
-<div class={`relative flex w-full items-stretch p-1 rounded-full bg-gv-input-bg ${marginMap[marginTop]} gap-2 overflow-x-auto overflow-y-hidden`}>
+<div
+    class={`relative flex w-full items-stretch p-1 rounded-full bg-gv-input-bg ${marginMap[marginTop]} gap-2 overflow-x-auto overflow-y-hidden`}>
     <!-- Sliding background -->
-    <div 
+    <div
         class="absolute top-1 bottom-1 bg-white rounded-full transition-all duration-300 ease-out z-0"
         style={sliderStyle}
     ></div>
-    
+
     {#each tabs as tab, index}
-        <button 
+        <button
             bind:this={tabElements[index]}
             class="relative z-10 w-full p-1 rounded-full flex items-center justify-center text-center text-dt-5 text-gv-dark cursor-pointer hover:bg-gv-hover-effect/50 transition-colors duration-150"
             on:click={() => { selected = tab.title; filter() }}
