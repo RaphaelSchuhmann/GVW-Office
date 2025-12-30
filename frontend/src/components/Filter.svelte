@@ -95,6 +95,6 @@
 </script>
 
 <div class="flex w-full items-center gap-2">
-    <span class="material-symbols-rounded text-gv-dark-text text-icon-dt-2">filter_alt</span>
+    <span class="material-symbols-rounded text-gv-dark-text text-icon-dt-2">tune</span>
     <Dropdown options={options} onChange={filter} selected="Alle Typen"/>
 </div>
