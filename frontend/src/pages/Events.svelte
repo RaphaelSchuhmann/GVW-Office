@@ -10,6 +10,7 @@
     import SettingsModal from "../components/SettingsModal.svelte";
     import Button from "../components/Button.svelte";
     import Filter from "../components/Filter.svelte";
+    import TabBar from "../components/TabBar.svelte";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
@@ -37,7 +38,8 @@
             </Button>
         </PageHeader>
         <div class="flex items-center mt-10 max-w-1/5">
-            <Filter options={["Alle Typen", "Proben", "Meeting", "Konzerte", "Sonstiges"]} page="events"/>
+            <Filter options={["Alle Typen", "Proben", "Meeting", "Konzerte", "Sonstiges"]} page="events" debounce={false}/>
         </div>
+        <TabBar contents={["Bevorstehend", "Abgeschlossen"]} selected="Bevorstehend" marginTop="5" page="events" debounce={true} />
     </div>
 </main>

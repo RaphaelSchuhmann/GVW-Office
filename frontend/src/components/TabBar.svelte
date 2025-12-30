@@ -1,23 +1,32 @@
 <script>
-    import Dropdown from "./Dropdown.svelte";
-    import { auth } from "../stores/auth";
+    import Tab from "./Tab.svelte";
+    import { marginMap } from "../lib/dynamicStyles";
     import { filterRegistry } from "../lib/filterRegistry";
+    import { onDestroy, onMount } from "svelte";
     import { addToast } from "../stores/toasts";
     import { logout } from "../services/user";
     import { push } from "svelte-spa-router";
-    import { onDestroy, onMount } from "svelte";
-    export let options = [];
-    export let page = "";
-    export let debounce = false;
+    import { auth } from "../stores/auth";
 
-    const validPages = ["events", "reports"];
+    export let contents = [];
+    export let selected = "";
+    export let marginTop = "";
+    export let debounce = true; // Flag to set if it should debounce every 30 seconds
+    export let page = "";
+
+    const validPages = ["events", "library"];
     if (!validPages.includes(page)) {
         console.warn(`Type ${page} is not a valid type`);
         page = "none";
     }
 
+    let tabs = [];
+    for (const item of contents) {
+        tabs.push({ title: item, count: 0 });
+    }
+
     const config = filterRegistry[page];
-    const { store, endpoint, optionMap } = config;
+    const { store, endpoint, tabMap } = config;
     let intervalId;
     let isFetching = false;
 
@@ -58,11 +67,12 @@
             }
         } finally {
             isFetching = false;
+            generateCount();
         }
     }
 
-    function filter(selected) {
-        if (!(selected in optionMap)) {
+    function filter() {
+        if (!(selected in tabMap)) {
             addToast({
                 title: "Unerwarteter Fehler",
                 subTitle: "Es ist ein unerwarteter Fehler aufgetreten. Bitte kontaktieren Sie umgehend den Vorstand!",
@@ -71,32 +81,35 @@
             return;
         }
 
-        const filterFor = optionMap[selected];
+        const filterFor = tabMap[selected];
 
-        if (filterFor === "all") {
-            store.update(u => ({ ...u, display: u.all }));
-        } else {
-            const results = $store.all.filter(item => item.type === filterFor);
-            store.update(u => ({ ...u, display: results }));
-        }
+        const results = $store.raw.filter(item => item.status === filterFor);
+        store.update(u => ({ ...u, all: results }));
     }
 
-    // Do a first filter using selected "Alle Typen"
+    function generateCount() {
+        tabs = tabs.map(tab => {
+            const filterFor = tabMap[tab.title];
+            const results = $store.raw.filter(item => item.status === filterFor);
+            return { ...tab, count: results.length };
+        });
+    }
+
     onMount(() => {
         if (debounce) {
             fetchData();
             intervalId = setInterval(fetchData, 30000);
         }
 
-        filter("Alle Typen");
+        filter();
     });
 
     onDestroy(() => {
         clearInterval(intervalId);
     });
 </script>
-
-<div class="flex w-full items-center gap-2">
-    <span class="material-symbols-rounded text-gv-dark-text text-icon-dt-2">tune</span>
-    <Dropdown options={options} onChange={filter} selected="Alle Typen"/>
+<div class={`flex w-full items-stretch p-1 rounded-full bg-gv-input-bg ${marginMap[marginTop]} gap-2 overflow-x-auto overflow-y-hidden`}>
+    {#each tabs as tab}
+        <Tab selected={selected === tab.title} on:click={() => { selected = tab.title; filter() }}>{tab.title} ({tab.count})</Tab>
+    {/each}
 </div>

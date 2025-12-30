@@ -11,3 +11,10 @@ export const typeMap = {
     "Konzerte": "concert",
     "Sonstiges": "other"
 };
+
+export const statusMap = {
+    "upcoming": "Bevorstehend",
+    "finished": "Abgeschlossen",
+    "Bevorstehend": "upcoming",
+    "Abgeschlossen": "finished"
+};
