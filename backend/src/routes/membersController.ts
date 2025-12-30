@@ -19,7 +19,7 @@ membersRouter.get("/all", async (_, resp) => {
     try {
         const members = (await dbService.list("members")).map(({ _id, _rev, ...member }) => ({ id: _id, ...member }));
 
-        return resp.status(200).json({ members: members });
+        return resp.status(200).json({ data: members });
     } catch (err: any) {
         logger.error({ err }, "members/all route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });

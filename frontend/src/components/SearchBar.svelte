@@ -35,9 +35,9 @@
         const data = json.data || json;
 
         if (resp.status === 200) {
-            fuse = new Fuse(data.members, fuseConfig);
+            fuse = new Fuse(data, fuseConfig);
 
-            store.set({ raw: data.members, results: data.members, loading: false });
+            store.set({ raw: data, results: data, loading: false });
         } else if (resp.status === 401) {
             // Auth token invalid / unauthorized
             addToast({

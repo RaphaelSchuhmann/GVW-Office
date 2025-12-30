@@ -2,15 +2,19 @@
     import { onMount } from "svelte";
     import { loadUserData } from "../services/user";
     import { user } from "../stores/user";
+    import { eventsStore } from "../stores/events";
 
     import ToastStack from "../components/ToastStack.svelte";
     import Sidebar from "../components/Sidebar.svelte";
     import PageHeader from "../components/PageHeader.svelte";
     import SettingsModal from "../components/SettingsModal.svelte";
     import Button from "../components/Button.svelte";
+    import Filter from "../components/Filter.svelte";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
+
+    $: console.log($eventsStore.display);
 
     onMount(async () => {
         await loadUserData();
@@ -32,5 +36,8 @@
                 <p class="text-dt-4">Veranstaltung hinzufügen</p>
             </Button>
         </PageHeader>
+        <div class="flex items-center mt-10 max-w-1/5">
+            <Filter options={["Alle Typen", "Proben", "Meeting", "Konzerte", "Sonstiges"]} page="events"/>
+        </div>
     </div>
 </main>

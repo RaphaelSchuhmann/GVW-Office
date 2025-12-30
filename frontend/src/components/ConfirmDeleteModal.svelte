@@ -73,7 +73,7 @@
             addToast({
                 title: "Unerwarteter Fehler",
                 subTitle: "Es ist ein unerwarteter Fehler aufgetreten. Bitte kontaktieren Sie umgehend den Vorstand!",
-               type: "info"
+               type: "error"
             });
         }
 

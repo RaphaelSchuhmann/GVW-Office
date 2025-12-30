@@ -9,6 +9,7 @@ import { logger } from "./logger";
 import pinoHttp from "pino-http";
 import { membersRouter } from "./routes/membersController";
 import emergencyRouter from "./routes/emergencyController";
+import { eventsRouter } from "./routes/eventsController";
 
 const app = express();
 
@@ -19,9 +20,10 @@ app.use(pinoHttp({ logger, autoLogging: true }));
 
 app.use('/health', healthRoutes);
 app.use('/auth', authRouter);
-app.use('/user', authMiddleware, userRouter);
-app.use('/settings', appSettingsRouter);
-app.use('/members', authMiddleware, membersRouter);
 app.use('/emergency', emergencyRouter);
+app.use('/settings', appSettingsRouter);
+app.use('/user', authMiddleware, userRouter);
+app.use('/members', authMiddleware, membersRouter);
+app.use('/events', authMiddleware, eventsRouter);
 
 export default app;
