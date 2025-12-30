@@ -72,13 +72,10 @@
         }
 
         const filterFor = optionMap[selected];
-
-        if (filterFor === "all") {
-            store.update(u => ({ ...u, display: u.all }));
-        } else {
-            const results = $store.all.filter(item => item.type === filterFor);
-            store.update(u => ({ ...u, display: results }));
-        }
+        
+        // Update type filter state and apply combined filters
+        store.update(u => ({ ...u, typeFilter: filterFor }));
+        config.applyFilters(store);
     }
 
     // Do a first filter using selected "Alle Typen"

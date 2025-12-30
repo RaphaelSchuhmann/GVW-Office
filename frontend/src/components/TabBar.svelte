@@ -26,7 +26,7 @@
     }
 
     const config = filterRegistry[page];
-    const { store, endpoint, tabMap } = config;
+    const { store, endpoint, tabMap, applyFilters } = config;
     let intervalId;
     let isFetching = false;
 
@@ -82,9 +82,10 @@
         }
 
         const filterFor = tabMap[selected];
-
-        const results = $store.raw.filter(item => item.status === filterFor);
-        store.update(u => ({ ...u, all: results }));
+        
+        // Update status filter state and apply combined filters
+        store.update(u => ({ ...u, statusFilter: filterFor }));
+        applyFilters(store);
     }
 
     function generateCount() {
