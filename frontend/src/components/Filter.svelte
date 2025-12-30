@@ -8,6 +8,7 @@
     import { onDestroy, onMount } from "svelte";
     export let options = [];
     export let page = "";
+    export let debounce = false;
 
     const validPages = ["events", "reports"];
     if (!validPages.includes(page)) {
@@ -20,7 +21,7 @@
     let intervalId;
     let isFetching = false;
 
-    async function fetchData() {
+    export async function fetchData() {
         if (isFetching) return;
         isFetching = true;
 
@@ -71,20 +72,18 @@
         }
 
         const filterFor = optionMap[selected];
-
-        if (filterFor === "all") {
-            store.update(u => ({ ...u, display: u.all }));
-        } else {
-            const results = $store.all.filter(item => item.type === filterFor);
-            store.update(u => ({ ...u, display: results }));
-        }
+        
+        // Update type filter state and apply combined filters
+        store.update(u => ({ ...u, typeFilter: filterFor }));
+        config.applyFilters(store);
     }
 
     // Do a first filter using selected "Alle Typen"
     onMount(() => {
-        fetchData();
-
-        intervalId = setInterval(fetchData, 30000);
+        if (debounce) {
+            fetchData();
+            intervalId = setInterval(fetchData, 30000);
+        }
 
         filter("Alle Typen");
     });
