@@ -14,7 +14,7 @@ type DocumentData = Record<string, any>;
 class DBService {
     private nano: Nano.ServerScope;
 
-    private DBS: string[] = ["users", "members", "app_settings", "emergency_token"];
+    private DBS: string[] = ["users", "members", "events", "app_settings", "emergency_token"];
     private APP_SETTINGS_DB: string = "app_settings";
     private SETTINGS_DOC_ID: string = "general";
 

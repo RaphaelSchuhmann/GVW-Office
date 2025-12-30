@@ -1,0 +1,29 @@
+<script>
+    import { onMount } from "svelte";
+    import { loadUserData } from "../services/user";
+
+    import ToastStack from "../components/ToastStack.svelte";
+    import Sidebar from "../components/Sidebar.svelte";
+    import PageHeader from "../components/PageHeader.svelte";
+    import SettingsModal from "../components/SettingsModal.svelte";
+
+    /** @type {import("../components/SettingsModal.svelte").default} */
+    let settingsModal;
+
+    onMount(async () => {
+        await loadUserData();
+    });
+
+    function settingsClick() {
+        settingsModal.showModal();
+    }
+</script>
+
+<SettingsModal bind:this={settingsModal}></SettingsModal>
+<ToastStack></ToastStack>
+<main class="flex overflow-hidden">
+    <Sidebar onSettingsClick={settingsClick} currentPage="currentPage"></Sidebar>
+    <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
+        <PageHeader title="PageTitle" subTitle="Page Subtitle" />
+    </div>
+</main>
