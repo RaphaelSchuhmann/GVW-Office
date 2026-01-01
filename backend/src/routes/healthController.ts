@@ -28,6 +28,7 @@ router.get("/generateEventData", async (_, resp) => {
             when: "20.11.2025",
             time: "18:00",
             location: "Gasthof XYZ",
+            weekly: false,
             description: "Keine Beschreibung"
         });
         await dbService.create("events", {
@@ -37,6 +38,7 @@ router.get("/generateEventData", async (_, resp) => {
             when: "20.11.2025",
             time: "18:00",
             location: "Gasthof XYZ",
+            weekly: false,
             description: "Keine Beschreibung"
         });
         await dbService.create("events", {
@@ -46,6 +48,7 @@ router.get("/generateEventData", async (_, resp) => {
             when: "20.11.2025",
             time: "18:00",
             location: "Gasthof XYZ",
+            weekly: false,
             description: "Keine Beschreibung"
         });
         await dbService.create("events", {
@@ -55,6 +58,7 @@ router.get("/generateEventData", async (_, resp) => {
             when: "20.11.2025",
             time: "18:00",
             location: "Gasthof XYZ",
+            weekly: false,
             description: "Keine Beschreibung"
         });
 
