@@ -64,6 +64,7 @@
 
             if (resp.status === 200) {
                 store.update(u => ({ ...u, loading: false, raw: data, all: data }));
+                applyFilters(store);
             } else if (resp.status === 401) {
                 // Auth token invalid / unauthorized
                 addToast({
@@ -88,6 +89,8 @@
     }
 
     function filter() {
+        console.log("filter call");
+
         if (!(selected in tabMap)) {
             addToast({
                 title: "Unerwarteter Fehler",
@@ -98,6 +101,8 @@
         }
 
         const filterFor = tabMap[selected];
+
+        console.log(`Filter for: ${filterFor}`);
 
         // Update status filter state and apply combined filters
         store.update(u => ({ ...u, statusFilter: filterFor }));
