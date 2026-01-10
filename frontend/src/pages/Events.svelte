@@ -1,9 +1,13 @@
 <script>
     import { onMount } from "svelte";
-    import { loadUserData } from "../services/user";
+    import { push } from "svelte-spa-router";
+    import { get } from "svelte/store";
     import { user } from "../stores/user";
     import { eventsStore } from "../stores/events";
     import { typeMap } from "../services/events";
+    import { loadUserData } from "../services/user";
+    import { parseDMYToDate, getLastDayOfCurrentMonth, makeDateForCurrentMonth } from "../services/utils";
+    import { ordinalMap, weekDayMap } from "../services/events";
 
     import ToastStack from "../components/ToastStack.svelte";
     import Sidebar from "../components/Sidebar.svelte";
@@ -15,10 +19,55 @@
     import Chip from "../components/Chip.svelte";
     import ContextMenu from "../components/ContextMenu.svelte";
     import Card from "../components/Card.svelte";
-    import { push } from "svelte-spa-router";
+    import Modal from "../components/Modal.svelte";
+    import Input from "../components/Input.svelte";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
+
+    // ADD EVENT MODAL
+    /** @type {import("../components/Modal.svelte").default} */
+    let addEventModal;
+
+    // EVENT
+    function getWhenValue(eventId) {
+        const events = get(eventsStore);
+        const eventArray = events.display.filter(item => item.id === eventId);
+
+        if (eventArray.length > 0) {
+            const event = eventArray[0];
+
+            if (event.mode === "weekly") {
+                const date = parseDMYToDate(event.date);
+                return `Jede Woche am ${weekDayMap[date.getDay()]}`;
+            }
+
+            if (event.recurrence) {
+                if (event.mode === "monthly" && event.recurrence.monthlyKind === "weekday") {
+                    const ordinal = ordinalMap[event.recurrence.ordinal];
+                    const weekDay = weekDayMap[event.recurrence.weekDay];
+                    console.log(weekDay);
+                    console.log(event.recurrence.weekDay);
+                    return `Jeden Monat am ${ordinal} ${weekDay}`;
+                } else if (event.mode === "monthly" && event.recurrence.monthlyKind === "date") {
+                    let date = event.recurrence.dayOfMonth;
+                    const lastDate = getLastDayOfCurrentMonth();
+
+                    if (date > lastDate) {
+                        date = lastDate;
+                    }
+
+                    return makeDateForCurrentMonth(date);
+                } else {
+                    return event.date;
+                }
+            } else {
+                return event.date;
+            }
+        }
+        
+        return "Unbekannt";
+    }
 
     // CONTEXT MENU
     let menuOpen = false;
@@ -79,11 +128,20 @@
     <Button type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
 </ContextMenu>
 
+<!-- Add event modal -->
+<Modal bind:this={addEventModal}
+       title="Neue Veranstaltung hinzufügen" subTitle="Erfassen Sie hier die Details der Veranstaltung"
+       width="2/5">
+    <Input title="Titel" placeholder="Veranstaltung XYZ" marginTop="5"/>
+
+</Modal>
+
 <main class="flex overflow-hidden">
     <Sidebar onSettingsClick={settingsClick} currentPage="events"></Sidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Veranstaltungen" subTitle="Verwaltung von Events, Proben und Konzerten">
-            <Button type="primary" disabled={($user.role !== "admin" && $user.role !== "vorstand")}>
+            <Button type="primary" disabled={($user.role !== "admin" && $user.role !== "vorstand")}
+                    on:click={addEventModal.showModal}>
                 <span class="material-symbols-rounded text-icon-dt-4">add</span>
                 <p class="text-dt-4">Veranstaltung hinzufügen</p>
             </Button>
@@ -104,7 +162,7 @@
                     <div class="flex items-center w-full mt-2 gap-10">
                         <div class="flex items-stretch gap-2">
                             <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">calendar_today</span>
-                            <p class="text-dt-6 text-gv-light-text">{event.when}</p>
+                            <p class="text-dt-6 text-gv-light-text">{getWhenValue(event.id)}</p>
                         </div>
                         <div class="flex items-stretch gap-2">
                             <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">schedule</span>

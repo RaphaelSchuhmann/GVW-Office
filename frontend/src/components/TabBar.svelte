@@ -89,8 +89,6 @@
     }
 
     function filter() {
-        console.log("filter call");
-
         if (!(selected in tabMap)) {
             addToast({
                 title: "Unerwarteter Fehler",
@@ -101,8 +99,6 @@
         }
 
         const filterFor = tabMap[selected];
-
-        console.log(`Filter for: ${filterFor}`);
 
         // Update status filter state and apply combined filters
         store.update(u => ({ ...u, statusFilter: filterFor }));
