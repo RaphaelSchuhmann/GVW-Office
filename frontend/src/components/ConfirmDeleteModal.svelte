@@ -3,13 +3,14 @@
     import Button from "./Button.svelte";
     import Input from "./Input.svelte";
     import { deleteMember } from "../services/members";
+    import { deleteEvent } from "../services/events";
     import { addToast } from "../stores/toasts";
     import { logout } from "../services/user";
     import { push } from "svelte-spa-router";
 
     const actionMap = {
         "deleteMember": deleteMember,
-        "deleteEvent": () => {console.log("deleteEvent")},
+        "deleteEvent": deleteEvent,
         "deleteReport": () => {console.log("deleteReport")},
         "deleteLibEntry": () => {console.log("deleteLibEntry")},
     }
