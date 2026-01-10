@@ -15,6 +15,23 @@ eventsRouter.get("/all", async (_, resp) => {
     }
 });
 
+eventsRouter.post("/add", async (req, resp) => {
+    try {
+        const { event } = req.body;
+
+        if (!event) {
+            return resp.status(400).json({ errorMessage: "InvalidInputs" });
+        }
+        
+        await dbService.create("events", event);
+        
+        return resp.status(200).json({ ok: true });
+    } catch(err: any) {
+        logger.error({ err }, "events/all route errorMessage: ");
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
+    }
+});
+
 // Functionality wise the members controller and events controller have generally the same endpoints.
 // eventsRouter.post("/add", async (req, resp) => {
 //     let memberId: string | null = null;

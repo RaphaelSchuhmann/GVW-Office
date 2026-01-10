@@ -84,3 +84,19 @@ export function makeDateForCurrentMonth(day) {
 
     return `${dd}.${mm}.${yyyy}`;
 }
+
+export function getWeekDayFromDMYMondayFirst(dateStr) {
+    const [day, month, year] = dateStr.split(".").map(Number);
+    const date = new Date(year, month - 1, day);
+
+    const jsDay = date.getDay(); // 0–6 (Sun–Sat)
+
+    // Convert to 1–7 (Mon–Sun)
+    return jsDay === 0 ? 7 : jsDay;
+}
+
+export function getOrdinalFromDMY(dateStr) {
+    const [day, month, year] = dateStr.split(".").map(Number);
+
+    return Math.ceil(day / 7);
+}

@@ -1,13 +1,18 @@
 <script>
     import { onMount } from "svelte";
-    import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
     import { user } from "../stores/user";
     import { eventsStore } from "../stores/events";
-    import { typeMap } from "../services/events";
+    import { modeMap, statusMap, typeMap } from "../services/events";
     import { loadUserData } from "../services/user";
-    import { parseDMYToDate, getLastDayOfCurrentMonth, makeDateForCurrentMonth } from "../services/utils";
-    import { ordinalMap, weekDayMap } from "../services/events";
+    import {
+        parseDMYToDate,
+        getLastDayOfCurrentMonth,
+        makeDateForCurrentMonth,
+        getWeekDayFromDMYMondayFirst,
+        getOrdinalFromDMY
+    } from "../services/utils";
+    import { ordinalMap, weekDayMap, addEvent } from "../services/events";
 
     import ToastStack from "../components/ToastStack.svelte";
     import Sidebar from "../components/Sidebar.svelte";
@@ -15,19 +20,82 @@
     import SettingsModal from "../components/SettingsModal.svelte";
     import Button from "../components/Button.svelte";
     import Filter from "../components/Filter.svelte";
-    import TabBar from "../components/TabBar.svelte";
+    import FilterTabBar from "../components/FilterTabBar.svelte";
     import Chip from "../components/Chip.svelte";
     import ContextMenu from "../components/ContextMenu.svelte";
     import Card from "../components/Card.svelte";
     import Modal from "../components/Modal.svelte";
     import Input from "../components/Input.svelte";
+    import Dropdown from "../components/Dropdown.svelte";
+    import DefaultDatepicker from "../components/DefaultDatepicker.svelte";
+    import TabBar from "../components/TabBar.svelte";
+    import Checkbox from "../components/Checkbox.svelte";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
 
+    /** @type {import("../components/FilterTabBar.svelte").default} */
+    let filterBar;
+
     // ADD EVENT MODAL
     /** @type {import("../components/Modal.svelte").default} */
     let addEventModal;
+
+    let saveDisabled = true; // Button is only enabled when all inputs are filled
+
+    let selectedType = "";
+    let selectedStatus = "";
+    let selectedDate = "";
+    let selectedRecurrence = "Einmalig";
+    let inputTitle = "";
+    let inputTime = "";
+    let inputLocation = "";
+    let inputDescription = "";
+    let ordinal = 0;
+    let weekDay = 0;
+
+    // If selectedRecurrence is monthly
+    // NOTE: if neither are set to true but the mode is monthly default to monthly date checked
+    let isMonthlyDateChecked = true; // by default
+    let isMonthlyWeekDayChecked = false;
+
+    $: if (selectedType && selectedStatus && selectedDate && selectedRecurrence && inputTitle && inputTime && inputLocation) saveDisabled = false;
+    $: ordinal = getOrdinalFromDMY(selectedDate);
+    $: weekDay = getWeekDayFromDMYMondayFirst(selectedDate);
+
+    async function submitEvent() {
+        let event = {
+            title: inputTitle,
+            type: typeMap[selectedType],
+            status: statusMap[selectedStatus],
+            date: selectedDate,
+            time: inputTime,
+            location: inputLocation,
+            description: inputDescription ? inputDescription : "Keine Beschreibung",
+            mode: modeMap[selectedRecurrence],
+        }
+
+        if (modeMap[selectedRecurrence] === "monthly") {
+            if (isMonthlyDateChecked || (!isMonthlyWeekDayChecked && !isMonthlyDateChecked)) {
+                const [day, month, year] = selectedDate.split(".").map(Number);
+                event = { ...event, recurrence: { monthlyKind: "date", dayOfMonth: day }};
+            } else if (isMonthlyWeekDayChecked) {
+                event = { ...event, recurrence: { monthlyKind: "weekday", weekDay: weekDay, ordinal: ordinal }};
+            }
+        }
+
+        await addEvent(event);
+
+        await filterBar.fetchData();
+        addEventModal?.hideModal();
+    }
+
+    function clearAddModal() {
+        inputTitle = "";
+        inputTime = "";
+        inputLocation = "";
+        inputDescription = "";
+    }
 
     // EVENT
     function getWhenValue(eventId) {
@@ -46,8 +114,6 @@
                 if (event.mode === "monthly" && event.recurrence.monthlyKind === "weekday") {
                     const ordinal = ordinalMap[event.recurrence.ordinal];
                     const weekDay = weekDayMap[event.recurrence.weekDay];
-                    console.log(weekDay);
-                    console.log(event.recurrence.weekDay);
                     return `Jeden Monat am ${ordinal} ${weekDay}`;
                 } else if (event.mode === "monthly" && event.recurrence.monthlyKind === "date") {
                     let date = event.recurrence.dayOfMonth;
@@ -129,11 +195,54 @@
 </ContextMenu>
 
 <!-- Add event modal -->
-<Modal bind:this={addEventModal}
+<Modal bind:this={addEventModal} extraFunction={clearAddModal}
        title="Neue Veranstaltung hinzufügen" subTitle="Erfassen Sie hier die Details der Veranstaltung"
        width="2/5">
-    <Input title="Titel" placeholder="Veranstaltung XYZ" marginTop="5"/>
 
+    <Input bind:value={inputTitle} title="Titel" placeholder="Veranstaltung XYZ" marginTop="5"/>
+
+    <div class="w-full flex items-center gap-4 mt-5">
+        <Dropdown title="Typ" options={["Proben", "Meeting", "Konzerte", "Sonstiges"]} onChange={(value) => selectedType = value}/>
+        <Dropdown title="Status" options={["Bevorstehend", "Abgeschlossen"]} onChange={(value) => selectedStatus = value}/>
+    </div>
+
+    <Input bind:value={inputLocation} title="Ort" placeholder="Ort XYZ" marginTop="5"/>
+
+    <div class="w-full flex items-center gap-4 mt-5">
+        <div class="flex flex-col items-start w-full h-full">
+            <p class="text-dt-6 font-medium">Datum</p>
+            <DefaultDatepicker marginTop="1" onChange={(value) => selectedDate = value}/>
+        </div>
+        <Input bind:value={inputTime} title="Uhrzeit" placeholder="--:--"/>
+    </div>
+
+    <Input bind:value={inputDescription} title="Beschreibung (Optional)" placeholder="Kurze Beschreibung zur Veranstaltung..." marginTop="5"/>
+
+    <TabBar marginTop="5" contents={["Einmalig", "Wöchentlich", "Monatlich"]} selected="Einmalig" onChange={(value) => selectedRecurrence = value}/>
+
+    {#if selectedRecurrence === "Einmalig"}
+        <p class="text-gv-dark-text text-dt-4 text-left w-full mt-5">Diese Veranstaltung findet nur einmal statt.</p>
+    {:else if selectedRecurrence === "Wöchentlich"}
+        <p class="text-gv-dark-text text-dt-4 text-left w-full mt-5">Jede Woche am {weekDayMap[weekDay]}</p>
+    {:else if selectedRecurrence === "Monatlich"}
+        <div class="w-full flex items-center justify-start gap-4 mt-5">
+            <Checkbox title="Am gleichen Datum" bind:isChecked={isMonthlyDateChecked} onChange={() => isMonthlyWeekDayChecked = false}/>
+            <Checkbox title="Am gleichen Wochentag" bind:isChecked={isMonthlyWeekDayChecked} onChange={() => isMonthlyDateChecked = false}/>
+        </div>
+
+        {#if isMonthlyDateChecked}
+            <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat am {selectedDate}.</p>
+        {:else if isMonthlyWeekDayChecked}
+            <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
+        {:else}
+            <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat am {selectedDate}.</p>
+        {/if}
+    {/if}
+
+    <div class="w-full flex items-center gap-4 mt-5">
+        <Button type="secondary" on:click={addEventModal?.hideModal}>Abbrechen</Button>
+        <Button type="primary" disabled={saveDisabled} on:click={submitEvent}>Speichern</Button>
+    </div>
 </Modal>
 
 <main class="flex overflow-hidden">
@@ -149,7 +258,7 @@
         <div class="flex items-center mt-10 max-w-1/5">
             <Filter options={["Alle Typen", "Proben", "Meeting", "Konzerte", "Sonstiges"]} page="events" debounce={false}/>
         </div>
-        <TabBar contents={["Bevorstehend", "Abgeschlossen"]} selected="Bevorstehend" marginTop="5" page="events" debounce={true} />
+        <FilterTabBar contents={["Bevorstehend", "Abgeschlossen"]} selected="Bevorstehend" marginTop="5" page="events" debounce={true} bind:this={filterBar}/>
         <div class="grid grid-cols-2 gap-4 overflow-y-auto overflow-x-hidden mt-5">
             {#each $eventsStore.display as event}
                 <Card on:contextmenu={(e) => openContextMenu(e, event.id)}>
