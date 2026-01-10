@@ -4,7 +4,7 @@
     import { user } from "../stores/user";
     import { eventsStore } from "../stores/events";
     import { modeMap, statusMap, typeMap } from "../services/events";
-    import { loadUserData } from "../services/user";
+    import { loadUserData, logout } from "../services/user";
     import {
         parseDMYToDate,
         getLastDayOfCurrentMonth,
@@ -12,7 +12,7 @@
         getWeekDayFromDMYMondayFirst,
         getOrdinalFromDMY
     } from "../services/utils";
-    import { ordinalMap, weekDayMap, addEvent } from "../services/events";
+    import { ordinalMap, weekDayMap, addEvent, updateStatus } from "../services/events";
 
     import ToastStack from "../components/ToastStack.svelte";
     import Sidebar from "../components/Sidebar.svelte";
@@ -31,6 +31,8 @@
     import TabBar from "../components/TabBar.svelte";
     import Checkbox from "../components/Checkbox.svelte";
     import ConfirmDeleteModal from "../components/ConfirmDeleteModal.svelte";
+    import { addToast } from "../stores/toasts";
+    import { push } from "svelte-spa-router";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
@@ -201,6 +203,46 @@
         });
     }
 
+    // CONTEXT MENU SWITCH STATUS
+    async function switchStatus() {
+        const resp = await updateStatus(activeEventId);
+
+        if (resp.status === 200) {
+            addToast({
+                title: "Status aktualisiert",
+                subTitle: "Der Status der Veranstaltung wurde erfolgreich geändert und im System übernommen.",
+                type: "success"
+            });
+        } else if (resp.status === 401) {
+            // Auth token invalid / unauthorized
+            addToast({
+                title: "Ungültiges Token",
+                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+                type: "error"
+            });
+            logout();
+            await push("/?cpwErr=false");
+            return;
+        } else if (resp.status === 404) {
+            // member not found
+            addToast({
+                title: "Veranstaltung nicht gefunden",
+                subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+                type: "error"
+            });
+        } else {
+            // internal server error / unknown error
+            addToast({
+                title: "Interner Serverfehler",
+                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+                type: "error"
+            });
+        }
+        menuOpen = false;
+        activeEventId = null;
+        await filterBar.fetchData();
+    }
+
     onMount(async () => {
         await loadUserData();
     });
@@ -218,7 +260,7 @@
 <ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
     <Button type="contextMenu">Bearbeiten
     </Button>
-    <Button type="contextMenu">Status ändern</Button>
+    <Button type="contextMenu" on:click={switchStatus}>Status ändern</Button>
     <Button type="contextMenu" fontColor="text-gv-delete" on:click={startDeleteEvent}>Löschen</Button>
 </ContextMenu>
 

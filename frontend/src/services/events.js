@@ -98,6 +98,18 @@ export async function addEvent(event) {
     }
 }
 
+export async function updateStatus(id) {
+    const token = get(auth).token;
+    return await fetch(`${apiUrl}/events/update/status`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id })
+    });
+}
+
 export async function deleteEvent(id) {
     const token = get(auth).token;
     return await fetch(`${apiUrl}/events/delete`, {

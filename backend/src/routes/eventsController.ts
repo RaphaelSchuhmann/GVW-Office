@@ -50,31 +50,28 @@ eventsRouter.post("/delete", async (req, resp) => {
     }
 });
 
+eventsRouter.post("/update/status", async (req, resp) => {
+    try {
+        const { id } = req.body;
+        if (!id) return resp.status(400).json({ errorMessage: "InvalidInputs" });
+
+        const event = await dbService.read("events", id);
+        if (!event) return resp.status(404).json({ errorMessage: "EventNotFound" });
+
+        if (event.status === "upcoming") {
+            await dbService.update("events", { ...event, status: "finished" });
+        } else {
+            await dbService.update("events", { ...event, status: "upcoming" });
+        }
+
+        return resp.status(200).json({ ok: true });
+    } catch (err: any) {
+        logger.error({ err }, "events/update/status route errorMessage");
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
+    }
+});
+
 // Functionality wise the members controller and events controller have generally the same endpoints.
-// eventsRouter.post("/delete", async (req, resp) => {
-//     try {
-//         const { id } = req.body;
-//
-//         if (!id) return resp.status(400).json({ errorMessage: "InvalidInputs" });
-//
-//         const member = await dbService.read("members", id);
-//         const users = await dbService.find("users", { selector: { memberId: id }, limit: 1 });
-//
-//         const user = users[0];
-//
-//         if (!member) return resp.status(404).json({ errorMessage: "MemberNotFound" });
-//         if (!user) return resp.status(404).json({ errorMessage: "UserNotFound" });
-//
-//         await dbService.delete("members", member._id, member._rev);
-//         await dbService.delete("users", user._id, user._rev);
-//
-//         return resp.status(200).json({ ok: true });
-//     } catch (err: any) {
-//         logger.error({ err }, "members/delete route errorMessage: ");
-//         return resp.status(500).json({ errorMessage: "InternalServerError" });
-//     }
-// });
-//
 // eventsRouter.post("/update", async (req, resp) => {
 //     try {
 //         const { id, name, surname, email, phone, address, voice, status, role, birthdate, joined } = req.body;
