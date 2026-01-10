@@ -97,3 +97,15 @@ export async function addEvent(event) {
         });
     }
 }
+
+export async function deleteEvent(id) {
+    const token = get(auth).token;
+    return await fetch(`${apiUrl}/events/delete`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id })
+    });
+}

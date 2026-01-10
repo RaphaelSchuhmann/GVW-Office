@@ -30,6 +30,7 @@
     import DefaultDatepicker from "../components/DefaultDatepicker.svelte";
     import TabBar from "../components/TabBar.svelte";
     import Checkbox from "../components/Checkbox.svelte";
+    import ConfirmDeleteModal from "../components/ConfirmDeleteModal.svelte";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
@@ -95,6 +96,33 @@
         inputTime = "";
         inputLocation = "";
         inputDescription = "";
+    }
+
+    // DELETE EVENT
+    /** @type {import("../components/ConfirmDeleteModal.svelte").default} */
+    let confirmDeleteEventModal;
+
+    let eventTitle = "";
+    let deleteEventToast = {
+        success: {
+            title: "Veranstaltung gelöscht",
+            subTitle: "Die Veranstaltung wurde erfolgreich aus dem System entfernt.",
+            type: "success"
+        },
+        notFound: {
+            title: "Nicht gefunden",
+            subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+            type: "error"
+        },
+    };
+
+    function startDeleteEvent() {
+        menuOpen = false;
+
+        let events = get(eventsStore).display;
+        eventTitle = events.find(item => item.id === activeEventId)?.title;
+
+        confirmDeleteEventModal.startDelete();
     }
 
     // EVENT
@@ -191,7 +219,7 @@
     <Button type="contextMenu">Bearbeiten
     </Button>
     <Button type="contextMenu">Status ändern</Button>
-    <Button type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
+    <Button type="contextMenu" fontColor="text-gv-delete" on:click={startDeleteEvent}>Löschen</Button>
 </ContextMenu>
 
 <!-- Add event modal -->
@@ -244,6 +272,14 @@
         <Button type="primary" disabled={saveDisabled} on:click={submitEvent}>Speichern</Button>
     </div>
 </Modal>
+
+<!-- Confirm delete member modal -->
+<ConfirmDeleteModal expectedInput={eventTitle} id={activeEventId}
+                    title="Veranstaltung löschen" subTitle="Sind Sie sich sicher das Sie diese Veranstaltung löschen möchten?"
+                    toastMap={deleteEventToast} action="deleteEvent"
+                    onClose={async () => {menuOpen = false; activeEventId = null; await filterBar.fetchData();}}
+                    bind:this={confirmDeleteEventModal}
+/>
 
 <main class="flex overflow-hidden">
     <Sidebar onSettingsClick={settingsClick} currentPage="events"></Sidebar>

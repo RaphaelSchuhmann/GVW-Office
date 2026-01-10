@@ -22,89 +22,35 @@ eventsRouter.post("/add", async (req, resp) => {
         if (!event) {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
-        
+
         await dbService.create("events", event);
-        
+
         return resp.status(200).json({ ok: true });
-    } catch(err: any) {
-        logger.error({ err }, "events/all route errorMessage: ");
+    } catch (err: any) {
+        logger.error({ err }, "events/add route errorMessage: ");
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
+    }
+});
+
+eventsRouter.post("/delete", async (req, resp) => {
+    try {
+        const { id } = req.body;
+
+        if (!id) return resp.status(400).json({ errorMessage: "InvalidInputs" });
+
+        const event = await dbService.read("events", id);
+        if (!event) return resp.status(404).json({ errorMessage: "EventNotFound" });
+
+        await dbService.delete("events", event._id, event._rev);
+
+        return resp.status(200).json({ ok: true });
+    } catch (err: any) {
+        logger.error({ err }, "events/delete route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
 
 // Functionality wise the members controller and events controller have generally the same endpoints.
-// eventsRouter.post("/add", async (req, resp) => {
-//     let memberId: string | null = null;
-//     let memberRev: string | null = null;
-//
-//     try {
-//         const { name, surname, email, phone, address, voice, status, role, birthdate, joined } = req.body;
-//
-//         // Validate inputs
-//         if (!validInputs(name, surname, email, phone, address, voice, status, role, birthdate, joined))
-//             return resp.status(400).json({ errorMessage: "InvalidInputs" });
-//
-//         // Check if there is already a user with the given email
-//         const users = await dbService.find("users", { selector: { email: email }, limit: 1 });
-//         if (users.length > 0) return resp.status(409).json({ errorMessage: "EmailAlreadyInUse" });
-//
-//         let tempPassword = await generateTempPassword();
-//
-//         // Create new member
-//         const member = await dbService.create("members", {
-//             name: name,
-//             surname: surname,
-//             email: email,
-//             phone: phone,
-//             address: address,
-//             voice: voice,
-//             status: status,
-//             role: role,
-//             birthdate: birthdate,
-//             joined: joined
-//         });
-//
-//         memberId = member.id;
-//         memberRev = member.rev;
-//
-//         // Add actual user account
-//         await dbService.create("users", {
-//             email: email,
-//             name: `${name} ${surname}`,
-//             password: await hash(tempPassword, 12),
-//             phone: phone,
-//             address: address,
-//             changePassword: true,
-//             firstLogin: true,
-//             userId: uuidv4(),
-//             role: role,
-//             memberId: memberId,
-//             failedLoginAttempts: 0,
-//             lockUntil: null
-//         });
-//
-//         const html = await loadTemplate("resetPassword", { tempPassword: tempPassword });
-//
-//         await sendMail({
-//             to: email,
-//             subject: "Temporäres Passwort",
-//             content: html
-//         });
-//
-//         return resp.status(200).json({ ok: true });
-//     } catch (err: any) {
-//         if (memberId && memberRev) {
-//             try {
-//                 await dbService.delete("members", memberId, memberRev);
-//             } catch (cleanupErr) {
-//                 logger.error({ cleanupErr }, "Rollback failed");
-//             }
-//         }
-//         logger.error({ err }, "members/add route errorMessage: ");
-//         return resp.status(500).json({ errorMessage: "InternalServerError" });
-//     }
-// });
-//
 // eventsRouter.post("/delete", async (req, resp) => {
 //     try {
 //         const { id } = req.body;
