@@ -175,12 +175,6 @@
                 subTitle: "Der Status des Mitglieds wurde erfolgreich geändert und im System übernommen.",
                 type: "success"
             });
-        } else if (resp.status === 400) {
-            addToast({
-                title: "Mitglied nicht gefunden",
-                subTitle: "Das angegebene Mitglied konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
-                type: "error"
-            });
         } else if (resp.status === 401) {
             // Auth token invalid / unauthorized
             addToast({
