@@ -21,45 +21,63 @@ router.get("/generateDBs", async (_, resp) => {
 
 router.get("/generateEventData", async (_, resp) => {
     try {
+        const events = await dbService.list("events");
+
+        for (const event of events) {
+            await dbService.delete("events", event._id, event._rev);
+        }
+
         await dbService.create("events", {
-            title: "Jahreshauptversammlung",
+            title: "Sommerkonzert",
+            type: "concert",
+            status: "upcoming",
+            date: "20.06.2026",
+            time: "18:00",
+            location: "Stadthalle",
+            description: "Keine Beschreibung",
+            mode: "single"
+        });
+
+        await dbService.create("events", {
+            title: "Wochenprobe",
+            type: "practice",
+            status: "upcoming",
+            date: "16.01.2026",
+            time: "20:00",
+            location: "Gasthof XYZ",
+            description: "Eine Wöchentliche Chor Probe",
+            mode: "weekly"
+        });
+
+        await dbService.create("events", {
+            title: "Monatsprobe - Gemischter Chor",
+            type: "practice",
+            status: "upcoming",
+            date: "07.02.2026",
+            time: "13:00",
+            location: "Gasthof XYZ",
+            description: "Eine Monatliche Chor Probe für den Gemischen Chor",
+            mode: "monthly",
+            recurrence: {
+                monthlyKind: "weekday",
+                weekDay: 6,
+                ordinal: 1
+            }
+        });
+
+        await dbService.create("events", {
+            title: "Vorstandssitzung",
             type: "meeting",
             status: "upcoming",
-            when: "20.11.2025",
-            time: "18:00",
+            date: "15.03.2026",
+            time: "20:00",
             location: "Gasthof XYZ",
-            weekly: false,
-            description: "Keine Beschreibung"
-        });
-        await dbService.create("events", {
-            title: "Jahreshauptversammlung2",
-            type: "meeting",
-            status: "upcoming",
-            when: "20.11.2025",
-            time: "18:00",
-            location: "Gasthof XYZ",
-            weekly: false,
-            description: "Keine Beschreibung"
-        });
-        await dbService.create("events", {
-            title: "Jahreshauptversammlung3",
-            type: "meeting",
-            status: "upcoming",
-            when: "20.11.2025",
-            time: "18:00",
-            location: "Gasthof XYZ",
-            weekly: false,
-            description: "Keine Beschreibung"
-        });
-        await dbService.create("events", {
-            title: "Jahreshauptversammlung4",
-            type: "meeting",
-            status: "finished",
-            when: "20.11.2025",
-            time: "18:00",
-            location: "Gasthof XYZ",
-            weekly: false,
-            description: "Keine Beschreibung"
+            description: "Keine Beschreibung",
+            mode: "monthly",
+            recurrence: {
+                monthlyKind: "date",
+                dayOfMonth: 15
+            }
         });
 
         resp.status(200).json({ status: "ok" });

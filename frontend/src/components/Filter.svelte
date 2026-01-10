@@ -39,6 +39,7 @@
 
             if (resp.status === 200) {
                 store.update(u => ({ ...u, loading: false, raw: data, all: data }));
+                config.applyFilters(store); // Apply filters after data is loaded
             } else if (resp.status === 401) {
                 // Auth token invalid / unauthorized
                 addToast({
