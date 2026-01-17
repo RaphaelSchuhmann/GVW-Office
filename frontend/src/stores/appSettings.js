@@ -2,10 +2,18 @@ import { writable } from "svelte/store";
 import { getSettings } from "../services/appSettings";
 import { addToast } from "./toasts";
 
+/**
+ * Svelte store for application settings
+ * @type {import('svelte/store').Writable<{maxMembers: number}>}
+ */
 export const appSettings = writable({
     maxMembers: 1,
 });
 
+/**
+ * Loads application settings from the server and updates the store
+ * Shows error toast if loading fails
+ */
 async function loadSettings() {
     try {
         const settings = await getSettings();

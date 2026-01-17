@@ -18,6 +18,11 @@
         type = "primary";
     }
 
+    /**
+     * Handles keyboard shortcuts for submit and cancel buttons
+     * Enter key triggers submit buttons, Escape key triggers cancel buttons
+     * @param {KeyboardEvent} event - The keyboard event
+     */
     function handleKeyDown(event) {
         if ((!isSubmit && !isCancel) && type !== "contextMenu" && type !== "delete") return;
 

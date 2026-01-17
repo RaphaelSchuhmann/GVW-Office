@@ -24,6 +24,10 @@
     let phone = $user.phone;
     let address = $user.address;
 
+    /**
+     * Updates user data on the server and handles API response
+     * Shows appropriate toast messages and handles authentication errors
+     */
     async function updateUserData() {
         let originalEmail = $user.email;
 
@@ -70,12 +74,20 @@
         modal.hideModal();
     }
 
+    /**
+     * Resets all input fields to readonly state
+     * Called when modal is closed or opened
+     */
     function resetStates() {
         readonlyMail = true;
         readonlyPhone = true;
         readonlyAddress = true;
     }
 
+    /**
+     * Shows the settings modal and initializes form values
+     * Resets form data to current user values
+     */
     export function showModal() {
         modal.showModal();
 

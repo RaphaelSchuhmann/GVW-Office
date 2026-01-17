@@ -59,6 +59,11 @@
         nameInput && surnameInput && emailInput && phoneInput && addressInput && voiceInput && statusInput && roleInput && birthdayInput && joinedInput
     );
 
+    /**
+     * Updates member information in the system
+     * Handles API response and shows appropriate toast messages
+     * Redirects to members page after completion
+     */
     async function handleUpdateMember() {
         const resp = await updateMember(member.id, nameInput, surnameInput, emailInput, phoneInput, addressInput, voiceMap[voiceInput], statusMap[statusInput], roleMap[roleInput], birthdayInput, joinedInput);
         const body = await resp.json();

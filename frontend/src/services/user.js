@@ -7,6 +7,12 @@ import { addToast } from "../stores/toasts";
 
 const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
 
+/**
+ * Fetches user data from the server
+ * @param {string} email - User's email address
+ * @param {string} token - Authentication token
+ * @returns {Promise<Response>} API response with user data
+ */
 export async function getData(email, token) {
     return await fetch(`${apiUrl}/user/data`, {
         method: "POST",
@@ -18,6 +24,11 @@ export async function getData(email, token) {
     });
 }
 
+/**
+ * Loads and updates user data in the store from the server
+ * Handles authentication errors and redirects if necessary
+ * @returns {Promise<void>} Updates user store or shows error toast
+ */
 export async function loadUserData() {
     const userStore = get(user);
     const authStore = get(auth);
@@ -56,6 +67,11 @@ export async function loadUserData() {
     }
 }
 
+/**
+ * Updates user data on the server
+ * @param {string} originalEmail - Original email before any changes
+ * @returns {Promise<Response>} API response with update result
+ */
 export async function updateData(originalEmail) {
     const currentUser = get(user);
     const currentAuth = get(auth);
@@ -76,6 +92,10 @@ export async function updateData(originalEmail) {
     });
 }
 
+/**
+ * Logs out the user by clearing all user data and auth token
+ * Resets user and auth stores to initial state
+ */
 export function logout() {
     user.set({
         name: "",

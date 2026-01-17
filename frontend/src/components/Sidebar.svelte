@@ -18,39 +18,30 @@
     let userOptionsIcon = "expand_all";
     let userOptionsVisible = false;
 
+    /**
+     * Toggles the sidebar between minimized and expanded states
+     * Updates the toggle icon accordingly
+     */
     function toggleSidebarState() {
         minimized = !minimized;
         toggleIcon = minimized ? "arrow_menu_open" : "arrow_menu_close";
     }
 
+    /**
+     * Toggles the visibility of user options dropdown
+     * Updates the expand/collapse icon
+     */
     function toggleUserOptions() {
         userOptionsVisible = !userOptionsVisible;
         userOptionsIcon = userOptionsVisible ? "collapse_all" : "expand_all";
     }
 
+    /**
+     * Logs out the user and redirects to login page
+     */
     async function handleLogout() {
         logout();
         await push("/");
-    }
-
-    async function handleDashboard() {
-        await push("/dashboard");
-    }
-
-    async function handleMembers() {
-        await push("/members");
-    }
-
-    async function handleEvents() {
-        await push("/events");
-    }
-
-    async function handleReports() {
-        await push("/reports");
-    }
-
-    async function handleMusicLibrary() {
-        await push("/library");
     }
 </script>
 
@@ -70,7 +61,7 @@
 
     <!--  Content  -->
     <div class="w-full h-full flex flex-col items-center p-5 flex-1">
-        <SidebarButton selected={currentPage === "dashboard"} minimized={minimized} on:click={handleDashboard}>
+        <SidebarButton selected={currentPage === "dashboard"} minimized={minimized} on:click={async () => await push("/dashboard")}>
             <span class="material-symbols-rounded text-icon-dt-4">dashboard</span>
             {#if !minimized}
                 <p class="ml-2">Dashboard</p>
@@ -79,7 +70,7 @@
 
         {#if mitgliederAccess.includes($user.role)}
             <SidebarButton selected={currentPage === "members"} marginTop="5" minimized={minimized}
-                           on:click={handleMembers}>
+                           on:click={async () => await push("/members")}>
                 <span class="material-symbols-rounded text-icon-dt-4">group</span>
                 {#if !minimized}
                     <p class="ml-2">Mitglieder</p>
@@ -87,7 +78,7 @@
             </SidebarButton>
         {/if}
 
-        <SidebarButton selected={currentPage === "events"} marginTop="5" minimized={minimized} on:click={handleEvents}>
+        <SidebarButton selected={currentPage === "events"} marginTop="5" minimized={minimized} on:click={async () => await push("/events")}>
             <span class="material-symbols-rounded text-icon-dt-4">calendar_today</span>
             {#if !minimized}
                 <p class="ml-2">Veranstaltungen</p>
@@ -96,7 +87,7 @@
 
         {#if reportsAccess.includes($user.role)}
             <SidebarButton selected={currentPage === "reports"} marginTop="5" minimized={minimized}
-                           on:click={handleReports}>
+                           on:click={async () => await push("/reports")}>
                 <span class="material-symbols-rounded text-icon-dt-4">docs</span>
                 {#if !minimized}
                     <p class="ml-2">Berichte</p>
@@ -105,7 +96,7 @@
         {/if}
 
         <SidebarButton selected={currentPage === "musicLibrary"} marginTop="5" minimized={minimized}
-                       on:click={handleMusicLibrary}>
+                       on:click={async () => await push("/library")}>
             <span class="material-symbols-rounded text-icon-dt-4">music_note_2</span>
             {#if !minimized}
                 <p class="ml-2">Notenbibliothek</p>

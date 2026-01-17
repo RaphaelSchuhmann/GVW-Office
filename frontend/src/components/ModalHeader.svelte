@@ -6,6 +6,10 @@
 
     let closeBtn;
 
+    /**
+     * Handles keyboard events, specifically closing modal on Escape key
+     * @param {KeyboardEvent} event - The keyboard event
+     */
     function handleKeyDown(event) {
         if (event.key === "Escape") {
             closeBtn?.click();

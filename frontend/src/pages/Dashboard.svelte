@@ -93,6 +93,10 @@
         };
     }
 
+    /**
+     * Updates the maximum members per voice setting
+     * Validates input and handles API response with appropriate toast messages
+     */
     async function updateMaxMembersVoiceDistribution() {
         let updatedMaxMembers = Number(maxMembers);
 

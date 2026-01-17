@@ -34,12 +34,18 @@
         passwordInput = true;
     }
 
-    // Toggle password visibility
+    /**
+     * Toggles password visibility between hidden and visible
+     * Changes input type between 'password' and 'text'
+     */
     function togglePasswordView() {
         passwordVisible = !passwordVisible;
         type = passwordVisible ? "text" : "password";
     }
 
+    /**
+     * Focuses the input element
+     */
     export function focus() {
         inputEl.focus();
     }

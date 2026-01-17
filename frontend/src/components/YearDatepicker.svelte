@@ -17,6 +17,10 @@
     $: gridStart = Math.floor(usedYear / 12) * 12;
     $: yearsGrid = Array.from({ length: 12 }, (_, i) => gridStart + i);
 
+    /**
+     * Handles clicks outside the datepicker to close it
+     * @param {MouseEvent} event - The click event
+     */
     function handleClickOutside(event) {
         if (datepickerRef && !datepickerRef.contains(event.target)) {
             open = false;
@@ -31,21 +35,35 @@
         document.removeEventListener("mousedown", handleClickOutside);
     });
 
+    /**
+     * Toggles the datepicker open/closed state
+     * Sets default selected year if none is selected
+     */
     function toggleOpen() {
         open = !open;
         if (!selected) selected = String(usedYear);
     }
 
+    /**
+     * Selects a year and closes the datepicker
+     * @param {number} year - The year to select
+     */
     function selectYear(year) {
         usedYear = year;
         selected = String(year);
         open = false;
     }
 
+    /**
+     * Navigates to the next 12-year range
+     */
     function nextRange() {
         usedYear += 12;
     }
 
+    /**
+     * Navigates to the previous 12-year range
+     */
     function backRange() {
         usedYear -= 12;
     }

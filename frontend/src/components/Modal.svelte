@@ -12,11 +12,19 @@
 
     let visible = false;
 
+    /**
+     * Shows the modal and optionally executes extra function
+     * Executes extraFunction if extraFunctionOnClose is false
+     */
     export function showModal() {
         visible = true;
         if (!extraFunctionOnClose) extraFunction();
     }
 
+    /**
+     * Hides the modal and optionally executes extra function
+     * Executes extraFunction if extraFunctionOnClose is true
+     */
     export function hideModal() {
         visible = false;
         if (extraFunctionOnClose) extraFunction();

@@ -1,3 +1,7 @@
+/**
+ * Maps margin top values to Tailwind CSS classes
+ * @type {Object<string, string>}
+ */
 export const marginMap = {
     "0": "mt-0",
     "": "mt-0",
@@ -13,6 +17,10 @@ export const marginMap = {
     "10": "mt-10",
 };
 
+/**
+ * Maps padding values to Tailwind CSS classes
+ * @type {Object<string, string>}
+ */
 export const paddingMap = {
     "0": "p-0",
     "": "p-0",
@@ -28,6 +36,10 @@ export const paddingMap = {
     "10": "p-10",
 };
 
+/**
+ * Maps padding left values to Tailwind CSS classes
+ * @type {Object<string, string>}
+ */
 export const paddingLeftMap = {
     "0": "pl-0",
     "": "pl-0",
@@ -43,6 +55,10 @@ export const paddingLeftMap = {
     "10": "pl-10",
 };
 
+/**
+ * Maps padding right values to Tailwind CSS classes
+ * @type {Object<string, string>}
+ */
 export const paddingRightMap = {
     "0": "pr-0",
     "": "pr-0",
@@ -58,6 +74,10 @@ export const paddingRightMap = {
     "10": "pr-10",
 };
 
+/**
+ * Maps padding top values to Tailwind CSS classes
+ * @type {Object<string, string>}
+ */
 export const paddingTopMap = {
     "0": "pt-0",
     "": "pt-0",
@@ -73,6 +93,10 @@ export const paddingTopMap = {
     "10": "pt-10",
 };
 
+/**
+ * Maps padding bottom values to Tailwind CSS classes
+ * @type {Object<string, string>}
+ */
 export const paddingBottomMap = {
     "0": "pb-0",
     "": "pb-0",
@@ -88,6 +112,10 @@ export const paddingBottomMap = {
     "10": "pb-10",
 };
 
+/**
+ * Maps justify content values to Tailwind CSS classes
+ * @type {Object<string, string>}
+ */
 export const justifyMap = {
     "justify-start": "justify-start",
     "justify-end": "justify-end",
@@ -108,6 +136,10 @@ export const justifyMap = {
     "": "justify-start",
 };
 
+/**
+ * Maps width values to Tailwind CSS classes
+ * @type {Object<string, string>}
+ */
 export const widthMap = {
     "1/2": "w-1/2",
     "1/3": "w-1/3",
@@ -143,6 +175,10 @@ export const widthMap = {
     "": "w-full",
 };
 
+/**
+ * Maps height values to Tailwind CSS classes
+ * @type {Object<string, string>}
+ */
 export const heightMap = {
     "1/2": "h-1/2",
     "1/3": "h-1/3",
@@ -178,6 +214,10 @@ export const heightMap = {
     "": "h-full",
 };
 
+/**
+ * Maps font color values to Tailwind CSS classes
+ * @type {Object<string, string>}
+ */
 export const fontColorMap = {
     "": "text-gv-dark-text",
     "text-gv-dark-text": "text-gv-dark-text",

@@ -31,6 +31,20 @@ export const statusMap = {
 
 const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
 
+/**
+ * Adds a new member to the system
+ * @param {string} name - Member's first name
+ * @param {string} surname - Member's last name
+ * @param {string} email - Member's email address
+ * @param {string} phone - Member's phone number
+ * @param {string} address - Member's address
+ * @param {string} voice - Member's voice type (tenor1, tenor2, bass1, bass2)
+ * @param {string} status - Member's status (active, inactive)
+ * @param {string} role - Member's role (member, vorstand, schriftführer, admin)
+ * @param {string} birthday - Member's birthday in DD.MM.YYYY format
+ * @param {string} joined - Date member joined in DD.MM.YYYY format
+ * @returns {Promise<Response>} API response with creation result
+ */
 export async function addMember(name, surname, email, phone, address, voice, status, role, birthday, joined) {
     const token = get(auth).token;
     return await fetch(`${apiUrl}/members/add`, {
@@ -43,6 +57,21 @@ export async function addMember(name, surname, email, phone, address, voice, sta
     });
 }
 
+/**
+ * Updates an existing member's information
+ * @param {string} id - Member's ID
+ * @param {string} name - Member's first name
+ * @param {string} surname - Member's last name
+ * @param {string} email - Member's email address
+ * @param {string} phone - Member's phone number
+ * @param {string} address - Member's address
+ * @param {string} voice - Member's voice type (tenor1, tenor2, bass1, bass2)
+ * @param {string} status - Member's status (active, inactive)
+ * @param {string} role - Member's role (member, vorstand, schriftführer, admin)
+ * @param {string} birthday - Member's birthday in DD.MM.YYYY format
+ * @param {string} joined - Date member joined in DD.MM.YYYY format
+ * @returns {Promise<Response>} API response with update result
+ */
 export async function updateMember(id, name, surname, email, phone, address, voice, status, role, birthday, joined) {
     const token = get(auth).token;
     return await fetch(`${apiUrl}/members/update`, {
@@ -55,6 +84,11 @@ export async function updateMember(id, name, surname, email, phone, address, voi
     });
 }
 
+/**
+ * Toggles a member's status between active and inactive
+ * @param {string} id - Member's ID
+ * @returns {Promise<Response>} API response with status update result
+ */
 export async function updateStatus(id) {
     const token = get(auth).token;
     return await fetch(`${apiUrl}/members/update/status`, {
@@ -67,6 +101,11 @@ export async function updateStatus(id) {
     });
 }
 
+/**
+ * Resets a member's password to default
+ * @param {string} id - Member's ID
+ * @returns {Promise<Response>} API response with password reset result
+ */
 export async function resetPassword(id) {
     const token = get(auth).token;
     return await fetch(`${apiUrl}/user/reset/password`, {
@@ -79,6 +118,11 @@ export async function resetPassword(id) {
     });
 }
 
+/**
+ * Deletes a member from the system
+ * @param {string} id - Member's ID to delete
+ * @returns {Promise<Response>} API response with deletion result
+ */
 export async function deleteMember(id) {
     const token = get(auth).token;
     return await fetch(`${apiUrl}/members/delete`, {

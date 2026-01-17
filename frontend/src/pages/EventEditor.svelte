@@ -35,6 +35,10 @@
 
     let edited = false;
 
+    /**
+     * Updates event information in the system
+     * Handles monthly recurrence configuration and redirects to events page
+     */
     async function handleUpdateEvent() {
         event = {
             ...event,

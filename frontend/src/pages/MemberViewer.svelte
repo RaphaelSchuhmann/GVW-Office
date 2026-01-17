@@ -50,11 +50,19 @@
         },
     };
 
+    /**
+     * Initiates the delete process for a member
+     * Sets up the confirmation modal with member details
+     */
     function startDeleteMember() {
         memberName = `${member.name} ${member.surname}`;
         confirmDeleteMemberModal.startDelete();
     }
 
+    /**
+     * Resets a member's password and sends new password via email
+     * Handles API response and shows appropriate toast messages
+     */
     async function resetMemberPassword() {
         const resp = await resetPassword(member.id);
 

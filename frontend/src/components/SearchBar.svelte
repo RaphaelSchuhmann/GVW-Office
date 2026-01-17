@@ -21,6 +21,10 @@
     const config = searchRegistry[page];
     const { store, endpoint, fuse: fuseConfig } = config;
 
+    /**
+     * Fetches data from the API endpoint and initializes Fuse search
+     * Handles authentication errors and updates the store with results
+     */
     export async function fetchData() {
         store.update(u => ({ ...u, loading: true }));
 
@@ -57,6 +61,11 @@
         }
     }
 
+    /**
+     * Handles search input with debouncing
+     * Filters results using Fuse.js or shows all data if input is empty
+     * @param {string} value - The search input value
+     */
     function onInput(value) {
         clearTimeout(debounce);
         debounce = setTimeout(() => {
@@ -74,6 +83,9 @@
         fetchData();
     }
 
+    /**
+     * Focuses the search input element
+     */
     export function focus() {
         searchEl.focus();
     }

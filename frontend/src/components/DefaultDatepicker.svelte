@@ -14,6 +14,12 @@
     let monthOptions = ["Januar", "Februar", "März", "April", "Mai", "Juni", "July", "August", "September", "Oktober", "November", "Dezember"];
     let yearOptions = generateYears(currentYear, 101);
 
+    /**
+     * Generates an array of year strings centered around a given year
+     * @param {number} center - The center year
+     * @param {number} range - The range of years on each side of center
+     * @returns {string[]} Array of year strings
+     */
     function generateYears(center, range = 10) {
         return Array.from(
             { length: range * 2 + 1 },
@@ -25,12 +31,22 @@
     let usedYear = currentYear;
     let selectedDate = new Date().getDate();
 
+    /**
+     * Handles clicks outside the datepicker to close it
+     * @param {MouseEvent} event - The click event
+     */
     function handleClickOutside(event) {
         if (datepickerRef && !datepickerRef.contains(event.target)) {
             open = false;
         }
     }
 
+    /**
+     * Builds a calendar grid for the given year and month
+     * @param {number} year - The year
+     * @param {number} month - The month (0-indexed)
+     * @returns {Array<Array<number|null>>} 2D array representing calendar weeks
+     */
     function buildCalendar(year, month) {
         const days = daysInMonth(year, month);
         const startDay = firstWeekdayOfMonth(year, month);
@@ -64,16 +80,26 @@
         document.removeEventListener("mousedown", handleClickOutside);
     });
 
+    /**
+     * Toggles the datepicker open/closed and updates selected date
+     */
     function openDatepicker() {
         open = !open;
         selected = `${selectedDate}.${usedMonth + 1}.${usedYear}`;
     }
 
+    /**
+     * Handles day selection and closes the datepicker
+     * @param {number} value - The selected day
+     */
     function itemClicked(value) {
         selectedDate = value;
         open = false;
     }
 
+    /**
+     * Navigates to the next month/year
+     */
     function next() {
         if (!yearOptions.includes(String(usedYear + 1)) && usedMonth === 11) return;
 
@@ -86,6 +112,9 @@
         usedMonth++;
     }
 
+    /**
+     * Navigates to the previous month/year
+     */
     function back() {
         if (!yearOptions.includes(String(usedYear - 1)) && usedMonth === 0) return;
 

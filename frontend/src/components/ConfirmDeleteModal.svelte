@@ -38,10 +38,17 @@
 
     $: (confirmInput === expectedInput && expectedInput) ? invalidConfirm = false : invalidConfirm = true;
 
+    /**
+     * Shows the confirmation delete modal
+     */
     export function startDelete() {
         confirmDeleteModal?.showModal();
     }
 
+    /**
+     * Handles the delete operation after confirmation
+     * Calls the appropriate API function and handles responses with toast messages
+     */
     async function handleDelete() {
         confirmDeleteModal?.hideModal();
         if (action !== "none") {

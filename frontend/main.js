@@ -3,6 +3,10 @@ const path = require('path');
 
 let mainWindow;
 
+/**
+ * Creates the main application window
+ * Sets up window properties, loads the app, and handles window events
+ */
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,

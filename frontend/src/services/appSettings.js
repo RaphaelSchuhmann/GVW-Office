@@ -4,6 +4,10 @@ import { appSettings } from "../stores/appSettings";
 
 const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
 
+/**
+ * Fetches application settings from the server
+ * @returns {Promise<Response>} API response with settings data
+ */
 export async function getSettings() {
     const currentAuth = get(auth);
 
@@ -16,6 +20,10 @@ export async function getSettings() {
     });
 }
 
+/**
+ * Updates the maximum members setting on the server
+ * @returns {Promise<Response>} API response confirming the update
+ */
 export async function updateMaxMembers() {
     const currentAuth = get(auth);
     const currentSettings = get(appSettings);

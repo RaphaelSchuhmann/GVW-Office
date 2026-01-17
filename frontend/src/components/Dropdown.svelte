@@ -25,6 +25,11 @@
         }
     }
 
+    /**
+     * Selects an option and closes the dropdown
+     * Calls the onChange callback with the selected option
+     * @param {string} option - The option to select
+     */
     function selectOption(option) {
         selected = option;
         open = false;
@@ -32,6 +37,10 @@
         onChange(option);
     }
 
+    /**
+     * Handles clicks outside the dropdown to close it
+     * @param {MouseEvent} event - The click event
+     */
     function handleClickOutside(event) {
         if (dropdownRef && !dropdownRef.contains(event.target)) {
             open = false;

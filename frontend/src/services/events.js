@@ -54,6 +54,11 @@ export const modeMap = {
 
 const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
 
+/**
+ * Adds a new event to the system
+ * @param {Object} event - Event object with all event details
+ * @returns {Promise<void>} Shows toast notification based on API response
+ */
 export async function addEvent(event) {
     const token = get(auth).token;
     const resp = await fetch(`${apiUrl}/events/add`, {
@@ -98,6 +103,11 @@ export async function addEvent(event) {
     }
 }
 
+/**
+ * Updates an existing event in the system
+ * @param {Object} event - Event object with updated details
+ * @returns {Promise<void>} Shows toast notification based on API response
+ */
 export async function updateEvent(event) {
     const token = get(auth).token;
     const resp = await fetch(`${apiUrl}/events/update`, {
@@ -150,6 +160,11 @@ export async function updateEvent(event) {
     }
 }
 
+/**
+ * Toggles the status of an event between upcoming and finished
+ * @param {string} id - Event ID to update
+ * @returns {Promise<Response>} API response with update result
+ */
 export async function updateStatus(id) {
     const token = get(auth).token;
     return await fetch(`${apiUrl}/events/update/status`, {
@@ -162,6 +177,11 @@ export async function updateStatus(id) {
     });
 }
 
+/**
+ * Deletes an event from the system
+ * @param {string} id - Event ID to delete
+ * @returns {Promise<Response>} API response with deletion result
+ */
 export async function deleteEvent(id) {
     const token = get(auth).token;
     return await fetch(`${apiUrl}/events/delete`, {

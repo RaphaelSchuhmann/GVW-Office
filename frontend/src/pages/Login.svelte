@@ -51,6 +51,11 @@
         }
     });
 
+    /**
+     * Handles user login process
+     * Validates inputs, authenticates with server, and handles various response scenarios
+     * Manages token storage and navigation based on authentication result
+     */
     async function btnLogin() {
         // Ensure neither email nor password is empty
         if (!email) {

@@ -33,6 +33,10 @@
     let tabElements = [];
     let sliderStyle = "";
 
+    /**
+     * Updates the position and width of the sliding background indicator
+     * Positions the slider behind the currently selected tab
+     */
     function updateSliderPosition() {
         const selectedIndex = tabs.findIndex(tab => tab.title === selected);
         if (selectedIndex >= 0 && tabElements[selectedIndex]) {
@@ -46,6 +50,10 @@
         setTimeout(updateSliderPosition, 0); // Wait for DOM update
     }
 
+    /**
+     * Fetches data from the API endpoint and updates the store
+     * Handles authentication errors and prevents concurrent requests
+     */
     export async function fetchData() {
         if (isFetching) return;
         isFetching = true;
@@ -88,6 +96,10 @@
         }
     }
 
+    /**
+     * Applies the selected tab filter to the data
+     * Updates the store's status filter and triggers filter application
+     */
     function filter() {
         if (!(selected in tabMap)) {
             addToast({
@@ -105,6 +117,10 @@
         applyFilters(store);
     }
 
+    /**
+     * Generates count of items for each tab based on current data
+     * Updates the tabs array with item counts for display
+     */
     function generateCount() {
         tabs = tabs.map(tab => {
             const filterFor = tabMap[tab.title];

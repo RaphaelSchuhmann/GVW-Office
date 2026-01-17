@@ -32,6 +32,11 @@
         }
     });
 
+    /**
+     * Updates user password after validation
+     * Validates current password, new password requirements, and confirmation match
+     * Handles API response and manages token storage for successful changes
+     */
     async function updatePassword() {
         // Validate inputs
         if (!currentPw) {

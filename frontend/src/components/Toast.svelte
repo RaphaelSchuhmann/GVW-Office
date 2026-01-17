@@ -19,6 +19,9 @@
     let iconColor = "";
     let borderColor = "";
 
+    /**
+     * Closes the toast by calling the onClose callback
+     */
     function closeToast() {
         onClose();
     }

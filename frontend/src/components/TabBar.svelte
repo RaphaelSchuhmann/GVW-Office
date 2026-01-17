@@ -16,6 +16,10 @@
     let tabElements = [];
     let sliderStyle = "";
 
+    /**
+     * Updates the position and width of the sliding background indicator
+     * Positions the slider behind the currently selected tab
+     */
     function updateSliderPosition() {
         const selectedIndex = tabs.findIndex(tab => tab.title === selected);
         if (selectedIndex >= 0 && tabElements[selectedIndex]) {

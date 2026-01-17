@@ -43,6 +43,9 @@
     let phoneInput = "";
     let addressInput = "";
 
+    /**
+     * Resets all input fields in the add member modal
+     */
     function resetAddInputs() {
         nameInput = "";
         surnameInput = "";
@@ -51,6 +54,10 @@
         addressInput = "";
     }
 
+    /**
+     * Submits a new member to the system with all form data
+     * Validates inputs and handles API response with appropriate toast messages
+     */
     async function submitMember() {
         if (!birthdayInput || !joinedInput || !nameInput || !surnameInput || !emailInput || !phoneInput || !addressInput) return;
         if (voiceInput === "wählen" || statusInput === "wählen" || roleInput === "wählen") return;
@@ -117,6 +124,10 @@
         },
     };
 
+    /**
+     * Initiates the delete process for a member
+     * Sets up the confirmation modal with member details
+     */
     function startDeleteMember() {
         menuOpen = false;
 
@@ -134,6 +145,11 @@
     let menuY = 0;
     let activeMemberId = null;
 
+    /**
+     * Opens context menu on right-click at cursor position
+     * @param {MouseEvent} event - The right-click event
+     * @param {string} memberId - ID of the member being right-clicked
+     */
     function openContextMenu(event, memberId) {
         event.preventDefault();
         event.stopPropagation();
@@ -147,6 +163,11 @@
         });
     }
 
+    /**
+     * Opens context menu from the three-dot button click
+     * @param {MouseEvent} event - The button click event
+     * @param {string} memberId - ID of the member whose button was clicked
+     */
     function openContextMenuFromButton(event, memberId) {
         event.preventDefault();
         event.stopPropagation();
@@ -166,6 +187,10 @@
         });
     }
 
+    /**
+     * Toggles the status of a member between active and inactive
+     * Handles API response and shows appropriate toast messages
+     */
     async function switchStatus() {
         const resp = await updateStatus(activeMemberId);
 

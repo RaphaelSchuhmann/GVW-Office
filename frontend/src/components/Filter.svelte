@@ -21,6 +21,10 @@
     let intervalId;
     let isFetching = false;
 
+    /**
+     * Fetches data from the API endpoint and updates the store
+     * Handles authentication errors and prevents concurrent requests
+     */
     export async function fetchData() {
         if (isFetching) return;
         isFetching = true;
@@ -62,6 +66,11 @@
         }
     }
 
+    /**
+     * Applies the selected filter option to the data
+     * Updates the store's type filter and triggers filter application
+     * @param {string} selected - The selected filter option
+     */
     function filter(selected) {
         if (!(selected in optionMap)) {
             addToast({
