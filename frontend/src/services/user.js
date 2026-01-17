@@ -27,7 +27,7 @@ export async function loadUserData() {
     const body = await response.json();
 
     if (response.status === 200) {
-        user.update(u => ({ ...u, name: body.name, email: body.email, role: body.role, loaded: true }));
+        user.update(u => ({ ...u, name: body.name, email: body.email, role: body.role, address: body.address, phone: body.phone, loaded: true }));
     } else if (response.status === 401) {
         // Auth token invalid / unauthorized
         addToast({
