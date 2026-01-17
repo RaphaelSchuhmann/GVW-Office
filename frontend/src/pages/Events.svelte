@@ -8,7 +8,7 @@
     import {
         parseDMYToDate,
         getLastDayOfCurrentMonth,
-        makeDateForCurrentMonth,
+        makeDateFromMonthAndDay,
         getWeekDayFromDMYMondayFirst,
         getOrdinalFromDMY
     } from "../services/utils";
@@ -153,7 +153,15 @@
                         date = lastDate;
                     }
 
-                    return makeDateForCurrentMonth(date);
+                    const today = new Date();
+
+                    if (date < today.getDate()) {
+                        const month = (today.getMonth() + 1) > 11 ? 0 : today.getMonth() + 1;
+
+                        return makeDateFromMonthAndDay(date, month);
+                    } else {
+                        return makeDateFromMonthAndDay(date, today.getMonth());
+                    }
                 } else {
                     return event.date;
                 }

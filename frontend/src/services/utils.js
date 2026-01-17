@@ -71,10 +71,9 @@ export function getLastDayOfCurrentMonth() {
     return new Date(year, month + 1, 0);
 }
 
-export function makeDateForCurrentMonth(day) {
+export function makeDateFromMonthAndDay(day, month) {
     const today = new Date();
     const year = today.getFullYear();
-    const month = today.getMonth();
 
     const date = new Date(year, month, day);
 
