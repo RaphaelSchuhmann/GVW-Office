@@ -244,3 +244,14 @@ export const fontColorMap = {
     "text-gv-unset-layer": "text-gv-unset-layer",
     "text-gv-dark-turquoise": "text-gv-dark-turquoise"
 };
+
+export const fontSizeMap = {
+    "": "text-dt-7",
+    "7": "text-dt-7",
+    "6": "text-dt-6",
+    "5": "text-dt-5",
+    "4": "text-dt-4",
+    "3": "text-dt-3",
+    "2": "text-dt-2",
+    "1": "text-dt-1"
+};
