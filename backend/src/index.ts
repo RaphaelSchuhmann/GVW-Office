@@ -7,6 +7,10 @@ import { dbService } from "./db.service";
 import { cleanupLogs } from "./logCleanup";
 import { logger } from "./logger";
 
+/**
+ * Bootstraps the application by initializing services and starting the server
+ * Performs log cleanup, database initialization, and starts the Express server
+ */
 async function bootstrap() {
     cleanupLogs("../logs");
     logger.info("API started");

@@ -64,7 +64,16 @@ authRouter.post("/login", async (req, resp) => {
     }
 });
 
-// ! TODO REMOVE THIS FOR PROD
+/**
+ * POST /dev
+ * Development-only endpoint to reset all users and members data
+ * Creates a default admin user for testing purposes
+ * TODO: REMOVE THIS FOR PRODUCTION
+ * 
+ * Responses:
+ * - `200`: Development user created successfully
+ * - `500`: Error during user creation
+ */
 authRouter.post("/dev", async (req, resp) => {
     try {
         const users = await dbService.list("users");
@@ -99,6 +108,20 @@ authRouter.post("/dev", async (req, resp) => {
     }
 });
 
+/**
+ * GET /auto
+ * Automatically authenticate user using JWT token from Authorization header
+ * Returns user information if token is valid
+ * 
+ * Headers:
+ * - `Authorization: Bearer <token>`
+ * 
+ * Responses:
+ * - `200`: User authenticated successfully, returns email and changePassword flag
+ * - `401`: Invalid or missing token
+ * - `404`: User not found
+ * - `500`: Internal server error
+ */
 authRouter.get("/auto", authMiddleware, async (req, resp) => {
     try {
         const userId = req.user;
@@ -122,17 +145,17 @@ authRouter.get("/auto", authMiddleware, async (req, resp) => {
 
 /**
  * POST /changePW
- * Change a user's password to a new value. This endpoint expects the
- * user's email and the new password in the request body.
- *
+ * Change a user's password after validating their current password
+ * 
  * Request body:
- * - `{ email: string, newPw: string }`
- *
+ * - `{ email: string, oldPw: string, newPw: string }`
+ * 
  * Responses:
- * - `200` : when password update succeeded
- * - `404` : when user not found
- * - `409` : when new password matches the current password
- * - `500` : on unexpected server error
+ * - `200`: Password changed successfully
+ * - `401`: Invalid current password
+ * - `404`: User not found
+ * - `409`: New password matches current password
+ * - `500`: Internal server error
  */
 authRouter.post("/changePW", async (req, resp) => {
     try {
@@ -166,22 +189,12 @@ authRouter.post("/changePW", async (req, resp) => {
 });
 
 /**
- * Generate a temporary password from capitalized words and digits, then
- * hash it with bcrypt and return the hash.
- *
- * The function composes a plaintext password by selecting `wordCount`
- * capitalized words and `numberCount` digits, shuffles the parts, and
- * returns a bcrypt hash of the resulting plaintext. The plaintext
- * password is not returned by this function — callers receive the
- * hashed password suitable for storing in the database.
- *
- * Note: the function uses 12 bcrypt salt rounds when hashing.
- *
- * @param wordCount - number of words to include (default: 3)
- * @param numberCount - number of digits to include (default: 2)
- * @returns A Promise resolving to the bcrypt hash of the generated password.
- *          On error the function logs the error and resolves to an empty
- *          string.
+ * Generate a temporary password from capitalized words and digits
+ * Creates a readable password by combining random words and numbers
+ * 
+ * @param wordCount - Number of words to include (default: 3)
+ * @param numberCount - Number of digits to include (default: 2)
+ * @returns Promise resolving to the plaintext temporary password
  */
 async function generateTempPassword(
     wordCount = 3,
@@ -226,11 +239,11 @@ async function generateTempPassword(
 }
 
 /**
- * Create a JWT for a given user id.
- *
- * @param userId - identifier of the authenticated user
+ * Create a JWT token for a given user ID
+ * 
+ * @param userId - Identifier of the authenticated user
  * @throws Error when `process.env.SECRET_KEY` is not set
- * @returns signed JWT string valid for 7 days
+ * @returns Signed JWT string valid for 7 days
  */
 function generateAuthToken(userId: string) {
     const secretKey = process.env.SECRET_KEY;

@@ -5,6 +5,14 @@ import authMiddleware from "../middlewares/authMiddleware";
 
 const appSettingsRouter = Router();
 
+/**
+ * GET /get
+ * Retrieves application settings from the database
+ * 
+ * Responses:
+ * - `200`: Application settings object
+ * - `500`: Settings not found or internal server error
+ */
 appSettingsRouter.get("/get", async (_, resp) => {
     try {
         const settings = await dbService.read("app_settings", "general");
@@ -21,6 +29,22 @@ appSettingsRouter.get("/get", async (_, resp) => {
     }
 });
 
+/**
+ * POST /update/max-members
+ * Updates the maximum members setting in application settings
+ * Requires authentication
+ * 
+ * Request body:
+ * - `{ maxMembers: number }`
+ * 
+ * Headers:
+ * - `Authorization: Bearer <token>`
+ * 
+ * Responses:
+ * - `200`: Setting updated successfully
+ * - `401`: Invalid or missing authentication token
+ * - `500`: Settings not found or internal server error
+ */
 appSettingsRouter.post("/update/max-members", authMiddleware, async (req, resp) => {
     try {
         const { maxMembers } = req.body;

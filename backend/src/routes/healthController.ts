@@ -4,10 +4,26 @@ import { logger } from "../logger";
 
 const router = Router();
 
+/**
+ * GET /
+ * Basic health check endpoint
+ * 
+ * Responses:
+ * - `200`: Service is healthy
+ */
 router.get("/", async (_, resp) => {
     resp.status(200).json({ status: "ok" });
 });
 
+/**
+ * GET /generateDBs
+ * Generates all required databases and initializes default settings
+ * Used for initial setup or database reset
+ * 
+ * Responses:
+ * - `200`: Databases generated successfully
+ * - `500`: Error during database generation
+ */
 router.get("/generateDBs", async (_, resp) => {
     try {
         await dbService.generateDatabases();
@@ -19,6 +35,15 @@ router.get("/generateDBs", async (_, resp) => {
     }
 });
 
+/**
+ * GET /generateEventData
+ * Clears existing events and creates sample event data for testing
+ * Creates various types of events (single, weekly, monthly) for development
+ * 
+ * Responses:
+ * - `200`: Event data generated successfully
+ * - `500`: Error during event data generation
+ */
 router.get("/generateEventData", async (_, resp) => {
     try {
         const events = await dbService.list("events");

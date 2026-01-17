@@ -15,6 +15,14 @@ const validVoice = ["tenor1", "tenor2", "bass1", "bass2"];
 const minJoined = 1924;
 const maxJoined = new Date().getFullYear() + 1;
 
+/**
+ * GET /all
+ * Retrieves all members from the database
+ * 
+ * Responses:
+ * - `200`: Array of all members with id field instead of _id
+ * - `500`: Internal server error
+ */
 membersRouter.get("/all", async (_, resp) => {
     try {
         const members = (await dbService.list("members")).map(({ _id, _rev, ...member }) => ({ id: _id, ...member }));
@@ -26,6 +34,20 @@ membersRouter.get("/all", async (_, resp) => {
     }
 });
 
+/**
+ * POST /add
+ * Creates a new member and associated user account with temporary password
+ * Sends welcome email with temporary password to the new member
+ * 
+ * Request body:
+ * - `{ name, surname, email, phone, address, voice, status, role, birthdate, joined }`
+ * 
+ * Responses:
+ * - `200`: Member created successfully
+ * - `400`: Invalid input data
+ * - `409`: Email already in use
+ * - `500`: Internal server error
+ */
 membersRouter.post("/add", async (req, resp) => {
     let memberId: string | null = null;
     let memberRev: string | null = null;
@@ -98,6 +120,19 @@ membersRouter.post("/add", async (req, resp) => {
     }
 });
 
+/**
+ * POST /delete
+ * Deletes a member and their associated user account
+ * 
+ * Request body:
+ * - `{ id: string }`
+ * 
+ * Responses:
+ * - `200`: Member deleted successfully
+ * - `400`: Invalid input data
+ * - `404`: Member or user not found
+ * - `500`: Internal server error
+ */
 membersRouter.post("/delete", async (req, resp) => {
     try {
         const { id } = req.body;
@@ -122,6 +157,19 @@ membersRouter.post("/delete", async (req, resp) => {
     }
 });
 
+/**
+ * POST /update
+ * Updates member and associated user account information
+ * 
+ * Request body:
+ * - `{ id, name, surname, email, phone, address, voice, status, role, birthdate, joined }`
+ * 
+ * Responses:
+ * - `200`: Member updated successfully
+ * - `400`: Invalid input data
+ * - `404`: Member or user not found
+ * - `500`: Internal server error
+ */
 membersRouter.post("/update", async (req, resp) => {
     try {
         const { id, name, surname, email, phone, address, voice, status, role, birthdate, joined } = req.body;
@@ -168,6 +216,19 @@ membersRouter.post("/update", async (req, resp) => {
     }
 });
 
+/**
+ * POST /update/status
+ * Toggles member status between active and inactive
+ * 
+ * Request body:
+ * - `{ id: string }`
+ * 
+ * Responses:
+ * - `200`: Status updated successfully
+ * - `400`: Invalid input data
+ * - `404`: Member not found
+ * - `500`: Internal server error
+ */
 membersRouter.post("/update/status", async (req, resp) => {
     try {
         const { id } = req.body;
@@ -189,6 +250,20 @@ membersRouter.post("/update/status", async (req, resp) => {
     }
 });
 
+/**
+ * Validates member input data
+ * @param name - Member's first name
+ * @param surname - Member's last name
+ * @param email - Member's email address
+ * @param phone - Member's phone number
+ * @param address - Member's address
+ * @param voice - Member's voice type (tenor1, tenor2, bass1, bass2)
+ * @param status - Member's status (active, inactive)
+ * @param role - Member's role (member, admin, schriftführer, vorstand)
+ * @param birthdate - Member's birthdate
+ * @param joined - Year member joined
+ * @returns True if all inputs are valid, false otherwise
+ */
 function validInputs(name: string, surname: string, email: string, phone: string, address: string, voice: string, status: string, role: string, birthdate: string, joined: number) {
     if (!name || !surname || !email || !phone || !address || !voice || !status || !role || !birthdate || !joined || name.trim() === "" || surname.trim() === "") {
         return false;

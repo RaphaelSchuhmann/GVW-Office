@@ -11,6 +11,22 @@ import { hash } from "bcrypt";
 const emergencyRouter = Router();
 const TOKEN_TTL_MS = 30 * 24 * 60 * 60* 1000; // 30 days
 
+/**
+ * POST /use
+ * Uses an emergency token to reset all admin passwords
+ * Only accessible from localhost for security
+ * 
+ * Request body:
+ * - `{ token: string }`
+ * 
+ * Responses:
+ * - `200`: Token used successfully, returns new token
+ * - `400`: Token missing from request
+ * - `401`: Token expired or invalid
+ * - `403`: Not accessed from localhost
+ * - `404`: No emergency token found
+ * - `500`: Internal server error
+ */
 emergencyRouter.post("/use", requireLocalhost, async (req, resp) => {
     try {
         const tokenInput: string = req.body.token;
@@ -87,6 +103,16 @@ emergencyRouter.post("/use", requireLocalhost, async (req, resp) => {
     }
 });
 
+/**
+ * GET /new
+ * Generates a new emergency token, replacing any existing one
+ * Only accessible from localhost for security
+ * 
+ * Responses:
+ * - `200`: New token generated successfully
+ * - `403`: Not accessed from localhost
+ * - `500`: Internal server error
+ */
 emergencyRouter.get("/new", requireLocalhost, async (req, resp) => {
     try {
         const token: string = generateToken();
@@ -118,6 +144,12 @@ emergencyRouter.get("/new", requireLocalhost, async (req, resp) => {
     }
 });
 
+/**
+ * Middleware to restrict access to localhost only
+ * @param req - Express request object
+ * @param res - Express response object
+ * @param next - Express next function
+ */
 function requireLocalhost(req: Request, res: Response, next: NextFunction) {
     const ip = req.ip || req.socket.remoteAddress;
     if (ip !== "127.0.0.1" && ip !== "::1" && ip !== "::ffff:127.0.0.1") {
@@ -126,6 +158,11 @@ function requireLocalhost(req: Request, res: Response, next: NextFunction) {
     next();
 }
 
+/**
+ * Generates a cryptographically secure random token
+ * @param byteLength - Length of the token in bytes (default: 64)
+ * @returns Base64URL encoded random token
+ */
 export function generateToken(byteLength = 64) {
     return randomBytes(byteLength).toString("base64url");
 }

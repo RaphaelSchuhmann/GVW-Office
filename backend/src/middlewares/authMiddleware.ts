@@ -30,6 +30,11 @@ async function authMiddleware(req: Request, resp: Response, next: NextFunction) 
     next();
 }
 
+/**
+ * Checks if a user needs to reset their password
+ * @param userId - The user ID to check
+ * @returns Promise resolving to true if password reset is required, false otherwise
+ */
 async function checkForPasswordReset(userId: string) {
     try {
         const user = await dbService.find("users", { selector: { userId: userId }, limit: 1 });

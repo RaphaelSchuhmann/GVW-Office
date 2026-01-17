@@ -8,6 +8,18 @@ import { loadTemplate } from "../mailer/loadTemplate";
 
 const userRouter = Router();
 
+/**
+ * POST /data
+ * Retrieves user data by email address
+ * 
+ * Request body:
+ * - `{ email: string }`
+ * 
+ * Responses:
+ * - `200`: User data (email, role, name, address, phone)
+ * - `404`: User not found
+ * - `500`: Internal server error
+ */
 userRouter.post("/data", async (req, resp) => {
     try {
         const { email } = req.body;
@@ -31,6 +43,18 @@ userRouter.post("/data", async (req, resp) => {
     }
 });
 
+/**
+ * POST /update
+ * Updates user and associated member data
+ * 
+ * Request body:
+ * - `{ originalEmail: string, email: string, phone: string, address: string }`
+ * 
+ * Responses:
+ * - `200`: Update successful
+ * - `404`: User or member not found
+ * - `500`: Internal server error
+ */
 userRouter.post("/update", async (req, resp) => {
     try {
         const { originalEmail, email, phone, address } = req.body;
@@ -67,14 +91,15 @@ userRouter.post("/update", async (req, resp) => {
 /**
  * POST /reset/password
  * Generate and assign a temporary password for the user identified by memberId.
+ * Sends the new password via email to the user.
  *
  * Request body:
  * - `{ memberId: string }`
  *
  * Responses:
- * - `200` : when temporary password was set
- * - `404` : when user not found
- * - `500` : on unexpected server error
+ * - `200`: Temporary password was set and email sent
+ * - `404`: User not found
+ * - `500`: Internal server error
  */
 userRouter.post("/reset/password", async (req, resp) => {
     try {

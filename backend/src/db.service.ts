@@ -262,6 +262,19 @@ class DBService {
         }
     }
 
+    /**
+     * Generate all required databases and initialize default settings.
+     * Creates databases defined in DBS array and ensures default app settings exist.
+     * Handles cases where databases already exist gracefully.
+     * 
+     * @throws {Error} If database creation or settings initialization fails
+     * @example
+     * ```typescript
+     * const db = new DBService();
+     * await db.init();
+     * await db.generateDatabases(); // Creates all required databases
+     * ```
+     */
     async generateDatabases(): Promise<void> {
         for (const dbName of this.DBS) {
             try {
