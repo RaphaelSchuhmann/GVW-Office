@@ -122,7 +122,7 @@
     {#if open}
         <div
             class="absolute flex flex-col bottom-full rounded-t-1 w-full bg-gv-input-bg border-l border-t border-r border-gv-primary p-2 gap-4">
-            <div class="flex items-center w-full justify-between">
+            <div class="flex items-center w-full justify-between gap-1">
                 <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
                         on:click={back}>
                     <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_left</span>

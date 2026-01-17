@@ -6,7 +6,7 @@
     export let selected = "wählen";
     export let options = [];
     export let marginTop = "";
-    export let padding = "3";
+    export let padding = "2";
     export let title = "";
     export let bgWhite = false;
     export let disableMinWidth = false;
@@ -53,7 +53,7 @@
     {/if}
     <div class="relative inline-block w-full">
         <button
-            class={`flex items-center w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${open && options.length > 0 ? "rounded-t-1" : "rounded-1"} text-dt-6 ${paddingMap[padding]} cursor-pointer text-gv-dark-text hover:bg-gv-hover-effect`}
+            class={`flex items-center w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${open && options.length > 0 ? "rounded-t-1" : "rounded-1"} text-dt-6 ${paddingMap[padding]} pl-3 pr-3 cursor-pointer text-gv-dark-text hover:bg-gv-hover-effect`}
             style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}
             on:click={() => open = !open}>
             <div class="flex w-full">
