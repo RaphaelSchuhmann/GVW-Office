@@ -76,7 +76,7 @@ membersRouter.post("/add", async (req, resp) => {
             lockUntil: null
         });
 
-        const html = await loadTemplate("resetPassword", { tempPassword: tempPassword });
+        const html = await loadTemplate("newUser", { tempPassword: tempPassword });
 
         await sendMail({
             to: email,
