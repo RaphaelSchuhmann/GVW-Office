@@ -122,16 +122,16 @@
     {#if open}
         <div
             class="absolute flex flex-col bottom-full rounded-t-1 w-full bg-gv-input-bg border-l border-t border-r border-gv-primary p-2 gap-4">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center w-full justify-between">
                 <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
                         on:click={back}>
                     <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_left</span>
                 </button>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center w-full gap-2">
                     <Dropdown bgWhite={true} padding="2" options={monthOptions} selected={monthOptions[usedMonth]}
-                              onChange={(value) => usedMonth = monthOptions.indexOf(value)} />
+                              onChange={(value) => usedMonth = monthOptions.indexOf(value)} disableMinWidth={true} />
                     <Dropdown bgWhite={true} padding="2" options={yearOptions} selected={String(usedYear)}
-                              onChange={(value) => usedYear = Number(value)} />
+                              onChange={(value) => usedYear = Number(value)} disableMinWidth={true} />
                 </div>
                 <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
                         on:click={next}>
