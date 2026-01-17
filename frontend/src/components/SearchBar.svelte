@@ -1,6 +1,6 @@
 <script>
     import Fuse from "fuse.js";
-    import { searchRegistry } from "../lib/searchRegistry";
+    import { filterRegistry } from "../lib/filterRegistry";
     import { auth } from "../stores/auth";
 
     import { marginMap } from "../lib/dynamicStyles";
@@ -11,6 +11,7 @@
     export let placeholder = "Suchen...";
     export let disabled = false;
     export let width = "w-full";
+    export let doDebounce = true;
 
     export let page = "";
 
@@ -18,7 +19,7 @@
     let fuse;
     let debounce;
 
-    const config = searchRegistry[page];
+    const config = filterRegistry[page];
     const { store, endpoint, fuse: fuseConfig } = config;
 
     /**
@@ -67,19 +68,25 @@
      * @param {string} value - The search input value
      */
     function onInput(value) {
-        clearTimeout(debounce);
-        debounce = setTimeout(() => {
-            if (!value) {
-                store.update(s => ({ ...s, results: s.raw}));
-                return;
-            }
-
-            const results = fuse.search(value).map(r => r.item);
-            store.update(s => ({ ...s, results }));
-        }, 250);
+        if (doDebounce) {
+            clearTimeout(debounce);
+            debounce = setTimeout(() => performSearch(value), 250);
+        } else {
+            performSearch(value);
+        }
     }
 
-    $: if (page) {
+    function performSearch(value) {
+        if (!value) {
+            store.update(s => ({ ...s, results: s.raw}));
+            return;
+        }
+
+        const results = fuse.search(value).map(r => r.item);
+        store.update(s => ({ ...s, results }));
+    }
+
+    $: if (page && doDebounce) {
         fetchData();
     }
 
