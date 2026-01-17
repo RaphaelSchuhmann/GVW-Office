@@ -258,7 +258,7 @@
 <ToastStack></ToastStack>
 
 <ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
-    <Button type="contextMenu">Bearbeiten
+    <Button type="contextMenu" on:click={async () =>  await push(`/events/edit?id=${activeEventId}`)}>Bearbeiten
     </Button>
     <Button type="contextMenu" on:click={switchStatus}>Status ändern</Button>
     <Button type="contextMenu" fontColor="text-gv-delete" on:click={startDeleteEvent}>Löschen</Button>

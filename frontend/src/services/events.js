@@ -98,6 +98,58 @@ export async function addEvent(event) {
     }
 }
 
+export async function updateEvent(event) {
+    const token = get(auth).token;
+    const resp = await fetch(`${apiUrl}/events/update`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ event: event })
+    });
+
+    if (resp.status === 200) {
+        addToast({
+            title: "Erfolgreich gespeichert",
+            subTitle: "Ihre Änderungen wurden erfolgreich übernommen und im System abgespeichert.",
+            type: "success"
+        });
+    }else if (resp.status === 401) {
+        // Auth token invalid / unauthorized
+        addToast({
+            title: "Ungültiges Token",
+            subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+            type: "error"
+        });
+        logout();
+        await push("/?cpwErr=false");
+        return;
+    } else if (resp.status === 400) {
+        // user not found route back to log in
+        addToast({
+            title: "Eingaben unvollständig",
+            subTitle: "Bitte überprüfen Sie Ihre Angaben. Einige Pflichtfelder sind entweder leer oder enthalten ungültige Werte.",
+            type: "error"
+        });
+    } else if (resp.status === 404) {
+        addToast({
+            title: "Veranstaltung nicht gefunden",
+            subTitle: "Die ausgewählte Veranstaltung konnte nicht gefunden werden. Möglicherweise wurde sie bereits gelöscht.",
+            type: "error"
+        });
+        await push("/events");
+        return;
+    } else {
+        // internal server error / unknown error
+        addToast({
+            title: "Interner Serverfehler",
+            subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+            type: "error"
+        });
+    }
+}
+
 export async function updateStatus(id) {
     const token = get(auth).token;
     return await fetch(`${apiUrl}/events/update/status`, {
