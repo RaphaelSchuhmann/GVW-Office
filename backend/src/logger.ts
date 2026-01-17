@@ -26,7 +26,8 @@ const logFile = path.join(logDir, `app-${timestamp}.log`);
 // File destination (JSON, fast)
 const fileStream = pino.destination({
     dest: logFile,
-    sync: false
+    sync: false,
+    mkdir: true
 });
 
 // Configure logging streams
@@ -67,3 +68,16 @@ export const logger = pino(
     },
     pino.multistream(streams)
 );
+
+// Graceful shutdown handling
+process.on('SIGINT', () => {
+    logger.info('Received SIGINT, shutting down gracefully');
+    fileStream.flushSync();
+    process.exit(0);
+});
+
+process.on('SIGTERM', () => {
+    logger.info('Received SIGTERM, shutting down gracefully');
+    fileStream.flushSync();
+    process.exit(0);
+});

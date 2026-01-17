@@ -7,16 +7,32 @@ const eventsRouter = Router();
 /**
  * GET /all
  * Retrieves all events from the database
- * 
+ * Automatically updates past events from "upcoming" to "finished" status
+ *
  * Responses:
  * - `200`: Array of all events with id field instead of _id
  * - `500`: Internal server error
  */
 eventsRouter.get("/all", async (_, resp) => {
     try {
-        const events = (await dbService.list("events")).map(({ _id, _rev, ...event }) => ({ id: _id, ...event }));
+        const events = await dbService.list("events");
+        const today = new Date();
 
-        return resp.status(200).json({ data: events });
+        // Update past events to finished status and collect all events
+        for (const event of events) {
+            const eventDate = parseDMYToDate(event.date);
+            
+            if (eventDate < today && event.status === "upcoming" && event.mode === "single") {
+                await dbService.update("events", { ...event, status: "finished" });
+                // Update the event in the array
+                event.status = "finished";
+            }
+        }
+
+        // Map to frontend format (id instead of _id, remove _rev)
+        const mappedEvents = events.map(({ _id, _rev, ...event }) => ({ id: _id, ...event }));
+
+        return resp.status(200).json({ data: mappedEvents });
     } catch (err: any) {
         logger.error({ err }, "events/all route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
@@ -26,10 +42,10 @@ eventsRouter.get("/all", async (_, resp) => {
 /**
  * POST /add
  * Creates a new event in the database
- * 
+ *
  * Request body:
  * - `{ event: EventObject }`
- * 
+ *
  * Responses:
  * - `200`: Event created successfully
  * - `400`: Invalid input data
@@ -55,10 +71,10 @@ eventsRouter.post("/add", async (req, resp) => {
 /**
  * POST /delete
  * Deletes an event from the database
- * 
+ *
  * Request body:
  * - `{ id: string }`
- * 
+ *
  * Responses:
  * - `200`: Event deleted successfully
  * - `400`: Invalid input data
@@ -86,10 +102,10 @@ eventsRouter.post("/delete", async (req, resp) => {
 /**
  * POST /update/status
  * Toggles event status between upcoming and finished
- * 
+ *
  * Request body:
  * - `{ id: string }`
- * 
+ *
  * Responses:
  * - `200`: Status updated successfully
  * - `400`: Invalid input data
@@ -120,10 +136,10 @@ eventsRouter.post("/update/status", async (req, resp) => {
 /**
  * POST /update
  * Updates an existing event with new data
- * 
+ *
  * Request body:
  * - `{ event: EventObject }`
- * 
+ *
  * Responses:
  * - `200`: Event updated successfully
  * - `400`: Invalid input data
@@ -149,6 +165,19 @@ eventsRouter.post("/update", async (req, resp) => {
         logger.error({ err }, "events/update route errorMessage");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
-})
+});
+
+/**
+ * Converts DD.MM.YYYY string to JavaScript Date object
+ * @param {string} dateStr - Date string in DD.MM.YYYY format
+ * @returns {Date} JavaScript Date object
+ */
+function parseDMYToDate(dateStr: string) {
+    const [dayStr, monthStr, yearStr] = dateStr.split(".");
+    const day = Number(dayStr);
+    const month = Number(monthStr);
+    const year = Number(yearStr);
+    return new Date(year, month - 1, day);
+}
 
 export { eventsRouter };

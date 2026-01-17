@@ -196,7 +196,7 @@
             <Card padding="5">
                 <p class="text-dt-3 text-gv-dark-text w-full text-start flex flex-col mb-3">
                     <span>Kommende Veranstaltungen</span>
-                    <span class="text-gv-light-text text-dt-4">Nächste Events und Proben</span>
+                    <span class="text-gv-light-text text-dt-4">Nächste Veranstaltungen und Proben</span>
                 </p>
                 <div class="w-full flex-1 min-h-0 overflow-x-hidden overflow-y-auto flex flex-col items-center pr-2">
                     {#each events as event}
