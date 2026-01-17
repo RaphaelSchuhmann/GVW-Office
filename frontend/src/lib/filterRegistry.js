@@ -1,8 +1,35 @@
 import { eventsStore } from "../stores/events";
+import { membersStore } from "../stores/members";
 import { statusMap, typeMap } from "../services/events";
 
 const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
 
+/**
+ * Filter registry containing both filter and search configurations
+ * 
+ * Usage:
+ * 1. Import: import { filterRegistry } from "../lib/filterRegistry";
+ * 2. Get config: const config = filterRegistry[page];
+ * 3. Use config properties in components
+ * 
+ * Component Usage Examples:
+ * 
+ * SearchBar:
+ * <SearchBar page="events" doDebounce={true} />
+ * 
+ * Filter (Dropdown):
+ * <Filter page="events" options={["Alle Typen", "Meeting", "Event"]} />
+ * 
+ * FilterTabBar:
+ * <FilterTabBar page="events" contents={["Alle", "Aktiv", "Archiviert"]} selected="Alle" />
+ * 
+ * Combined Usage (all components work together):
+ * <SearchBar page="events" />
+ * <Filter page="events" options={typeOptions} />
+ * <FilterTabBar page="events" contents={statusTabs} selected="Alle" />
+ * 
+ * @type {Object<string, Object>}
+ */
 /**
  * Applies type and status filters to a store's data
  * @param {Object} store - Svelte store to update with filtered data
@@ -26,8 +53,7 @@ function applyFilters(store) {
 }
 
 /**
- * Registry of filter configurations for different pages
- * Contains endpoint URLs, stores, option mappings, and filter functions
+ * Filter registry containing both filter and search configurations
  * @type {Object<string, Object>}
  */
 export const filterRegistry = {
@@ -36,6 +62,18 @@ export const filterRegistry = {
         store: eventsStore,
         optionMap: typeMap,
         tabMap: statusMap,
-        applyFilters
+        applyFilters,
+        fuse: {
+            keys: ["title", "description", "type", "status"],
+            threshold: 0.3
+        }
+    },
+    members: {
+        endpoint: `${apiUrl}/members/all`,
+        store: membersStore,
+        fuse: {
+            keys: ["name", "surname", "email", "address"],
+            threshold: 0.3
+        }
     }
 }
