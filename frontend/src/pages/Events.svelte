@@ -66,6 +66,10 @@
     $: ordinal = getOrdinalFromDMY(selectedDate);
     $: weekDay = getWeekDayFromDMYMondayFirst(selectedDate);
 
+    /**
+     * Submits a new event to the system with all form data
+     * Handles monthly recurrence configuration based on user selection
+     */
     async function submitEvent() {
         let event = {
             title: inputTitle,
@@ -75,15 +79,15 @@
             time: inputTime,
             location: inputLocation,
             description: inputDescription ? inputDescription : "Keine Beschreibung",
-            mode: modeMap[selectedRecurrence],
-        }
+            mode: modeMap[selectedRecurrence]
+        };
 
         if (modeMap[selectedRecurrence] === "monthly") {
             if (isMonthlyDateChecked || (!isMonthlyWeekDayChecked && !isMonthlyDateChecked)) {
                 const [day, month, year] = selectedDate.split(".").map(Number);
-                event = { ...event, recurrence: { monthlyKind: "date", dayOfMonth: day }};
+                event = { ...event, recurrence: { monthlyKind: "date", dayOfMonth: day } };
             } else if (isMonthlyWeekDayChecked) {
-                event = { ...event, recurrence: { monthlyKind: "weekday", weekDay: weekDay, ordinal: ordinal }};
+                event = { ...event, recurrence: { monthlyKind: "weekday", weekDay: weekDay, ordinal: ordinal } };
             }
         }
 
@@ -93,6 +97,9 @@
         addEventModal?.hideModal();
     }
 
+    /**
+     * Clears all input fields in the add event modal
+     */
     function clearAddModal() {
         inputTitle = "";
         inputTime = "";
@@ -115,9 +122,13 @@
             title: "Nicht gefunden",
             subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
             type: "error"
-        },
+        }
     };
 
+    /**
+     * Initiates the delete process for an event
+     * Sets up the confirmation modal with event details
+     */
     function startDeleteEvent() {
         menuOpen = false;
 
@@ -128,6 +139,11 @@
     }
 
     // EVENT
+    /**
+     * Generates display text for when an event occurs based on its recurrence pattern
+     * @param {string} eventId - The ID of the event to get timing info for
+     * @returns {string} Human-readable description of when the event occurs
+     */
     function getWhenValue(eventId) {
         const events = get(eventsStore);
         const eventArray = events.display.filter(item => item.id === eventId);
@@ -169,7 +185,7 @@
                 return event.date;
             }
         }
-        
+
         return "Unbekannt";
     }
 
@@ -179,39 +195,57 @@
     let menuY = 0;
     let activeEventId = null;
 
+    /**
+     * Opens context menu on right-click at cursor position
+     * @param {MouseEvent} event - The right-click event
+     * @param {string} eventId - ID of the event being right-clicked
+     */
     function openContextMenu(event, eventId) {
-        event.preventDefault();
-        event.stopPropagation();
+        if ($user.role === "vorstand" || $user.role === "admin") {
+            event.preventDefault();
+            event.stopPropagation();
 
-        activeEventId = eventId;
+            activeEventId = eventId;
 
-        requestAnimationFrame(() => {
-            menuX = Math.min(event.clientX, window.innerWidth - 180);
-            menuY = Math.min(event.clientY, window.innerHeight - 114);
-            menuOpen = true;
-        });
+            requestAnimationFrame(() => {
+                menuX = Math.min(event.clientX, window.innerWidth - 180);
+                menuY = Math.min(event.clientY, window.innerHeight - 114);
+                menuOpen = true;
+            });
+        }
     }
 
+    /**
+     * Opens context menu from the three-dot button click
+     * @param {MouseEvent} event - The button click event
+     * @param {string} eventId - ID of the event whose button was clicked
+     */
     function openContextMenuFromButton(event, eventId) {
-        event.preventDefault();
-        event.stopPropagation();
+        if ($user.role === "vorstand" || $user.role === "admin") {
+            event.preventDefault();
+            event.stopPropagation();
 
-        activeEventId = eventId;
+            activeEventId = eventId;
 
-        const rect = event.currentTarget.getBoundingClientRect();
+            const rect = event.currentTarget.getBoundingClientRect();
 
-        menuOpen = true;
+            menuOpen = true;
 
-        requestAnimationFrame(() => {
-            const menuWidth = 180;
-            const menuHeight = 114;
+            requestAnimationFrame(() => {
+                const menuWidth = 180;
+                const menuHeight = 114;
 
-            menuX = rect.left - menuWidth;
-            menuY = Math.min(rect.bottom, window.innerHeight - menuHeight);
-        });
+                menuX = rect.left - menuWidth;
+                menuY = Math.min(rect.bottom, window.innerHeight - menuHeight);
+            });
+        }
     }
 
     // CONTEXT MENU SWITCH STATUS
+    /**
+     * Toggles the status of an event between "Bevorstehend" and "Abgeschlossen"
+     * Handles API response and shows appropriate toast messages
+     */
     async function switchStatus() {
         const resp = await updateStatus(activeEventId);
 
@@ -277,26 +311,30 @@
        title="Neue Veranstaltung hinzufügen" subTitle="Erfassen Sie hier die Details der Veranstaltung"
        width="2/5">
 
-    <Input bind:value={inputTitle} title="Titel" placeholder="Veranstaltung XYZ" marginTop="5"/>
+    <Input bind:value={inputTitle} title="Titel" placeholder="Veranstaltung XYZ" marginTop="5" />
 
     <div class="w-full flex items-center gap-4 mt-5">
-        <Dropdown title="Typ" options={["Proben", "Meeting", "Konzerte", "Sonstiges"]} onChange={(value) => selectedType = value}/>
-        <Dropdown title="Status" options={["Bevorstehend", "Abgeschlossen"]} onChange={(value) => selectedStatus = value}/>
+        <Dropdown title="Typ" options={["Proben", "Meeting", "Konzerte", "Sonstiges"]}
+                  onChange={(value) => selectedType = value} />
+        <Dropdown title="Status" options={["Bevorstehend", "Abgeschlossen"]}
+                  onChange={(value) => selectedStatus = value} />
     </div>
 
-    <Input bind:value={inputLocation} title="Ort" placeholder="Ort XYZ" marginTop="5"/>
+    <Input bind:value={inputLocation} title="Ort" placeholder="Ort XYZ" marginTop="5" />
 
     <div class="w-full flex items-center gap-4 mt-5">
         <div class="flex flex-col items-start w-full h-full">
             <p class="text-dt-6 font-medium">Datum</p>
-            <DefaultDatepicker marginTop="1" onChange={(value) => selectedDate = value}/>
+            <DefaultDatepicker marginTop="1" onChange={(value) => selectedDate = value} />
         </div>
-        <Input bind:value={inputTime} title="Uhrzeit" placeholder="--:--"/>
+        <Input bind:value={inputTime} title="Uhrzeit" placeholder="--:--" />
     </div>
 
-    <Input bind:value={inputDescription} title="Beschreibung (Optional)" placeholder="Kurze Beschreibung zur Veranstaltung..." marginTop="5"/>
+    <Input bind:value={inputDescription} title="Beschreibung (Optional)"
+           placeholder="Kurze Beschreibung zur Veranstaltung..." marginTop="5" />
 
-    <TabBar marginTop="5" contents={["Einmalig", "Wöchentlich", "Monatlich"]} selected="Einmalig" onChange={(value) => selectedRecurrence = value}/>
+    <TabBar marginTop="5" contents={["Einmalig", "Wöchentlich", "Monatlich"]} selected="Einmalig"
+            onChange={(value) => selectedRecurrence = value} />
 
     {#if selectedRecurrence === "Einmalig"}
         <p class="text-gv-dark-text text-dt-4 text-left w-full mt-5">Diese Veranstaltung findet nur einmal statt.</p>
@@ -304,14 +342,17 @@
         <p class="text-gv-dark-text text-dt-4 text-left w-full mt-5">Jede Woche am {weekDayMap[weekDay]}</p>
     {:else if selectedRecurrence === "Monatlich"}
         <div class="w-full flex items-center justify-start gap-4 mt-5">
-            <Checkbox title="Am gleichen Datum" bind:isChecked={isMonthlyDateChecked} onChange={() => isMonthlyWeekDayChecked = false}/>
-            <Checkbox title="Am gleichen Wochentag" bind:isChecked={isMonthlyWeekDayChecked} onChange={() => isMonthlyDateChecked = false}/>
+            <Checkbox title="Am gleichen Datum" bind:isChecked={isMonthlyDateChecked}
+                      onChange={() => isMonthlyWeekDayChecked = false} />
+            <Checkbox title="Am gleichen Wochentag" bind:isChecked={isMonthlyWeekDayChecked}
+                      onChange={() => isMonthlyDateChecked = false} />
         </div>
 
         {#if isMonthlyDateChecked}
             <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat am {selectedDate}.</p>
         {:else if isMonthlyWeekDayChecked}
-            <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
+            <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat
+                am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
         {:else}
             <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat am {selectedDate}.</p>
         {/if}
@@ -325,7 +366,8 @@
 
 <!-- Confirm delete member modal -->
 <ConfirmDeleteModal expectedInput={eventTitle} id={activeEventId}
-                    title="Veranstaltung löschen" subTitle="Sind Sie sich sicher das Sie diese Veranstaltung löschen möchten?"
+                    title="Veranstaltung löschen"
+                    subTitle="Sind Sie sich sicher das Sie diese Veranstaltung löschen möchten?"
                     toastMap={deleteEventToast} action="deleteEvent"
                     onClose={async () => {menuOpen = false; activeEventId = null; await filterBar.fetchData();}}
                     bind:this={confirmDeleteEventModal}
@@ -342,31 +384,37 @@
             </Button>
         </PageHeader>
         <div class="flex items-center mt-10 max-w-1/5">
-            <Filter options={["Alle Typen", "Proben", "Meeting", "Konzerte", "Sonstiges"]} page="events" debounce={false}/>
+            <Filter options={["Alle Typen", "Proben", "Meeting", "Konzerte", "Sonstiges"]} page="events"
+                    debounce={false} />
         </div>
-        <FilterTabBar contents={["Bevorstehend", "Abgeschlossen"]} selected="Bevorstehend" marginTop="5" page="events" debounce={true} bind:this={filterBar}/>
+        <FilterTabBar contents={["Bevorstehend", "Abgeschlossen"]} selected="Bevorstehend" marginTop="5" page="events"
+                      debounce={true} bind:this={filterBar} />
         <div class="grid grid-cols-2 gap-4 overflow-y-auto overflow-x-hidden mt-5">
             {#each $eventsStore.display as event}
                 <Card on:contextmenu={(e) => openContextMenu(e, event.id)}>
                     <div class="flex items-center w-full">
                         <p class="text-gv-dark-text text-dt-3 max-w-3/4 text-nowrap truncate">{event.title}</p>
                         <div class="ml-auto">
-                            <Chip text={typeMap[event.type]}/>
+                            <Chip text={typeMap[event.type]} />
                         </div>
                     </div>
                     <div class="flex items-center w-full mt-2 gap-10">
                         <div class="flex items-stretch gap-2">
-                            <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">calendar_today</span>
+                            <span
+                                class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">calendar_today</span>
                             <p class="text-dt-6 text-gv-light-text">{getWhenValue(event.id)}</p>
                         </div>
                         <div class="flex items-stretch gap-2">
                             <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">schedule</span>
                             <p class="text-dt-6 text-gv-light-text">{event.time}</p>
                         </div>
-                        <button class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2 ml-auto"
+                        {#if $user.role === "vorstand" || $user.role === "admin"}
+                            <button
+                                class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2 ml-auto"
                                 on:click={(e) => openContextMenuFromButton(e, event.id)}>
-                            <span class="material-symbols-rounded">more_horiz</span>
-                        </button>
+                                <span class="material-symbols-rounded">more_horiz</span>
+                            </button>
+                        {/if}
                     </div>
                     <div class="flex items-center w-full mt-2 gap-2">
                         <span class="material-symbols-rounded text-icon-dt-5 text-gv-light-text">location_on</span>
