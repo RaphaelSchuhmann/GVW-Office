@@ -9,10 +9,21 @@
     export let padding = "3";
     export let title = "";
     export let bgWhite = false;
+    export let disableMinWidth = false;
     export let onChange = () => {};
 
     let open = false;
     let dropdownRef;
+    let minWidth = 0;
+
+    $: {
+        if (options.length > 0 && !disableMinWidth) {
+            const longestOption = options.reduce((a, b) => a.length > b.length ? a : b);
+            minWidth = Math.max(longestOption.length * 8 + 80, 120); // 8px per char + padding
+        } else {
+            minWidth = 0;
+        }
+    }
 
     function selectOption(option) {
         selected = option;
@@ -43,6 +54,7 @@
     <div class="relative inline-block w-full">
         <button
             class={`flex items-center w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${open && options.length > 0 ? "rounded-t-1" : "rounded-1"} text-dt-6 ${paddingMap[padding]} cursor-pointer text-gv-dark-text hover:bg-gv-hover-effect`}
+            style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}
             on:click={() => open = !open}>
             <div class="flex w-full">
                 <p class={`${selected === "wählen" ? "text-gv-input-placeholder" : "text-gv-dark-text"}`}>{capitalizeWords(selected)}</p>
@@ -50,7 +62,7 @@
             </div>
         </button>
         {#if open && options.length > 0}
-            <div class={`absolute w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} max-h-[20vh] flex flex-col items-center rounded-b-1 z-999 overflow-y-auto`}>
+            <div class={`absolute w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} max-h-[20vh] flex flex-col items-center rounded-b-1 z-999 overflow-y-auto`} style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}>
                 {#each options as option}
                     <button class="text-left p-2 pl-4 pr-4 cursor-pointer hover:bg-gv-hover-effect w-full rounded-1"
                             on:click={() => selectOption(option)}>{capitalizeWords(option)}</button>
