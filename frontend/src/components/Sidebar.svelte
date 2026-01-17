@@ -144,7 +144,7 @@
                     {/if}
                 </div>
             {:else}
-                <div class="flex flex-col items-center mb-5">
+                <div class="flex flex-col items-center">
                     <SidebarButton marginTop="5" minimized={minimized} on:click={onSettingsClick}>
                         <span class="material-symbols-rounded text-icon-dt-3">settings</span>
                     </SidebarButton>
