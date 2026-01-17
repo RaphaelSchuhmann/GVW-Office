@@ -9,6 +9,7 @@
     import MemberEditor from "./pages/MemberEditor.svelte";
     import Events from "./pages/Events.svelte";
     import EventEditor from "./pages/EventEditor.svelte";
+    import Reports from "./pages/Reports.svelte";
 
     const routes = {
         "/": Login,
@@ -19,6 +20,7 @@
         "/members/edit": MemberEditor,
         "/events": Events,
         "/events/edit": EventEditor,
+        "/reports": Reports,
     };
 </script>
 <Router {routes}/>

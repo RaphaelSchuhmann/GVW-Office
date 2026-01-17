@@ -1,6 +1,8 @@
 import { eventsStore } from "../stores/events";
 import { membersStore } from "../stores/members";
+import { reportsStore } from "../stores/reports";
 import { statusMap, typeMap } from "../services/events";
+import { reportsTypeMap } from "../services/reports";
 
 const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
 
@@ -73,6 +75,16 @@ export const filterRegistry = {
         store: membersStore,
         fuse: {
             keys: ["name", "surname", "email", "address"],
+            threshold: 0.3
+        }
+    },
+    reports: {
+        endpoint: `${apiUrl}/reports/all`,
+        store: reportsStore,
+        optionMap: reportsTypeMap,
+        applyFilters,
+        fuse: {
+            keys: ["title", "description", "type", "status"],
             threshold: 0.3
         }
     }
