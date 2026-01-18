@@ -95,7 +95,7 @@
             </SidebarButton>
         {/if}
 
-        <SidebarButton selected={currentPage === "musicLibrary"} marginTop="5" minimized={minimized}
+        <SidebarButton selected={currentPage === "library"} marginTop="5" minimized={minimized}
                        on:click={async () => await push("/library")}>
             <span class="material-symbols-rounded text-icon-dt-4">music_note_2</span>
             {#if !minimized}
