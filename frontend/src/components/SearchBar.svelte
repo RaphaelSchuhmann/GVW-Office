@@ -20,7 +20,7 @@
     let debounce;
 
     const config = filterRegistry[page];
-    const { store, endpoint, fuse: fuseConfig } = config;
+    const { store, endpoint, fuse: fuseConfig, applyFilters } = config;
 
     /**
      * Fetches data from the API endpoint and initializes Fuse search
@@ -42,7 +42,7 @@
         if (resp.status === 200) {
             fuse = new Fuse(data, fuseConfig);
 
-            store.set({ raw: data, results: data, loading: false });
+            store.set({ raw: data, all: data, searchResults: data, display: data, loading: false });
         } else if (resp.status === 401) {
             // Auth token invalid / unauthorized
             addToast({
@@ -78,12 +78,15 @@
 
     function performSearch(value) {
         if (!value) {
-            store.update(s => ({ ...s, results: s.raw}));
-            return;
+            store.update(s => ({ ...s, searchResults: s.all }));
+        } else {
+            const results = fuse.search(value).map(r => r.item);
+            store.update(s => ({ ...s, searchResults: results }));
         }
-
-        const results = fuse.search(value).map(r => r.item);
-        store.update(s => ({ ...s, results }));
+        
+        if (applyFilters) {
+            applyFilters(store);
+        }
     }
 
     $: if (page && doDebounce) {

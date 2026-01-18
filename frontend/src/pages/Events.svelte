@@ -373,9 +373,9 @@
                     bind:this={confirmDeleteEventModal}
 />
 
-<main class="flex overflow-hidden">
+<main class="flex h-dvh overflow-hidden">
     <Sidebar onSettingsClick={settingsClick} currentPage="events"></Sidebar>
-    <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
+    <div class="flex flex-col w-full overflow-hidden p-10 min-h-0">
         <PageHeader title="Veranstaltungen" subTitle="Verwaltung von Events, Proben und Konzerten">
             <Button type="primary" disabled={($user.role !== "admin" && $user.role !== "vorstand")}
                     on:click={addEventModal.showModal}>
@@ -389,42 +389,44 @@
         </div>
         <FilterTabBar contents={["Bevorstehend", "Abgeschlossen"]} selected="Bevorstehend" marginTop="5" page="events"
                       debounce={true} bind:this={filterBar} />
-        <div class="grid grid-cols-2 gap-4 overflow-y-auto overflow-x-hidden mt-5">
-            {#each $eventsStore.display as event}
-                <Card on:contextmenu={(e) => openContextMenu(e, event.id)}>
-                    <div class="flex items-center w-full">
-                        <p class="text-gv-dark-text text-dt-3 max-w-3/4 text-nowrap truncate">{event.title}</p>
-                        <div class="ml-auto">
-                            <Chip text={typeMap[event.type]} />
+        <div class="flex-1 min-h-0 overflow-y-auto mt-5">
+            <div class="grid grid-cols-2 gap-4 overflow-y-auto overflow-x-hidden">
+                {#each $eventsStore.display as event}
+                    <Card on:contextmenu={(e) => openContextMenu(e, event.id)}>
+                        <div class="flex items-center w-full">
+                            <p class="text-gv-dark-text text-dt-3 max-w-3/4 text-nowrap truncate">{event.title}</p>
+                            <div class="ml-auto">
+                                <Chip text={typeMap[event.type]} />
+                            </div>
                         </div>
-                    </div>
-                    <div class="flex items-center w-full mt-2 gap-10">
-                        <div class="flex items-stretch gap-2">
-                            <span
-                                class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">calendar_today</span>
-                            <p class="text-dt-6 text-gv-light-text">{getWhenValue(event.id)}</p>
+                        <div class="flex items-center w-full mt-2 gap-10">
+                            <div class="flex items-stretch gap-2">
+                                <span
+                                    class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">calendar_today</span>
+                                <p class="text-dt-6 text-gv-light-text">{getWhenValue(event.id)}</p>
+                            </div>
+                            <div class="flex items-stretch gap-2">
+                                <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">schedule</span>
+                                <p class="text-dt-6 text-gv-light-text">{event.time}</p>
+                            </div>
+                            {#if $user.role === "vorstand" || $user.role === "admin"}
+                                <button
+                                    class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2 ml-auto"
+                                    on:click={(e) => openContextMenuFromButton(e, event.id)}>
+                                    <span class="material-symbols-rounded">more_horiz</span>
+                                </button>
+                            {/if}
                         </div>
-                        <div class="flex items-stretch gap-2">
-                            <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">schedule</span>
-                            <p class="text-dt-6 text-gv-light-text">{event.time}</p>
+                        <div class="flex items-center w-full mt-2 gap-2">
+                            <span class="material-symbols-rounded text-icon-dt-5 text-gv-light-text">location_on</span>
+                            <p class="text-dt-5 text-gv-dark-text text-nowrap truncate">{event.location}</p>
                         </div>
-                        {#if $user.role === "vorstand" || $user.role === "admin"}
-                            <button
-                                class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2 ml-auto"
-                                on:click={(e) => openContextMenuFromButton(e, event.id)}>
-                                <span class="material-symbols-rounded">more_horiz</span>
-                            </button>
-                        {/if}
-                    </div>
-                    <div class="flex items-center w-full mt-2 gap-2">
-                        <span class="material-symbols-rounded text-icon-dt-5 text-gv-light-text">location_on</span>
-                        <p class="text-dt-5 text-gv-dark-text text-nowrap truncate">{event.location}</p>
-                    </div>
-                    <div class="flex items-center w-full mt-2">
-                        <p class="text-dt-5 text-gv-light-text text-start text-nowrap truncate">{event.description}</p>
-                    </div>
-                </Card>
-            {/each}
+                        <div class="flex items-center w-full mt-2">
+                            <p class="text-dt-5 text-gv-light-text text-start text-nowrap truncate">{event.description}</p>
+                        </div>
+                    </Card>
+                {/each}
+            </div>
         </div>
     </div>
 </main>

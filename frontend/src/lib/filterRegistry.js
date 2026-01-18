@@ -38,15 +38,15 @@ const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
  */
 function applyFilters(store) {
     store.update(state => {
-        let filtered = state.all;
+        let filtered = state.searchResults || state.all;
         
         // Apply type filter (from dropdown)
-        if (state.typeFilter !== "all") {
+        if (state.typeFilter && state.typeFilter !== "all") {
             filtered = filtered.filter(item => item.type === state.typeFilter);
         }
         
         // Apply status filter (from tabs)
-        if (state.statusFilter !== "all") {
+        if (state.statusFilter && state.statusFilter !== "all") {
             filtered = filtered.filter(item => item.status === state.statusFilter);
         }
         
@@ -84,7 +84,7 @@ export const filterRegistry = {
         optionMap: reportsTypeMap,
         applyFilters,
         fuse: {
-            keys: ["title", "description", "type", "status"],
+            keys: ["title", "author", "description", "type"],
             threshold: 0.3
         }
     }
