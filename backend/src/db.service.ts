@@ -21,6 +21,11 @@ class DBService {
     private DEFAULT_SETTINGS = {
         _id: this.SETTINGS_DOC_ID,
         maxMembers: 10,
+        scoreCategories: {
+            "": "all",
+            "all": "Alle Kategorien",
+            "Alle Kategorien": "all",
+        }
     };
 
     /**
@@ -294,12 +299,10 @@ class DBService {
         // Ensure default settings document exists in app_settings
         try {
             const existingSettings = await dbService.read(this.APP_SETTINGS_DB, this.SETTINGS_DOC_ID);
-            if (!existingSettings) {
-                await dbService.create(this.APP_SETTINGS_DB, this.DEFAULT_SETTINGS);
-                logger.info("Default app settings document created");
-            } else {
-                logger.info("App settings document already exists");
-            }
+            await dbService.delete(this.APP_SETTINGS_DB, existingSettings?._id, existingSettings?._rev);
+
+            await dbService.create(this.APP_SETTINGS_DB, this.DEFAULT_SETTINGS);
+            logger.info("Default app settings document created");
         } catch (err) {
             logger.error({err}, "Failed to initialize app settings document:");
             throw err;

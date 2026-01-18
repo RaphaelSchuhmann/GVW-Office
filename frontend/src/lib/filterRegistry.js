@@ -4,9 +4,10 @@ import { reportsStore } from "../stores/reports";
 import { libraryStore } from "../stores/library";
 import { statusMap, typeMap } from "../services/events";
 import { reportsTypeMap } from "../services/reports";
-import { libraryTypeMap } from "../services/library";
+import { appSettings } from "../stores/appSettings";
+import { get } from "svelte/store";
 
-const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
+const apiUrl = import.meta.env.DEV_API_URL;
 
 /**
  * Filter registry containing both filter and search configurations
@@ -93,7 +94,7 @@ export const filterRegistry = {
     library: {
         endpoint: `${apiUrl}/library/all`,
         store: libraryStore,
-        optionMap: libraryTypeMap,
+        optionMap: get(appSettings).scoreCategories,
         applyFilters,
         fuse: {
             keys: ["title", "artist", "voices"],

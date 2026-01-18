@@ -7,14 +7,19 @@ import { addToast } from "./toasts";
  * @type {import('svelte/store').Writable<{maxMembers: number}>}
  */
 export const appSettings = writable({
-    maxMembers: 1,
+    maxMembers: 1,  // Dashboard
+    scoreCategories: {
+        "": "all",
+        "all": "Alle Kategorien",
+        "Alle Kategorien": "all"
+    }, // Library Page Categories
 });
 
 /**
  * Loads application settings from the server and updates the store
  * Shows error toast if loading fails
  */
-async function loadSettings() {
+export async function loadSettings() {
     try {
         const settings = await getSettings();
         if (settings.ok) {

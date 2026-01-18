@@ -1,9 +1,10 @@
 <script>
     import { onMount } from "svelte";
     import { loadUserData } from "../services/user";
-    import { libraryTypeMap, voiceMap } from "../services/library";
+    import { voiceMap, getLibraryCategories } from "../services/library";
     import { user } from "../stores/user";
     import { libraryStore } from "../stores/library";
+    import { appSettings, loadSettings } from "../stores/appSettings";
 
     import ToastStack from "../components/ToastStack.svelte";
     import Sidebar from "../components/Sidebar.svelte";
@@ -13,15 +14,24 @@
     import SearchBar from "../components/SearchBar.svelte";
     import Filter from "../components/Filter.svelte";
     import Card from "../components/Card.svelte";
-    import { push } from "svelte-spa-router";
     import ContextMenu from "../components/ContextMenu.svelte";
     import Chip from "../components/Chip.svelte";
+    import Modal from "../components/Modal.svelte";
+
+    // Debounce app settings
+    let intervalId;
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
 
     /** @type {import("../components/SearchBar.svelte").default} */
     let searchBar;
+
+    // MANGE CATEGORIES
+    /** @type {import("../components/Modal.svelte").default} */
+    let manageCategoriesModal;
+
+
 
     // CONTEXT MENU
     let menuOpen = false;
@@ -75,11 +85,9 @@
         }
     }
 
-    // FILTER BAR
-    let options = ["Alle Kategorien"];
-
     onMount(async () => {
         await loadUserData();
+        intervalId = setInterval(loadSettings, 40000); // Reload settings here every 20 seconds
     });
 
     function settingsClick() {
@@ -94,6 +102,15 @@
     </Button>
     <Button type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
 </ContextMenu>
+
+<!-- Category Modal -->
+<Modal bind:this={manageCategoriesModal}
+       title="Kategorien verwalten" subTitle="Verwalten Sie hier Kategorien der Notenbibliothek"
+       width="2/5">
+    <div class="flex flex-col items-center">
+
+    </div>
+</Modal>
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
@@ -114,7 +131,7 @@
         <div class="flex items-center w-full gap-2 mt-5">
             <SearchBar bind:this={searchBar} placeholder="Noten durchsuchen..." page="library" doDebounce={false} />
             <div class="h-full max-w-1/3">
-                <Filter debounce={false} page="library" options={options} textWrap={false}
+                <Filter debounce={false} page="library" options={getLibraryCategories()} textWrap={false}
                         customDefault="Alle Kategorien" />
             </div>
         </div>
@@ -142,7 +159,7 @@
                                 {/if}
                             </div>
                             <div class="flex w-full items-center justify-start mt-2">
-                                <Chip text={libraryTypeMap[item.type]} fontSize="6" />
+                                <Chip text={$appSettings.scoreCategories[item.type]} fontSize="6" />
                             </div>
                             <div class="flex w-full items-center justify-start mt-2 gap-2">
                                 <span

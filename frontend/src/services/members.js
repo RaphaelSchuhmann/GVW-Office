@@ -33,7 +33,7 @@ export const statusMap = {
     "inactive": "Passiv"
 };
 
-const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
+const apiUrl = __API_URL__;
 
 /**
  * Adds a new member to the system

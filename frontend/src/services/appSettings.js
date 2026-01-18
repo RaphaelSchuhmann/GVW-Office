@@ -2,7 +2,7 @@ import { get } from "svelte/store";
 import { auth } from "../stores/auth";
 import { appSettings } from "../stores/appSettings";
 
-const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
+const apiUrl = __API_URL__;
 
 /**
  * Fetches application settings from the server

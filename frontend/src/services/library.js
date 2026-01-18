@@ -1,11 +1,7 @@
-// Default library types - can be extended dynamically
-export let libraryTypeMap = {
-    "": "all",
-    "all": "Alle Kategorien",
-    "Alle Kategorien": "all",
-    "Rock": "rock",
-    "rock": "Rock",
-};
+import { get } from "svelte/store";
+import { appSettings } from "../stores/appSettings";
+import { auth } from "../stores/auth";
+import { addToast } from "../stores/toasts";
 
 export const voiceMap = {
     "t": "Tenor",
@@ -18,32 +14,66 @@ export const voiceMap = {
     "a": "Alt"
 }
 
+const apiUrl = __API_URL__;
+
 /**
  * Adds a new library type to the map
  * @param {string} type - The type key to add
  * @param {string} displayName - The display name for the type
  */
-export function addLibraryType(type, displayName) {
-    libraryTypeMap[type] = displayName;
-    libraryTypeMap[displayName] = type;
+export async function addCategory(type, displayName) {
+    const resp = await fetch(`${apiUrl}/settings/update/categories/add`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${get(auth).token}`
+        },
+        body: JSON.stringify({ type, displayName })
+    });
+    
+    if (resp.ok) {
+        addToast({ title: "Erfolg", subTitle: "Kategorie wurde hinzugefügt", type: "success" });
+    } else {
+        addToast({ title: "Fehler", subTitle: "Kategorie konnte nicht hinzugefügt werden", type: "error" });
+    }
 }
 
 /**
  * Removes a library type from the map
  * @param {string} type - The type key to remove
  */
-export function removeLibraryType(type) {
-    const displayName = libraryTypeMap[type];
-    if (displayName && displayName !== "all") {
-        delete libraryTypeMap[type];
-        delete libraryTypeMap[displayName];
+export async function removeCategory(type) {
+    const resp = await fetch(`${apiUrl}/settings/update/categories/remove`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${get(auth).token}`
+        },
+        body: JSON.stringify({ type })
+    });
+    
+    if (resp.ok) {
+        addToast({ title: "Erfolg", subTitle: "Kategorie wurde entfernt", type: "success" });
+    } else {
+        addToast({ title: "Fehler", subTitle: "Kategorie konnte nicht entfernt werden", type: "error" });
     }
 }
 
+
+
 /**
- * Gets all available library types (excluding "all")
- * @returns {string[]} Array of type keys
+ * Gets all available library categories display names
+ * @returns {string[]} Array of display names including "Alle Kategorien"
  */
-export function getLibraryTypes() {
-    return Object.keys(libraryTypeMap).filter(key => key !== "" && key !== "all" && libraryTypeMap[key] !== "all");
+export function getLibraryCategories() {
+    const categories = get(appSettings).scoreCategories || {};
+    const displayNames = Object.keys(categories)
+        .filter(key => {
+            // Skip default entries
+            if (key === "" || key === "all" || categories[key] === "all") return false;
+            // Only include keys where the reverse mapping exists (meaning this is a display name)
+            return categories[categories[key]] === key;
+        });
+    
+    return ["Alle Kategorien", ...displayNames];
 }
