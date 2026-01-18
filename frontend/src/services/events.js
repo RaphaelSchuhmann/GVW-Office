@@ -76,7 +76,7 @@ export async function addEvent(event) {
             subTitle: "Die neue Veranstaltung wurde erfolgreich angelegt und ist ab sofort in der Veranstaltungsübersicht verfügbar.",
             type: "success"
         });
-    }else if (resp.status === 401) {
+    } else if (resp.status === 401) {
         // Auth token invalid / unauthorized
         addToast({
             title: "Ungültiges Token",

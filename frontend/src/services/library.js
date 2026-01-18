@@ -2,6 +2,8 @@ import { get } from "svelte/store";
 import { appSettings } from "../stores/appSettings";
 import { auth } from "../stores/auth";
 import { addToast } from "../stores/toasts";
+import { logout } from "./user";
+import { push } from "svelte-spa-router";
 
 export const voiceMap = {
     "t": "Tenor",
@@ -12,7 +14,7 @@ export const voiceMap = {
     "b2": "2. Bass",
     "s": "Sopran",
     "a": "Alt"
-}
+};
 
 const apiUrl = __API_URL__;
 
@@ -30,11 +32,30 @@ export async function addCategory(type, displayName) {
         },
         body: JSON.stringify({ type, displayName })
     });
-    
-    if (resp.ok) {
-        addToast({ title: "Erfolg", subTitle: "Kategorie wurde hinzugefügt", type: "success" });
+
+    if (resp.status === 200) {
+        addToast({
+            title: "Kategorie hinzugefügt",
+            subTitle: "Die Kategorie wurde erfolgreich im System hinzugefügt und kann absofort verwendet werden.",
+            type: "success"
+        });
+    } else if (resp.status === 401) {
+        // Auth token invalid / unauthorized
+        addToast({
+            title: "Ungültiges Token",
+            subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+            type: "error"
+        });
+        logout();
+        await push("/?cpwErr=false");
+        return;
     } else {
-        addToast({ title: "Fehler", subTitle: "Kategorie konnte nicht hinzugefügt werden", type: "error" });
+        // internal server error / unknown error
+        addToast({
+            title: "Interner Serverfehler",
+            subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+            type: "error"
+        });
     }
 }
 
@@ -51,14 +72,32 @@ export async function removeCategory(type) {
         },
         body: JSON.stringify({ type })
     });
-    
-    if (resp.ok) {
-        addToast({ title: "Erfolg", subTitle: "Kategorie wurde entfernt", type: "success" });
+
+    if (resp.status === 200) {
+        addToast({
+            title: "Kategorie entfernt",
+            subTitle: "Die Kategorie wurde erfolgreich aus dem System entfernt.",
+            type: "success"
+        });
+    } else if (resp.status === 401) {
+        // Auth token invalid / unauthorized
+        addToast({
+            title: "Ungültiges Token",
+            subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+            type: "error"
+        });
+        logout();
+        await push("/?cpwErr=false");
+        return;
     } else {
-        addToast({ title: "Fehler", subTitle: "Kategorie konnte nicht entfernt werden", type: "error" });
+        // internal server error / unknown error
+        addToast({
+            title: "Interner Serverfehler",
+            subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+            type: "error"
+        });
     }
 }
-
 
 
 /**
@@ -74,6 +113,6 @@ export function getLibraryCategories() {
             // Only include keys where the reverse mapping exists (meaning this is a display name)
             return categories[categories[key]] === key;
         });
-    
+
     return ["Alle Kategorien", ...displayNames];
 }
