@@ -259,7 +259,7 @@
                   options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
         <Dropdown onChange={(value) => statusInput = value} title="Status" options={["Aktiv", "Passiv"]} />
         <Dropdown onChange={(value) => roleInput = value} title="Rolle"
-                  options={["Mitglied", "Vorstand", "Schriftführer"]} />
+                  options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} />
     </div>
     <div class="w-full flex items-center gap-4 mt-5 max-[1700px]:flex-col">
         <div class="flex flex-col items-start w-full">

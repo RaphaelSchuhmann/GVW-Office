@@ -5,10 +5,14 @@ export const roleMap = {
     "Mitglied": "member",
     "Vorstand": "vorstand",
     "Schriftführer": "schriftführer",
+    "Chorleitung": "chorleitung",
+    "Notenwart": "notenwart",
     "admin": "admin",
     "schriftführer": "Schriftführer",
     "vorstand": "Vorstand",
-    "member": "Mitglied"
+    "member": "Mitglied",
+    "chorleitung": "Chorleitung",
+    "notenwart": "Notenwart"
 };
 
 export const voiceMap = {
