@@ -22,6 +22,7 @@
     import Dropdown from "../components/Dropdown.svelte";
     import DefaultDatepicker from "../components/DefaultDatepicker.svelte";
     import Textarea from "../components/Textarea.svelte";
+    import ConfirmDeleteModal from "../components/ConfirmDeleteModal.svelte";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
@@ -67,6 +68,37 @@
         inputAuthor = "";
         inputDescription = "";
         inputReport = "";
+    }
+
+    // DELETE REPORT
+    /** @type {import("../components/ConfirmDeleteModal.svelte").default} */
+    let confirmDeleteEventModal;
+
+    let reportTitle = "";
+    let deleteReportToast = {
+        success: {
+            title: "Bericht gelöscht",
+            subTitle: "Der Bericht wurde erfolgreich aus dem System entfernt.",
+            type: "success"
+        },
+        notFound: {
+            title: "Nicht gefunden",
+            subTitle: "Der angegebene Bericht konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+            type: "error"
+        }
+    };
+
+    /**
+     * Initiates the delete process for an event
+     * Sets up the confirmation modal with event details
+     */
+    function startDeleteEvent() {
+        menuOpen = false;
+
+        let events = get(reportsStore).display;
+        reportTitle = events.find(item => item.id === activeReportId)?.title;
+
+        confirmDeleteEventModal.startDelete();
     }
 
     // CONTEXT MENU
@@ -133,7 +165,7 @@
 
 <ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
     <Button type="contextMenu">Bearbeiten</Button>
-    <Button type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
+    <Button type="contextMenu" fontColor="text-gv-delete" on:click={startDeleteEvent}>Löschen</Button>
 </ContextMenu>
 
 <Modal bind:this={addReportModal} extraFunction={clearAddReport}
@@ -165,6 +197,15 @@
         <Button type="primary" disabled={saveDisabled} on:click={submitReport}>Speichern</Button>
     </div>
 </Modal>
+
+<!-- Confirm delete report modal -->
+<ConfirmDeleteModal expectedInput={reportTitle} id={activeReportId}
+                    title="Bericht löschen"
+                    subTitle="Sind Sie sich sicher das Sie diesen Bericht löschen möchten?"
+                    toastMap={deleteReportToast} action="deleteReport"
+                    onClose={async () => {menuOpen = false; activeReportId = null; await searchBar.fetchData();}}
+                    bind:this={confirmDeleteEventModal}
+/>
 
 <main class="flex h-dvh overflow-hidden">
     <Sidebar onSettingsClick={settingsClick} currentPage="reports"></Sidebar>
