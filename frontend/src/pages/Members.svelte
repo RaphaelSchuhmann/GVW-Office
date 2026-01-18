@@ -305,7 +305,7 @@
         <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" bind:this={searchBar} />
 
         <Card padding="0" marginTop="5">
-            {#if $membersStore.results.length !== 0}
+            {#if $membersStore.display.length !== 0}
                 <table class="w-full text-left border-gv-border">
                     <thead class=" text-dt-4 text-gv-dark-text">
                     <tr>
@@ -368,7 +368,7 @@
                             <td class="px-6 py-4"></td>
                         </tr>
                     {:else}
-                        {#each $membersStore.results as member}
+                        {#each $membersStore.display as member}
                             <tr class="border-t-2 border-gv-border"
                                 on:contextmenu={(e) => openContextMenu(e, member.id)}>
                                 <td class="px-6 py-4">
