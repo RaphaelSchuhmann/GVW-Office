@@ -9,8 +9,10 @@
     export let options = [];
     export let page = "";
     export let debounce = false;
+    export let textWrap = true;
+    export let customDefault = "";
 
-    const validPages = ["events", "reports"];
+    const validPages = ["events", "reports", "library"];
     if (!validPages.includes(page)) {
         console.warn(`Type ${page} is not a valid type`);
         page = "none";
@@ -95,7 +97,7 @@
             intervalId = setInterval(fetchData, 30000);
         }
 
-        filter("Alle Typen");
+        filter(customDefault ? customDefault : "Alle Typen");
     });
 
     onDestroy(() => {
@@ -105,5 +107,5 @@
 
 <div class="flex w-full items-center gap-2">
     <span class="material-symbols-rounded text-gv-dark-text text-icon-dt-2">tune</span>
-    <Dropdown options={options} onChange={filter} selected="Alle Typen"/>
+    <Dropdown options={options} onChange={filter} selected={customDefault ? customDefault : "Alle Typen"} textWrap={textWrap}/>
 </div>

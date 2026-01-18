@@ -11,6 +11,7 @@
     export let bgWhite = false;
     export let disableMinWidth = false;
     export let onChange = () => {};
+    export let textWrap = true;
 
     let open = false;
     let dropdownRef;
@@ -66,14 +67,14 @@
             style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}
             on:click={() => open = !open}>
             <div class="flex w-full">
-                <p class={`${selected === "wählen" ? "text-gv-input-placeholder" : "text-gv-dark-text"}`}>{capitalizeWords(selected)}</p>
+                <p class={`${selected === "wählen" ? "text-gv-input-placeholder" : "text-gv-dark-text"} ${textWrap ? "text-wrap" : "text-nowrap"}`}>{capitalizeWords(selected)}</p>
                 <span class="material-symbols-rounded ml-auto">{open ? "arrow_drop_up" : "arrow_drop_down"}</span>
             </div>
         </button>
         {#if open && options.length > 0}
             <div class={`absolute w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} max-h-[20vh] flex flex-col items-center rounded-b-1 z-999 overflow-y-auto`} style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}>
                 {#each options as option}
-                    <button class="text-left p-2 pl-4 pr-4 cursor-pointer hover:bg-gv-hover-effect w-full rounded-1"
+                    <button class={`text-left p-2 pl-4 pr-4 cursor-pointer hover:bg-gv-hover-effect w-full rounded-1 ${textWrap ? "text-wrap" : "text-nowrap"}`}
                             on:click={() => selectOption(option)}>{capitalizeWords(option)}</button>
                 {/each}
             </div>

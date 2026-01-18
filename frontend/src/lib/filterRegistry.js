@@ -1,8 +1,10 @@
 import { eventsStore } from "../stores/events";
 import { membersStore } from "../stores/members";
 import { reportsStore } from "../stores/reports";
+import { libraryStore } from "../stores/library";
 import { statusMap, typeMap } from "../services/events";
 import { reportsTypeMap } from "../services/reports";
+import { libraryTypeMap } from "../services/library";
 
 const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
 
@@ -84,7 +86,17 @@ export const filterRegistry = {
         optionMap: reportsTypeMap,
         applyFilters,
         fuse: {
-            keys: ["title", "author", "description", "type"],
+            keys: ["title", "author", "description", "type"], // Add search for date
+            threshold: 0.3
+        }
+    },
+    library: {
+        endpoint: `${apiUrl}/library/all`,
+        store: libraryStore,
+        optionMap: libraryTypeMap,
+        applyFilters,
+        fuse: {
+            keys: ["title", "artist", "voices"],
             threshold: 0.3
         }
     }

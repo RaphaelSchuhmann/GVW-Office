@@ -10,7 +10,7 @@ import { sendMail } from "../mailer/mailer";
 const membersRouter = Router();
 
 const validStatus = ["active", "inactive"];
-const validRole = ["member", "admin", "schriftführer", "vorstand"];
+const validRole = ["member", "admin", "schriftführer", "vorstand", "notenwart", "chorleitung"];
 const validVoice = ["tenor1", "tenor2", "bass1", "bass2"];
 const minJoined = 1924;
 const maxJoined = new Date().getFullYear() + 1;

@@ -10,6 +10,7 @@
     import Events from "./pages/Events.svelte";
     import EventEditor from "./pages/EventEditor.svelte";
     import Reports from "./pages/Reports.svelte";
+    import Library from "./pages/Library.svelte";
 
     const routes = {
         "/": Login,
@@ -21,6 +22,7 @@
         "/events": Events,
         "/events/edit": EventEditor,
         "/reports": Reports,
+        "/library": Library,
     };
 </script>
 <Router {routes}/>
