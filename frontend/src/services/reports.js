@@ -82,3 +82,20 @@ export async function addReport(report) {
         });
     }
 }
+
+/**
+ * Deletes a report from the system
+ * @param {string} id - Report ID to delete
+ * @returns {Promise<Response>} API response with deletion result
+ */
+export async function deleteReport(id) {
+    const token = get(auth).token;
+    return await fetch(`${apiUrl}/reports/delete`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ id })
+    });
+}

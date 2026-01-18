@@ -4,6 +4,7 @@
     import Input from "./Input.svelte";
     import { deleteMember } from "../services/members";
     import { deleteEvent } from "../services/events";
+    import { deleteReport } from "../services/reports";
     import { addToast } from "../stores/toasts";
     import { logout } from "../services/user";
     import { push } from "svelte-spa-router";
@@ -11,7 +12,7 @@
     const actionMap = {
         "deleteMember": deleteMember,
         "deleteEvent": deleteEvent,
-        "deleteReport": () => {console.log("deleteReport")},
+        "deleteReport": deleteReport,
         "deleteLibEntry": () => {console.log("deleteLibEntry")},
     }
 

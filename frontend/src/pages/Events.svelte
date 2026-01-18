@@ -364,7 +364,7 @@
     </div>
 </Modal>
 
-<!-- Confirm delete member modal -->
+<!-- Confirm delete event modal -->
 <ConfirmDeleteModal expectedInput={eventTitle} id={activeEventId}
                     title="Veranstaltung löschen"
                     subTitle="Sind Sie sich sicher das Sie diese Veranstaltung löschen möchten?"
