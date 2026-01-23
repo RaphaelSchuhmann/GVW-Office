@@ -7,7 +7,7 @@ import { reportsTypeMap } from "../services/reports";
 import { appSettings } from "../stores/appSettings";
 import { get } from "svelte/store";
 
-const apiUrl = import.meta.env.DEV_API_URL;
+const apiUrl = __API_URL__;
 
 /**
  * Filter registry containing both filter and search configurations
