@@ -141,11 +141,11 @@ export function getLibraryCategories(includeAll) {
 export function getCategoryCount(category) {
     const categoriesMap = get(appSettings).scoreCategories || {};
     const categoryType = categoriesMap[category];
-    const categories = get(libraryStore).raw
+    const items = get(libraryStore).raw
 
     let count = 0;
-    for (category in categories) {
-        if (category.type === categoryType) count++;
+    for (const item in items) {
+        if (item.type === categoryType) count++;
     }
 
     return count;

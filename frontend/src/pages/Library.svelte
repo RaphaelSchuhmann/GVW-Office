@@ -45,7 +45,7 @@
 
     async function submitCategory() {
         const displayValue = categoryInput;
-        const type = categoryInput.toLowerCase().replace(" ", "_");
+        const type = categoryInput.toLowerCase().replaceAll(" ", "_");
 
         if (type === displayValue || displayValue.includes("_")) {
             addToast({
@@ -235,7 +235,7 @@
                                 {/if}
                             </div>
                             <div class="flex w-full items-center justify-start mt-2">
-                                <Chip text={$appSettings.scoreCategories[item.type]} fontSize="6" />
+                                <Chip text={$appSettings.scoreCategories[item.type] ?? item.type} fontSize="6" />
                             </div>
                             <div class="flex w-full items-center justify-start mt-2 gap-2">
                                 <span

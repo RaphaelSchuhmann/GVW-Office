@@ -71,7 +71,7 @@ appSettingsRouter.post("/update/max-members", authMiddleware, async (req, resp) 
  * Requires authentication
  *
  * Request body:
- * - `{ category: string }`
+ * - `{ type: string, displayName: string }`
  *
  * Headers:
  * - `Authorization: Bearer <token>`
@@ -120,6 +120,8 @@ appSettingsRouter.post("/update/categories/add", authMiddleware, async (req, res
                 throw updateErr;
             }
         }
+
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
     } catch (err: any) {
         logger.error({ err }, "settings/update/categories/add route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
@@ -132,7 +134,7 @@ appSettingsRouter.post("/update/categories/add", authMiddleware, async (req, res
  * Requires authentication
  *
  * Request body:
- * - `{ category: string }`
+ * - `{ type: string }`
  *
  * Headers:
  * - `Authorization: Bearer <token>`
@@ -174,6 +176,8 @@ appSettingsRouter.post("/update/categories/remove", authMiddleware, async (req, 
                 throw updateErr;
             }
         }
+
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
     } catch (err: any) {
         logger.error({ err }, "settings/update/categories/remove route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
