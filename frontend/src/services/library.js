@@ -127,8 +127,19 @@ export function getLibraryCategories(includeAll) {
         const value = categories[key];
         // If this key maps to a value that maps back to this key, we have a bidirectional pair
         if (categories[value] === key) {
-            // Take the one without underscores as the display name
-            const displayName = key.includes('_') ? value : key;
+            let displayName;
+            
+            // Check if either key or value has underscores
+            if (key.includes('_') || value.includes('_')) {
+                // Take the one without underscores as the display name
+                displayName = key.includes('_') ? value : key;
+            } else {
+                // Neither has underscores, take the one with at least one capital letter
+                const keyHasCapital = /[A-Z]/.test(key);
+                const valueHasCapital = /[A-Z]/.test(value);
+                displayName = keyHasCapital ? key : value;
+            }
+            
             displayNames.push(displayName);
             processedKeys.add(key);
             processedKeys.add(value);

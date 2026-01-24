@@ -50,7 +50,7 @@
         if (type === displayValue || displayValue.includes("_")) {
             addToast({
                 title: "Ungültige Eingabe",
-                subTitle: "Der Name darf keine Unterstriche enthalten (z. B. nicht „neue_kategorie“).",
+                subTitle: "Der Name muss mindestens einen Großbuchstaben oder ein Leerzeichen enthalten und darf keine Unterstriche verwenden.",
                 type: "warning"
             });
             categoryInput = "";
@@ -166,18 +166,20 @@
        title="Kategorien verwalten" subTitle="Verwalten Sie hier Kategorien der Notenbibliothek"
        width="2/5">
     <div class="flex flex-col items-center border-2 border-gv-border rounded-2 mt-5">
-        {#each categories as category}
-            <div class="border-b-2 border-gv-border p-2 w-full flex items-center justify-start gap-1">
-                <p class="text-dt-4 p-2">{category}</p>
-                <p class="text-dt-4 p-2">Lieder: {getCategoryCount(category)}</p>
-                <div class="flex h-full ml-auto items-center justify-end">
-                    <button class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-2 rounded-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                            disabled={getCategoryCount(category) > 0} on:click={() => deleteCategory(category)}>
-                        <span class="material-symbols-rounded text-icon-dt-4">delete</span>
-                    </button>
+        <div class="max-h-90 overflow-y-auto w-full">
+            {#each categories as category}
+                <div class="border-b-2 border-gv-border p-2 w-full flex items-center justify-start gap-1">
+                    <p class="text-dt-4 p-2">{category}</p>
+                    <p class="text-dt-4 p-2">Lieder: {getCategoryCount(category)}</p>
+                    <div class="flex h-full ml-auto items-center justify-end">
+                        <button class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-2 rounded-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={getCategoryCount(category) > 0} on:click={() => deleteCategory(category)}>
+                            <span class="material-symbols-rounded text-icon-dt-4">delete</span>
+                        </button>
+                    </div>
                 </div>
-            </div>
-        {/each}
+            {/each}
+        </div>
         <div class="w-full p-2 flex items-center justify-start gap-1">
             <button class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-2 rounded-2"
                     on:click={() => {if (categoryInput.length !== 0) submitCategory()}}>
