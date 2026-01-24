@@ -1,9 +1,10 @@
 import { get } from "svelte/store";
-import { appSettings } from "../stores/appSettings";
+import { appSettings, loadSettings } from "../stores/appSettings";
 import { auth } from "../stores/auth";
 import { addToast } from "../stores/toasts";
 import { logout } from "./user";
 import { push } from "svelte-spa-router";
+import { libraryStore } from "../stores/library";
 
 export const voiceMap = {
     "t": "Tenor",
@@ -36,8 +37,14 @@ export async function addCategory(type, displayName) {
     if (resp.status === 200) {
         addToast({
             title: "Kategorie hinzugefügt",
-            subTitle: "Die Kategorie wurde erfolgreich im System hinzugefügt und kann absofort verwendet werden.",
+            subTitle: "Die Kategorie wurde erfolgreich im System hinzugefügt und kann ab sofort verwendet werden.",
             type: "success"
+        });
+    } else if (resp.status === 400) {
+        addToast({
+            title: "Ungültige Daten",
+            subTitle: "Die angegebenen Daten sind fehlerhaft oder existieren bereits. Bitte prüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
+            type: "error"
         });
     } else if (resp.status === 401) {
         // Auth token invalid / unauthorized
@@ -57,6 +64,8 @@ export async function addCategory(type, displayName) {
             type: "error"
         });
     }
+
+    await loadSettings();
 }
 
 /**
@@ -97,6 +106,8 @@ export async function removeCategory(type) {
             type: "error"
         });
     }
+
+    await loadSettings();
 }
 
 
@@ -104,15 +115,38 @@ export async function removeCategory(type) {
  * Gets all available library categories display names
  * @returns {string[]} Array of display names including "Alle Kategorien"
  */
-export function getLibraryCategories() {
+export function getLibraryCategories(includeAll) {
     const categories = get(appSettings).scoreCategories || {};
-    const displayNames = Object.keys(categories)
-        .filter(key => {
-            // Skip default entries
-            if (key === "" || key === "all" || categories[key] === "all") return false;
-            // Only include keys where the reverse mapping exists (meaning this is a display name)
-            return categories[categories[key]] === key;
-        });
+    const displayNames = [];
+    const processedKeys = new Set();
+    
+    Object.keys(categories).forEach(key => {
+        // Skip default entries and already processed keys
+        if (key === "" || key === "all" || categories[key] === "all" || processedKeys.has(key)) return;
+        
+        const value = categories[key];
+        // If this key maps to a value that maps back to this key, we have a bidirectional pair
+        if (categories[value] === key) {
+            // Take the one without underscores as the display name
+            const displayName = key.includes('_') ? value : key;
+            displayNames.push(displayName);
+            processedKeys.add(key);
+            processedKeys.add(value);
+        }
+    });
 
-    return ["Alle Kategorien", ...displayNames];
+    return includeAll ? ["Alle Kategorien", ...displayNames] : displayNames;
+}
+
+export function getCategoryCount(category) {
+    const categoriesMap = get(appSettings).scoreCategories || {};
+    const categoryType = categoriesMap[category];
+    const categories = get(libraryStore).raw
+
+    let count = 0;
+    for (category in categories) {
+        if (category.type === categoryType) count++;
+    }
+
+    return count;
 }
