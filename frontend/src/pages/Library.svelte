@@ -1,9 +1,11 @@
 <script>
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
+    import { get } from "svelte/store";
     import { loadUserData } from "../services/user";
-    import { libraryTypeMap, voiceMap } from "../services/library";
+    import { voiceMap, getLibraryCategories, addCategory, getCategoryCount, removeCategory } from "../services/library";
     import { user } from "../stores/user";
     import { libraryStore } from "../stores/library";
+    import { appSettings, loadSettings } from "../stores/appSettings";
 
     import ToastStack from "../components/ToastStack.svelte";
     import Sidebar from "../components/Sidebar.svelte";
@@ -13,15 +15,75 @@
     import SearchBar from "../components/SearchBar.svelte";
     import Filter from "../components/Filter.svelte";
     import Card from "../components/Card.svelte";
-    import { push } from "svelte-spa-router";
     import ContextMenu from "../components/ContextMenu.svelte";
     import Chip from "../components/Chip.svelte";
+    import Modal from "../components/Modal.svelte";
+    import { addToast } from "../stores/toasts";
+
+    // Periodic app settings refresh
+    let intervalId;
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
 
     /** @type {import("../components/SearchBar.svelte").default} */
     let searchBar;
+
+    let filterOptions = getLibraryCategories(true);
+
+    function refreshCategories() {
+        filterOptions = getLibraryCategories(true);
+        categories = getLibraryCategories(false);
+    }
+
+    // MANGE CATEGORIES
+    /** @type {import("../components/Modal.svelte").default} */
+    let manageCategoriesModal;
+    let categories = getLibraryCategories(false);
+
+    let categoryInput = "";
+
+    async function submitCategory() {
+        const displayValue = categoryInput;
+        const type = categoryInput.toLowerCase().replaceAll(" ", "_");
+
+        if (type === displayValue || displayValue.includes("_")) {
+            addToast({
+                title: "Ungültige Eingabe",
+                subTitle: "Der Name muss mindestens einen Großbuchstaben oder ein Leerzeichen enthalten und darf keine Unterstriche verwenden.",
+                type: "warning"
+            });
+            categoryInput = "";
+            return;
+        }
+
+        await addCategory(type, displayValue);
+
+        categories = []; // clear categories
+        categoryInput = "";
+        refreshCategories();
+    }
+
+    async function deleteCategory(category) {
+        const categoryMap = get(appSettings).scoreCategories || {};
+        const type = categoryMap[category];
+        const count = getCategoryCount(category);
+
+        if (count > 0) {
+            addToast({
+               title: "Kategorie kann nicht gelöscht werden",
+               subTitle: "Diese Kategorie enthält noch mindestens ein Lied. Bitte entfernen oder verschieben Sie die Lieder zuerst.",
+               type: "error"
+            });
+            return;
+        }
+
+        if (type) {
+            await removeCategory(type);
+        }
+
+        refreshCategories();
+    }
 
     // CONTEXT MENU
     let menuOpen = false;
@@ -75,11 +137,15 @@
         }
     }
 
-    // FILTER BAR
-    let options = ["Alle Kategorien"];
-
     onMount(async () => {
         await loadUserData();
+        intervalId = setInterval(loadSettings, 40000); // Reload settings here every 40 seconds
+    });
+
+    onDestroy(() => {
+        if (intervalId) {
+            clearInterval(intervalId);
+        }
     });
 
     function settingsClick() {
@@ -95,13 +161,42 @@
     <Button type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
 </ContextMenu>
 
+<!-- Category Modal -->
+<Modal bind:this={manageCategoriesModal}
+       title="Kategorien verwalten" subTitle="Verwalten Sie hier Kategorien der Notenbibliothek"
+       width="2/5">
+    <div class="flex flex-col items-center border-2 border-gv-border rounded-2 mt-5">
+        <div class="max-h-90 overflow-y-auto w-full">
+            {#each categories as category}
+                <div class="border-b-2 border-gv-border p-2 w-full flex items-center justify-start gap-1">
+                    <p class="text-dt-4 p-2">{category}</p>
+                    <p class="text-dt-4 p-2">Lieder: {getCategoryCount(category)}</p>
+                    <div class="flex h-full ml-auto items-center justify-end">
+                        <button class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-2 rounded-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={getCategoryCount(category) > 0} on:click={() => deleteCategory(category)}>
+                            <span class="material-symbols-rounded text-icon-dt-4">delete</span>
+                        </button>
+                    </div>
+                </div>
+            {/each}
+        </div>
+        <div class="w-full p-2 flex items-center justify-start gap-1">
+            <button class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-2 rounded-2"
+                    on:click={() => {if (categoryInput.length !== 0) submitCategory()}}>
+                <span class="material-symbols-rounded text-icon-dt-4">{categoryInput.length === 0 ? "add" : "check"}</span>
+            </button>
+            <input type="text" placeholder="Neue Kategorie" class="text-dt-4 w-full p-2" bind:value={categoryInput}>
+        </div>
+    </div>
+</Modal>
+
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 <main class="flex overflow-hidden">
     <Sidebar onSettingsClick={settingsClick} currentPage="library"></Sidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Notenbibliothek" subTitle="Verwaltung des gesamten Notenmaterials">
-            <Button type="primary">
+            <Button type="primary" on:click={manageCategoriesModal.showModal}>
                 <span class="material-symbols-rounded text-icon-dt-4">discover_tune</span>
                 <p class="text-dt-4 text-nowrap">Kategorien bearbeiten</p>
             </Button>
@@ -114,7 +209,7 @@
         <div class="flex items-center w-full gap-2 mt-5">
             <SearchBar bind:this={searchBar} placeholder="Noten durchsuchen..." page="library" doDebounce={false} />
             <div class="h-full max-w-1/3">
-                <Filter debounce={false} page="library" options={options} textWrap={false}
+                <Filter debounce={false} page="library" options={filterOptions} textWrap={false}
                         customDefault="Alle Kategorien" />
             </div>
         </div>
@@ -142,7 +237,7 @@
                                 {/if}
                             </div>
                             <div class="flex w-full items-center justify-start mt-2">
-                                <Chip text={libraryTypeMap[item.type]} fontSize="6" />
+                                <Chip text={$appSettings.scoreCategories[item.type] ?? item.type} fontSize="6" />
                             </div>
                             <div class="flex w-full items-center justify-start mt-2 gap-2">
                                 <span

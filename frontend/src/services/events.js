@@ -52,7 +52,7 @@ export const modeMap = {
     "monthly": "Monatlich"
 }
 
-const apiUrl = import.meta.env.DEV_API_URL || "http://localhost:3500";
+const apiUrl = __API_URL__;
 
 /**
  * Adds a new event to the system
@@ -76,7 +76,7 @@ export async function addEvent(event) {
             subTitle: "Die neue Veranstaltung wurde erfolgreich angelegt und ist ab sofort in der Veranstaltungsübersicht verfügbar.",
             type: "success"
         });
-    }else if (resp.status === 401) {
+    } else if (resp.status === 401) {
         // Auth token invalid / unauthorized
         addToast({
             title: "Ungültiges Token",
