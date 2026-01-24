@@ -67,7 +67,7 @@ appSettingsRouter.post("/update/max-members", authMiddleware, async (req, resp) 
 
 /**
  * POST /update/categories/add
- * Adds a new category to the existing scoreCategories array
+ * Adds a new category to the existing scoreCategories map
  * Requires authentication
  *
  * Request body:
@@ -85,6 +85,10 @@ appSettingsRouter.post("/update/max-members", authMiddleware, async (req, resp) 
 appSettingsRouter.post("/update/categories/add", authMiddleware, async (req, resp) => {
     try {
         const { type, displayName } = req.body;
+        const blocked = new Set(["__proto__", "constructor", "prototype"]);
+        if (typeof type !== "string" || typeof displayName !== "string" || blocked.has(type) || blocked.has(displayName)) {
+            return resp.status(400).json({ errorMessage: "InvalidCategoryKey" });
+        }
         let retries = 3;
         
         while (retries > 0) {

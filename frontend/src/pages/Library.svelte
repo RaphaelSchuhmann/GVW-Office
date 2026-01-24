@@ -20,7 +20,7 @@
     import Modal from "../components/Modal.svelte";
     import { addToast } from "../stores/toasts";
 
-    // Debounce app settings
+    // Periodic app settings refresh
     let intervalId;
 
     /** @type {import("../components/SettingsModal.svelte").default} */
