@@ -1,5 +1,6 @@
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const path = require("path");
+const fs = require("fs/promises");
 
 let mainWindow;
 
@@ -8,39 +9,59 @@ let mainWindow;
  * Sets up window properties, loads the app, and handles window events
  */
 function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    minWidth: 1500,
-    minHeight: 800,
-    webPreferences: {
-      contextIsolation: true,
-    },
-    title: "GVW Office"
-  });
+    mainWindow = new BrowserWindow({
+        width: 1200,
+        height: 800,
+        minWidth: 1500,
+        minHeight: 800,
+        webPreferences: {
+            preload: path.join(__dirname, "preload.js"),
+            contextIsolation: true,
+            nodeIntegration: false
+        },
+        title: "GVW Office"
+    });
 
-  mainWindow.maximize();
-  mainWindow.setMenuBarVisibility(false);
+    mainWindow.maximize();
+    mainWindow.setMenuBarVisibility(false);
 
-  if (process.env.NODE_ENV !== 'production') {
-    mainWindow.loadURL('http://localhost:5173');
-  } else {
-    mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
-  }
+    if (process.env.NODE_ENV !== "production") {
+        mainWindow.loadURL("http://localhost:5173");
+    } else {
+        mainWindow.loadFile(path.join(__dirname, "dist", "index.html"));
+    }
 
-  mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
+    mainWindow.on("closed", () => {
+        mainWindow = null;
+    });
 }
 
 app.whenReady().then(createWindow);
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") app.quit();
 });
 
-app.on('activate', () => {
-  if (mainWindow === null) createWindow();
+app.on("activate", () => {
+    if (mainWindow === null) createWindow();
+});
+
+ipcMain.handle("open-file-dialog", async (_, options) => {
+    const result = await dialog.showOpenDialog({
+       title: options?.title ?? "Datei auswählen",
+       properties: ["openFile"],
+       filters: options?.filters ?? []
+    });
+
+    if (result.canceled) {
+        return [];
+    }
+
+    return result.filePaths;
+});
+
+ipcMain.handle("read-file", async (_, filePath) => {
+    return await fs.readFile(filePath);
 });
