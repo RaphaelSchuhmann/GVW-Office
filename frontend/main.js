@@ -10,7 +10,7 @@ let mainWindow;
  */
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 1200,
+        width: 1500,
         height: 800,
         minWidth: 1500,
         minHeight: 800,
@@ -63,5 +63,9 @@ ipcMain.handle("open-file-dialog", async (_, options) => {
 });
 
 ipcMain.handle("read-file", async (_, filePath) => {
-    return await fs.readFile(filePath);
+    try {
+        return await fs.readFile(filePath);
+    } catch (err) {
+        throw new Error(`Failed to read file: ${err.message}`);
+    }
 });

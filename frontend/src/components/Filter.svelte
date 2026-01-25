@@ -109,7 +109,7 @@
             intervalId = setInterval(fetchData, 30000);
         }
 
-        // Update config every 20 seconds for dynamic optionMap changes
+        // Update config every 5 seconds for dynamic optionMap changes
         configIntervalId = setInterval(updateConfig, 5000);
 
         filter(customDefault ? customDefault : "Alle Typen");

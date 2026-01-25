@@ -17,16 +17,20 @@
     let icon = page === "library" ? "audio_file" : "draft";
 
     async function addFile() {
-        const file = await window.api.openFileDialog({
-            title: "Notendatei auswählen",
-            filters: [
-                { name: "Noten", extensions: validTypes }
-            ]
-        });
+        try {
+            const file = await window.api.openFileDialog({
+                title: "Notendatei auswählen",
+                filters: [
+                    { name: "Noten", extensions: validTypes }
+                ]
+            });
 
-        // Only add file when it exists and isn't already in the paths array
-        if (file[0] && !paths.includes(file[0])) {
-            paths = [...paths, file[0]];
+            // Only add file when it exists and isn't already in the paths array
+            if (file[0] && !paths.includes(file[0])) {
+                paths = [...paths, file[0]];
+            }
+        } catch (err) {
+            console.error("Failed to open file dialog: ", err);
         }
     }
 
