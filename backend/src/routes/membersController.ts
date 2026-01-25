@@ -275,4 +275,4 @@ function validInputs(name: string, surname: string, email: string, phone: string
     return !(joined < minJoined || joined > maxJoined);
 }
 
-export { membersRouter };
+export default membersRouter;
