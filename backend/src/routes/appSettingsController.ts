@@ -188,4 +188,4 @@ appSettingsRouter.post("/update/categories/remove", authMiddleware, async (req, 
     }
 });
 
-export { appSettingsRouter };
+export default appSettingsRouter;

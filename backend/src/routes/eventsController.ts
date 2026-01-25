@@ -180,4 +180,4 @@ function parseDMYToDate(dateStr: string) {
     return new Date(year, month - 1, day);
 }
 
-export { eventsRouter };
+export default eventsRouter;
