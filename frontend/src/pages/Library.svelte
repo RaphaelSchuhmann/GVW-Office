@@ -2,7 +2,14 @@
     import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
     import { loadUserData } from "../services/user";
-    import { voiceMap, getLibraryCategories, addCategory, getCategoryCount, removeCategory } from "../services/library";
+    import {
+        voiceMap,
+        getLibraryCategories,
+        addCategory,
+        getCategoryCount,
+        removeCategory,
+        addScore
+    } from "../services/library";
     import { user } from "../stores/user";
     import { libraryStore } from "../stores/library";
     import { appSettings, loadSettings } from "../stores/appSettings";
@@ -19,6 +26,10 @@
     import Chip from "../components/Chip.svelte";
     import Modal from "../components/Modal.svelte";
     import { addToast } from "../stores/toasts";
+    import Input from "../components/Input.svelte";
+    import Dropdown from "../components/Dropdown.svelte";
+    import Checkbox from "../components/Checkbox.svelte";
+    import FileSelector from "../components/FileSelector.svelte";
 
     // Periodic app settings refresh
     let intervalId;
@@ -91,6 +102,62 @@
     let menuY = 0;
     let activeScoreId = null;
 
+    // ADD NEW SCORE
+    /** @type {import("../components/Modal.svelte").default} */
+    let newScoreModal;
+
+    let newScoreSaveDisabled = true;
+
+    let newScoreTitle = "";
+    let newScoreArtist = "";
+    let newScoreCategory = "";
+    let newScoreVoiceT1 = false;
+    let newScoreVoiceT2 = false;
+    let newScoreVoiceB1 = false;
+    let newScoreVoiceB2 = false;
+    let newScoreVoiceSo = false;
+    let newScoreVoiceAl = false;
+    let newScoreFilePaths = [];
+
+    $: newScoreSaveDisabled = !(newScoreTitle && newScoreArtist && newScoreCategory && (newScoreVoiceT1 || newScoreVoiceT2 || newScoreVoiceB1 || newScoreVoiceB2 || newScoreVoiceSo || newScoreVoiceAl));
+
+    function clearNewScore() {
+        newScoreTitle = "";
+        newScoreArtist = "";
+        newScoreCategory = "";
+        newScoreVoiceT1 = false;
+        newScoreVoiceT2 = false;
+        newScoreVoiceB1 = false;
+        newScoreVoiceB2 = false;
+        newScoreVoiceSo = false;
+        newScoreVoiceAl = false;
+        newScoreFilePaths = [];
+    }
+
+    async function addNewScore() {
+        let voices = [];
+        if (newScoreVoiceT1) voices.push("t1");
+        if (newScoreVoiceT2) voices.push("t2");
+        if (newScoreVoiceB1) voices.push("b1");
+        if (newScoreVoiceB2) voices.push("b2");
+        if (newScoreVoiceSo) voices.push("s");
+        if (newScoreVoiceAl) voices.push("a");
+
+        const newScore = {
+            title: newScoreTitle,
+            artist: newScoreArtist,
+            type: get(appSettings).scoreCategories[newScoreCategory],
+            voices: voices,
+            voiceCount: voices.length,
+            paths: newScoreFilePaths
+        };
+
+        await addScore(newScore);
+
+        newScoreModal?.hideModal();
+        await searchBar.fetchData();
+    }
+
     /**
      * Opens context menu on right-click at cursor position
      * @param {MouseEvent} event - The right-click event
@@ -151,13 +218,26 @@
     function settingsClick() {
         settingsModal.showModal();
     }
+
+    function openNewScoreModal() {
+        if (categories.length === 0) {
+            addToast({
+                title: "Keine Kategorien vorhanden",
+                subTitle: "Erstellen Sie zuerst mindestens eine Kategorie, um neue Noten hinzuzufügen.",
+                type: "warning",
+            });
+            return;
+        }
+
+        newScoreModal.showModal();
+    }
 </script>
 
 <svelte:window on:contextmenu={() => (menuOpen = false)} />
 
 <ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
-    <Button type="contextMenu">Bearbeiten
-    </Button>
+    <Button type="contextMenu">Bearbeiten</Button>
+    <Button type="contextMenu">Download</Button>
     <Button type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
 </ContextMenu>
 
@@ -190,6 +270,28 @@
     </div>
 </Modal>
 
+<!-- New Score Modal -->
+<Modal bind:this={newScoreModal} width="2/5" extraFunction={clearNewScore}
+       title="Neue Noten hinzufügen" subTitle="Erfassen Sie hier die Details der Noten">
+    <Input bind:value={newScoreTitle} title="Titel" placeholder="The Final Countdown" marginTop="5"/>
+    <Input bind:value={newScoreArtist} title="Komponist / Band" placeholder="Europe" marginTop="5"/>
+    <Dropdown title="Kategorie" options={categories} marginTop="5" onChange={(value) => newScoreCategory = value} />
+    <p class="text-dt-6 font-medium mt-5">Stimmen</p>
+    <div class="w-full flex items-center justify-start gap-4 mt-1">
+        <Checkbox bind:isChecked={newScoreVoiceT1} title="1. Tenor"/>
+        <Checkbox bind:isChecked={newScoreVoiceT2} title="2. Tenor"/>
+        <Checkbox bind:isChecked={newScoreVoiceB1} title="1. Bass"/>
+        <Checkbox bind:isChecked={newScoreVoiceB2} title="2. Bass"/>
+        <Checkbox bind:isChecked={newScoreVoiceSo} title="Sopran"/>
+        <Checkbox bind:isChecked={newScoreVoiceAl} title="Alt"/>
+    </div>
+    <FileSelector title="Noten" page="library" validTypes={["pdf", "gp", "gp5", "gp3", "gp4", "gpx", "cap", "capx"]} bind:paths={newScoreFilePaths} marginTop="5"/>
+    <div class="w-full flex items-center gap-4 mt-5">
+        <Button type="secondary" on:click={newScoreModal?.hideModal}>Abbrechen</Button>
+        <Button type="primary" disabled={newScoreSaveDisabled} on:click={addNewScore}>Speichern</Button>
+    </div>
+</Modal>
+
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 <main class="flex overflow-hidden">
@@ -200,14 +302,14 @@
                 <span class="material-symbols-rounded text-icon-dt-4">discover_tune</span>
                 <p class="text-dt-4 text-nowrap">Kategorien bearbeiten</p>
             </Button>
-            <Button type="primary">
+            <Button type="primary" on:click={openNewScoreModal}>
                 <span class="material-symbols-rounded text-icon-dt-4">add</span>
                 <p class="text-dt-4 text-nowrap">Noten hinzufügen</p>
             </Button>
         </PageHeader>
 
         <div class="flex items-center w-full gap-2 mt-5">
-            <SearchBar bind:this={searchBar} placeholder="Noten durchsuchen..." page="library" doDebounce={false} />
+            <SearchBar bind:this={searchBar} placeholder="Noten durchsuchen..." page="library" doDebounce={true} />
             <div class="h-full max-w-1/3">
                 <Filter debounce={false} page="library" options={filterOptions} textWrap={false}
                         customDefault="Alle Kategorien" />
@@ -221,8 +323,7 @@
                         <Card on:contextmenu={(e) => openContextMenu(e, item.id)}>
                             <div class="flex items-stretch w-full gap-2">
                                 <div class="flex flex-col items-start justify-start">
-                                        <span
-                                            class="material-symbols-rounded text-gv-primary text-icon-dt-6">music_note</span>
+                                        <span class="material-symbols-rounded text-gv-primary text-icon-dt-6">music_note</span>
                                 </div>
                                 <div class="flex flex-col items-start m-0 gap-2">
                                     <p class="text-gv-dark-text text-dt-3 leading-none">{item.title}</p>

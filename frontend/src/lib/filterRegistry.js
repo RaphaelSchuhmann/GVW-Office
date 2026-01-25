@@ -94,7 +94,7 @@ export const filterRegistry = {
     library: {
         endpoint: `${apiUrl}/library/all`,
         store: libraryStore,
-        optionMap: get(appSettings).scoreCategories,
+        get optionMap() { return get(appSettings).scoreCategories; },
         applyFilters,
         fuse: {
             keys: ["title", "artist", "voices"],

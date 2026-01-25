@@ -18,10 +18,22 @@
         page = "none";
     }
 
-    const config = filterRegistry[page];
-    const { store, endpoint, optionMap } = config;
+    let config = filterRegistry[page];
+    let { store, endpoint, optionMap } = config;
     let intervalId;
+    let configIntervalId;
     let isFetching = false;
+
+    /**
+     * Updates the config from the registry to get latest optionMap
+     */
+    function updateConfig() {
+        config = filterRegistry[page];
+        const newConfig = config;
+        store = newConfig.store;
+        endpoint = newConfig.endpoint;
+        optionMap = newConfig.optionMap;
+    }
 
     /**
      * Fetches data from the API endpoint and updates the store
@@ -77,7 +89,7 @@
         if (!(selected in optionMap)) {
             addToast({
                 title: "Unerwarteter Fehler",
-                subTitle: "Es ist ein unerwarteter Fehler aufgetreten. Bitte kontaktieren Sie umgehend den Vorstand!",
+                subTitle: "Es ist ein unerwarteter Fehler aufgetreten.",
                 type: "error"
             });
             return;
@@ -97,11 +109,15 @@
             intervalId = setInterval(fetchData, 30000);
         }
 
+        // Update config every 20 seconds for dynamic optionMap changes
+        configIntervalId = setInterval(updateConfig, 5000);
+
         filter(customDefault ? customDefault : "Alle Typen");
     });
 
     onDestroy(() => {
         clearInterval(intervalId);
+        clearInterval(configIntervalId);
     });
 </script>
 

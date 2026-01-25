@@ -5,6 +5,7 @@ import { addToast } from "../stores/toasts";
 import { logout } from "./user";
 import { push } from "svelte-spa-router";
 import { libraryStore } from "../stores/library";
+import { getFileExtensionFromPath, getFileNameFromPath } from "./utils";
 
 export const voiceMap = {
     "t": "Tenor",
@@ -110,6 +111,68 @@ export async function removeCategory(type) {
     await loadSettings();
 }
 
+export async function addScore(scoreData) {
+    const formData = new FormData();
+
+    formData.append("title", scoreData.title);
+    formData.append("artist", scoreData.artist);
+    formData.append("type", scoreData.type);
+    formData.append("voices", JSON.stringify(scoreData.voices));
+    formData.append("voiceCount", String(scoreData.voiceCount));
+
+    for (const path of scoreData.paths) {
+        const buffer = await window.api.readFile(path);
+        const fileName = `${getFileNameFromPath(path)}.${getFileExtensionFromPath(path)}`;
+
+        const blob = new Blob([buffer]);
+        formData.append("files", blob, fileName);
+    }
+
+    const resp = await fetch(`${apiUrl}/library/new`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${get(auth).token}`
+        },
+        body: formData
+    });
+
+    if (resp.status === 200) {
+        addToast({
+            title: "Noten hinzugefügt",
+            subTitle: "Die Noten wurden erfolgreich zur Notenbibliothek hinzugefügt.",
+            type: "success"
+        });
+    } else if (resp.status === 400) {
+        addToast({
+            title: "Ungültige Daten",
+            subTitle: "Einige der von Ihnen eingegebenen Daten sind fehlerhaft. Bitte prüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
+            type: "error"
+        });
+    } else if (resp.status === 409) {
+        addToast({
+            title: "Noten bereits vorhanden",
+            subTitle: "Es existiert bereits ein Eintrag mit diesem Title in der Notenbibliothek.",
+            type: "error"
+        });
+    } else if (resp.status === 401) {
+        // Auth token invalid / unauthorized
+        addToast({
+            title: "Ungültiges Token",
+            subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+            type: "error"
+        });
+        logout();
+        await push("/?cpwErr=false");
+        return;
+    } else {
+        // internal server error / unknown error
+        addToast({
+            title: "Interner Serverfehler",
+            subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+            type: "error"
+        });
+    }
+}
 
 /**
  * Gets all available library categories display names
@@ -156,7 +219,7 @@ export function getCategoryCount(category) {
 
     let count = 0;
     for (const item in items) {
-        if (item.type === categoryType) count++;
+        if (items[item].type === categoryType) count++;
     }
 
     return count;

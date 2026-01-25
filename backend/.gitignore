@@ -5,6 +5,7 @@ node_modules
 /generated/prisma
 
 db/
+data/
 
 log.txt
 config.json
