@@ -160,7 +160,7 @@ export async function addScore(scoreData) {
     } else if (resp.status === 409) {
         addToast({
             title: "Noten bereits vorhanden",
-            subTitle: "Es existiert bereits ein Eintrag mit diesem Title und Künstler in der Notenbibliothek.",
+            subTitle: "Es existiert bereits ein Eintrag mit diesem Titel und Künstler in der Notenbibliothek.",
             type: "error"
         });
     } else if (resp.status === 401) {
