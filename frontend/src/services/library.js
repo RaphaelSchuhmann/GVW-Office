@@ -121,11 +121,20 @@ export async function addScore(scoreData) {
     formData.append("voiceCount", String(scoreData.voiceCount));
 
     for (const path of scoreData.paths) {
-        const buffer = await window.api.readFile(path);
-        const fileName = `${getFileNameFromPath(path)}.${getFileExtensionFromPath(path)}`;
+        try {
+            const buffer = await window.api.readFile(path);
+            const fileName = `${getFileNameFromPath(path)}.${getFileExtensionFromPath(path)}`;
 
-        const blob = new Blob([buffer]);
-        formData.append("files", blob, fileName);
+            const blob = new Blob([buffer]);
+            formData.append("files", blob, fileName);
+        } catch (err) {
+            addToast({
+                title: "Datei konnte nicht gelesen werden",
+                subTitle: `Die Datei "${path}" konnte nicht gelesen werden. Bitte überprüfen Sie, ob die Datei existiert.`,
+                type: "error"
+            });
+            return;
+        }
     }
 
     const resp = await fetch(`${apiUrl}/library/new`, {
@@ -151,7 +160,7 @@ export async function addScore(scoreData) {
     } else if (resp.status === 409) {
         addToast({
             title: "Noten bereits vorhanden",
-            subTitle: "Es existiert bereits ein Eintrag mit diesem Title in der Notenbibliothek.",
+            subTitle: "Es existiert bereits ein Eintrag mit diesem Title und Künstler in der Notenbibliothek.",
             type: "error"
         });
     } else if (resp.status === 401) {

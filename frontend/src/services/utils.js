@@ -170,9 +170,10 @@ export function getOrdinalFromDMY(dateStr) {
  * @returns {string} Filename without extension
  */
 export function getFileNameFromPath(path) {
-    const pathParts = path.split("/");
+    const pathParts = path.split(/[/\\]/);
     const pathEnding = pathParts[pathParts.length - 1];
-    return pathEnding.split(".")[0];
+    const dotIndex = pathEnding.lastIndexOf(".");
+    return dotIndex > 0 ? pathEnding.substring(0, dotIndex) : pathEnding;
 }
 
 /**
@@ -181,7 +182,7 @@ export function getFileNameFromPath(path) {
  * @returns {string} File extension
  */
 export function getFileExtensionFromPath(path) {
-    const pathParts = path.split("/");
+    const pathParts = path.split(/[/\\]/);
     const pathEnding = pathParts[pathParts.length - 1];
     const splitEnd = pathEnding.split(".");
     return splitEnd[splitEnd.length - 1];

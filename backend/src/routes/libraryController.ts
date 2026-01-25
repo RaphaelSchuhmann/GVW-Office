@@ -47,7 +47,7 @@ libraryRouter.post("/new", libraryUpload.array("files"), async (req, resp) => {
         const exists = await dbService.find("library", { selector: { title: title, artist: artist }, limit: 1 });
         if (exists.length > 0) return resp.status(409).json({ errorMessage: "AlreadyExists" });
 
-        const files = await storeFiles(req.files);
+        const files = await storeFiles(req.files ?? []);
 
         await dbService.create("library", {
             title: title,
@@ -67,14 +67,17 @@ libraryRouter.post("/new", libraryUpload.array("files"), async (req, resp) => {
 
 async function storeFiles(uploadedFiles: any) {
     const storedFiles = [];
+    const targetDir = SCORES_DIR ?? "./data/scores";
+
+    await fs.mkdir(targetDir, { recursive: true });
 
     for (const file of uploadedFiles) {
         const id = randomUUID();
         const ext = path.extname(file.originalname);
 
-        if (!SCORES_DIR) console.error("SCORES_DIR is null!");
+        if (!SCORES_DIR) console.error("SCORES_DIR is not defined!");
 
-        const targetPath = path.join(SCORES_DIR ?? "./data/scores", `${id}${ext}`);
+        const targetPath = path.join(targetDir, `${id}${ext}`);
 
         await fs.writeFile(targetPath, file.buffer);
 
