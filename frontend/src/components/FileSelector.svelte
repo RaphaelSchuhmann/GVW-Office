@@ -44,7 +44,7 @@
     <div class="flex-1 min-w-0 overflow-x-auto w-full">
         <div class="flex items-center justify-start gap-2 flex-nowrap">
             <button class="shrink-0 flex items-center justify-center rounded-2 border-2 border-gv-border p-2 cursor-pointer hover:bg-gv-input-bg duration-200"
-                on:click={addFile}>
+                on:click={addFile} aria-label="Datei hinzufügen">
                 <span class="material-symbols-rounded text-dt-6">attach_file_add</span>
             </button>
             {#each paths as path}
