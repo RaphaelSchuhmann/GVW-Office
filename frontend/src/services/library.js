@@ -194,6 +194,77 @@ export async function deleteScore(scoreId) {
     });
 }
 
+export async function downloadScoreFiles(scoreId) {
+    const resp = await fetch(`${apiUrl}/library/${scoreId}/files`, {
+        method: "GET",
+        headers: {
+            Authorization: `Bearer ${get(auth).token}`
+        }
+    });
+
+    let body = null;
+
+    if (!resp.ok) body = await resp.json();
+
+    if (resp.status === 200) {
+        addToast({
+            title: "Download erfolgreich",
+            subTitle: "Die Noten wurden erfolgreich aus der Notenbibliothek gedownloaded.",
+            type: "success"
+        });
+    } else if (resp.status === 404) {
+        if (body.errorMessage === "ScoreNotFound") {
+            addToast({
+                title: "Noten nicht gefunden",
+                subTitle: "Die Noten wurden in der Notenbibliothek nicht gefunden.",
+                type: "error"
+            });
+        } else {
+            addToast({
+                title: "Keine Dateien gefunden",
+                subTitle: "Es sind keine Dateien für diese Noten hinterlegt.",
+                type: "info"
+            });
+        }
+        return;
+    } else if (resp.status === 400) {
+        addToast({
+            title: "Ungültige Daten",
+            subTitle: "Es wurden fehlerhafte Daten übermittelt. Bitte versuchen Sie es später erneut.",
+            type: "error"
+        });
+        return;
+    } else if (resp.status === 401) {
+        // Auth token invalid / unauthorized
+        addToast({
+            title: "Ungültiges Token",
+            subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+            type: "error"
+        });
+        logout();
+        await push("/?cpwErr=false");
+        return;
+    } else {
+        // internal server error / unknown error
+        addToast({
+            title: "Interner Serverfehler",
+            subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+            type: "error"
+        });
+        return;
+    }
+    
+    const blob = await resp.blob();
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Noten.zip";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+
 /**
  * Gets all available library categories display names
  * @returns {string[]} Array of display names including "Alle Kategorien"
