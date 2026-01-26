@@ -148,16 +148,23 @@ libraryRouter.get("/:id/files", async (req, resp) => {
     try {
         const id = req.params.id;
 
-        if (!id) return resp.status(400).json({ errorMessage: "InvalidInputs" });
-
         const score = await dbService.read("library", id);
         if (!score) return resp.status(404).json({ errorMessage: "ScoreNotFound" });
 
         if (score.files && score.files.length > 0) {
             resp.setHeader("Content-Type", "application/zip");
-            resp.setHeader("Content-Disposition", `attachment; filename="${score.title}.zip"`);
+            const sanitizedTitle = score.title.replace(/["\r\n]/g, "_");
+            resp.setHeader("Content-Disposition", `attachment; filename="${sanitizedTitle}.zip"`);
 
             const archive = archiver("zip", { zlib: { level: 9 } });
+
+            archive.on("error", (err) => {
+                logger.error({ err }, "Archive error during ZIP creation");
+                if (!resp.headersSent) {
+                    return resp.status(500).json({ errorMessage: "InternalServerError" });
+                }
+            });
+
             archive.pipe(resp);
 
             const targetDir = SCORES_DIR ?? "./data/scores";
@@ -165,7 +172,12 @@ libraryRouter.get("/:id/files", async (req, resp) => {
             for (const file of score.files) {
                 const filePath = path.join(targetDir, `${file.id}.${file.extension}`);
 
-                archive.file(filePath, { name: file.originalName });
+                try {
+                    await fs.access(filePath);
+                    archive.file(filePath, { name: file.originalName });
+                } catch {
+                    logger.warn({ filePath }, "File not found, skipping...");
+                }
             }
 
             await archive.finalize();
