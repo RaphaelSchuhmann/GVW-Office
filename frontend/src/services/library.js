@@ -216,7 +216,13 @@ export async function downloadScoreFiles(scoreId) {
 
     let body = null;
 
-    if (!resp.ok) body = await resp.json();
+    if (!resp.ok) {
+        try {
+            body = await resp.json();
+        } catch {
+            body = null;
+        }
+    }
 
     if (resp.status === 200) {
         const blob = await resp.blob();
@@ -243,11 +249,17 @@ export async function downloadScoreFiles(scoreId) {
                     "Die Noten wurden in der Notenbibliothek nicht gefunden.",
                 type: "error",
             });
-        } else {
+        } else if (body.errorMessage === "NoFilesFound") {
             addToast({
                 title: "Keine Dateien gefunden",
                 subTitle: "Es sind keine Dateien für diese Noten hinterlegt.",
                 type: "info",
+            });
+        } else {
+            addToast({
+                title: "Unerwarteter Fehler",
+                subTitle: "Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+                type: "error"
             });
         }
         return;

@@ -174,7 +174,8 @@ libraryRouter.get("/:id/files", async (req, resp) => {
 
                 try {
                     await fs.access(filePath);
-                    archive.file(filePath, { name: file.originalName });
+                    const safeName = path.basename(file.originalName).replace(/[\r\n]/g, "_") || "score";
+                    archive.file(filePath, { name: safeName });
                 } catch {
                     logger.warn({ filePath }, "File not found, skipping...");
                 }
