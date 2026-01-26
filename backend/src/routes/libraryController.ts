@@ -94,19 +94,15 @@ async function storeFiles(uploadedFiles: any) {
     return storedFiles;
 }
 
-async function deleteFile(fileName: any) {
+async function deleteFile(fileName: string) {
     const targetDir = SCORES_DIR ?? "./data/scores";
 
     const filePath = path.join(targetDir, fileName);
 
-    if (!filePath) return;
-
     try {
-        await stat(filePath);
         await fs.unlink(filePath);
-        return;
-    } catch (_) {
-        return
+    } catch (err: any) {
+        logger.error({ err, filePath }, "Failed to delete score file");
     }
 }
 
@@ -131,11 +127,10 @@ libraryRouter.post("/delete", async (req, resp) => {
         if (!id) return resp.status(400).json({ errorMessage: "InvalidInputs" });
 
         const score = await dbService.read("library", id);
-        if (!score) return resp.status(404).json({ errorMessage: "EventNotFound" });
+        if (!score) return resp.status(404).json({ errorMessage: "ScoreNotFound" });
 
         if (score.files) {
             for (const file of score.files) {
-                console.log(file);
                 await deleteFile(`${file.id}.${file.extension}`);
             }
         }
@@ -144,7 +139,7 @@ libraryRouter.post("/delete", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        logger.error({ err }, "events/delete route errorMessage: ");
+        logger.error({ err }, "library/delete route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });

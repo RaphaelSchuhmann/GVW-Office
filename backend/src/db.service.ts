@@ -299,7 +299,14 @@ class DBService {
         // Ensure default settings document exists in app_settings
         try {
             const existingSettings = await dbService.read(this.APP_SETTINGS_DB, this.SETTINGS_DOC_ID);
-            if (existingSettings) await dbService.delete(this.APP_SETTINGS_DB, existingSettings?._id, existingSettings?._rev);
+            if (existingSettings) {
+                const { _id, _rev } = existingSettings;
+                if (!_id ||!_rev) {
+                    logger.warn("app_settings document missing _id/_rev; skipping delete");
+                } else {
+                    await dbService.delete(this.APP_SETTINGS_DB, _id, _rev);
+                }
+            }
 
             await dbService.create(this.APP_SETTINGS_DB, this.DEFAULT_SETTINGS);
             logger.info("Default app settings document created");
