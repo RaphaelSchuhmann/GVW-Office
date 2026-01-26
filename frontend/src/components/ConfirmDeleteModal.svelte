@@ -5,6 +5,7 @@
     import { deleteMember } from "../services/members";
     import { deleteEvent } from "../services/events";
     import { deleteReport } from "../services/reports";
+    import { deleteScore } from "../services/library";
     import { addToast } from "../stores/toasts";
     import { logout } from "../services/user";
     import { push } from "svelte-spa-router";
@@ -13,7 +14,7 @@
         "deleteMember": deleteMember,
         "deleteEvent": deleteEvent,
         "deleteReport": deleteReport,
-        "deleteLibEntry": () => {console.log("deleteLibEntry")},
+        "deleteLibEntry": deleteScore,
     }
 
     export let action = "none";

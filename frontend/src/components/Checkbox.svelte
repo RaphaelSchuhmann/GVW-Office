@@ -2,6 +2,7 @@
     export let title = "";
     export let isChecked = false;
     export let onChange = () => {};
+    export let textWrap = true;
 
     $: if (isChecked) {
         onChange(isChecked);
@@ -15,5 +16,5 @@
             <span class="material-symbols-rounded text-white text-icon-dt-6">check</span>
         {/if}
     </button>
-    <p class="text-dt-5 text-gv-dark-text">{title}</p>
+    <p class={`${textWrap ? "text-wrap" : "text-nowrap"} text-dt-5 text-gv-dark-text`}>{title}</p>
 </div>
