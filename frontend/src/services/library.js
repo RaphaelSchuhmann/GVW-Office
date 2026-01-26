@@ -8,14 +8,14 @@ import { libraryStore } from "../stores/library";
 import { getFileExtensionFromPath, getFileNameFromPath } from "./utils";
 
 export const voiceMap = {
-    "t": "Tenor",
-    "t1": "1. Tenor",
-    "t2": "2. Tenor",
-    "b": "Bass",
-    "b1": "1. Bass",
-    "b2": "2. Bass",
-    "s": "Sopran",
-    "a": "Alt"
+    t: "Tenor",
+    t1: "1. Tenor",
+    t2: "2. Tenor",
+    b: "Bass",
+    b1: "1. Bass",
+    b2: "2. Bass",
+    s: "Sopran",
+    a: "Alt",
 };
 
 const apiUrl = __API_URL__;
@@ -30,29 +30,32 @@ export async function addCategory(type, displayName) {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${get(auth).token}`
+            Authorization: `Bearer ${get(auth).token}`,
         },
-        body: JSON.stringify({ type, displayName })
+        body: JSON.stringify({ type, displayName }),
     });
 
     if (resp.status === 200) {
         addToast({
             title: "Kategorie hinzugefügt",
-            subTitle: "Die Kategorie wurde erfolgreich im System hinzugefügt und kann ab sofort verwendet werden.",
-            type: "success"
+            subTitle:
+                "Die Kategorie wurde erfolgreich im System hinzugefügt und kann ab sofort verwendet werden.",
+            type: "success",
         });
     } else if (resp.status === 400) {
         addToast({
             title: "Ungültige Daten",
-            subTitle: "Die angegebenen Daten sind fehlerhaft oder existieren bereits. Bitte prüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
-            type: "error"
+            subTitle:
+                "Die angegebenen Daten sind fehlerhaft oder existieren bereits. Bitte prüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
+            type: "error",
         });
     } else if (resp.status === 401) {
         // Auth token invalid / unauthorized
         addToast({
             title: "Ungültiges Token",
-            subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-            type: "error"
+            subTitle:
+                "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+            type: "error",
         });
         logout();
         await push("/?cpwErr=false");
@@ -61,8 +64,9 @@ export async function addCategory(type, displayName) {
         // internal server error / unknown error
         addToast({
             title: "Interner Serverfehler",
-            subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-            type: "error"
+            subTitle:
+                "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+            type: "error",
         });
     }
 
@@ -78,23 +82,25 @@ export async function removeCategory(type) {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${get(auth).token}`
+            Authorization: `Bearer ${get(auth).token}`,
         },
-        body: JSON.stringify({ type })
+        body: JSON.stringify({ type }),
     });
 
     if (resp.status === 200) {
         addToast({
             title: "Kategorie entfernt",
-            subTitle: "Die Kategorie wurde erfolgreich aus dem System entfernt.",
-            type: "success"
+            subTitle:
+                "Die Kategorie wurde erfolgreich aus dem System entfernt.",
+            type: "success",
         });
     } else if (resp.status === 401) {
         // Auth token invalid / unauthorized
         addToast({
             title: "Ungültiges Token",
-            subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-            type: "error"
+            subTitle:
+                "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+            type: "error",
         });
         logout();
         await push("/?cpwErr=false");
@@ -103,8 +109,9 @@ export async function removeCategory(type) {
         // internal server error / unknown error
         addToast({
             title: "Interner Serverfehler",
-            subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-            type: "error"
+            subTitle:
+                "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+            type: "error",
         });
     }
 
@@ -131,7 +138,7 @@ export async function addScore(scoreData) {
             addToast({
                 title: "Datei konnte nicht gelesen werden",
                 subTitle: `Die Datei "${path}" konnte nicht gelesen werden. Bitte überprüfen Sie, ob die Datei existiert.`,
-                type: "error"
+                type: "error",
             });
             return;
         }
@@ -140,35 +147,39 @@ export async function addScore(scoreData) {
     const resp = await fetch(`${apiUrl}/library/new`, {
         method: "POST",
         headers: {
-            Authorization: `Bearer ${get(auth).token}`
+            Authorization: `Bearer ${get(auth).token}`,
         },
-        body: formData
+        body: formData,
     });
 
     if (resp.status === 200) {
         addToast({
             title: "Noten hinzugefügt",
-            subTitle: "Die Noten wurden erfolgreich zur Notenbibliothek hinzugefügt.",
-            type: "success"
+            subTitle:
+                "Die Noten wurden erfolgreich zur Notenbibliothek hinzugefügt.",
+            type: "success",
         });
     } else if (resp.status === 400) {
         addToast({
             title: "Ungültige Daten",
-            subTitle: "Einige der von Ihnen eingegebenen Daten sind fehlerhaft. Bitte prüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
-            type: "error"
+            subTitle:
+                "Einige der von Ihnen eingegebenen Daten sind fehlerhaft. Bitte prüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
+            type: "error",
         });
     } else if (resp.status === 409) {
         addToast({
             title: "Noten bereits vorhanden",
-            subTitle: "Es existiert bereits ein Eintrag mit diesem Titel und Künstler in der Notenbibliothek.",
-            type: "error"
+            subTitle:
+                "Es existiert bereits ein Eintrag mit diesem Titel und Künstler in der Notenbibliothek.",
+            type: "error",
         });
     } else if (resp.status === 401) {
         // Auth token invalid / unauthorized
         addToast({
             title: "Ungültiges Token",
-            subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-            type: "error"
+            subTitle:
+                "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+            type: "error",
         });
         logout();
         await push("/?cpwErr=false");
@@ -177,8 +188,9 @@ export async function addScore(scoreData) {
         // internal server error / unknown error
         addToast({
             title: "Interner Serverfehler",
-            subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-            type: "error"
+            subTitle:
+                "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+            type: "error",
         });
     }
 }
@@ -188,9 +200,9 @@ export async function deleteScore(scoreId) {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${get(auth).token}`
+            Authorization: `Bearer ${get(auth).token}`,
         },
-        body: JSON.stringify({ id: scoreId })
+        body: JSON.stringify({ id: scoreId }),
     });
 }
 
@@ -198,8 +210,8 @@ export async function downloadScoreFiles(scoreId) {
     const resp = await fetch(`${apiUrl}/library/${scoreId}/files`, {
         method: "GET",
         headers: {
-            Authorization: `Bearer ${get(auth).token}`
-        }
+            Authorization: `Bearer ${get(auth).token}`,
+        },
     });
 
     let body = null;
@@ -207,39 +219,53 @@ export async function downloadScoreFiles(scoreId) {
     if (!resp.ok) body = await resp.json();
 
     if (resp.status === 200) {
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "Noten.zip";
+        a.click();
+        
         addToast({
             title: "Download erfolgreich",
-            subTitle: "Die Noten wurden erfolgreich aus der Notenbibliothek gedownloaded.",
-            type: "success"
+            subTitle:
+            "Die Noten wurden erfolgreich aus der Notenbibliothek gedownloaded.",
+            type: "success",
         });
+
+        URL.revokeObjectURL(url);
     } else if (resp.status === 404) {
         if (body.errorMessage === "ScoreNotFound") {
             addToast({
                 title: "Noten nicht gefunden",
-                subTitle: "Die Noten wurden in der Notenbibliothek nicht gefunden.",
-                type: "error"
+                subTitle:
+                    "Die Noten wurden in der Notenbibliothek nicht gefunden.",
+                type: "error",
             });
         } else {
             addToast({
                 title: "Keine Dateien gefunden",
                 subTitle: "Es sind keine Dateien für diese Noten hinterlegt.",
-                type: "info"
+                type: "info",
             });
         }
         return;
     } else if (resp.status === 400) {
         addToast({
             title: "Ungültige Daten",
-            subTitle: "Es wurden fehlerhafte Daten übermittelt. Bitte versuchen Sie es später erneut.",
-            type: "error"
+            subTitle:
+                "Es wurden fehlerhafte Daten übermittelt. Bitte versuchen Sie es später erneut.",
+            type: "error",
         });
         return;
     } else if (resp.status === 401) {
         // Auth token invalid / unauthorized
         addToast({
             title: "Ungültiges Token",
-            subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-            type: "error"
+            subTitle:
+                "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+            type: "error",
         });
         logout();
         await push("/?cpwErr=false");
@@ -248,21 +274,12 @@ export async function downloadScoreFiles(scoreId) {
         // internal server error / unknown error
         addToast({
             title: "Interner Serverfehler",
-            subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-            type: "error"
+            subTitle:
+                "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+            type: "error",
         });
         return;
     }
-    
-    const blob = await resp.blob();
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "Noten.zip";
-    a.click();
-
-    URL.revokeObjectURL(url);
 }
 
 /**
@@ -273,27 +290,33 @@ export function getLibraryCategories(includeAll) {
     const categories = get(appSettings).scoreCategories || {};
     const displayNames = [];
     const processedKeys = new Set();
-    
-    Object.keys(categories).forEach(key => {
+
+    Object.keys(categories).forEach((key) => {
         // Skip default entries and already     processed keys
-        if (key === "" || key === "all" || categories[key] === "all" || processedKeys.has(key)) return;
-        
+        if (
+            key === "" ||
+            key === "all" ||
+            categories[key] === "all" ||
+            processedKeys.has(key)
+        )
+            return;
+
         const value = categories[key];
         // If this key maps to a value that maps back to this key, we have a bidirectional pair
         if (categories[value] === key) {
             let displayName;
-            
+
             // Check if either key or value has underscores
-            if (key.includes('_') || value.includes('_')) {
+            if (key.includes("_") || value.includes("_")) {
                 // Take the one without underscores as the display name
-                displayName = key.includes('_') ? value : key;
+                displayName = key.includes("_") ? value : key;
             } else {
                 // Neither has underscores, take the one with at least one capital letter
                 const keyHasCapital = /[A-Z]/.test(key);
                 const valueHasCapital = /[A-Z]/.test(value);
                 displayName = keyHasCapital ? key : value;
             }
-            
+
             displayNames.push(displayName);
             processedKeys.add(key);
             processedKeys.add(value);
@@ -306,7 +329,7 @@ export function getLibraryCategories(includeAll) {
 export function getCategoryCount(category) {
     const categoriesMap = get(appSettings).scoreCategories || {};
     const categoryType = categoriesMap[category];
-    const items = get(libraryStore).raw
+    const items = get(libraryStore).raw;
 
     let count = 0;
     for (const item in items) {

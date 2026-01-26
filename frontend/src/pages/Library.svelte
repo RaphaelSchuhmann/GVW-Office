@@ -9,9 +9,7 @@
         getCategoryCount,
         removeCategory,
         addScore,
-
         downloadScoreFiles
-
     } from "../services/library";
     import { user } from "../stores/user";
     import { libraryStore } from "../stores/library";
@@ -197,6 +195,7 @@
     async function downloadFiles() {
         if (!activeScoreId) {
             addToast(deleteScoreToast.notFound);
+            return;
         }
 
         await downloadScoreFiles(activeScoreId);
