@@ -183,6 +183,17 @@ export async function addScore(scoreData) {
     }
 }
 
+export async function deleteScore(scoreId) {
+    return await fetch(`${apiUrl}/library/delete`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${get(auth).token}`
+        },
+        body: JSON.stringify({ id: scoreId })
+    });
+}
+
 /**
  * Gets all available library categories display names
  * @returns {string[]} Array of display names including "Alle Kategorien"
@@ -193,7 +204,7 @@ export function getLibraryCategories(includeAll) {
     const processedKeys = new Set();
     
     Object.keys(categories).forEach(key => {
-        // Skip default entries and already processed keys
+        // Skip default entries and already     processed keys
         if (key === "" || key === "all" || categories[key] === "all" || processedKeys.has(key)) return;
         
         const value = categories[key];

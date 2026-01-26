@@ -173,6 +173,7 @@ export const widthMap = {
     "max": "w-max",
     "fit": "w-fit",
     "": "w-full",
+    "auto": "w-auto",
 };
 
 /**
@@ -212,6 +213,7 @@ export const heightMap = {
     "max": "h-max",
     "fit": "h-fit",
     "": "h-full",
+    "auto": "h-auto",
 };
 
 /**

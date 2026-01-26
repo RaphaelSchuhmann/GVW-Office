@@ -5,6 +5,7 @@ import multer from "multer";
 import fs from "fs/promises";
 import path from "path";
 import { randomUUID } from "node:crypto";
+import { stat } from "node:fs/promises";
 
 const libraryRouter = Router();
 const SCORES_DIR = process.env.SCORE_DATA_DIR;
@@ -92,5 +93,60 @@ async function storeFiles(uploadedFiles: any) {
 
     return storedFiles;
 }
+
+async function deleteFile(fileName: any) {
+    const targetDir = SCORES_DIR ?? "./data/scores";
+
+    const filePath = path.join(targetDir, fileName);
+
+    if (!filePath) return;
+
+    try {
+        await stat(filePath);
+        await fs.unlink(filePath);
+        return;
+    } catch (_) {
+        return
+    }
+}
+
+/**
+ * POST /delete
+ * Deletes a score from the database and deletes
+ * referenced files
+ *
+ * Request body:
+ * - `{ id: string }`
+ *
+ * Responses:
+ * - `200`: Score deleted successfully
+ * - `400`: Invalid input data
+ * - `404`: Score not found
+ * - `500`: Internal server error
+ */
+libraryRouter.post("/delete", async (req, resp) => {
+    try {
+        const { id } = req.body;
+
+        if (!id) return resp.status(400).json({ errorMessage: "InvalidInputs" });
+
+        const score = await dbService.read("library", id);
+        if (!score) return resp.status(404).json({ errorMessage: "EventNotFound" });
+
+        if (score.files) {
+            for (const file of score.files) {
+                console.log(file);
+                await deleteFile(`${file.id}.${file.extension}`);
+            }
+        }
+
+        await dbService.delete("library", score._id, score._rev);
+
+        return resp.status(200).json({ ok: true });
+    } catch (err: any) {
+        logger.error({ err }, "events/delete route errorMessage: ");
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
+    }
+});
 
 export default libraryRouter;

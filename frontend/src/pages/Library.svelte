@@ -30,6 +30,7 @@
     import Dropdown from "../components/Dropdown.svelte";
     import Checkbox from "../components/Checkbox.svelte";
     import FileSelector from "../components/FileSelector.svelte";
+    import ConfirmDeleteModal from "../components/ConfirmDeleteModal.svelte";
 
     // Periodic app settings refresh
     let intervalId;
@@ -118,7 +119,7 @@
     let newScoreVoiceSo = false;
     let newScoreVoiceAl = false;
     let newScoreFilePaths = [];
-
+    
     $: newScoreSaveDisabled = !(newScoreTitle && newScoreArtist && newScoreCategory && (newScoreVoiceT1 || newScoreVoiceT2 || newScoreVoiceB1 || newScoreVoiceB2 || newScoreVoiceSo || newScoreVoiceAl));
 
     function clearNewScore() {
@@ -158,6 +159,36 @@
         await searchBar.fetchData();
     }
 
+    /** @type {import("../components/ConfirmDeleteModal.svelte").default} */
+    let confirmDeleteScoreModal;
+
+    let scoreTitle = "";
+    let deleteScoreToast = {
+        success: {
+            title: "Noten gelöscht",
+            subTitle: "Die Noten wurden erfolgreich aus dem System entfernt.",
+            type: "success"
+        },
+        notFound: {
+            title: "Nicht gefunden",
+            subTitle: "Die angegebenen Noten konnten nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+            type: "error"
+        }
+    };
+
+    /**
+     * Initiates the delete process for a score
+     * Sets up the confirmation modal with score details
+     */
+    function startDeleteScore() {
+        menuOpen = false;
+
+        let scores = get(libraryStore).display;
+        scoreTitle = scores.find(item => item.id === activeScoreId)?.title;
+
+        confirmDeleteScoreModal.startDelete();
+    }
+
     /**
      * Opens context menu on right-click at cursor position
      * @param {MouseEvent} event - The right-click event
@@ -189,7 +220,7 @@
             event.stopPropagation();
 
             activeScoreId = eventId;
-
+            
             const rect = event.currentTarget.getBoundingClientRect();
 
             menuOpen = true;
@@ -238,8 +269,17 @@
 <ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
     <Button type="contextMenu">Bearbeiten</Button>
     <Button type="contextMenu">Download</Button>
-    <Button type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
+    <Button type="contextMenu" fontColor="text-gv-delete" on:click={startDeleteScore}>Löschen</Button>
 </ContextMenu>
+
+<!-- Confirm delete score modal -->
+<ConfirmDeleteModal expectedInput={scoreTitle} id={activeScoreId}
+                    title="Noten löschen"
+                    subTitle="Sind Sie sich sicher das Sie diese Noten löschen möchten?"
+                    toastMap={deleteScoreToast} action="deleteLibEntry"
+                    onClose={async () => {menuOpen = false; activeScoreId = null; await searchBar.fetchData();}}
+                    bind:this={confirmDeleteScoreModal}
+/>
 
 <!-- Category Modal -->
 <Modal bind:this={manageCategoriesModal}
@@ -271,19 +311,19 @@
 </Modal>
 
 <!-- New Score Modal -->
-<Modal bind:this={newScoreModal} width="2/5" extraFunction={clearNewScore}
+<Modal bind:this={newScoreModal} width="auto" extraFunction={clearNewScore}
        title="Neue Noten hinzufügen" subTitle="Erfassen Sie hier die Details der Noten">
     <Input bind:value={newScoreTitle} title="Titel" placeholder="The Final Countdown" marginTop="5"/>
     <Input bind:value={newScoreArtist} title="Komponist / Band" placeholder="Europe" marginTop="5"/>
     <Dropdown title="Kategorie" options={categories} marginTop="5" onChange={(value) => newScoreCategory = value} />
     <p class="text-dt-6 font-medium mt-5">Stimmen</p>
-    <div class="w-full flex items-center justify-start gap-4 mt-1">
-        <Checkbox bind:isChecked={newScoreVoiceT1} title="1. Tenor"/>
-        <Checkbox bind:isChecked={newScoreVoiceT2} title="2. Tenor"/>
-        <Checkbox bind:isChecked={newScoreVoiceB1} title="1. Bass"/>
-        <Checkbox bind:isChecked={newScoreVoiceB2} title="2. Bass"/>
-        <Checkbox bind:isChecked={newScoreVoiceSo} title="Sopran"/>
-        <Checkbox bind:isChecked={newScoreVoiceAl} title="Alt"/>
+    <div class="w-full flex items-center justify-start gap-4 mt-1 pr-5">
+        <Checkbox textWrap={false} bind:isChecked={newScoreVoiceT1} title="1. Tenor"/>
+        <Checkbox textWrap={false} bind:isChecked={newScoreVoiceT2} title="2. Tenor"/>
+        <Checkbox textWrap={false} bind:isChecked={newScoreVoiceB1} title="1. Bass"/>
+        <Checkbox textWrap={false} bind:isChecked={newScoreVoiceB2} title="2. Bass"/>
+        <Checkbox textWrap={false} bind:isChecked={newScoreVoiceSo} title="Sopran"/>
+        <Checkbox textWrap={false} bind:isChecked={newScoreVoiceAl} title="Alt"/>
     </div>
     <FileSelector title="Noten" page="library" validTypes={["pdf", "gp", "gp5", "gp3", "gp4", "gpx", "cap", "capx"]} bind:paths={newScoreFilePaths} marginTop="5"/>
     <div class="w-full flex items-center gap-4 mt-5">
@@ -340,12 +380,13 @@
                             <div class="flex w-full items-center justify-start mt-2">
                                 <Chip text={$appSettings.scoreCategories[item.type] ?? item.type} fontSize="6" />
                             </div>
-                            <div class="flex w-full items-center justify-start mt-2 gap-2">
-                                <span
-                                    class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">import_contacts</span>
-                                {#each item.voices as voice}
-                                    <p class="text-gv-light-text text-dt-6">{voiceMap[voice]}</p>
-                                {/each}
+                            <div class="flex w-full items-start justify-start mt-2 gap-2">
+                                <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">import_contacts</span>
+                                <div class="flex flex-wrap gap-2 w-full gap-y-0">
+                                    {#each item.voices as voice}
+                                        <p class="text-gv-light-text text-dt-6 text-nowrap">{voiceMap[voice]}</p>
+                                    {/each}
+                                </div>
                             </div>
                             <div class="w-full flex items-center justify-start mt-2">
                                 <p class="text-gv-light-text text-dt-6">{`${item.voiceCount}-stimmig`}</p>
