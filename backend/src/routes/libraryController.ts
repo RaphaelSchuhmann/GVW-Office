@@ -5,7 +5,7 @@ import multer from "multer";
 import fs from "fs/promises";
 import path from "path";
 import { randomUUID } from "node:crypto";
-import { stat } from "node:fs/promises";
+import archiver from "archiver";
 
 const libraryRouter = Router();
 const SCORES_DIR = process.env.SCORE_DATA_DIR;
@@ -140,6 +140,54 @@ libraryRouter.post("/delete", async (req, resp) => {
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
         logger.error({ err }, "library/delete route errorMessage: ");
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
+    }
+});
+
+libraryRouter.get("/:id/files", async (req, resp) => {
+    try {
+        const id = req.params.id;
+
+        const score = await dbService.read("library", id);
+        if (!score) return resp.status(404).json({ errorMessage: "ScoreNotFound" });
+
+        if (score.files && score.files.length > 0) {
+            resp.setHeader("Content-Type", "application/zip");
+            const sanitizedTitle = score.title.replace(/["\r\n]/g, "_");
+            resp.setHeader("Content-Disposition", `attachment; filename="${sanitizedTitle}.zip"`);
+
+            const archive = archiver("zip", { zlib: { level: 9 } });
+
+            archive.on("error", (err) => {
+                logger.error({ err }, "Archive error during ZIP creation");
+                if (!resp.headersSent) {
+                    return resp.status(500).json({ errorMessage: "InternalServerError" });
+                }
+            });
+
+            archive.pipe(resp);
+
+            const targetDir = SCORES_DIR ?? "./data/scores";
+
+            for (const file of score.files) {
+                const filePath = path.join(targetDir, `${file.id}.${file.extension}`);
+
+                try {
+                    await fs.access(filePath);
+                    const safeName = path.basename(file.originalName).replace(/[\r\n]/g, "_") || "score";
+                    archive.file(filePath, { name: safeName });
+                } catch {
+                    logger.warn({ filePath }, "File not found, skipping...");
+                }
+            }
+
+            await archive.finalize();
+            return;
+        } else {
+            return resp.status(404).json({ errorMessage: "NoFilesFound" });
+        }
+    } catch (err: any) {
+        logger.error({ err }, "library/:id/files route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });

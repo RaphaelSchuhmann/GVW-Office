@@ -8,7 +8,8 @@
         addCategory,
         getCategoryCount,
         removeCategory,
-        addScore
+        addScore,
+        downloadScoreFiles
     } from "../services/library";
     import { user } from "../stores/user";
     import { libraryStore } from "../stores/library";
@@ -97,12 +98,6 @@
         refreshCategories();
     }
 
-    // CONTEXT MENU
-    let menuOpen = false;
-    let menuX = 0;
-    let menuY = 0;
-    let activeScoreId = null;
-
     // ADD NEW SCORE
     /** @type {import("../components/Modal.svelte").default} */
     let newScoreModal;
@@ -159,6 +154,7 @@
         await searchBar.fetchData();
     }
 
+    // DELETE SCORE
     /** @type {import("../components/ConfirmDeleteModal.svelte").default} */
     let confirmDeleteScoreModal;
 
@@ -194,6 +190,24 @@
         scoreTitle = score.title;
         confirmDeleteScoreModal.startDelete();
     }
+
+    // DOWNLOAD SCORE FILES
+    async function downloadFiles() {
+        if (!activeScoreId) {
+            addToast(deleteScoreToast.notFound);
+            return;
+        }
+
+        await downloadScoreFiles(activeScoreId);
+        menuOpen = false;
+        activeScoreId = null;
+    }
+
+    // CONTEXT MENU
+    let menuOpen = false;
+    let menuX = 0;
+    let menuY = 0;
+    let activeScoreId = null;
 
     /**
      * Opens context menu on right-click at cursor position
@@ -274,7 +288,7 @@
 
 <ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
     <Button type="contextMenu">Bearbeiten</Button>
-    <Button type="contextMenu">Download</Button>
+    <Button type="contextMenu" on:click={downloadFiles}>Download</Button>
     <Button type="contextMenu" fontColor="text-gv-delete" on:click={startDeleteScore}>Löschen</Button>
 </ContextMenu>
 
