@@ -183,9 +183,15 @@
     function startDeleteScore() {
         menuOpen = false;
 
-        let scores = get(libraryStore).display;
-        scoreTitle = scores.find(item => item.id === activeScoreId)?.title;
+        const scores = get(libraryStore).display;
+        const score = scores.find(item => item.id === activeScoreId);
 
+        if (!activeScoreId ||!score?.title) {
+            addToast(deleteScoreToast.notFound);
+            return;
+        }
+
+        scoreTitle = score.title;
         confirmDeleteScoreModal.startDelete();
     }
 
