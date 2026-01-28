@@ -8,14 +8,14 @@ import { libraryStore } from "../stores/library";
 import { getFileExtensionFromPath, getFileNameFromPath } from "./utils";
 
 export const voiceMap = {
-    t: "Tenor",
-    t1: "1. Tenor",
-    t2: "2. Tenor",
-    b: "Bass",
-    b1: "1. Bass",
-    b2: "2. Bass",
-    s: "Sopran",
-    a: "Alt",
+    "t": "Tenor",
+    "t1": "1. Tenor",
+    "t2": "2. Tenor",
+    "b": "Bass",
+    "b1": "1. Bass",
+    "b2": "2. Bass",
+    "s": "Sopran",
+    "a": "Alt",
 };
 
 const apiUrl = __API_URL__;

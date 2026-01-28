@@ -14,6 +14,7 @@
     import { user } from "../stores/user";
     import { libraryStore } from "../stores/library";
     import { appSettings, loadSettings } from "../stores/appSettings";
+    import { push } from "svelte-spa-router";
 
     import ToastStack from "../components/ToastStack.svelte";
     import Sidebar from "../components/Sidebar.svelte";
@@ -287,7 +288,7 @@
 <svelte:window on:contextmenu={() => (menuOpen = false)} />
 
 <ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
-    <Button type="contextMenu">Bearbeiten</Button>
+    <Button type="contextMenu" on:click={async () => await push(`/library/edit?id=${activeScoreId}`)}>Bearbeiten</Button>
     <Button type="contextMenu" on:click={downloadFiles}>Download</Button>
     <Button type="contextMenu" fontColor="text-gv-delete" on:click={startDeleteScore}>Löschen</Button>
 </ContextMenu>
