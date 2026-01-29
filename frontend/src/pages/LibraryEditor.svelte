@@ -48,53 +48,13 @@
     let originalFiles;
 
     function onVoicesChange(voices) {
-        voiceT1Checked = false;
-        voiceT2Checked = false;
-        voiceB1Checked = false;
-        voiceB2Checked = false;
-        voiceSoChecked = false;
-        voiceAlChecked = false;
-
-        for (const voice of voices) {
-            switch (voice) {
-                case "t":
-                    voiceT1Checked = true;
-                    break;
-
-                case "t1":
-                    voiceT1Checked = true;
-                    break;
-            
-                case "t2":
-                    voiceT2Checked = true;
-                    break;
-
-                case "b":
-                    voiceB1Checked = true;
-                    break;
-
-                case "b1":
-                    voiceB1Checked = true;
-                    break;
-
-                case "b2":
-                    voiceB2Checked = true;
-                    break;
-
-                case "s":
-                    voiceSoChecked = true;
-                    break;
-
-                case "a":
-                    voiceAlChecked = true;
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        return;
+        const voiceSet = new Set(voices);
+        voiceT1Checked = voiceSet.has("t") || voiceSet.has("t1");
+        voiceT2Checked = voiceSet.has("t2");
+        voiceB1Checked = voiceSet.has("b") || voiceSet.has("b1");
+        voiceB2Checked = voiceSet.has("b2");
+        voiceSoChecked = voiceSet.has("s");
+        voiceAlChecked = voiceSet.has("a");
     }
 
     async function handleUpdateScore() {
