@@ -140,7 +140,10 @@
 
         const hash = window.location.hash;
         const queryString = hash.split("?")[1];
-        if (!queryString) return;
+        if (!queryString) {
+            await push("/library");
+            return;
+        }
 
         const params = new URLSearchParams(queryString);
         let scoreId = params.get("id");
