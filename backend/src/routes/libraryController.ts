@@ -10,9 +10,25 @@ import archiver from "archiver";
 const libraryRouter = Router();
 const SCORES_DIR = process.env.SCORE_DATA_DIR;
 
+interface File {
+    id: string;
+    originalName: string;
+    mimeType: string;
+    size: number;
+    extension: string;
+}
+
 libraryRouter.get("/all", async (_, resp) => {
     try {
-        const scores = (await dbService.list("library")).map(({ _id, _rev, files, ...score }) => ({ id: _id, ...score }));
+        const scores = (await dbService.list("library")).map(
+            ({ _id, _rev, files, ...score }) => ({ 
+                id: _id, 
+                ...score,
+                paths: files?.map(
+                    ({ originalName }: { originalName: string }) => `${originalName}`
+                ) ?? []
+            })
+        );
 
         return resp.status(200).json({ data: scores });
     } catch (err: any) {
@@ -26,17 +42,21 @@ const libraryUpload = multer({
 });
 
 libraryRouter.post("/new", libraryUpload.array("files"), async (req, resp) => {
-   try {
+    try {
         const { title, artist, type, voices, voiceCount } = req.body;
 
         if (!title || !artist || !type || !voices || !voiceCount) {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
-        let parsedVoices;
+        let parsedVoices: string[] = [];
         try {
-            parsedVoices = JSON.parse(voices);
-        } catch (err: any) {
+            parsedVoices = JSON.parse(req.body.voices) as string[];
+            if (!Array.isArray(parsedVoices)) {
+                return resp.status(400).json({ errorMessage: "InvalidInputs" });
+            }
+        } catch (err) {
+            logger.error({ err }, "Failed to parse voices: ");
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
@@ -66,8 +86,8 @@ libraryRouter.post("/new", libraryUpload.array("files"), async (req, resp) => {
    }
 });
 
-async function storeFiles(uploadedFiles: any) {
-    const storedFiles = [];
+async function storeFiles(uploadedFiles: any): Promise<File[]> {
+    const storedFiles: File[] = [];
     const targetDir = SCORES_DIR ?? "./data/scores";
 
     await fs.mkdir(targetDir, { recursive: true });
@@ -188,6 +208,70 @@ libraryRouter.get("/:id/files", async (req, resp) => {
         }
     } catch (err: any) {
         logger.error({ err }, "library/:id/files route errorMessage: ");
+        return resp.status(500).json({ errorMessage: "InternalServerError" });
+    }
+});
+
+libraryRouter.post("/update", libraryUpload.array("files"), async (req, resp) => {
+    try {
+        const { id, title, artist, type, voices, voiceCount } = req.body;
+
+        if (!id || !title || !artist || !type || !voices || !voiceCount) {
+            return resp.status(400).json({ errorMessage: "InvalidInputs" });
+        }
+
+        const score = await dbService.read("library", id);
+
+        if (!score) return resp.status(404).json({ errorMessage: "ScoreNotFound" });
+
+        let parsedVoices: string[] = [];
+        try {
+            parsedVoices = JSON.parse(req.body.voices) as string[];
+            if (!Array.isArray(parsedVoices)) {
+                return resp.status(400).json({ errorMessage: "InvalidInputs" });
+            }
+        } catch (err) {
+            logger.error({ err }, "Failed to parse voices: ");
+            return resp.status(400).json({ errorMessage: "InvalidInputs" });
+        }
+
+        const voiceCountNum = Number(voiceCount)
+        if (Number.isNaN(voiceCountNum)) {
+            return resp.status(400).json({ errorMessage: "InvalidInputs" });
+        }
+
+        let files: File[] = Array.isArray(score.files) ? score.files : [];
+
+        // remove deleted files
+        const removedFiles = files.filter(f => req.body.removedFiles.includes(f.originalName));
+
+        for (const file of removedFiles) {
+            await deleteFile(`${file.id}.${file.extension}`);
+        }
+
+        files = files.filter(file => !removedFiles.includes(file));
+        
+        // add new files
+        if (req.files && Array.isArray(req.files)) {
+            const newFiles = await storeFiles(req.files);
+            files = [...files, ...newFiles];
+        }
+
+        const updatedScore = {
+            ...score,
+            title,
+            artist,
+            type,
+            voices: parsedVoices,
+            voiceCount: voiceCountNum,
+            files
+        };
+
+        await dbService.update("library", updatedScore);
+
+        return resp.status(200).json({ ok: true });
+    } catch (err: any) {
+        logger.error({ err }, "library/update route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });

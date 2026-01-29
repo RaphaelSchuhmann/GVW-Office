@@ -57,7 +57,7 @@
                           {icon}
                         </span>
                         <p class="text-gv-dark-text text-dt-7">
-                            {getFileNameFromPath(path)}
+                            {path.includes("/") || path.includes("\\") ? getFileNameFromPath(path) : path}
                         </p>
                     </div>
 

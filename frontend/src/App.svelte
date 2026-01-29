@@ -11,6 +11,7 @@
     import EventEditor from "./pages/EventEditor.svelte";
     import Reports from "./pages/Reports.svelte";
     import Library from "./pages/Library.svelte";
+    import LibraryEditor from "./pages/LibraryEditor.svelte";
 
     const routes = {
         "/": Login,
@@ -23,6 +24,7 @@
         "/events/edit": EventEditor,
         "/reports": Reports,
         "/library": Library,
+        "/library/edit": LibraryEditor,
     };
 </script>
 <Router {routes}/>
