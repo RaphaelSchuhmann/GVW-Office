@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { Request, Response, NextFunction } from "express";
 import { dbService } from "../db.service";
 import { compare, hash } from "bcrypt";
 import { sign } from "jsonwebtoken";
@@ -68,13 +69,12 @@ authRouter.post("/login", async (req, resp) => {
  * POST /dev
  * Development-only endpoint to reset all users and members data
  * Creates a default admin user for testing purposes
- * TODO: REMOVE THIS FOR PRODUCTION
  * 
  * Responses:
  * - `200`: Development user created successfully
  * - `500`: Error during user creation
  */
-authRouter.post("/dev", async (req, resp) => {
+authRouter.post("/dev", requireLocalhost, async (req, resp) => {
     try {
         const users = await dbService.list("users");
         const members = await dbService.list("members");
@@ -253,6 +253,20 @@ function generateAuthToken(userId: string) {
     }
 
     return sign({ userId }, secretKey, { expiresIn: 7 * 24 * 60 * 60 });
+}
+
+/**
+ * Middleware to restrict access to localhost only
+ * @param req - Express request object
+ * @param res - Express response object
+ * @param next - Express next function
+ */
+function requireLocalhost(req: Request, res: Response, next: NextFunction) {
+    const ip = req.ip || req.socket.remoteAddress;
+    if (ip !== "127.0.0.1" && ip !== "::1" && ip !== "::ffff:127.0.0.1") {
+        return res.status(403).send("Forbidden");
+    }
+    next();
 }
 
 export { authRouter, generateTempPassword };
