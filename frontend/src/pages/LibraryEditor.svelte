@@ -129,7 +129,7 @@
         voiceT1Checked !== originalForm.voiceT1Checked || voiceT2Checked !== originalForm.voiceT2Checked || 
         voiceB1Checked !== originalForm.voiceB1Checked || voiceB2Checked !== originalForm.voiceB2Checked ||
         voiceSoChecked !== originalForm.voiceSoChecked || voiceAlChecked !== originalForm.voiceAlChecked || 
-        enteredPaths !== originalForm.paths
+        JSON.stringify(enteredPaths) !== JSON.stringify(originalForm.paths)
     ) && (
         enteredTitle && enteredArtist && enteredType && 
         (voiceT1Checked || voiceT2Checked || voiceB1Checked || voiceB2Checked || voiceSoChecked || voiceAlChecked)
@@ -148,8 +148,14 @@
         if (scoreId) {
             let scores = get(libraryStore);
             score = scores.raw.find(item => item.id === scoreId);
+
+            if (!score) {
+                await push("/library");
+                return;
+            }
         } else {
             await push("/library");
+            return;
         }
 
         enteredTitle = score.title;

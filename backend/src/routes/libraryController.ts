@@ -13,7 +13,7 @@ const SCORES_DIR = process.env.SCORE_DATA_DIR;
 interface File {
     id: string;
     originalName: string;
-    mimeType: any;
+    mimeType: string;
     size: number;
     extension: string;
 }
@@ -52,9 +52,12 @@ libraryRouter.post("/new", libraryUpload.array("files"), async (req, resp) => {
         let parsedVoices: string[] = [];
         try {
             parsedVoices = JSON.parse(req.body.voices) as string[];
+            if (!Array.isArray(parsedVoices)) {
+                return resp.status(400).json({ errorMessage: "InvalidInputs" });
+            }
         } catch (err) {
             logger.error({ err }, "Failed to parse voices: ");
-            parsedVoices = [];
+            return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
         const voiceCountNum = Number(voiceCount)
@@ -213,7 +216,7 @@ libraryRouter.post("/update", libraryUpload.array("files"), async (req, resp) =>
     try {
         const { id, title, artist, type, voices, voiceCount } = req.body;
 
-        if (!title || !artist || !type || !voices || !voiceCount) {
+        if (!id || !title || !artist || !type || !voices || !voiceCount) {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
@@ -224,12 +227,20 @@ libraryRouter.post("/update", libraryUpload.array("files"), async (req, resp) =>
         let parsedVoices: string[] = [];
         try {
             parsedVoices = JSON.parse(req.body.voices) as string[];
+            if (!Array.isArray(parsedVoices)) {
+                return resp.status(400).json({ errorMessage: "InvalidInputs" });
+            }
         } catch (err) {
             logger.error({ err }, "Failed to parse voices: ");
-            parsedVoices = [];
+            return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
-        let files: File[] = score.files;
+        const voiceCountNum = Number(voiceCount)
+        if (Number.isNaN(voiceCountNum)) {
+            return resp.status(400).json({ errorMessage: "InvalidInputs" });
+        }
+
+        let files: File[] = Array.isArray(score.files) ? score.files : [];
 
         // remove deleted files
         const removedFiles = files.filter(f => req.body.removedFiles.includes(f.originalName));
@@ -252,7 +263,7 @@ libraryRouter.post("/update", libraryUpload.array("files"), async (req, resp) =>
             artist,
             type,
             voices: parsedVoices,
-            voiceCount,
+            voiceCount: voiceCountNum,
             files
         };
 

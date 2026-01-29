@@ -206,7 +206,7 @@ export async function updateScore(scoreData) {
     formData.append("voiceCount", String(scoreData.voiceCount));
     
     const deletedFiles = scoreData.originalFiles.filter(f => !scoreData.paths.includes(f));
-    formData.append("removedFiles", deletedFiles);
+    formData.append("removedFiles", JSON.stringify(deletedFiles));
 
     for (const path of scoreData.paths) {
         try {
@@ -245,6 +245,12 @@ export async function updateScore(scoreData) {
         addToast({
             title: "Ungültige Daten",
             subTitle: "Einige der von Ihnen eingegebenen Daten sind fehlerhaft. Bitte prüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
+            type: "error",
+        });
+    } else if (resp.status === 404) {
+        addToast({
+            title: "Noten nicht gefunden",
+            subTitle: "Das von ihnen bearbeitete Notenmaterial konnte nicht gefunden werden. Bitte versuchen Sie es erneut.",
             type: "error",
         });
     } else if (resp.status === 401) {
