@@ -1,7 +1,9 @@
+<svelte:options runes={false} />
+
 <script>
     import { onMount } from "svelte";
     import { loadUserData } from "../services/user";
-    import { getLibraryCategories } from "../services/library";
+    import { getLibraryCategories, updateScore } from "../services/library";
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
     import { libraryStore } from "../stores/library";
@@ -42,12 +44,10 @@
     let voiceB2Checked;
     let voiceSoChecked;
     let voiceAlChecked;
-    let enteredVoices;
     let enteredPaths;
+    let originalFiles;
 
-    $: enteredVoices, onVoicesChange();
-
-    async function onVoicesChange() {
+    function onVoicesChange(voices) {
         voiceT1Checked = false;
         voiceT2Checked = false;
         voiceB1Checked = false;
@@ -55,7 +55,7 @@
         voiceSoChecked = false;
         voiceAlChecked = false;
 
-        for (const voice of enteredVoices) {
+        for (const voice of voices) {
             switch (voice) {
                 case "t":
                     voiceT1Checked = true;
@@ -90,13 +90,35 @@
                     break;
 
                 default:
-                    continue;
+                    break;
             }
         }
+
+        return;
     }
 
     async function handleUpdateScore() {
+        let voices = [];
+        if (voiceT1Checked) voices.push("t1");
+        if (voiceT2Checked) voices.push("t2");
+        if (voiceB1Checked) voices.push("b1");
+        if (voiceB2Checked) voices.push("b2");
+        if (voiceSoChecked) voices.push("s");
+        if (voiceAlChecked) voices.push("a");
 
+        const updatedScore = {
+            id: score.id,
+            title: enteredTitle,
+            artist: enteredArtist,
+            type: get(appSettings).scoreCategories[enteredType],
+            voices: voices,
+            voiceCount: voices.length,
+            originalFiles: originalFiles,
+            paths: enteredPaths
+        };
+
+        await updateScore(updatedScore);
+        await push("/library");
     }
 
     let formReady = false;
@@ -104,7 +126,10 @@
 
     $: edited = formReady && (
         enteredTitle !== originalForm.title || enteredArtist !== originalForm.artist || enteredType !== originalForm.type ||
-        enteredVoices !== originalForm.voices || enteredPaths !== originalForm.paths
+        voiceT1Checked !== originalForm.voiceT1Checked || voiceT2Checked !== originalForm.voiceT2Checked || 
+        voiceB1Checked !== originalForm.voiceB1Checked || voiceB2Checked !== originalForm.voiceB2Checked ||
+        voiceSoChecked !== originalForm.voiceSoChecked || voiceAlChecked !== originalForm.voiceAlChecked || 
+        enteredPaths !== originalForm.paths
     ) && (
         enteredTitle && enteredArtist && enteredType && 
         (voiceT1Checked || voiceT2Checked || voiceB1Checked || voiceB2Checked || voiceSoChecked || voiceAlChecked)
@@ -130,16 +155,24 @@
         enteredTitle = score.title;
         enteredArtist = score.artist;
         enteredType = get(appSettings).scoreCategories[score.type];
-        enteredVoices = score.voices;
         enteredPaths = score.paths;
+
+        onVoicesChange(score.voices);
 
         originalForm = {
             title: enteredTitle,
             artist: enteredArtist,
             type: enteredType,
-            voices: enteredVoices,
+            voiceT1Checked: voiceT1Checked,
+            voiceT2Checked: voiceT2Checked,
+            voiceB1Checked: voiceB1Checked,
+            voiceB2Checked: voiceB2Checked,
+            voiceSoChecked: voiceSoChecked,
+            voiceAlChecked: voiceAlChecked,
             paths: enteredPaths
         };
+
+        originalFiles = score.paths;
 
         formReady = true;
     });
@@ -168,7 +201,7 @@
             <div class="flex flex-col w-2/3 gap-5">
                 <Input bind:value={enteredTitle} title="Titel" placeholder="The Final Countdown" marginTop="5"/>
                 <Input bind:value={enteredArtist} title="Komponist / Band" placeholder="Europe" marginTop="5"/>
-                <Dropdown title="Kategorie" options={categories} marginTop="5" onChange={(value) => enteredType = value} />
+                <Dropdown title="Kategorie" options={categories} selected={enteredType} marginTop="5" onChange={(value) => enteredType = value} />
                 <p class="text-dt-6 font-medium mt-5">Stimmen</p>
                 <div class="w-full flex items-center justify-start gap-4 mt-1 pr-5">
                     <Checkbox textWrap={false} bind:isChecked={voiceT1Checked} title="1. Tenor"/>

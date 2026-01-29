@@ -42,18 +42,19 @@ const libraryUpload = multer({
 });
 
 libraryRouter.post("/new", libraryUpload.array("files"), async (req, resp) => {
-   try {
+    try {
         const { title, artist, type, voices, voiceCount } = req.body;
 
         if (!title || !artist || !type || !voices || !voiceCount) {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
-        let parsedVoices;
+        let parsedVoices: string[] = [];
         try {
-            parsedVoices = JSON.parse(voices);
-        } catch (err: any) {
-            return resp.status(400).json({ errorMessage: "InvalidInputs" });
+            parsedVoices = JSON.parse(req.body.voices) as string[];
+        } catch (err) {
+            logger.error({ err }, "Failed to parse voices: ");
+            parsedVoices = [];
         }
 
         const voiceCountNum = Number(voiceCount)
@@ -220,23 +221,25 @@ libraryRouter.post("/update", libraryUpload.array("files"), async (req, resp) =>
 
         if (!score) return resp.status(404).json({ errorMessage: "ScoreNotFound" });
 
-        const originalFiles: string[] = Array.isArray(req.body.originalFiles)
-            ? req.body.originalFiles
-            : req.body.originalFiles
-                ? JSON.parse(req.body.originalFiles)
-                : [];
+        let parsedVoices: string[] = [];
+        try {
+            parsedVoices = JSON.parse(req.body.voices) as string[];
+        } catch (err) {
+            logger.error({ err }, "Failed to parse voices: ");
+            parsedVoices = [];
+        }
 
         let files: File[] = score.files;
 
         // remove deleted files
-        const removedFiles = files.filter(f => !originalFiles.includes(f.originalName));
+        const removedFiles = files.filter(f => req.body.removedFiles.includes(f.originalName));
 
         for (const file of removedFiles) {
-            await deleteFile(file.originalName);
+            await deleteFile(`${file.id}.${file.extension}`);
         }
 
-        files = files.filter(f => originalFiles.includes(f.originalName));
-
+        files = files.filter(file => !removedFiles.includes(file));
+        
         // add new files
         if (req.files && Array.isArray(req.files)) {
             const newFiles = await storeFiles(req.files);
@@ -248,7 +251,7 @@ libraryRouter.post("/update", libraryUpload.array("files"), async (req, resp) =>
             title,
             artist,
             type,
-            voices,
+            voices: parsedVoices,
             voiceCount,
             files
         };

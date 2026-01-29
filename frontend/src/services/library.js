@@ -195,6 +195,78 @@ export async function addScore(scoreData) {
     }
 }
 
+export async function updateScore(scoreData) {
+    const formData = new FormData();
+
+    formData.append("id", scoreData.id);
+    formData.append("title", scoreData.title);
+    formData.append("artist", scoreData.artist);
+    formData.append("type", scoreData.type);
+    formData.append("voices", JSON.stringify(scoreData.voices));
+    formData.append("voiceCount", String(scoreData.voiceCount));
+    
+    const deletedFiles = scoreData.originalFiles.filter(f => !scoreData.paths.includes(f));
+    formData.append("removedFiles", deletedFiles);
+
+    for (const path of scoreData.paths) {
+        try {
+            if (!scoreData.originalFiles.includes(path)) {
+                const buffer = await window.api.readFile(path);
+                const fileName = `${getFileNameFromPath(path)}.${getFileExtensionFromPath(path)}`;
+    
+                const blob = new Blob([buffer]);
+                formData.append("files", blob, fileName);
+            }
+        } catch (err) {
+            addToast({
+                title: "Datei konnte nicht gelesen werden",
+                subTitle: `Die Datei "${path}" konnte nicht gelesen werden. Bitte überprüfen Sie, ob die Datei existiert.`,
+                type: "error",
+            });
+            return;
+        }
+    }
+
+    const resp = await fetch(`${apiUrl}/library/update`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${get(auth).token}`,
+        },
+        body: formData,
+    });
+
+    if (resp.status === 200) {
+        addToast({
+            title: "Änderungen gespeichert",
+            subTitle: "Die Änderungen am Notenmaterial erfolgreich in der Notenbibliothek gespeichert.",
+            type: "success",
+        });
+    } else if (resp.status === 400) {
+        addToast({
+            title: "Ungültige Daten",
+            subTitle: "Einige der von Ihnen eingegebenen Daten sind fehlerhaft. Bitte prüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
+            type: "error",
+        });
+    } else if (resp.status === 401) {
+        // Auth token invalid / unauthorized
+        addToast({
+            title: "Ungültiges Token",
+            subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+            type: "error",
+        });
+        logout();
+        await push("/?cpwErr=false");
+        return;
+    } else {
+        // internal server error / unknown error
+        addToast({
+            title: "Interner Serverfehler",
+            subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+            type: "error",
+        });
+    }
+}
+
 export async function deleteScore(scoreId) {
     return await fetch(`${apiUrl}/library/delete`, {
         method: "POST",
