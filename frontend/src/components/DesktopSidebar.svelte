@@ -1,8 +1,6 @@
 <script>
     import { logout } from "../services/user";
     import { push } from "svelte-spa-router";
-    import { user } from "../stores/user";
-    import SidebarButton from "./SidebarButton.svelte";
     import SidebarContent from "./SidebarContent.svelte";
 
     export let currentPage = "";
