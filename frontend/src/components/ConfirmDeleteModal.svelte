@@ -69,6 +69,12 @@
                 logout();
                 await push("/?cpwErr=false");
                 return;
+            } else if (resp.status === 400) {
+                addToast({
+                    title: "Unvollständige Daten",
+                    subTitle: "Es wurden unvollständige Daten übermittlet. Bitte versuchen Sie es später erneut.",
+                    type: "error"
+                })
             } else if (resp.status === 404) {
                 addToast(toastMap.notFound);
             } else {
