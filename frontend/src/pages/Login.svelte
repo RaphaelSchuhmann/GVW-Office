@@ -16,10 +16,11 @@
     let password = "";
 
     onMount(async () => {
-        let authToken = getValue("authToken");
+        const authToken = getValue("authToken");
+
         if (authToken) {
-            let response = await authenticate(authToken);
-            let body = await response.json();
+            const response = await authenticate(authToken);
+            const body = await response.json();
 
             if (response && body && response.status === 200) {
                 auth.set({ token: authToken });

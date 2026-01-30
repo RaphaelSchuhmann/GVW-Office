@@ -1,9 +1,10 @@
-import { clearValue } from "./store";
+import { clearValue, setValue } from "./store";
 import { get } from "svelte/store";
 import { push } from "svelte-spa-router";
 import { user } from "../stores/user";
 import { auth } from "../stores/auth";
 import { addToast } from "../stores/toasts";
+import { authenticate } from "./auth";
 
 const apiUrl = __API_URL__;
 
@@ -30,11 +31,21 @@ export async function getData(email, token) {
  * @returns {Promise<void>} Updates user store or shows error toast
  */
 export async function loadUserData() {
-    const userStore = get(user);
     const authStore = get(auth);
+    let email = "";
+
+    const responseAutoLogin = await authenticate(authStore.token);
+    const bodyAutoLogin = await responseAutoLogin.json();
+
+    if (responseAutoLogin && bodyAutoLogin && responseAutoLogin.status === 200) {
+        email = bodyAutoLogin.email;
+    } else {
+        logout();
+        await push("/?cpwErr=false");
+    }
 
     // Get user data
-    const response = await getData(userStore.email, authStore.token);
+    const response = await getData(email, authStore.token);
     const body = await response.json();
 
     if (response.status === 200) {
