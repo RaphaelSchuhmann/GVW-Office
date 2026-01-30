@@ -108,6 +108,7 @@
     let newScoreTitle = "";
     let newScoreArtist = "";
     let newScoreCategory = "";
+    let newScoreId = "";
     let newScoreVoiceT1 = false;
     let newScoreVoiceT2 = false;
     let newScoreVoiceB1 = false;
@@ -116,7 +117,7 @@
     let newScoreVoiceAl = false;
     let newScoreFilePaths = [];
     
-    $: newScoreSaveDisabled = !(newScoreTitle && newScoreArtist && newScoreCategory && (newScoreVoiceT1 || newScoreVoiceT2 || newScoreVoiceB1 || newScoreVoiceB2 || newScoreVoiceSo || newScoreVoiceAl));
+    $: newScoreSaveDisabled = !(newScoreTitle && newScoreId && newScoreArtist && newScoreCategory && (newScoreVoiceT1 || newScoreVoiceT2 || newScoreVoiceB1 || newScoreVoiceB2 || newScoreVoiceSo || newScoreVoiceAl));
 
     function clearNewScore() {
         newScoreTitle = "";
@@ -129,6 +130,7 @@
         newScoreVoiceSo = false;
         newScoreVoiceAl = false;
         newScoreFilePaths = [];
+        newScoreId = "";
     }
 
     async function addNewScore() {
@@ -146,7 +148,8 @@
             type: get(appSettings).scoreCategories[newScoreCategory],
             voices: voices,
             voiceCount: voices.length,
-            paths: newScoreFilePaths
+            paths: newScoreFilePaths,
+            scoreId: newScoreId
         };
 
         await addScore(newScore);
@@ -334,6 +337,7 @@
 <!-- New Score Modal -->
 <Modal bind:this={newScoreModal} width="auto" extraFunction={clearNewScore}
        title="Neue Noten hinzufügen" subTitle="Erfassen Sie hier die Details der Noten">
+    <Input bind:value={newScoreId} title="Noten ID" placeholder="T01" marginTop="5"/>
     <Input bind:value={newScoreTitle} title="Titel" placeholder="The Final Countdown" marginTop="5"/>
     <Input bind:value={newScoreArtist} title="Komponist / Band" placeholder="Europe" marginTop="5"/>
     <Dropdown title="Kategorie" options={categories} marginTop="5" onChange={(value) => newScoreCategory = value} />
@@ -411,6 +415,9 @@
                             </div>
                             <div class="w-full flex items-center justify-start mt-2">
                                 <p class="text-gv-light-text text-dt-6">{`${item.voiceCount}-stimmig`}</p>
+                            </div>
+                            <div class="w-full flex items-center justify-start mt-2">
+                                <p class="text-gv-light-text text-dt-6">{`Noten ID: ${item.scoreId}`}</p>
                             </div>
                         </Card>
                     {/each}

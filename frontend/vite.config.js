@@ -12,6 +12,6 @@ export default defineConfig({
     strictPort: true,
   },
   define: {
-    __API_URL__: JSON.stringify(process.env.VITE_API_URL ?? "http://localhost:3500")
+    __API_URL__: JSON.stringify(process.env.VITE_API_URL ?? "http://127.0.0.1:3500")
   }
 })

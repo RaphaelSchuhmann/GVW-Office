@@ -29,7 +29,8 @@
         type: "",
         voices: [],
         voiceCount: 0,
-        paths: []
+        paths: [],
+        scoreId: "",
     };
 
     let edited = false;
@@ -46,6 +47,7 @@
     let voiceAlChecked;
     let enteredPaths;
     let originalFiles;
+    let enteredScoreId;
 
     function onVoicesChange(voices) {
         const voiceSet = new Set(voices);
@@ -74,7 +76,8 @@
             voices: voices,
             voiceCount: voices.length,
             originalFiles: originalFiles,
-            paths: enteredPaths
+            paths: enteredPaths,
+            scoreId: enteredScoreId,
         };
 
         await updateScore(updatedScore);
@@ -86,12 +89,13 @@
 
     $: edited = formReady && (
         enteredTitle !== originalForm.title || enteredArtist !== originalForm.artist || enteredType !== originalForm.type ||
+        enteredScoreId !== originalForm.scoreId ||
         voiceT1Checked !== originalForm.voiceT1Checked || voiceT2Checked !== originalForm.voiceT2Checked || 
         voiceB1Checked !== originalForm.voiceB1Checked || voiceB2Checked !== originalForm.voiceB2Checked ||
         voiceSoChecked !== originalForm.voiceSoChecked || voiceAlChecked !== originalForm.voiceAlChecked || 
         JSON.stringify(enteredPaths) !== JSON.stringify(originalForm.paths)
     ) && (
-        enteredTitle && enteredArtist && enteredType && 
+        enteredTitle && enteredArtist && enteredType && enteredScoreId &&
         (voiceT1Checked || voiceT2Checked || voiceB1Checked || voiceB2Checked || voiceSoChecked || voiceAlChecked)
     )
 
@@ -125,6 +129,7 @@
         enteredArtist = score.artist;
         enteredType = get(appSettings).scoreCategories[score.type];
         enteredPaths = score.paths;
+        enteredScoreId = score.scoreId;
 
         onVoicesChange(score.voices);
 
@@ -138,7 +143,8 @@
             voiceB2Checked: voiceB2Checked,
             voiceSoChecked: voiceSoChecked,
             voiceAlChecked: voiceAlChecked,
-            paths: enteredPaths
+            paths: enteredPaths,
+            scoreId: enteredScoreId,
         };
 
         originalFiles = score.paths;
@@ -168,6 +174,7 @@
         <!-- Allows for scrollable content -->
         <div class="flex-1 min-h-0 overflow-y-auto mt-5">
             <div class="flex flex-col w-2/3 gap-5">
+                <Input bind:value={enteredScoreId} title="Noten ID" placeholder="T01" marginTop="5"/>
                 <Input bind:value={enteredTitle} title="Titel" placeholder="The Final Countdown" marginTop="5"/>
                 <Input bind:value={enteredArtist} title="Komponist / Band" placeholder="Europe" marginTop="5"/>
                 <Dropdown title="Kategorie" options={categories} selected={enteredType} marginTop="5" onChange={(value) => enteredType = value} />

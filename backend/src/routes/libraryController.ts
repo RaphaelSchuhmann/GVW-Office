@@ -43,9 +43,9 @@ const libraryUpload = multer({
 
 libraryRouter.post("/new", libraryUpload.array("files"), async (req, resp) => {
     try {
-        const { title, artist, type, voices, voiceCount } = req.body;
+        const { title, artist, type, voices, voiceCount, scoreId } = req.body;
 
-        if (!title || !artist || !type || !voices || !voiceCount) {
+        if (!title || !artist || !type || !voices || !voiceCount || !scoreId) {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
@@ -68,6 +68,9 @@ libraryRouter.post("/new", libraryUpload.array("files"), async (req, resp) => {
         const exists = await dbService.find("library", { selector: { title: title, artist: artist }, limit: 1 });
         if (exists.length > 0) return resp.status(409).json({ errorMessage: "AlreadyExists" });
 
+        const scoreIdExists = await dbService.find("library", { selector: { scoreId: scoreId }, limit: 1 });
+        if (scoreIdExists.length > 0) return resp.status(409).json({ errorMessage: "AlreadyExists" });
+
         const files = await storeFiles(req.files ?? []);
 
         await dbService.create("library", {
@@ -76,7 +79,8 @@ libraryRouter.post("/new", libraryUpload.array("files"), async (req, resp) => {
             type: type,
             voices: parsedVoices,
             voiceCount: voiceCountNum,
-            files: files
+            files: files,
+            scoreId: scoreId,
         });
 
         return resp.status(200).json({ ok: true });
@@ -214,15 +218,17 @@ libraryRouter.get("/:id/files", async (req, resp) => {
 
 libraryRouter.post("/update", libraryUpload.array("files"), async (req, resp) => {
     try {
-        const { id, title, artist, type, voices, voiceCount } = req.body;
+        const { id, title, artist, type, voices, voiceCount, scoreId } = req.body;
 
-        if (!id || !title || !artist || !type || !voices || !voiceCount) {
+        if (!id || !title || !artist || !type || !voices || !voiceCount || !scoreId) {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
         const score = await dbService.read("library", id);
-
         if (!score) return resp.status(404).json({ errorMessage: "ScoreNotFound" });
+
+        const scoreIdExists = await dbService.find("library", { selector: { scoreId: scoreId }, limit: 1 });
+        if (scoreIdExists.length > 0) return resp.status(400).json({ errorMessage: "AlreadyExists" });
 
         let parsedVoices: string[] = [];
         try {
@@ -264,7 +270,8 @@ libraryRouter.post("/update", libraryUpload.array("files"), async (req, resp) =>
             type,
             voices: parsedVoices,
             voiceCount: voiceCountNum,
-            files
+            files,
+            scoreId: scoreId,
         };
 
         await dbService.update("library", updatedScore);

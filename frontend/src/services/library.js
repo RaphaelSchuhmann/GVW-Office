@@ -126,6 +126,7 @@ export async function addScore(scoreData) {
     formData.append("type", scoreData.type);
     formData.append("voices", JSON.stringify(scoreData.voices));
     formData.append("voiceCount", String(scoreData.voiceCount));
+    formData.append("scoreId", scoreData.scoreId);
 
     for (const path of scoreData.paths) {
         try {
@@ -204,7 +205,8 @@ export async function updateScore(scoreData) {
     formData.append("type", scoreData.type);
     formData.append("voices", JSON.stringify(scoreData.voices));
     formData.append("voiceCount", String(scoreData.voiceCount));
-    
+    formData.append("scoreId", scoreData.scoreId);
+
     const deletedFiles = scoreData.originalFiles.filter(f => !scoreData.paths.includes(f));
     formData.append("removedFiles", JSON.stringify(deletedFiles));
 
