@@ -87,33 +87,23 @@
                 await push("/dashboard");
             }
         } else if (response.status === 429) {
-            const lockUntil = new Date(body.retryAfter).getTime();
-            const now = Date.now();
-
-            const remainingMs = lockUntil - now;
-            const remainingMinutes = Math.ceil(remainingMs / 60000);
-
             addToast({
                 title: "Zu viele Anmeldeversuche",
-                subTitle: `Ihr Konto wurde vorübergehend gesperrt. Bitte versuchen Sie es in ${remainingMinutes} Minute${remainingMinutes !== 1 ? "n" : ""} erneut.`,
                 type: "warning",
             });
         } else if (response.status === 404) {
             addToast({
                 title: "Benutzer nicht gefunden",
-                subTitle: "Es wurde kein Konto mit der angegebenen E-Mail-Adresse gefunden. Bitte prüfen Sie die Eingabe oder registrieren Sie sich.",
                 type: "error"
             });
         } else if (response.status === 401) {
             addToast({
                 title: "Ungültiges Passwort",
-                subTitle: "Das eingegebene Passwort ist falsch. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
                 type: "error"
             });
         } else {
             addToast({
                 title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
                 type: "error"
             });
         }

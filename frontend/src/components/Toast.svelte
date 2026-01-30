@@ -61,15 +61,15 @@
 </script>
 
 {#if title}
-    <div class={`flex bg-white ${subTitle ? "items-start" : "items-center"} justify-around w-full rounded-2 border ${borderColor} ${marginMap[marginTop]} p-2`}>
+    <div class={`flex bg-white ${subTitle ? "items-start" : "items-center"} justify-start gap-2 w-full rounded-2 border ${borderColor} ${marginMap[marginTop]} p-2`}>
         <span class={`material-symbols-rounded ${!isMobile ? "text-icon-dt-4" : "text-icon-dt-3"} ${iconColor}`}>{icon}</span>
-        <div class={`flex flex-col ${subTitle ? "items-start" : "items-center"} justify-around ml-2`}>
+        <div class={`flex flex-col ${subTitle ? "items-start" : "items-center"} justify-around`}>
             <p class={`${!isMobile ? "text-dt-5" : "text-dt-4"} font-semibold`}>{title}</p>
             {#if subTitle}
                 <p class={`${!isMobile ? "text-dt-6 line-clamp-5" : "text-dt-5 line-clamp-3"}`}>{subTitle}</p>
             {/if}
         </div>
-        <button class="flex items-center justify-center bg-transparent border-0 ml-2 cursor-pointer"
+        <button class="flex items-center justify-center bg-transparent border-0 ml-auto cursor-pointer"
                 on:click={closeToast}><span
             class={`material-symbols-rounded ${!isMobile ? "text-icon-dt-4" : "text-icon-dt-3"}`}>close</span></button>
     </div>
