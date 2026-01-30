@@ -114,7 +114,7 @@
     let newScoreVoiceB2 = false;
     let newScoreVoiceSo = false;
     let newScoreVoiceAl = false;
-    let newScoreFilePaths = [];
+    let newScoreFiles = [];
     
     $: newScoreSaveDisabled = !(newScoreTitle && newScoreArtist && newScoreCategory && (newScoreVoiceT1 || newScoreVoiceT2 || newScoreVoiceB1 || newScoreVoiceB2 || newScoreVoiceSo || newScoreVoiceAl));
 
@@ -128,7 +128,7 @@
         newScoreVoiceB2 = false;
         newScoreVoiceSo = false;
         newScoreVoiceAl = false;
-        newScoreFilePaths = [];
+        newScoreFiles = [];
     }
 
     async function addNewScore() {
@@ -146,7 +146,7 @@
             type: get(appSettings).scoreCategories[newScoreCategory],
             voices: voices,
             voiceCount: voices.length,
-            paths: newScoreFilePaths
+            files: newScoreFiles
         };
 
         await addScore(newScore);
@@ -346,7 +346,7 @@
         <Checkbox textWrap={false} bind:isChecked={newScoreVoiceSo} title="Sopran"/>
         <Checkbox textWrap={false} bind:isChecked={newScoreVoiceAl} title="Alt"/>
     </div>
-    <FileSelector title="Noten" page="library" validTypes={["pdf", "gp", "gp5", "gp3", "gp4", "gpx", "cap", "capx"]} bind:paths={newScoreFilePaths} marginTop="5"/>
+    <FileSelector title="Noten" page="library" validTypes={["pdf", "gp", "gp5", "gp3", "gp4", "gpx", "cap", "capx"]} bind:files={newScoreFiles} marginTop="5"/>
     <div class="w-full flex items-center gap-4 mt-5">
         <Button type="secondary" on:click={newScoreModal?.hideModal}>Abbrechen</Button>
         <Button type="primary" disabled={newScoreSaveDisabled} on:click={addNewScore}>Speichern</Button>

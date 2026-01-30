@@ -74,7 +74,7 @@
             voices: voices,
             voiceCount: voices.length,
             originalFiles: originalFiles,
-            paths: enteredPaths
+            files: enteredPaths
         };
 
         await updateScore(updatedScore);
@@ -180,7 +180,7 @@
                     <Checkbox textWrap={false} bind:isChecked={voiceSoChecked} title="Sopran"/>
                     <Checkbox textWrap={false} bind:isChecked={voiceAlChecked} title="Alt"/>
                 </div>
-                <FileSelector title="Noten" page="library" validTypes={["pdf", "gp", "gp5", "gp3", "gp4", "gpx", "cap", "capx"]} bind:paths={enteredPaths} marginTop="5"/>
+                <FileSelector title="Noten" page="library" validTypes={["pdf", "gp", "gp5", "gp3", "gp4", "gpx", "cap", "capx"]} bind:files={enteredPaths} marginTop="5"/>
             </div>
         </div>
     </div>

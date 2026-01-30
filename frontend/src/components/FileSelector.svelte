@@ -1,12 +1,12 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { getFileNameFromPath } from "../services/utils";
+    import { addToast } from "../stores/toasts";
 
     export let title = "";
     export let marginTop = "";
     export let page = "";
     export let validTypes = [];
-    export let paths = [];
+    export let files = [];
 
     const validPages = ["library"];
     if (!validPages.includes(page)) {
@@ -17,25 +17,32 @@
     let icon = page === "library" ? "audio_file" : "draft";
 
     async function addFile() {
-        try {
-            const file = await window.api.openFileDialog({
-                title: "Notendatei auswählen",
-                filters: [
-                    { name: "Noten", extensions: validTypes }
-                ]
-            });
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = validTypes.map(t => `.${t}`).join(",");
+        input.multiple = false;
 
-            // Only add file when it exists and isn't already in the paths array
-            if (file[0] && !paths.includes(file[0])) {
-                paths = [...paths, file[0]];
+        input.onchange = () => {
+            const file = input.files?.[0];
+            if (!file) return;
+
+            // Prevent duplicates
+            if (!files.some(p => p.name === file.name)) {
+                files = [...files, file];
+            } else {
+                addToast({
+                    title: "Datei wird schon verwendet",
+                    subTitle: "Die von ihnen ausgewählte Datei ist bereits im Anhang und wird schon verwendet.",
+                    type: "warning"
+                });
             }
-        } catch (err) {
-            console.error("Failed to open file dialog: ", err);
         }
+
+        input.click();
     }
 
-    function removeFile(filePath) {
-        paths = paths.filter(path => path !== filePath);
+    function removeFile(file) {
+        files = files.filter(f => f !== file);
     }
 </script>
 
@@ -47,17 +54,17 @@
                 on:click={addFile} aria-label="Datei hinzufügen">
                 <span class="material-symbols-rounded text-dt-6">attach_file_add</span>
             </button>
-            {#each paths as path}
+            {#each files as file}
                 <button
                         class="group shrink-0 relative flex items-center justify-center rounded-2 border-2 border-gv-border p-2 cursor-pointer hover:bg-gv-input-bg duration-200"
-                        on:click={() => removeFile(path)}>
+                        on:click={() => removeFile(file)}>
                     <!-- Normal content (defines size) -->
                     <div class="flex items-center gap-2 whitespace-nowrap transition-opacity duration-200 group-hover:opacity-0">
                         <span class="material-symbols-rounded text-icon-dt-6">
                           {icon}
                         </span>
                         <p class="text-gv-dark-text text-dt-7">
-                            {path.includes("/") || path.includes("\\") ? getFileNameFromPath(path) : path}
+                            {file.name ? file.name : file}
                         </p>
                     </div>
 
