@@ -6,8 +6,8 @@
     export let marginTop = "";
     export let title = "Title";
     export let subTitle = "SubTitle";
-    export let onClose = () => {
-    };
+    export let onClose = () => {};
+    export let isMobile = false;
 
     const validTypes = ["info", "success", "warning", "error"];
     if (!validTypes.includes(type)) {
@@ -60,15 +60,17 @@
     });
 </script>
 
-{#if title && subTitle}
-    <div class={`flex bg-white items-start justify-around w-full rounded-2 border ${borderColor} ${marginMap[marginTop]} p-2`}>
-        <span class={`material-symbols-rounded text-icon-dt-4 ${iconColor}`}>{icon}</span>
-        <div class="flex flex-col items-start justify-around ml-2">
-            <p class="text-dt-5 font-semibold">{title}</p>
-            <p class="text-dt-6 line-clamp-5">{subTitle}</p>
+{#if title}
+    <div class={`flex bg-white ${subTitle ? "items-start" : "items-center"} justify-around w-full rounded-2 border ${borderColor} ${marginMap[marginTop]} p-2`}>
+        <span class={`material-symbols-rounded ${!isMobile ? "text-icon-dt-4" : "text-icon-dt-3"} ${iconColor}`}>{icon}</span>
+        <div class={`flex flex-col ${subTitle ? "items-start" : "items-center"} justify-around ml-2`}>
+            <p class={`${!isMobile ? "text-dt-5" : "text-dt-4"} font-semibold`}>{title}</p>
+            {#if subTitle}
+                <p class={`${!isMobile ? "text-dt-6 line-clamp-5" : "text-dt-5 line-clamp-3"}`}>{subTitle}</p>
+            {/if}
         </div>
         <button class="flex items-center justify-center bg-transparent border-0 ml-2 cursor-pointer"
                 on:click={closeToast}><span
-            class="material-symbols-rounded text-icon-dt-4">close</span></button>
+            class={`material-symbols-rounded ${!isMobile ? "text-icon-dt-4" : "text-icon-dt-3"}`}>close</span></button>
     </div>
 {/if}

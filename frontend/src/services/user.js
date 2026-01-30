@@ -1,4 +1,4 @@
-import { clearValue, setValue } from "./store";
+import { clearValue } from "./store";
 import { get } from "svelte/store";
 import { push } from "svelte-spa-router";
 import { user } from "../stores/user";
