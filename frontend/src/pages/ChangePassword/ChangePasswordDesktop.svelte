@@ -1,5 +1,4 @@
 <script>
-    import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
     import Form from "../../components/Form.svelte";
     import Logo from "../../assets/logo.svg";
