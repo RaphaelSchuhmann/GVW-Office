@@ -196,7 +196,7 @@ export async function updateScore(scoreData) {
     const existingFileNames = [];
 
     for (const f of scoreData.files) {
-        if (f instanceof Blob) {
+        if (f instanceof File) {
             newFiles.push(f);
         } else if (typeof f === "string") {
             existingFileNames.push(f);
@@ -214,7 +214,6 @@ export async function updateScore(scoreData) {
     formData.append("removedFiles", removedFiles);
 
     for (const file of newFiles) {
-        // @ts-ignore
         formData.append("files", file, file.name);
     }
 
