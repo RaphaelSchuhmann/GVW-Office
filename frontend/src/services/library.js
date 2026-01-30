@@ -192,10 +192,29 @@ export async function updateScore(scoreData) {
     formData.append("voices", JSON.stringify(scoreData.voices));
     formData.append("voiceCount", String(scoreData.voiceCount));
     
-    const deletedFiles = scoreData.originalFiles.filter(f => !scoreData.files.includes(f.name ? f.name : f));
-    formData.append("removedFiles", deletedFiles);
+    const newFiles = [];
+    const existingFileNames = [];
 
-    for (const file of scoreData.files) {
+    for (const f of scoreData.files) {
+        if (f instanceof Blob) {
+            newFiles.push(f);
+        } else if (typeof f === "string") {
+            existingFileNames.push(f);
+        } else {
+            addToast({
+                title: "Ungültige Datei",
+                subTitle: "Beim lesen einer Datei ist ein Fehler aufgetreten.",
+                type: "error",
+            });
+        }
+    }
+
+    const removedFiles = scoreData.originalFiles.filter(f => !existingFileNames.includes(f));
+
+    formData.append("removedFiles", removedFiles);
+
+    for (const file of newFiles) {
+        // @ts-ignore
         formData.append("files", file, file.name);
     }
 
