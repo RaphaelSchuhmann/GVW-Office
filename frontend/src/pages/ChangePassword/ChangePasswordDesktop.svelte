@@ -1,36 +1,21 @@
 <script>
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
-    import Form from "../components/Form.svelte";
-    import Logo from "../assets/logo.svg";
-    import Input from "../components/Input.svelte";
-    import Button from "../components/Button.svelte";
-    import ToastStack from "../components/ToastStack.svelte";
-    import { changePw } from "../services/auth";
-    import { getValue, setValue, clearValue } from "../services/store";
-    import { user } from "../stores/user";
-    import { addToast } from "../stores/toasts";
+    import Form from "../../components/Form.svelte";
+    import Logo from "../../assets/logo.svg";
+    import Input from "../../components/Input.svelte";
+    import Button from "../../components/Button.svelte";
+    import ToastStack from "../../components/ToastStack.svelte";
+    import { changePw } from "../../services/auth";
+    import { getValue, setValue, clearValue } from "../../services/store";
+    import { user } from "../../stores/user";
+    import { addToast } from "../../stores/toasts";
 
-    let message = "";
+    export let message = "";
 
     let currentPw = "";
     let newPw = "";
     let confirmNewPw = "";
-
-    onMount(() => {
-        const hash = window.location.hash;
-        const queryString = hash.split("?")[1];
-        if (!queryString) return;
-
-        const params = new URLSearchParams(queryString);
-        let firstLogin = params.get("firstLogin") === "true";
-
-        if (firstLogin) {
-            message = "Erstmaliger Login - Bitte ändern Sie Ihr Passwort";
-        } else {
-            message = "Passwort vergessen - Bitte ändern Sie Ihr Passwort";
-        }
-    });
 
     /**
      * Updates user password after validation
@@ -102,8 +87,12 @@
             await push("/dashboard");
         } else if (response.status === 404) {
             // Invalid Email
-            // Route back to log in with error parameter set to true to be displayed as a toast
-            await push("/login?cpwErr=true");
+            addToast({
+                title: "Sitzung ungültig",
+                subTitle: "Ihre E-Mail-Adresse konnte nicht eindeutig zugeordnet werden. Bitte melden Sie sich erneut an, um den Vorgang fortzusetzen.",
+                type: "error"
+            });
+            await push("/");
         } else if (response.status === 409) {
             // New password is the same as the old
             addToast({
