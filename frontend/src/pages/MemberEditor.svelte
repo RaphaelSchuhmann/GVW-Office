@@ -8,7 +8,7 @@
     import { membersStore } from "../stores/members";
 
     import ToastStack from "../components/ToastStack.svelte";
-    import Sidebar from "../components/Sidebar.svelte";
+    import DesktopSidebar from "../components/DesktopSidebar.svelte";
     import PageHeader from "../components/PageHeader.svelte";
     import SettingsModal from "../components/SettingsModal.svelte";
     import Input from "../components/Input.svelte";
@@ -165,7 +165,7 @@
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 <main class="flex overflow-hidden">
-    <Sidebar onSettingsClick={settingsClick} currentPage="members"></Sidebar>
+    <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Mitglied bearbeiten" subTitle={`Bearbeitung von Mitglied: "${member?.name ?? ""} ${member?.surname ?? ""}"`}>
             <Button type="secondary" isCancel={true} on:click={async () => await push("/members")}>

@@ -15,7 +15,7 @@
     import { ordinalMap, weekDayMap, addEvent, updateStatus } from "../services/events";
 
     import ToastStack from "../components/ToastStack.svelte";
-    import Sidebar from "../components/Sidebar.svelte";
+    import DesktopSidebar from "../components/DesktopSidebar.svelte";
     import PageHeader from "../components/PageHeader.svelte";
     import SettingsModal from "../components/SettingsModal.svelte";
     import Button from "../components/Button.svelte";
@@ -374,7 +374,7 @@
 />
 
 <main class="flex h-dvh overflow-hidden">
-    <Sidebar onSettingsClick={settingsClick} currentPage="events"></Sidebar>
+    <DesktopSidebar onSettingsClick={settingsClick} currentPage="events"></DesktopSidebar>
     <div class="flex flex-col w-full overflow-hidden p-10 min-h-0">
         <PageHeader title="Veranstaltungen" subTitle="Verwaltung von Events, Proben und Konzerten">
             <Button type="primary" disabled={($user.role !== "admin" && $user.role !== "vorstand")}

@@ -8,7 +8,7 @@
     import { reportsStore } from "../stores/reports";
 
     import ToastStack from "../components/ToastStack.svelte";
-    import Sidebar from "../components/Sidebar.svelte";
+    import DesktopSidebar from "../components/DesktopSidebar.svelte";
     import PageHeader from "../components/PageHeader.svelte";
     import SettingsModal from "../components/SettingsModal.svelte";
     import Button from "../components/Button.svelte";
@@ -208,7 +208,7 @@
 />
 
 <main class="flex h-dvh overflow-hidden">
-    <Sidebar onSettingsClick={settingsClick} currentPage="reports"></Sidebar>
+    <DesktopSidebar onSettingsClick={settingsClick} currentPage="reports"></DesktopSidebar>
     <div class="flex flex-col w-full flex-1 overflow-hidden p-10 min-h-0">
         <PageHeader title="Berichte" subTitle="Verwaltung von Berichten unterschiedlicher art.">
             <Button type="primary" on:click={addReportModal?.showModal}>
