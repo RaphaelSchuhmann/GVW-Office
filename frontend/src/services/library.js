@@ -5,7 +5,6 @@ import { addToast } from "../stores/toasts";
 import { logout } from "./user";
 import { push } from "svelte-spa-router";
 import { libraryStore } from "../stores/library";
-import { getFileExtensionFromPath, getFileNameFromPath } from "./utils";
 
 export const voiceMap = {
     "t": "Tenor",
@@ -18,6 +17,7 @@ export const voiceMap = {
     "a": "Alt",
 };
 
+// @ts-ignore
 const apiUrl = __API_URL__;
 
 /**
@@ -127,21 +127,8 @@ export async function addScore(scoreData) {
     formData.append("voices", JSON.stringify(scoreData.voices));
     formData.append("voiceCount", String(scoreData.voiceCount));
 
-    for (const path of scoreData.paths) {
-        try {
-            const buffer = await window.api.readFile(path);
-            const fileName = `${getFileNameFromPath(path)}.${getFileExtensionFromPath(path)}`;
-
-            const blob = new Blob([buffer]);
-            formData.append("files", blob, fileName);
-        } catch (err) {
-            addToast({
-                title: "Datei konnte nicht gelesen werden",
-                subTitle: `Die Datei "${path}" konnte nicht gelesen werden. Bitte überprüfen Sie, ob die Datei existiert.`,
-                type: "error",
-            });
-            return;
-        }
+    for (const file of scoreData.files) {
+        formData.append("files", file, file.name);
     }
 
     const resp = await fetch(`${apiUrl}/library/new`, {
@@ -205,26 +192,11 @@ export async function updateScore(scoreData) {
     formData.append("voices", JSON.stringify(scoreData.voices));
     formData.append("voiceCount", String(scoreData.voiceCount));
     
-    const deletedFiles = scoreData.originalFiles.filter(f => !scoreData.paths.includes(f));
-    formData.append("removedFiles", JSON.stringify(deletedFiles));
+    const deletedFiles = scoreData.originalFiles.filter(f => !scoreData.files.includes(f.name ? f.name : f));
+    formData.append("removedFiles", deletedFiles);
 
-    for (const path of scoreData.paths) {
-        try {
-            if (!scoreData.originalFiles.includes(path)) {
-                const buffer = await window.api.readFile(path);
-                const fileName = `${getFileNameFromPath(path)}.${getFileExtensionFromPath(path)}`;
-    
-                const blob = new Blob([buffer]);
-                formData.append("files", blob, fileName);
-            }
-        } catch (err) {
-            addToast({
-                title: "Datei konnte nicht gelesen werden",
-                subTitle: `Die Datei "${path}" konnte nicht gelesen werden. Bitte überprüfen Sie, ob die Datei existiert.`,
-                type: "error",
-            });
-            return;
-        }
+    for (const file of scoreData.files) {
+        formData.append("files", file, file.name);
     }
 
     const resp = await fetch(`${apiUrl}/library/update`, {
