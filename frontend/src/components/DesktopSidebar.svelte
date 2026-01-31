@@ -57,5 +57,5 @@
         </button>
     </div>
 
-    <SidebarContent {currentPage} {onSettingsClick} minimized={false} />
+    <SidebarContent {currentPage} {onSettingsClick} minimized={minimized} />
 </div>

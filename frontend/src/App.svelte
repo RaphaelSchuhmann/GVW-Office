@@ -2,7 +2,7 @@
     import "./app.css";
     import Router from "svelte-spa-router";
     import Login from "./pages/Login/LoginPage.svelte";
-    import Dashboard from "./pages/Dashboard.svelte";
+    import Dashboard from "./pages/Dashboard/DashboardPage.svelte";
     import ChangePassword from "./pages/ChangePassword/ChangePasswordPage.svelte";
     import Members from "./pages/Members.svelte";
     import MemberViewer from "./pages/MemberViewer.svelte";
