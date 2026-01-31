@@ -145,7 +145,7 @@
         />
         <Button type="primary" marginTop="10" on:click={updatePassword} isSubmit={true}
         ><span class="material-symbols-rounded">login</span>
-            <p class="ml-3">Anmelden</p></Button
+            <p class="ml-3">Passwort ändern</p></Button
         >
     </div>
 </main>

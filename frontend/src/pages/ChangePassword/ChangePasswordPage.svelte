@@ -15,7 +15,7 @@
         let firstLogin = params.get("firstLogin") === "true";
 
         if (firstLogin) {
-            message = "Erstmaliger LoginDesktop - Bitte ändern Sie Ihr Passwort";
+            message = "Erstmaliger Login - Bitte ändern Sie Ihr Passwort";
         } else {
             message = "Passwort vergessen - Bitte ändern Sie Ihr Passwort";
         }
