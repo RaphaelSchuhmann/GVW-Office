@@ -197,7 +197,7 @@
                     </p>
                     <div class="w-full flex-1 min-h-0 overflow-x-hidden overflow-y-auto max-h-[45dvh] flex flex-col items-center pr-2">
                         {#each events as event}
-                            <ComingEvent margin="5" title={event.title}, time={event.time}, location={event.location},
+                            <ComingEvent margin="5" title={event.title} time={event.time} location={event.location}
                                          type={event.type} />
                         {/each}
                     </div>

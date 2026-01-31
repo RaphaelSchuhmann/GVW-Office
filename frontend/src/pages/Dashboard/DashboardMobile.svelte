@@ -7,7 +7,6 @@
     import { addToast } from "../../stores/toasts";
 
     import ToastStack from "../../components/ToastStack.svelte";
-    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
     import Card from "../../components/Card.svelte";
     import ComingEvent from "../../components/ComingEvent.svelte";
@@ -206,7 +205,7 @@
                     </p>
                     <div class="w-full flex-1 min-h-0 overflow-x-hidden overflow-y-auto max-h-[47dvh] flex flex-col items-center pr-2">
                         {#each events as event}
-                            <ComingEvent margin="5" title={event.title}, time={event.time}, location={event.location},
+                            <ComingEvent margin="5" title={event.title} time={event.time} location={event.location}
                                          type={event.type} isMobile={true} />
                         {/each}
                     </div>
