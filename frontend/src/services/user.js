@@ -34,15 +34,23 @@ export async function loadUserData() {
     const authStore = get(auth);
     let email = "";
 
-    const responseAutoLogin = await authenticate(authStore.token);
-    const bodyAutoLogin = await responseAutoLogin.json();
+    try {
+        const responseAutoLogin = await authenticate(authStore.token);
+        const bodyAutoLogin = await responseAutoLogin.json();
 
-    if (responseAutoLogin && bodyAutoLogin && responseAutoLogin.status === 200) {
-        email = bodyAutoLogin.email;
-    } else {
+        if (responseAutoLogin && bodyAutoLogin && responseAutoLogin.status === 200) {
+            email = bodyAutoLogin.email;
+        } else {
+            logout();
+            await push("/?cpwErr=false");
+            return;
+        }
+    } catch (error) {
         logout();
         await push("/?cpwErr=false");
+        return;
     }
+
 
     // Get user data
     const response = await getData(email, authStore.token);

@@ -13,9 +13,9 @@ const isDesktop = $derived(width >= 1024);
 
 export function useViewport() {
     return {
-        width,
-        isMobile,
-        isTablet,
-        isDesktop,
+        get width() { return width; },
+        get isMobile() { return isMobile;},
+        get isTablet() { return isTablet;},
+        get isDesktop() { return isDesktop;},
     };
 }

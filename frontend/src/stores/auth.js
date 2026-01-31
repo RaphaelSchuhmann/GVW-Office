@@ -6,5 +6,5 @@ import { getValue } from "../services/store";
  * @type {import('svelte/store').Writable<{token: string}>}
  */
 export const auth = writable({
-    token: getValue("authToken") || "",
+    token: getValue("authToken"),
 });
