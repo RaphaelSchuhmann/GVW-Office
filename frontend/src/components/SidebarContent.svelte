@@ -8,8 +8,8 @@
     export let onSettingsClick = () => {};
     export let minimized = false;
 
-    let mitgliederAccess = ["admin", "vorstand"];
-    let reportsAccess = ["admin", "schriftführer"];
+    const mitgliederAccess = ["admin", "vorstand"];
+    const reportsAccess = ["admin", "schriftführer"];
 
     let userOptionsVisible = false;
     let userOptionsIcon = "expand_all";

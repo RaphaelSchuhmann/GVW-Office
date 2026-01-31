@@ -11,7 +11,13 @@
 
 {#if isOpen}
     <!-- Overlay background -->
-    <div class="fixed inset-0 bg-black/50 z-40" on:click={closeSidebar} transition:fade></div>
+    <div class="fixed inset-0 bg-black/50 z-40"
+          role="button"
+          tabindex="0"
+          aria-label="Close sidebar"
+          on:click={closeSidebar}
+          on:keydown={(e) => { if (e.key === 'Enter' || e.key === ' ') closeSidebar(); }}
+          transition:fade></div>
 
     <!-- Sidebar panel -->
     <div class="fixed inset-0 z-50 bg-gv-bg-bar flex flex-col" transition:fly="{{ x: -300, duration: 200 }}">

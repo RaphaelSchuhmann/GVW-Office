@@ -1,21 +1,11 @@
 <script>
-    import { logout } from "../services/user";
-    import { push } from "svelte-spa-router";
     import SidebarContent from "./SidebarContent.svelte";
 
     export let currentPage = "";
     export let onSettingsClick = () => {};
-    export let isMobile = false;
-
-    // Needed role for each sidebar button
-    let mitgliederAccess = ["admin", "vorstand"];
-    let reportsAccess = ["admin", "schriftführer"];
 
     let minimized = false;
     let toggleIcon = "arrow_menu_close";
-
-    let userOptionsIcon = "expand_all";
-    let userOptionsVisible = false;
 
     /**
      * Toggles the sidebar between minimized and expanded states
@@ -24,23 +14,6 @@
     function toggleSidebarState() {
         minimized = !minimized;
         toggleIcon = minimized ? "arrow_menu_open" : "arrow_menu_close";
-    }
-
-    /**
-     * Toggles the visibility of user options dropdown
-     * Updates the expand/collapse icon
-     */
-    function toggleUserOptions() {
-        userOptionsVisible = !userOptionsVisible;
-        userOptionsIcon = userOptionsVisible ? "collapse_all" : "expand_all";
-    }
-
-    /**
-     * Logs out the user and redirects to login page
-     */
-    async function handleLogout() {
-        logout();
-        await push("/");
     }
 </script>
 
