@@ -7,6 +7,7 @@
     export let location = "";
     export let type = "konzert";
     export let margin = "";
+    export let isMobile = false;
 
     // Normalize type
     type = type.toLowerCase();
@@ -18,13 +19,13 @@
     }
 </script>
 
-<div class={`flex items-center w-full ${marginMap[margin]}`}>
+<div class={`flex ${isMobile ? "flex-col items-start" : "items-center"} w-full ${marginMap[margin]}`}>
     <div class="flex flex-col items-start justify-around">
         <p class="text-dt-5 text-gv-dark-text text-nowrap truncate">{title}</p>
         <p class="text-dt-6 text-gv-light-text text-nowrap truncate">{time}</p>
-        <p class="text-dt-6 text-gv-light-text text-nowrap truncate">{location}</p>
+        <p class="text-dt-6 text-gv-light-text">{location}</p>
     </div>
-    <div class="ml-auto">
+    <div class={`${isMobile ? "mt-2" : "ml-auto"}`}>
         <Chip text={capitalizeWords(type)}/>
     </div>
 </div>

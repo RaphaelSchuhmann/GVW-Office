@@ -6,7 +6,7 @@
     export let marginTop = "";
 </script>
 
-<div class={`bg-white flex flex-col items-center min-h-0 ${justifyMap[justify]} rounded-1 border-2 border-gv-border w-full max-h-full ${marginMap[marginTop]} ${paddingMap[padding]} overflow-hidden`}
+<div class={`bg-white flex flex-col items-center min-h-0 ${justifyMap[justify]} rounded-1 border-2 border-gv-border w-full ${marginMap[marginTop]} ${paddingMap[padding]} overflow-hidden`}
      on:contextmenu>
     <slot />
 </div>
