@@ -19,6 +19,15 @@
 
         if (authToken) {
             const response = await authenticate(authToken);
+
+            if (!response) {
+                addToast({
+                    title: "Interner Serverfehler",
+                    type: "error"
+                });
+                return;
+            }
+
             const body = await response.json();
 
             if (response && body && response.status === 200) {
@@ -29,6 +38,7 @@
                     clearValue("authToken");
                     setValue("authToken_BCPW", authToken);
                     await push(`/changePassword?firstLogin=${body.firstLogin}`);
+                    return;
                 }
 
                 await push("/dashboard");
