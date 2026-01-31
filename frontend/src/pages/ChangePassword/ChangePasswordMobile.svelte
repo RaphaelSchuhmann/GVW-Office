@@ -69,7 +69,25 @@
             return;
         }
 
-        let response = await changePw(currentPw, newPw, email);
+        let response;
+
+        try {
+            response = await changePw(currentPw, newPw, email)
+        } catch (error) {
+            addToast({
+                title: "Interner Serverfehler",
+                type: "error"
+            });
+            return;
+        }
+
+        if (!response) {
+            addToast({
+                title: "Interner Serverfehler",
+                type: "error"
+            });
+            return;
+        }
 
         if (response.status === 200) {
             // Update auth token entry to use the actual expected key

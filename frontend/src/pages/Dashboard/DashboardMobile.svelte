@@ -105,6 +105,8 @@
         if (maxMembers.length === 0) updatedMaxMembers = $appSettings.maxMembers;
         if (Number(maxMembers) < 1) updatedMaxMembers = $appSettings.maxMembers;
 
+        appSettings.update(u => ({...u, maxMembers: updatedMaxMembers}));
+
         voiceDistributionSettingsModal.hideModal();
         const response = await updateMaxMembers();
 
@@ -114,7 +116,6 @@
                 subTitle: "Die maximale Anzahl and Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert.",
                 type: "success"
             });
-            appSettings.update(u => ({...u, maxMembers: updatedMaxMembers}));
         } else if (response.status === 401) {
             // Auth token invalid / unauthorized
             addToast({

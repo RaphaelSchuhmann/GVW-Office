@@ -75,7 +75,27 @@
             return;
         }
 
-        let response = await changePw(currentPw, newPw, email);
+        let response;
+
+        try {
+            response = await changePw(currentPw, newPw, email)
+        } catch (error) {
+            addToast({
+                title: "Interner Serverfehler",
+                subTitle: "Beim Ändern Ihres Passworts ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+                type: "error"
+            });
+            return;
+        }
+
+        if (!response) {
+            addToast({
+                title: "Interner Serverfehler",
+                subTitle: "Beim Ändern Ihres Passworts ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+                type: "error"
+            });
+            return;
+        }
 
         if (response.status === 200) {
             // Update auth token entry to use the actual expected key

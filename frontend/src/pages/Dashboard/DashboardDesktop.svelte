@@ -104,6 +104,8 @@
         if (maxMembers.length === 0) updatedMaxMembers = $appSettings.maxMembers;
         if (Number(maxMembers) < 1) updatedMaxMembers = $appSettings.maxMembers;
 
+        appSettings.update(u => ({...u, maxMembers: updatedMaxMembers}));
+
         voiceDistributionSettingsModal.hideModal();
         const response = await updateMaxMembers();
 
@@ -113,7 +115,6 @@
                 subTitle: "Die maximale Anzahl and Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert.",
                 type: "success"
             });
-            appSettings.update(u => ({...u, maxMembers: updatedMaxMembers}));
         } else if (response.status === 401) {
             // Auth token invalid / unauthorized
             addToast({
@@ -139,8 +140,8 @@
 </script>
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
-<Modal bind:this={voiceDistributionSettingsModal} title="Stimmenvereteilung Einstellungen" subTitle="Einstellungen für die Stimmverteilung">
-    <Input title="Maximale anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers}/>
+<Modal bind:this={voiceDistributionSettingsModal} title="Stimmenverteilung Einstellungen" subTitle="Einstellungen für die Stimmverteilung">
+    <Input title="Maximale Anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers}/>
     <div class="w-full flex items-center justify-end mt-5 gap-2">
         <Button type="secondary" on:click={voiceDistributionSettingsModal.hideModal}>Abbrechen</Button>
         <Button type="primary" on:click={updateMaxMembersVoiceDistribution} isSubmit={true}>Speichern</Button>
