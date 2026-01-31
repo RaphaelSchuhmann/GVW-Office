@@ -63,7 +63,7 @@
             readonly={readonly}
             disabled={disabled}
             on:change={onChange}
-            class="rounded-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6"
+            class="rounded-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6 max-[470px]:text-dt-7"
         />
     {:else}
         <div class={`flex items-stretch ${width}`}>
@@ -76,13 +76,13 @@
                 readonly={readonly}
                 disabled={disabled}
                 on:change={onChange}
-                class="rounded-tl-1 rounded-bl-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6"
+                class="rounded-tl-1 rounded-bl-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6 max-[470px]:text-dt-7"
             />
             <button
                 class="flex items-center justify-center bg-gv-input-bg px-3 mt-1 rounded-tr-1 rounded-br-1 cursor-pointer"
                 on:click={togglePasswordView}
             >
-                <span class="material-symbols-rounded text-icon-dt-3"
+                <span class="material-symbols-rounded text-icon-dt-3 max-[470px]:text-icon-dt-5"
                 >{icon}</span
                 >
             </button>
