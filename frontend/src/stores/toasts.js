@@ -10,11 +10,11 @@ export const toasts = writable([]);
  * Adds a new toast notification to the store
  * @param {Object} options - Toast configuration
  * @param {string} options.title - Toast title
- * @param {string} options.subTitle - Toast subtitle/message
+ * @param {string} [options.subTitle] - Toast subtitle/message
  * @param {string} [options.type="info"] - Toast type (info, success, error, warning)
  * @param {number} [options.timeout=5000] - Auto-dismiss timeout in milliseconds
  */
-export function addToast({ title, subTitle, type = "info", timeout = 5000 }) {
+export function addToast({ title, subTitle = "", type = "info", timeout = 5000 }) {
     const id = crypto.randomUUID();
 
     toasts.update(t => [...t, { id: id, title: title, subTitle: subTitle, type: type }]);

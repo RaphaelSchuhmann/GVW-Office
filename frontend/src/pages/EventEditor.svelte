@@ -3,7 +3,7 @@
     import { loadUserData } from "../services/user";
 
     import ToastStack from "../components/ToastStack.svelte";
-    import Sidebar from "../components/Sidebar.svelte";
+    import DesktopSidebar from "../components/DesktopSidebar.svelte";
     import PageHeader from "../components/PageHeader.svelte";
     import SettingsModal from "../components/SettingsModal.svelte";
     import { push } from "svelte-spa-router";
@@ -162,7 +162,7 @@
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 <main class="flex overflow-x-hidden overflow-y-auto">
-    <Sidebar onSettingsClick={settingsClick} currentPage="events"></Sidebar>
+    <DesktopSidebar onSettingsClick={settingsClick} currentPage="events"></DesktopSidebar>
     <div class="flex flex-col w-full h-dvh overflow-x-hidden overflow-y-auto p-10 min-h-0">
         <PageHeader title="Veranstaltung bearbeiten" subTitle={`Bearbeitung der Veranstaltung: "${event?.title ?? ""}"`}>
             <Button type="secondary" isCancel={true} on:click={async () => await push("/events")}>

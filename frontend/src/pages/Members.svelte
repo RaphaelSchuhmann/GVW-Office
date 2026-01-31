@@ -8,7 +8,7 @@
     import { addToast } from "../stores/toasts";
 
     import ToastStack from "../components/ToastStack.svelte";
-    import Sidebar from "../components/Sidebar.svelte";
+    import DesktopSidebar from "../components/DesktopSidebar.svelte";
     import PageHeader from "../components/PageHeader.svelte";
     import Card from "../components/Card.svelte";
     import SettingsModal from "../components/SettingsModal.svelte";
@@ -293,7 +293,7 @@
 </ContextMenu>
 
 <main class="flex overflow-hidden">
-    <Sidebar onSettingsClick={settingsClick} currentPage="members"></Sidebar>
+    <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder">
             <Button type="primary" on:click={addMemberModal.showModal}>

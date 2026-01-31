@@ -1,36 +1,19 @@
 <script>
-    import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
-    import Form from "../components/Form.svelte";
-    import Logo from "../assets/logo.svg";
-    import Input from "../components/Input.svelte";
-    import Button from "../components/Button.svelte";
-    import ToastStack from "../components/ToastStack.svelte";
-    import { changePw } from "../services/auth";
-    import { getValue, setValue, clearValue } from "../services/store";
-    import { user } from "../stores/user";
-    import { addToast } from "../stores/toasts";
+    import Logo from "../../assets/logo.svg";
+    import Input from "../../components/Input.svelte";
+    import Button from "../../components/Button.svelte";
+    import ToastStack from "../../components/ToastStack.svelte";
+    import { changePw } from "../../services/auth";
+    import { getValue, setValue, clearValue } from "../../services/store";
+    import { user } from "../../stores/user";
+    import { addToast } from "../../stores/toasts";
 
-    let message = "";
+    export let message = "";
 
     let currentPw = "";
     let newPw = "";
     let confirmNewPw = "";
-
-    onMount(() => {
-        const hash = window.location.hash;
-        const queryString = hash.split("?")[1];
-        if (!queryString) return;
-
-        const params = new URLSearchParams(queryString);
-        let firstLogin = params.get("firstLogin") === "true";
-
-        if (firstLogin) {
-            message = "Erstmaliger Login - Bitte ändern Sie Ihr Passwort";
-        } else {
-            message = "Passwort vergessen - Bitte ändern Sie Ihr Passwort";
-        }
-    });
 
     /**
      * Updates user password after validation
@@ -41,22 +24,19 @@
         // Validate inputs
         if (!currentPw) {
             addToast({
-                title: "Ungültige Eingabe",
-                subTitle: "Bitte geben Sie Ihr aktuelles Passwort ein, damit wir Ihre Identität überprüfen und die Passwortänderung durchführen können.",
+                title: "Aktuelles Passwort fehlt",
                 type: "error"
             });
             return;
         } else if (!newPw) {
             addToast({
-                title: "Ungültige Eingabe",
-                subTitle: "Bitte geben Sie ein neues Passwort ein, das künftig für die Anmeldung verwendet werden soll.",
+                title: "Neues Passwort fehlt",
                 type: "error"
             });
             return;
         } else if (!confirmNewPw) {
             addToast({
-                title: "Ungültige Eingabe",
-                subTitle: "Bitte bestätigen Sie Ihr neues Passwort, um sicherzustellen, dass keine Tippfehler vorliegen.",
+                title: "Bestätigung fehlt",
                 type: "error"
             });
             return;
@@ -65,8 +45,7 @@
         // Ensure new password is at least 8 characters
         if (newPw.length < 8) {
             addToast({
-                title: "Passwort zu kurz",
-                subTitle: "Das neue Passwort muss mindestens 8 Zeichen lang sein, um den Sicherheitsanforderungen zu entsprechen.",
+                title: "Neues Passwort ist zu kurz",
                 type: "error"
             });
             return;
@@ -76,7 +55,6 @@
         if (newPw !== confirmNewPw) {
             addToast({
                 title: "Passwörter stimmen nicht überein",
-                subTitle: "Das neue Passwort und die Passwortbestätigung sind nicht identisch. Bitte überprüfen Sie Ihre Eingabe.",
                 type: "error"
             });
             return;
@@ -91,7 +69,25 @@
             return;
         }
 
-        let response = await changePw(currentPw, newPw, email);
+        let response;
+
+        try {
+            response = await changePw(currentPw, newPw, email)
+        } catch (error) {
+            addToast({
+                title: "Interner Serverfehler",
+                type: "error"
+            });
+            return;
+        }
+
+        if (!response) {
+            addToast({
+                title: "Interner Serverfehler",
+                type: "error"
+            });
+            return;
+        }
 
         if (response.status === 200) {
             // Update auth token entry to use the actual expected key
@@ -102,40 +98,40 @@
             await push("/dashboard");
         } else if (response.status === 404) {
             // Invalid Email
-            // Route back to log in with error parameter set to true to be displayed as a toast
-            await push("/login?cpwErr=true");
+            addToast({
+                title: "Ungültige E-Mail verwendet",
+                type: "error"
+            });
+            await push("/");
         } else if (response.status === 409) {
             // New password is the same as the old
             addToast({
-                title: "Ungültiges Passwort",
-                subTitle: "Das neue Passwort darf nicht mit dem aktuellen Passwort übereinstimmen. Bitte wählen Sie ein anderes Passwort.",
+                title: "Neues Passwort ist identisch",
                 type: "error"
             });
         } else if (response.status === 401) {
             // Current password is invalid
             addToast({
-                title: "Falsches Passwort",
-                subTitle: "Das eingegebene aktuelle Passwort ist nicht korrekt. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
+                title: "Aktuelles Passwort ist falsch",
                 type: "error"
             });
         } else {
             // Internal server error / unknown error
             addToast({
                 title: "Interner Serverfehler",
-                subTitle: "Beim Ändern Ihres Passworts ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
                 type: "error"
             });
         }
     }
 </script>
 
-<ToastStack></ToastStack>
+<ToastStack isMobile={true}/>
 <main class="bg-gv-bg-bar w-dvw h-dvh flex items-center justify-center">
-    <Form padding="10" height="auto">
+    <div class="p-10 h-full w-full bg-white flex flex-col items-center">
         <img
             src={Logo}
             alt="Logo"
-            class="w-1/6 rounded-full border-2 border-gv-border"
+            class="min-[530px]:w-1/5 max-[530px]:w-2/5 rounded-full border-2 border-gv-border"
         />
         <p class="font-semibold text-dt-1 mt-5 text-center">Passwort ändern</p>
         <p class="text-gv-light-text text-dt-5 text-center">
@@ -167,7 +163,7 @@
         />
         <Button type="primary" marginTop="10" on:click={updatePassword} isSubmit={true}
         ><span class="material-symbols-rounded">login</span>
-            <p class="ml-3">Anmelden</p></Button
+            <p class="ml-3">Passwort ändern</p></Button
         >
-    </Form>
+    </div>
 </main>

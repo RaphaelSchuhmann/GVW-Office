@@ -10,7 +10,7 @@
     import { appSettings } from "../stores/appSettings";
 
     import ToastStack from "../components/ToastStack.svelte";
-    import Sidebar from "../components/Sidebar.svelte";
+    import DesktopSidebar from "../components/DesktopSidebar.svelte";
     import PageHeader from "../components/PageHeader.svelte";
     import SettingsModal from "../components/SettingsModal.svelte";
     import Button from "../components/Button.svelte";
@@ -154,7 +154,7 @@
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 <main class="flex overflow-hidden">
-    <Sidebar onSettingsClick={settingsClick} currentPage="library"></Sidebar>
+    <DesktopSidebar onSettingsClick={settingsClick} currentPage="library"></DesktopSidebar>
     <div class="flex flex-col w-full flex-1 overflow-hidden p-10 min-h-0">
         <PageHeader title="Notenmaterial bearbeiten" subTitle={`Bearbeitung des Notenmaterials: "${score.title ?? ""}"`}>
             <Button type="secondary" isCancel={true} on:click={async () => await push("/library")}>

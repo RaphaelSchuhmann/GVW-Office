@@ -6,6 +6,7 @@
     export let subTitle = "";
     export let height = "auto";
     export let width = "1/3";
+    export let isMobile = false;
 
     export let extraFunction = () => {};
     export let extraFunctionOnClose = true;
@@ -18,6 +19,7 @@
      */
     export function showModal() {
         visible = true;
+        document.body.style.overflow = "hidden";
         if (!extraFunctionOnClose) extraFunction();
     }
 
@@ -27,16 +29,27 @@
      */
     export function hideModal() {
         visible = false;
+        document.body.style.overflow = "";
         if (extraFunctionOnClose) extraFunction();
     }
 </script>
 
 {#if visible}
-    <div class="absolute z-999 top-0 left-0 w-dvw h-dvh flex items-center justify-center bg-gv-overlay">
-        <div
-            class={`${widthMap[width]} ${heightMap[height]} bg-white flex flex-col p-5 rounded-1 overflow-y-auto overflow-x-hidden`}>
-            <ModalHeader title={title} subTitle={subTitle} on:click={hideModal} />
-            <slot />
+    {#if !isMobile}
+        <div class="absolute z-999 top-0 left-0 w-dvw h-dvh flex items-center justify-center bg-gv-overlay">
+            <div
+                class={`${widthMap[width]} ${heightMap[height]} bg-white flex flex-col p-5 rounded-1 overflow-y-auto overflow-x-hidden`}>
+                <ModalHeader title={title} subTitle={subTitle} on:click={hideModal} />
+                <slot />
+            </div>
         </div>
-    </div>
+    {:else}
+        <div class="fixed z-999 top-0 left-0 w-dvw h-dvh flex items-end bg-gv-overlay">
+            <div
+                class={`w-full h-8/9 bg-white flex flex-col p-5 rounded-t-1 overflow-y-auto overflow-x-hidden`}>
+                <ModalHeader title={title} subTitle={subTitle} on:click={hideModal} />
+                <slot />
+            </div>
+        </div>
+    {/if}
 {/if}
