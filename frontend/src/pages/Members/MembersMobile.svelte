@@ -1,14 +1,12 @@
 <script>
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
-    import { get } from "svelte/store";
     import { loadUserData, logout } from "../../services/user";
     import { membersStore } from "../../stores/members";
-    import { addMember, updateStatus, roleMap, voiceMap, statusMap } from "../../services/members";
+    import { addMember, roleMap, voiceMap, statusMap } from "../../services/members";
     import { addToast } from "../../stores/toasts";
 
     import ToastStack from "../../components/ToastStack.svelte";
-    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
     import Card from "../../components/Card.svelte";
     import SettingsModal from "../../components/SettingsModal.svelte";
@@ -20,8 +18,6 @@
     import Dropdown from "../../components/Dropdown.svelte";
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import YearDatepicker from "../../components/YearDatepicker.svelte";
-    import ContextMenu from "../../components/ContextMenu.svelte";
-    import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
 
     /** @type {import("../../components/SettingsModal.svelte").default} */
