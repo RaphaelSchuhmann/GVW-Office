@@ -25,6 +25,7 @@
     export let id = "";
     export let toastMap = {};
     export let onClose = () => {};
+    export let isMobile = false;
 
     const validActions = ["deleteMember", "deleteEvent", "deleteReport", "deleteLibEntry"];
     if (!validActions.includes(action)) {
@@ -97,7 +98,7 @@
     }
 </script>
 <Modal bind:this={confirmDeleteModal} extraFunction={() => {confirmInput = ""}} title={title}
-       subTitle={subTitle} width="2/5">
+       subTitle={subTitle} isMobile={isMobile} width="2/5">
     <Input marginTop="5" bind:value={confirmInput} title={`Geben Sie: "${expectedInput}" ein um fortzufahren`}
            placeholder={placeholder} />
     <div class="w-full flex items-center justify-end mt-5 gap-4">

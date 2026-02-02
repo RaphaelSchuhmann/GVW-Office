@@ -143,7 +143,7 @@
 
             <div class="flex items-center gap-4 w-full">
                 <Input title="Vorname" bind:value={member.name} readonly={true}/>
-                <Input title="Vorname" bind:value={member.surname} readonly={true}/>
+                <Input title="Nachname" bind:value={member.surname} readonly={true}/>
             </div>
             <Input title="E-Mail" bind:value={member.email} readonly={true}/>
             <Input title="Telefon" bind:value={member.phone} readonly={true}/>

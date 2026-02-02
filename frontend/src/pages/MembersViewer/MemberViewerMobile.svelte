@@ -14,6 +14,7 @@
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
+    import MobileSidebar from "../../components/MobileSidebar.svelte";
 
     /** @type {import("../../components/SettingsModal.svelte").default} */
     let settingsModal;
@@ -28,12 +29,10 @@
     let deleteMemberToast = {
         success: {
             title: "Mitglied gelöscht",
-            subTitle: "Das Mitglied und der zugehörige Benutzeraccount wurden erfolgreich aus dem System entfernt.",
             type: "success"
         },
         notFound: {
-            title: "Nicht gefunden",
-            subTitle: "Das angegebene Mitglied oder der zugehörige Benutzer konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+            title: "Mitglied nicht gefunden",
             type: "error"
         },
     };
@@ -85,10 +84,6 @@
             });
         }
     }
-
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 </script>
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
@@ -100,44 +95,46 @@
                     toastMap={deleteMemberToast} action="deleteMember"
                     onClose={async () => {await push("/members")}}
                     bind:this={confirmDeleteMemberModal}
+                    isMobile={true}
 />
 
 <main class="flex overflow-hidden">
-    <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
-    <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
-        <PageHeader title="Mitglied" subTitle={`Daten von "${member?.name ?? ""} ${member?.surname ?? ""}"`}>
-            <Button type="secondary" on:click={async () => await push("/members")}>
-                <span class="material-symbols-rounded text-icon-dt-5">arrow_back</span>
-                <p class="text-dt-4 ml-3">Zurück</p>
-            </Button>
-            <Button type="primary" on:click={async () => await push(`/members/edit?id=${member.id}`)}>
-                <span class="material-symbols-rounded text-icon-dt-5">person_edit</span>
-                <p class="text-dt-4 ml-3">Bearbeiten</p>
-            </Button>
-        </PageHeader>
-        <div class="flex flex-col w-2/3 gap-5 mt-10">
-            <div class="flex items-center gap-4 w-full">
+    <div class="flex-1 min-h-0 overflow-y-auto">
+        <div class="flex flex-col w-full flex-1 overflow-hidden p-7 min-h-0">
+            <PageHeader title="Mitglied" subTitle={`Daten von "${member?.name ?? ""} ${member?.surname ?? ""}"`}>
+                    <button class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-2 rounded-2" 
+                            on:click={async () => await push("/members")}>
+                        <span class="material-symbols-rounded text-icon-dt-2">close</span>
+                    </button>
+            </PageHeader>
+            <div class="flex flex-col w-full gap-5 mt-10">
+                <div class="flex-col items-center gap-2 w-full">
+                    <div class="flex items-center gap-2 w-full">
+                        <Button type="secondary" fontColor="text-gv-delete" on:click={startDeleteMember}>
+                            <span class="material-symbols-rounded text-icon-dt-6">delete</span>
+                            <p class="min-[1200px]:text-dt-5 text-dt-6 ml-3">Löschen</p>
+                        </Button>
+                        <Button type="primary" on:click={async () => await push(`/members/edit?id=${member.id}`)}>
+                            <span class="material-symbols-rounded min-[1200px]:text-icon-dt-5 text-icon-dt-6">person_edit</span>
+                            <p class="min-[1200px]:text-dt-4 text-dt-5 ml-3">Bearbeiten</p>
+                        </Button>
+                    </div>
+                    <div class="flex items-center w-full mt-2">
+                        <Button type="primary" on:click={resetMemberPassword}>
+                            <p class="text-dt-5">Passwort Zurücksetzen</p>
+                        </Button>
+                    </div>
+                </div>
                 <Input title="Vorname" bind:value={member.name} readonly={true}/>
-                <Input title="Vorname" bind:value={member.surname} readonly={true}/>
-            </div>
-            <Input title="E-Mail" bind:value={member.email} readonly={true}/>
-            <Input title="Telefon" bind:value={member.phone} readonly={true}/>
-            <Input title="Adresse" bind:value={member.address} readonly={true}/>
-            <div class="flex items-center gap-4 w-full">
+                <Input title="Nachname" bind:value={member.surname} readonly={true}/>
+                <Input title="E-Mail" bind:value={member.email} readonly={true}/>
+                <Input title="Telefon" bind:value={member.phone} readonly={true}/>
+                <Input title="Adresse" bind:value={member.address} readonly={true}/>
                 <Input title="Stimmlage" bind:value={voiceMap[member.voice]} readonly={true}/>
                 <Input title="Status" bind:value={statusMap[member.status]} readonly={true}/>
                 <Input title="Rolle" bind:value={roleMap[member.role]} readonly={true}/>
-            </div>
-            <div class="flex items-center gap-4 w-full">
                 <Input title="Geburtsdatum" bind:value={member.birthdate} readonly={true}/>
                 <Input title="Mitglied seit" bind:value={member.joined} readonly={true}/>
-            </div>
-            <div class="flex items-center gap-4 w-full">
-                <Button type="primary" on:click={resetMemberPassword}>Passwort zurücksetzen</Button>
-                <Button type="secondary" fontColor="text-gv-delete" on:click={startDeleteMember}>
-                    <span class="material-symbols-rounded text-icon-dt-6">delete</span>
-                    <p class="text-dt-5 ml-3">Löschen</p>
-                </Button>
             </div>
         </div>
     </div>

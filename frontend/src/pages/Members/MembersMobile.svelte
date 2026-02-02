@@ -64,14 +64,12 @@
         if (resp.status === 200) {
             addToast({
                 title: "Mitglied hinzugefügt",
-                subTitle: "Das neue Mitglied wurde erfolgreich angelegt und ist ab sofort in der Mitgliederübersicht verfügbar.",
                 type: "success"
             });
         } else if (resp.status === 401) {
             // Auth token invalid / unauthorized
             addToast({
                 title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
                 type: "error"
             });
             logout();
@@ -81,20 +79,17 @@
             // user not found route back to log in
             addToast({
                 title: "Eingaben unvollständig",
-                subTitle: "Bitte überprüfen Sie Ihre Angaben. Einige Pflichtfelder sind entweder leer oder enthalten ungültige Werte.",
                 type: "error"
             });
         } else if (resp.status === 409) {
             addToast({
-                title: "Eingabe ungültig",
-                subTitle: `Es gibt bereits einen Benutzer mit der E-Mail ${emailInput}. Bitte verwenden Sie eine andere E-Mail-Adresse.`,
+                title: "E-Mail in verwendung",
                 type: "error"
             });
         } else {
             // internal server error / unknown error
             addToast({
                 title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
                 type: "error"
             });
         }
