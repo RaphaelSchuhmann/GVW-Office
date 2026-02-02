@@ -1,39 +1,25 @@
 <script>
-    import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
-    import { get } from "svelte/store";
-    import { loadUserData, logout } from "../services/user";
-    import { addToast } from "../stores/toasts";
-    import { roleMap, voiceMap, statusMap, resetPassword } from "../services/members";
-    import { membersStore } from "../stores/members";
+    import { logout } from "../../services/user";
+    import { addToast } from "../../stores/toasts";
+    import { roleMap, voiceMap, statusMap, resetPassword } from "../../services/members";
+    import { viewportWidth } from "../../stores/viewport";
 
-    import ToastStack from "../components/ToastStack.svelte";
-    import DesktopSidebar from "../components/DesktopSidebar.svelte";
-    import PageHeader from "../components/PageHeader.svelte";
-    import SettingsModal from "../components/SettingsModal.svelte";
-    import Input from "../components/Input.svelte";
-    import Button from "../components/Button.svelte";
-    import ConfirmDeleteModal from "../components/ConfirmDeleteModal.svelte";
+    import ToastStack from "../../components/ToastStack.svelte";
+    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
+    import PageHeader from "../../components/PageHeader.svelte";
+    import SettingsModal from "../../components/SettingsModal.svelte";
+    import Input from "../../components/Input.svelte";
+    import Button from "../../components/Button.svelte";
+    import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
 
-    /** @type {import("../components/SettingsModal.svelte").default} */
+    /** @type {import("../../components/SettingsModal.svelte").default} */
     let settingsModal;
 
-    let member = {
-        name: "",
-        surname: "",
-        email: "",
-        phone: "",
-        address: "",
-        voice: "",
-        status: "",
-        role: "",
-        birthdate: "",
-        joined: "",
-        id: "",
-    };
+    export let member;
 
     // DELETE MEMBER
-    /** @type {import("../components/ConfirmDeleteModal.svelte").default} */
+    /** @type {import("../../components/ConfirmDeleteModal.svelte").default} */
     let confirmDeleteMemberModal;
 
     let memberName = "";
@@ -98,24 +84,6 @@
         }
     }
 
-    onMount(async () => {
-        await loadUserData();
-
-        const hash = window.location.hash;
-        const queryString = hash.split("?")[1];
-        if (!queryString) return;
-
-        const params = new URLSearchParams(queryString);
-        let memberId = params.get("id");
-
-        if (memberId) {
-            let members = get(membersStore);
-            member = members.raw.find(item => item.id === memberId);
-        } else {
-            await push("/members");
-        }
-    });
-
     function settingsClick() {
         settingsModal.showModal();
     }
@@ -132,23 +100,50 @@
                     bind:this={confirmDeleteMemberModal}
 />
 
-<main class="flex overflow-hidden">
+<main class="flex h-screen overflow-hidden">
     <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
-    <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
+    <div class="flex flex-col w-full flex-1 overflow-auto p-10 min-h-0">
         <PageHeader title="Mitglied" subTitle={`Daten von "${member?.name ?? ""} ${member?.surname ?? ""}"`}>
-            <Button type="secondary" on:click={async () => await push("/members")}>
-                <span class="material-symbols-rounded text-icon-dt-5">arrow_back</span>
-                <p class="text-dt-4 ml-3">Zurück</p>
-            </Button>
-            <Button type="primary" on:click={async () => await push(`/members/edit?id=${member.id}`)}>
-                <span class="material-symbols-rounded text-icon-dt-5">person_edit</span>
-                <p class="text-dt-4 ml-3">Bearbeiten</p>
-            </Button>
+            {#if $viewportWidth >= 1150}
+                <Button type="secondary" on:click={async () => await push("/members")}>
+                    <span class="material-symbols-rounded text-icon-dt-5">arrow_back</span>
+                    <p class="text-dt-4 ml-3">Zurück</p>
+                </Button>
+                <Button type="primary" on:click={async () => await push(`/members/edit?id=${member.id}`)}>
+                    <span class="material-symbols-rounded text-icon-dt-5">person_edit</span>
+                    <p class="text-dt-4 ml-3">Bearbeiten</p>
+                </Button>
+            {:else}
+                <button class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-2 rounded-2" 
+                        on:click={async () => await push("/members")}>
+                    <span class="material-symbols-rounded text-icon-dt-2">close</span>
+                </button>
+            {/if}
         </PageHeader>
-        <div class="flex flex-col w-2/3 gap-5 mt-10">
+        <div class="flex flex-col min-[1150px]:w-2/3 w-full gap-5 mt-10">
+            {#if $viewportWidth < 1150} 
+                <div class="flex-col items-center gap-2 w-full">
+                    <div class="flex items-center gap-2 w-full">
+                        <Button type="secondary" fontColor="text-gv-delete" on:click={startDeleteMember}>
+                            <span class="material-symbols-rounded text-icon-dt-6">delete</span>
+                            <p class="min-[1200px]:text-dt-5 text-dt-6 ml-3">Löschen</p>
+                        </Button>
+                        <Button type="primary" on:click={async () => await push(`/members/edit?id=${member.id}`)}>
+                            <span class="material-symbols-rounded min-[1200px]:text-icon-dt-5 text-icon-dt-6">person_edit</span>
+                            <p class="min-[1200px]:text-dt-4 text-dt-5 ml-3">Bearbeiten</p>
+                        </Button>
+                    </div>
+                    <div class="flex items-center w-full mt-2">
+                        <Button type="primary" on:click={resetMemberPassword}>
+                            <p class="text-dt-5">Passwort Zurücksetzen</p>
+                        </Button>
+                    </div>
+                </div>
+            {/if}
+
             <div class="flex items-center gap-4 w-full">
                 <Input title="Vorname" bind:value={member.name} readonly={true}/>
-                <Input title="Vorname" bind:value={member.surname} readonly={true}/>
+                <Input title="Nachname" bind:value={member.surname} readonly={true}/>
             </div>
             <Input title="E-Mail" bind:value={member.email} readonly={true}/>
             <Input title="Telefon" bind:value={member.phone} readonly={true}/>
@@ -162,13 +157,17 @@
                 <Input title="Geburtsdatum" bind:value={member.birthdate} readonly={true}/>
                 <Input title="Mitglied seit" bind:value={member.joined} readonly={true}/>
             </div>
-            <div class="flex items-center gap-4 w-full">
-                <Button type="primary" on:click={resetMemberPassword}>Passwort zurücksetzen</Button>
-                <Button type="secondary" fontColor="text-gv-delete" on:click={startDeleteMember}>
-                    <span class="material-symbols-rounded text-icon-dt-6">delete</span>
-                    <p class="text-dt-5 ml-3">Löschen</p>
-                </Button>
-            </div>
+            {#if $viewportWidth >= 1150}
+                <div class="flex items-center gap-4 w-full">
+                    <Button type="primary" on:click={resetMemberPassword}>
+                        <p class="min-[1200px]:text-dt-5 text-dt-6">Passwort Zurücksetzen</p>
+                    </Button>
+                    <Button type="secondary" fontColor="text-gv-delete" on:click={startDeleteMember}>
+                        <span class="material-symbols-rounded text-icon-dt-6">delete</span>
+                        <p class="min-[1200px]:text-dt-5 text-dt-6 ml-3">Löschen</p>
+                    </Button>
+                </div>
+            {/if}
         </div>
     </div>
 </main>

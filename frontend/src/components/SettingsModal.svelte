@@ -8,6 +8,8 @@
     import { addToast } from "../stores/toasts";
     import { push } from "svelte-spa-router";
 
+    export let isMobile = false;
+
     /** @type {import("../components/Modal.svelte").default} */
     let modal;
 
@@ -97,7 +99,7 @@
     }
 </script>
 
-<Modal title="Benutzer Einstellungen" subTitle="Ihre persönlichen Daten" bind:this={modal} extraFunction={resetStates}>
+<Modal title="Benutzer Einstellungen" subTitle="Ihre persönlichen Daten" bind:this={modal} extraFunction={resetStates} isMobile={isMobile}>
     <Input title="Name" value={$user.name} readonly={true} marginTop="5" />
 
     <div class="flex items-end w-full mt-5 gap-2">

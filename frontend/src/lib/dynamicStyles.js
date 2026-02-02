@@ -254,6 +254,7 @@ export const fontColorMap = {
 
 export const fontSizeMap = {
     "": "text-dt-7",
+    "8": "text-dt-8",
     "7": "text-dt-7",
     "6": "text-dt-6",
     "5": "text-dt-5",
@@ -262,3 +263,10 @@ export const fontSizeMap = {
     "2": "text-dt-2",
     "1": "text-dt-1"
 };
+
+export const roundedMap = {
+    "1": "rounded-1",
+    "2": "rounded-2",
+    "full": "rounded-full",
+    "": "rounded-none"
+}

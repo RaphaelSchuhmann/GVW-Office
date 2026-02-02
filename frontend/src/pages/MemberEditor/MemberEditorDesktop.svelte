@@ -2,37 +2,26 @@
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
-    import { loadUserData, logout } from "../services/user";
-    import { addToast } from "../stores/toasts";
-    import { roleMap, voiceMap, statusMap, updateMember } from "../services/members";
-    import { membersStore } from "../stores/members";
+    import { loadUserData, logout } from "../../services/user";
+    import { addToast } from "../../stores/toasts";
+    import { roleMap, voiceMap, statusMap, updateMember } from "../../services/members";
+    import { membersStore } from "../../stores/members";
+    import { viewportWidth } from "../../stores/viewport";
 
-    import ToastStack from "../components/ToastStack.svelte";
-    import DesktopSidebar from "../components/DesktopSidebar.svelte";
-    import PageHeader from "../components/PageHeader.svelte";
-    import SettingsModal from "../components/SettingsModal.svelte";
-    import Input from "../components/Input.svelte";
-    import Button from "../components/Button.svelte";
-    import DefaultDatepicker from "../components/DefaultDatepicker.svelte";
-    import YearDatepicker from "../components/YearDatepicker.svelte";
-    import Dropdown from "../components/Dropdown.svelte";
+    import ToastStack from "../../components/ToastStack.svelte";
+    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
+    import PageHeader from "../../components/PageHeader.svelte";
+    import SettingsModal from "../../components/SettingsModal.svelte";
+    import Input from "../../components/Input.svelte";
+    import Button from "../../components/Button.svelte";
+    import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
+    import YearDatepicker from "../../components/YearDatepicker.svelte";
+    import Dropdown from "../../components/Dropdown.svelte";
 
-    /** @type {import("../components/SettingsModal.svelte").default} */
+    /** @type {import("../../components/SettingsModal.svelte").default} */
     let settingsModal;
 
-    let member = {
-        name: "",
-        surname: "",
-        email: "",
-        phone: "",
-        address: "",
-        voice: "",
-        status: "",
-        role: "",
-        birthdate: "",
-        joined: "",
-        id: "",
-    };
+    export let member;
 
     let edited = false;
 
@@ -111,20 +100,6 @@
     }
 
     onMount(async () => {
-        await loadUserData();
-
-        const hash = window.location.hash;
-        const queryString = hash.split("?")[1];
-        if (!queryString) return;
-
-        const params = new URLSearchParams(queryString);
-        let memberId = params.get("id");
-
-        if (memberId) {
-            let members = get(membersStore);
-            member = members.raw.find(item => item.id === memberId);
-        }
-
         // text inputs
         nameInput = member.name;
         surnameInput = member.surname;
@@ -164,19 +139,21 @@
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
-<main class="flex overflow-hidden">
+<main class="flex h-screen overflow-hidden">
     <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
-    <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
-        <PageHeader title="Mitglied bearbeiten" subTitle={`Bearbeitung von Mitglied: "${member?.name ?? ""} ${member?.surname ?? ""}"`}>
-            <Button type="secondary" isCancel={true} on:click={async () => await push("/members")}>
-                <p class="text-dt-4 ml-3">Abbrechen</p>
-            </Button>
-            <Button type="primary" disabled={!edited} on:click={handleUpdateMember} isSubmit={true}>
-                <span class="material-symbols-rounded text-icon-dt-5">person_edit</span>
-                <p class="text-dt-4 ml-3">Speichern</p>
-            </Button>
+    <div class="flex flex-col w-full flex-1 overflow-hidden p-10 min-h-0">
+        <PageHeader title="Mitglied bearbeiten" subTitle={`Bearbeitung von Mitglied: "${member?.name ?? ""} ${member?.surname ?? ""}"`} showSlot={$viewportWidth >= 1150}>
+            {#if $viewportWidth >= 1150}
+                <Button type="secondary" isCancel={true} on:click={async () => await push("/members")}>
+                    <p class="text-dt-4 ml-3">Abbrechen</p>
+                </Button>
+                <Button type="primary" disabled={!edited} on:click={handleUpdateMember} isSubmit={true}>
+                    <span class="material-symbols-rounded text-icon-dt-5">person_edit</span>
+                    <p class="text-dt-4 ml-3">Speichern</p>
+                </Button>
+            {/if}
         </PageHeader>
-        <div class="flex flex-col w-2/3 gap-5 mt-10">
+        <div class="flex flex-col min-[1150px]:w-2/3 w-full gap-5 min-[1150px]:mt-10">
             <div class="flex items-center gap-4 mt-5">
                 <Input bind:value={nameInput} title="Vorname" placeholder="Max" />
                 <Input bind:value={surnameInput} title="Nachname" placeholder="Mustermann" />
@@ -201,6 +178,17 @@
                     <YearDatepicker selected={member.joined} onChange={(value) => {joinedInput = value}} />
                 </div>
             </div>
+            {#if $viewportWidth < 1150} 
+                <div class="flex w-full items-center gap-2">
+                    <Button type="secondary" isCancel={true} on:click={async () => await push("/members")}>
+                        <p class="text-dt-4 ml-3">Abbrechen</p>
+                    </Button>
+                    <Button type="primary" disabled={!edited} on:click={handleUpdateMember} isSubmit={true}>
+                        <span class="material-symbols-rounded text-icon-dt-5">person_edit</span>
+                        <p class="text-dt-4 ml-3">Speichern</p>
+                    </Button>
+                </div>
+            {/if}
         </div>
     </div>
 </main>

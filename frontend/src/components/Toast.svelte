@@ -64,9 +64,9 @@
     <div class={`flex bg-white ${subTitle ? "items-start" : "items-center"} justify-start gap-2 w-full rounded-2 border ${borderColor} ${marginMap[marginTop]} p-2`}>
         <span class={`material-symbols-rounded ${!isMobile ? "text-icon-dt-4" : "text-icon-dt-3"} ${iconColor}`}>{icon}</span>
         <div class={`flex flex-col ${subTitle ? "items-start" : "items-center"} justify-around`}>
-            <p class={`${!isMobile ? "text-dt-5" : "text-dt-4"} font-semibold`}>{title}</p>
+            <p class={`${!isMobile ? "text-dt-5" : "text-dt-6"} font-semibold`}>{title}</p>
             {#if subTitle}
-                <p class={`${!isMobile ? "text-dt-6 line-clamp-5" : "text-dt-5 line-clamp-3"}`}>{subTitle}</p>
+                <p class={`${!isMobile ? "text-dt-6 line-clamp-5" : "text-dt-7 line-clamp-3"}`}>{subTitle}</p>
             {/if}
         </div>
         <button class="flex items-center justify-center bg-transparent border-0 ml-auto cursor-pointer"

@@ -1,0 +1,168 @@
+<script>
+    import { onMount } from "svelte";
+    import { push } from "svelte-spa-router";
+    import {  logout } from "../../services/user";
+    import { addToast } from "../../stores/toasts";
+    import { roleMap, voiceMap, statusMap, updateMember } from "../../services/members";
+
+    import ToastStack from "../../components/ToastStack.svelte";
+    import PageHeader from "../../components/PageHeader.svelte";
+    import Input from "../../components/Input.svelte";
+    import Button from "../../components/Button.svelte";
+    import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
+    import YearDatepicker from "../../components/YearDatepicker.svelte";
+    import Dropdown from "../../components/Dropdown.svelte";
+
+    export let member;
+
+    let edited = false;
+
+    // Inputs
+    let voiceInput;
+    let statusInput;
+    let roleInput;
+    let birthdayInput;
+    let joinedInput;
+    let nameInput = "";
+    let surnameInput = "";
+    let emailInput = "";
+    let phoneInput = "";
+    let addressInput = "";
+
+    let formReady = false;
+    let originalForm = null;
+
+    $: edited = formReady && (
+        nameInput !== originalForm.name || surnameInput !== originalForm.surname || emailInput !== originalForm.email || phoneInput !== originalForm.phone ||
+        addressInput !== originalForm.address || voiceInput !== originalForm.voice || statusInput !== originalForm.status || roleInput !== originalForm.role ||
+        birthdayInput !== originalForm.birthdate || joinedInput !== originalForm.joined
+    ) && (
+        nameInput && surnameInput && emailInput && phoneInput && addressInput && voiceInput && statusInput && roleInput && birthdayInput && joinedInput
+    );
+
+    /**
+     * Updates member information in the system
+     * Handles API response and shows appropriate toast messages
+     * Redirects to members page after completion
+     */
+    async function handleUpdateMember() {
+        const resp = await updateMember(member.id, nameInput, surnameInput, emailInput, phoneInput, addressInput, voiceMap[voiceInput], statusMap[statusInput], roleMap[roleInput], birthdayInput, joinedInput);
+        const body = await resp.json();
+
+        if (resp.status === 200) {
+            addToast({
+                title: "Erfolgreich gespeichert",
+                subTitle: "Ihre Änderungen wurden erfolgreich übernommen und im System abgespeichert.",
+                type: "success"
+            });
+        } else if (resp.status === 401) {
+            // Auth token invalid / unauthorized
+            addToast({
+                title: "Ungültiges Token",
+                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+                type: "error"
+            });
+            logout();
+            await push("/?cpwErr=false");
+            return;
+        } else if (resp.status === 404) {
+            // member not found
+            if (body.errorMessage === "UserNotFound") {
+                addToast({
+                    title: "Benutzer nicht gefunden",
+                    subTitle: "Der Benutzer des angegebenen Mitglieds konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Mitglied nicht gefunden",
+                    subTitle: "Das angegebene Mitglied konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+                    type: "error"
+                });
+            }
+        } else {
+            // internal server error / unknown error
+            addToast({
+                title: "Interner Serverfehler",
+                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+                type: "error"
+            });
+        }
+        await push("/members");
+    }
+
+    onMount(async () => {
+        // text inputs
+        nameInput = member.name;
+        surnameInput = member.surname;
+        emailInput = member.email;
+        phoneInput = member.phone;
+        addressInput = member.address;
+
+        // dropdowns → LABELS
+        voiceInput = voiceMap[member.voice];
+        statusInput = statusMap[member.status];
+        roleInput = roleMap[member.role];
+
+        // datepickers
+        birthdayInput = member.birthdate;
+        joinedInput = member.joined;
+
+        originalForm = {
+            name: nameInput,
+            surname: surnameInput,
+            email: emailInput,
+            phone: phoneInput,
+            address: addressInput,
+            voice: voiceInput,
+            status: statusInput,
+            role: roleInput,
+            birthdate: birthdayInput,
+            joined: joinedInput
+        };
+
+        formReady = true;
+    });
+</script>
+
+<ToastStack></ToastStack>
+<main class="flex h-screen overflow-hidden">
+    <div class="flex flex-col w-full flex-1 overflow-y-auto p-7 min-h-0">
+        <PageHeader title="Mitglied bearbeiten" subTitle={`Bearbeitung von Mitglied: "${member?.name ?? ""} ${member?.surname ?? ""}"`}
+                    slotCentered={false}>
+            <button class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-2 rounded-2" 
+                    on:click={async () => await push("/members")}>
+                <span class="material-symbols-rounded text-icon-dt-2">close</span>
+            </button>
+        </PageHeader>
+        <div class="flex flex-col min-[1150px]:w-2/3 w-full gap-5 mt-10">
+            <Input bind:value={nameInput} title="Vorname" placeholder="Max" />
+            <Input bind:value={surnameInput} title="Nachname" placeholder="Mustermann" />
+            <Input bind:value={emailInput} title="E-Mail" placeholder="max.mustermann@email.com" />
+            <Input bind:value={phoneInput} title="Telefon" placeholder="01701234 5678" />
+            <Input bind:value={addressInput} title="Adresse" placeholder="Hauptstraße 1, 12345 Musterstadt" />
+            <Dropdown selected={voiceMap[member.voice]} onChange={(value) => {voiceInput = value}} title="Stimmlage"
+                      options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
+            <Dropdown selected={statusMap[member.status]} onChange={(value) => {statusInput = value}} title="Status" options={["Aktiv", "Passiv"]} />
+            <Dropdown selected={roleMap[member.role]} onChange={(value) => {roleInput = value}} title="Rolle"
+                      options={["Mitglied", "Vorstand", "Schriftführer"]} />
+            <div class="flex flex-col items-start w-full">
+                <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>
+                <DefaultDatepicker selected={member.birthdate} onChange={(value) => {birthdayInput = value}} />
+            </div>
+            <div class="flex flex-col items-start w-full">
+                <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>
+                <YearDatepicker selected={member.joined} onChange={(value) => {joinedInput = value}} />
+            </div>
+            <div class="flex w-full items-center gap-2">
+                <Button type="secondary" isCancel={true} on:click={async () => await push("/members")}>
+                    <p class="text-dt-6 ml-3">Abbrechen</p>
+                </Button>
+                <Button type="primary" disabled={!edited} on:click={handleUpdateMember} isSubmit={true}>
+                    <span class="material-symbols-rounded text-icon-dt-5">person_edit</span>
+                    <p class="text-dt-6 ml-3">Speichern</p>
+                </Button>
+            </div>
+        </div>
+    </div>
+</main>
