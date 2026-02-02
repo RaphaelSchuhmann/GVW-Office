@@ -6,7 +6,7 @@
     import { membersStore } from "../../stores/members";
     import { addMember, updateStatus, roleMap, voiceMap, statusMap } from "../../services/members";
     import { addToast } from "../../stores/toasts";
-    import { useViewport } from "../../stores/viewport.svelte";
+    import { innerWidth } from "svelte/reactivity/window";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
@@ -296,8 +296,8 @@
 <main class="flex overflow-hidden">
     <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
-        <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={useViewport().width > 1000}>
-            {#if useViewport().width > 1000}
+        <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={innerWidth.current > 1000}>
+            {#if innerWidth.current > 1000}
                 <Button type="primary" on:click={addMemberModal.showModal}>
                     <span class="material-symbols-rounded text-icon-dt-4">add</span>
                     <p class="text-dt-4 text-nowrap">Mitglied hinzufügen</p>
@@ -305,7 +305,7 @@
             {/if}
         </PageHeader>
 
-        {#if useViewport().width <= 1000}
+        {#if innerWidth.current <= 1000}
             <div class="flex max-[430px]:flex-col w-full items-center justify-start gap-2 mt-4">
                 <Button type="primary" on:click={addMemberModal.showModal}>
                     <span class="material-symbols-rounded text-icon-dt-5">add</span>
@@ -320,10 +320,10 @@
 
         <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" bind:this={searchBar} doDebounce={true} />
 
-        <Card padding="0" marginTop="5" borderThickness={useViewport().width > 1300 ? "2" : "1"}>
+        <Card padding="0" marginTop="5" borderThickness={innerWidth.current > 1300 ? "2" : "1"}>
             <div class="flex-1 min-h-0 overflow-y-auto w-full">
                 {#if $membersStore.display.length !== 0}
-                    {#if useViewport().width > 1300}
+                    {#if innerWidth.current > 1300}
                         <table class="w-full text-left border-gv-border">
                             <thead class="sticky top-0 z-10 bg-white min-[1300px]:text-dt-4 text-dt-6 text-gv-dark-text">
                             <tr>

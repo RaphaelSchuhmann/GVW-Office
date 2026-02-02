@@ -1,10 +1,10 @@
 <script>
-    import { useViewport } from "../../stores/viewport.svelte";
+    import { innerWidth } from "svelte/reactivity/window";
     import MembersDesktop from "./MembersDesktop.svelte";
     import MembersMobile from "./MembersMobile.svelte";
 </script>
 
-{#if useViewport().isMobile}
+{#if innerWidth.current < 768}
     <MembersMobile />
 {:else}
     <MembersDesktop />
