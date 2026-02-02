@@ -115,7 +115,7 @@
 </script>
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
-<ToastStack></ToastStack>
+<ToastStack isMobile={true} />
 
 <!-- Add member modal -->
 <Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
@@ -167,13 +167,13 @@
             </Button>
         </div>
 
-        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" bind:this={searchBar} />
+        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" bind:this={searchBar} doDebounce={true} />
 
         <Card padding="0" marginTop="5" rounded="2" borderThickness="1">
             <div class="flex-1 min-h-0 overflow-y-auto w-full max-h-full">
                 {#if $membersStore.display.length !== 0}
                     {#each $membersStore.display as member}
-                        <button class="flex items-center w-full border-b border-gv-border p-2" on:click={async () =>  await push(`/members/view?id=${member.id}`)}>
+                        <button class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`} on:click={async () =>  await push(`/members/view?id=${member.id}`)}>
                             <div class="flex flex-col items-start justify-between mr-auto max-w-3/4">
                                 <p class="text-gv-dark-text text-dt-7">{`${member.name} ${member.surname}`}</p>
                                 <div class="flex items-center justify-start gap-2">

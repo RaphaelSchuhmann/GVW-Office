@@ -6,6 +6,7 @@
     import { membersStore } from "../../stores/members";
     import { addMember, updateStatus, roleMap, voiceMap, statusMap } from "../../services/members";
     import { addToast } from "../../stores/toasts";
+    import { useViewport } from "../../stores/viewport.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
@@ -295,124 +296,155 @@
 <main class="flex overflow-hidden">
     <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
-        <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder">
-            <Button type="primary" on:click={addMemberModal.showModal}>
-                <span class="material-symbols-rounded text-icon-dt-4">add</span>
-                <p class="text-dt-4 text-nowrap">Mitglied hinzufügen</p>
-            </Button>
+        <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={useViewport().width > 1000}>
+            {#if useViewport().width > 1000}
+                <Button type="primary" on:click={addMemberModal.showModal}>
+                    <span class="material-symbols-rounded text-icon-dt-4">add</span>
+                    <p class="text-dt-4 text-nowrap">Mitglied hinzufügen</p>
+                </Button>
+            {/if}
         </PageHeader>
 
-        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" bind:this={searchBar} />
+        {#if useViewport().width <= 1000}
+            <div class="flex max-[430px]:flex-col w-full items-center justify-start gap-2 mt-4">
+                <Button type="primary" on:click={addMemberModal.showModal}>
+                    <span class="material-symbols-rounded text-icon-dt-5">add</span>
+                    <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
+                </Button>
+                <Button type="primary" on:click={searchBar.fetchData}>
+                    <span class="material-symbols-rounded text-icon-dt-5">refresh</span>
+                    <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Aktualisieren</p>
+                </Button>
+            </div>
+        {/if}
 
-        <Card padding="0" marginTop="5">
+        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" bind:this={searchBar} doDebounce={true} />
+
+        <Card padding="0" marginTop="5" borderThickness={useViewport().width > 1300 ? "2" : "1"}>
             <div class="flex-1 min-h-0 overflow-y-auto w-full">
                 {#if $membersStore.display.length !== 0}
-                    <table class="w-full text-left border-gv-border">
-                        <thead class="sticky top-0 z-10 bg-white text-dt-4 text-gv-dark-text">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 font-bold">
-                                Name
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-bold">
-                                Stimmlage
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-bold">
-                                Kontakt
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-bold text-nowrap">
-                                Mitglied seit
-                            </th>
-                            <th scope="col" class="px-6 py-3 font-bold">
-                                Status
-                            </th>
-                            <th scope="col" class="px-6 py-3">
-                                <button
-                                    class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                                    on:click={searchBar.fetchData}>
-                                    <span class="material-symbols-rounded text-icon-dt-5 font-bold text-gv-dark-text">refresh</span>
-                                </button>
-                            </th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {#if $membersStore.loading}
-                            <tr class="border-t-2 border-gv-border">
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col items-start h-full overflow-hidden gap-1">
-                                        <div class="animate-pulse h-7 w-50 bg-gray-200 rounded"></div>
-                                        <div class="animate-pulse h-5 w-40 bg-gray-200 rounded"></div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="animate-pulse h-7 w-30 bg-gray-200 rounded"></div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col items-start  h-full overflow-hidden gap-2">
-                                        <div class="flex items-center justify-start gap-2">
-                                        <span
-                                            class="material-symbols-rounded text-icon-dt-6 text-gv-dark-turquoise">mail</span>
-                                            <div class="animate-pulse h-5 w-40 bg-gray-200 rounded"></div>
-                                        </div>
-                                        <div class="flex items-center justify-start gap-2">
-                                    <span
-                                        class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">phone</span>
-                                            <div class="animate-pulse h-5 w-40 bg-gray-200 rounded"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="animate-pulse h-7 w-30 bg-gray-200 rounded"></div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="animate-pulse h-7 w-20 bg-gray-200 rounded"></div>
-                                </td>
-                                <td class="px-6 py-4"></td>
+                    {#if useViewport().width > 1300}
+                        <table class="w-full text-left border-gv-border">
+                            <thead class="sticky top-0 z-10 bg-white min-[1300px]:text-dt-4 text-dt-6 text-gv-dark-text">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 font-bold">
+                                    Name
+                                </th>
+                                <th scope="col" class="px-6 py-3 font-bold">
+                                    Stimmlage
+                                </th>
+                                <th scope="col" class="px-6 py-3 font-bold">
+                                    Kontakt
+                                </th>
+                                <th scope="col" class="px-6 py-3 font-bold text-nowrap">
+                                    Mitglied seit
+                                </th>
+                                <th scope="col" class="px-6 py-3 font-bold">
+                                    Status
+                                </th>
+                                <th scope="col" class="px-6 py-3">
+                                    <button
+                                        class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
+                                        on:click={searchBar.fetchData}>
+                                        <span class="material-symbols-rounded min-[1300px]:text-icon-dt-5 text-icon-dt-6 font-bold text-gv-dark-text">refresh</span>
+                                    </button>
+                                </th>
                             </tr>
-                        {:else}
-                            {#each $membersStore.display as member}
-                                <tr class="border-t-2 border-gv-border"
-                                    on:contextmenu={(e) => openContextMenu(e, member.id)}>
+                            </thead>
+                            <tbody>
+                            {#if $membersStore.loading}
+                                <tr class="border-t-2 border-gv-border">
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col items-start h-full overflow-hidden gap-1">
-                                            <p class="text-dt-6 text-gv-dark-text text-nowrap truncate">{`${member.name} ${member.surname}`}</p>
-                                            <p class="text-dt-8 text-gv-light-text text-nowrap truncate">{member.address}</p>
+                                            <div class="animate-pulse h-7 w-50 bg-gray-200 rounded"></div>
+                                            <div class="animate-pulse h-5 w-40 bg-gray-200 rounded"></div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <p class="text-dt-4 text-gv-dark-text text-nowrap truncate">{voiceMap[member.voice]}</p>
+                                        <div class="animate-pulse h-7 w-30 bg-gray-200 rounded"></div>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col items-start  h-full overflow-hidden gap-2">
                                             <div class="flex items-center justify-start gap-2">
-                                                <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-turquoise">mail</span>
-                                                <p class="text-dt-7 text-gv-dark-turquoise">{member.email}</p>
+                                            <span
+                                                class="material-symbols-rounded text-icon-dt-6 text-gv-dark-turquoise">mail</span>
+                                                <div class="animate-pulse h-5 w-40 bg-gray-200 rounded"></div>
                                             </div>
                                             <div class="flex items-center justify-start gap-2">
-                                                <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">phone</span>
-                                                <p class="text-dt-7 text-gv-light-text">{member.phone}</p>
+                                        <span
+                                            class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">phone</span>
+                                                <div class="animate-pulse h-5 w-40 bg-gray-200 rounded"></div>
                                             </div>
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <p class="text-dt-4 text-gv-dark-text text-nowrap truncate">{member.joined}</p>
+                                        <div class="animate-pulse h-7 w-30 bg-gray-200 rounded"></div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <Chip text={statusMap[member.status]} />
+                                        <div class="animate-pulse h-7 w-20 bg-gray-200 rounded"></div>
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <button
-                                            class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                                            on:click={(e) => openContextMenuFromButton(e, member.id)}>
-                                            <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">
-                                                more_horiz
-                                            </span>
-                                        </button>
-                                    </td>
+                                    <td class="px-6 py-4"></td>
                                 </tr>
-                            {/each}
-                        {/if}
-                        </tbody>
-                    </table>
+                            {:else}
+                                {#each $membersStore.display as member}
+                                    <tr class="border-t-2 border-gv-border"
+                                        on:contextmenu={(e) => openContextMenu(e, member.id)}>
+                                        <td class="px-6 py-4">
+                                            <div class="flex flex-col items-start h-full overflow-hidden gap-1">
+                                                <p class="min-[1300px]:text-dt-6 text-dt-7 text-gv-dark-text text-nowrap truncate">{`${member.name} ${member.surname}`}</p>
+                                                <p class="min-[1300px]:text-dt-8 text-dt-8 text-gv-light-text text-nowrap truncate">{member.address}</p>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{voiceMap[member.voice]}</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex flex-col items-start  h-full overflow-hidden gap-2">
+                                                <div class="flex items-center justify-start gap-2">
+                                                    <span class="material-symbols-rounded min-[1300px]:text-icon-dt-6 text-icon-dt-7 text-gv-dark-turquoise">mail</span>
+                                                    <p class="min-[1300px]:text-dt-7 text-dt-8 text-gv-dark-turquoise">{member.email}</p>
+                                                </div>
+                                                <div class="flex items-center justify-start gap-2">
+                                                    <span class="material-symbols-rounded min-[1300px]:text-icon-dt-6 text-icon-dt-7 text-gv-light-text">phone</span>
+                                                    <p class="min-[1300px]:text-dt-7 text-dt-8 text-gv-light-text">{member.phone}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{member.joined}</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <Chip text={statusMap[member.status]} />
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <button
+                                                class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
+                                                on:click={(e) => openContextMenuFromButton(e, member.id)}>
+                                                <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">
+                                                    more_horiz
+                                                </span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {/each}
+                            {/if}
+                            </tbody>
+                        </table>
+                    {:else}
+                        {#each $membersStore.display as member}
+                            <button class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`} on:click={async () =>  await push(`/members/view?id=${member.id}`)}>
+                                <div class="flex flex-col items-start justify-between mr-auto max-w-3/4">
+                                    <p class="text-gv-dark-text text-dt-7">{`${member.name} ${member.surname}`}</p>
+                                    <div class="flex items-center justify-start gap-2">
+                                        <span class="material-symbols-rounded text-icon-dt-7 text-gv-dark-turquoise">mail</span>
+                                        <p class="text-dt-8 text-gv-dark-turquoise text-nowrap truncate">{member.email}</p>
+                                    </div>
+                                </div>
+
+                                <Chip text={statusMap[member.status]} fontSize="7"/>
+                            </button>
+                        {/each}
+                    {/if}
                 {:else}
                     <p class="text-dt-3 text-gv-dark-text text-center w-full h-full p-10 font-semibold">Es wurden keine
                         Mitglieder gefunden!</p>

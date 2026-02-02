@@ -6,7 +6,7 @@
 </script>
 
 {#if !isMobile}
-    <div class="absolute z-9999 top-5 right-5 flex flex-col items-center w-1/4 h-auto max-h-3/4">
+    <div class="absolute z-9999 top-5 right-5 flex flex-col items-center min-[1200px]:w-1/4 min-[1000px]:w-2/6 w-3/6 h-auto max-h-3/4">
         {#each $toasts as toast (toast.id)}
             <Toast type={toast.type} title={toast.title} subTitle={toast.subTitle} onClose={() => removeToast(toast.id)}
                    marginTop="5" />
