@@ -12,6 +12,7 @@
     export let disabled = false;
     export let width = "w-full";
     export let doDebounce = true;
+    export let isMobile = false;
 
     export let page = "";
 
@@ -103,7 +104,7 @@
 
 <div class={`flex items-stretch ${width} ${marginMap[marginTop]}`}>
     <div class="flex items-center justify-center px-3 mt-1 rounded-tl-1 rounded-bl-1 bg-gv-input-bg">
-        <span class="material-symbols-rounded text-icon-dt-4 text-gv-input-placeholder">search</span>
+        <span class={`material-symbols-rounded ${!isMobile ? "text-icon-dt-4" : "text-icon-dt-6"} text-gv-input-placeholder`}>search</span>
     </div>
     <input
         bind:this={searchEl}
@@ -111,5 +112,5 @@
         placeholder={placeholder}
         disabled={disabled}
         on:input={() => onInput(searchEl.value)}
-        class="rounded-tr-1 rounded-br-1 w-full p-2 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6" />
+        class={`rounded-tr-1 rounded-br-1 w-full p-2 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 ${!isMobile ? "text-dt-6" : "text-dt-7"}`} />
 </div>

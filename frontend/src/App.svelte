@@ -4,7 +4,7 @@
     import Login from "./pages/Login/LoginPage.svelte";
     import Dashboard from "./pages/Dashboard/DashboardPage.svelte";
     import ChangePassword from "./pages/ChangePassword/ChangePasswordPage.svelte";
-    import Members from "./pages/Members.svelte";
+    import Members from "./pages/Members/MembersPage.svelte";
     import MemberViewer from "./pages/MemberViewer.svelte";
     import MemberEditor from "./pages/MemberEditor.svelte";
     import Events from "./pages/Events.svelte";

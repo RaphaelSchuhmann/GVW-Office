@@ -2,34 +2,34 @@
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
-    import { loadUserData, logout } from "../services/user";
-    import { membersStore } from "../stores/members";
-    import { addMember, updateStatus, roleMap, voiceMap, statusMap } from "../services/members";
-    import { addToast } from "../stores/toasts";
+    import { loadUserData, logout } from "../../services/user";
+    import { membersStore } from "../../stores/members";
+    import { addMember, updateStatus, roleMap, voiceMap, statusMap } from "../../services/members";
+    import { addToast } from "../../stores/toasts";
 
-    import ToastStack from "../components/ToastStack.svelte";
-    import DesktopSidebar from "../components/DesktopSidebar.svelte";
-    import PageHeader from "../components/PageHeader.svelte";
-    import Card from "../components/Card.svelte";
-    import SettingsModal from "../components/SettingsModal.svelte";
-    import Button from "../components/Button.svelte";
-    import SearchBar from "../components/SearchBar.svelte";
-    import Chip from "../components/Chip.svelte";
-    import Modal from "../components/Modal.svelte";
-    import Input from "../components/Input.svelte";
-    import Dropdown from "../components/Dropdown.svelte";
-    import DefaultDatepicker from "../components/DefaultDatepicker.svelte";
-    import YearDatepicker from "../components/YearDatepicker.svelte";
-    import ContextMenu from "../components/ContextMenu.svelte";
-    import ConfirmDeleteModal from "../components/ConfirmDeleteModal.svelte";
+    import ToastStack from "../../components/ToastStack.svelte";
+    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
+    import PageHeader from "../../components/PageHeader.svelte";
+    import Card from "../../components/Card.svelte";
+    import SettingsModal from "../../components/SettingsModal.svelte";
+    import Button from "../../components/Button.svelte";
+    import SearchBar from "../../components/SearchBar.svelte";
+    import Chip from "../../components/Chip.svelte";
+    import Modal from "../../components/Modal.svelte";
+    import Input from "../../components/Input.svelte";
+    import Dropdown from "../../components/Dropdown.svelte";
+    import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
+    import YearDatepicker from "../../components/YearDatepicker.svelte";
+    import ContextMenu from "../../components/ContextMenu.svelte";
+    import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
 
-    /** @type {import("../components/SettingsModal.svelte").default} */
+    /** @type {import("../../components/SettingsModal.svelte").default} */
     let settingsModal;
 
     let searchBar;
 
     // ADD MEMBER
-    /** @type {import("../components/Modal.svelte").default} */
+    /** @type {import("../../components/Modal.svelte").default} */
     let addMemberModal;
 
     let voiceInput;
@@ -107,7 +107,7 @@
     }
 
     // DELETE MEMBER
-    /** @type {import("../components/ConfirmDeleteModal.svelte").default} */
+    /** @type {import("../../components/ConfirmDeleteModal.svelte").default} */
     let confirmDeleteMemberModal;
 
     let memberName = "";
@@ -384,13 +384,11 @@
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col items-start  h-full overflow-hidden gap-2">
                                             <div class="flex items-center justify-start gap-2">
-                                        <span
-                                            class="material-symbols-rounded text-icon-dt-6 text-gv-dark-turquoise">mail</span>
+                                                <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-turquoise">mail</span>
                                                 <p class="text-dt-7 text-gv-dark-turquoise">{member.email}</p>
                                             </div>
                                             <div class="flex items-center justify-start gap-2">
-                                    <span
-                                        class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">phone</span>
+                                                <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">phone</span>
                                                 <p class="text-dt-7 text-gv-light-text">{member.phone}</p>
                                             </div>
                                         </div>
