@@ -2,38 +2,26 @@
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
-    import { loadUserData, logout } from "../services/user";
-    import { addToast } from "../stores/toasts";
-    import { roleMap, voiceMap, statusMap, resetPassword } from "../services/members";
-    import { membersStore } from "../stores/members";
+    import { loadUserData, logout } from "../../services/user";
+    import { addToast } from "../../stores/toasts";
+    import { roleMap, voiceMap, statusMap, resetPassword } from "../../services/members";
+    import { membersStore } from "../../stores/members";
 
-    import ToastStack from "../components/ToastStack.svelte";
-    import DesktopSidebar from "../components/DesktopSidebar.svelte";
-    import PageHeader from "../components/PageHeader.svelte";
-    import SettingsModal from "../components/SettingsModal.svelte";
-    import Input from "../components/Input.svelte";
-    import Button from "../components/Button.svelte";
-    import ConfirmDeleteModal from "../components/ConfirmDeleteModal.svelte";
+    import ToastStack from "../../components/ToastStack.svelte";
+    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
+    import PageHeader from "../../components/PageHeader.svelte";
+    import SettingsModal from "../../components/SettingsModal.svelte";
+    import Input from "../../components/Input.svelte";
+    import Button from "../../components/Button.svelte";
+    import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
 
-    /** @type {import("../components/SettingsModal.svelte").default} */
+    /** @type {import("../../components/SettingsModal.svelte").default} */
     let settingsModal;
 
-    let member = {
-        name: "",
-        surname: "",
-        email: "",
-        phone: "",
-        address: "",
-        voice: "",
-        status: "",
-        role: "",
-        birthdate: "",
-        joined: "",
-        id: "",
-    };
+    export let member;
 
     // DELETE MEMBER
-    /** @type {import("../components/ConfirmDeleteModal.svelte").default} */
+    /** @type {import("../../components/ConfirmDeleteModal.svelte").default} */
     let confirmDeleteMemberModal;
 
     let memberName = "";
@@ -97,24 +85,6 @@
             });
         }
     }
-
-    onMount(async () => {
-        await loadUserData();
-
-        const hash = window.location.hash;
-        const queryString = hash.split("?")[1];
-        if (!queryString) return;
-
-        const params = new URLSearchParams(queryString);
-        let memberId = params.get("id");
-
-        if (memberId) {
-            let members = get(membersStore);
-            member = members.raw.find(item => item.id === memberId);
-        } else {
-            await push("/members");
-        }
-    });
 
     function settingsClick() {
         settingsModal.showModal();
