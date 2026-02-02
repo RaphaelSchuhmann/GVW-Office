@@ -100,20 +100,6 @@
     }
 
     onMount(async () => {
-        await loadUserData();
-
-        const hash = window.location.hash;
-        const queryString = hash.split("?")[1];
-        if (!queryString) return;
-
-        const params = new URLSearchParams(queryString);
-        let memberId = params.get("id");
-
-        if (memberId) {
-            let members = get(membersStore);
-            member = members.raw.find(item => item.id === memberId);
-        }
-
         // text inputs
         nameInput = member.name;
         surnameInput = member.surname;

@@ -1,24 +1,15 @@
 <script>
-    import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
-    import { get } from "svelte/store";
-    import { loadUserData, logout } from "../../services/user";
+    import { logout } from "../../services/user";
     import { addToast } from "../../stores/toasts";
     import { roleMap, voiceMap, statusMap, resetPassword } from "../../services/members";
-    import { membersStore } from "../../stores/members";
 
     import ToastStack from "../../components/ToastStack.svelte";
-    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
-    import MobileSidebar from "../../components/MobileSidebar.svelte";
-
-    /** @type {import("../../components/SettingsModal.svelte").default} */
-    let settingsModal;
-
+    
     export let member;
 
     // DELETE MEMBER
@@ -86,7 +77,6 @@
     }
 </script>
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 
 <!-- Confirm delete member modal -->

@@ -40,7 +40,7 @@
             <div
                 class={`${widthMap[width]} ${heightMap[height]} bg-white flex flex-col p-5 rounded-1 overflow-hidden`}>
                 <ModalHeader title={title} subTitle={subTitle} on:click={hideModal} />
-                <div class="w-full h-full flex flex-col overflow-y-scroll overflow-x-hidden mt-2">
+                <div class="w-full flex-1 min-h-0 flex flex-col overflow-y-scroll overflow-x-hidden mt-2">
                     <slot />
                 </div>
             </div>
@@ -49,7 +49,7 @@
         <div class="fixed z-999 top-0 left-0 w-dvw h-dvh flex items-end bg-gv-overlay">
             <div class={`w-full h-8/9 bg-white flex flex-col p-5 rounded-t-1 overflow-hidden`}>
                 <ModalHeader title={title} subTitle={subTitle} on:click={hideModal} />
-                <div class="w-full h-full flex flex-col overflow-y-scroll overflow-x-hidden mt-2">
+                <div class="w-full flex-1 min-h-0 flex flex-col overflow-y-scroll overflow-x-hidden mt-2">
                     <slot />
                 </div>
             </div>

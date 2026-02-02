@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { innerWidth } from "svelte/reactivity/window";
+    import { viewportWidth } from "../../stores/viewport";
     import ChangePasswordDesktop from "./ChangePasswordDesktop.svelte";
     import ChangePasswordMobile from "./ChangePasswordMobile.svelte";
 
@@ -22,7 +22,7 @@
     });
 </script>
 
-{#if innerWidth.current < 768}
+{#if $viewportWidth < 768}
     <ChangePasswordMobile message={message}/>
 {:else}
     <ChangePasswordDesktop message={message}/>

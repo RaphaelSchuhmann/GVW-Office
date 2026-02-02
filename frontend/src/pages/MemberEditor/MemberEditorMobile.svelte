@@ -1,24 +1,17 @@
 <script>
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
-    import { get } from "svelte/store";
-    import { loadUserData, logout } from "../../services/user";
+    import {  logout } from "../../services/user";
     import { addToast } from "../../stores/toasts";
     import { roleMap, voiceMap, statusMap, updateMember } from "../../services/members";
-    import { membersStore } from "../../stores/members";
 
     import ToastStack from "../../components/ToastStack.svelte";
-    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import YearDatepicker from "../../components/YearDatepicker.svelte";
     import Dropdown from "../../components/Dropdown.svelte";
-
-    /** @type {import("../../components/SettingsModal.svelte").default} */
-    let settingsModal;
 
     export let member;
 
@@ -99,20 +92,6 @@
     }
 
     onMount(async () => {
-        await loadUserData();
-
-        const hash = window.location.hash;
-        const queryString = hash.split("?")[1];
-        if (!queryString) return;
-
-        const params = new URLSearchParams(queryString);
-        let memberId = params.get("id");
-
-        if (memberId) {
-            let members = get(membersStore);
-            member = members.raw.find(item => item.id === memberId);
-        }
-
         // text inputs
         nameInput = member.name;
         surnameInput = member.surname;
@@ -144,13 +123,8 @@
 
         formReady = true;
     });
-
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 </script>
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 <main class="flex h-screen overflow-hidden">
     <div class="flex flex-col w-full flex-1 overflow-y-auto p-7 min-h-0">
