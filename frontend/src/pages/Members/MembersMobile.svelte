@@ -109,7 +109,7 @@
     }
 </script>
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
+<SettingsModal bind:this={settingsModal} isMobile={true}></SettingsModal>
 <ToastStack isMobile={true} />
 
 <!-- Add member modal -->

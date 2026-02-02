@@ -141,7 +141,7 @@
     }
 </script>
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
+<SettingsModal bind:this={settingsModal} isMobile={true}></SettingsModal>
 <Modal bind:this={voiceDistributionSettingsModal} title="Stimmenvereteilung Einstellungen" subTitle="Einstellungen für die Stimmverteilung"
        isMobile={true}>
     <Input title="Maximale anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers}/>
