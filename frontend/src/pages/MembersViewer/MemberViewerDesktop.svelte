@@ -100,9 +100,9 @@
                     bind:this={confirmDeleteMemberModal}
 />
 
-<main class="flex overflow-hidden">
+<main class="flex h-screen overflow-hidden">
     <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
-    <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
+    <div class="flex flex-col w-full flex-1 overflow-auto p-10 min-h-0">
         <PageHeader title="Mitglied" subTitle={`Daten von "${member?.name ?? ""} ${member?.surname ?? ""}"`}>
             {#if $viewportWidth >= 1150}
                 <Button type="secondary" on:click={async () => await push("/members")}>

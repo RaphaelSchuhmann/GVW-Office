@@ -2,37 +2,25 @@
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
-    import { loadUserData, logout } from "../services/user";
-    import { addToast } from "../stores/toasts";
-    import { roleMap, voiceMap, statusMap, updateMember } from "../services/members";
-    import { membersStore } from "../stores/members";
+    import { loadUserData, logout } from "../../services/user";
+    import { addToast } from "../../stores/toasts";
+    import { roleMap, voiceMap, statusMap, updateMember } from "../../services/members";
+    import { membersStore } from "../../stores/members";
 
-    import ToastStack from "../components/ToastStack.svelte";
-    import DesktopSidebar from "../components/DesktopSidebar.svelte";
-    import PageHeader from "../components/PageHeader.svelte";
-    import SettingsModal from "../components/SettingsModal.svelte";
-    import Input from "../components/Input.svelte";
-    import Button from "../components/Button.svelte";
-    import DefaultDatepicker from "../components/DefaultDatepicker.svelte";
-    import YearDatepicker from "../components/YearDatepicker.svelte";
-    import Dropdown from "../components/Dropdown.svelte";
+    import ToastStack from "../../components/ToastStack.svelte";
+    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
+    import PageHeader from "../../components/PageHeader.svelte";
+    import SettingsModal from "../../components/SettingsModal.svelte";
+    import Input from "../../components/Input.svelte";
+    import Button from "../../components/Button.svelte";
+    import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
+    import YearDatepicker from "../../components/YearDatepicker.svelte";
+    import Dropdown from "../../components/Dropdown.svelte";
 
-    /** @type {import("../components/SettingsModal.svelte").default} */
+    /** @type {import("../../components/SettingsModal.svelte").default} */
     let settingsModal;
 
-    let member = {
-        name: "",
-        surname: "",
-        email: "",
-        phone: "",
-        address: "",
-        voice: "",
-        status: "",
-        role: "",
-        birthdate: "",
-        joined: "",
-        id: "",
-    };
+    export let member;
 
     let edited = false;
 
@@ -164,42 +152,42 @@
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
-<main class="flex overflow-hidden">
-    <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
-    <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
-        <PageHeader title="Mitglied bearbeiten" subTitle={`Bearbeitung von Mitglied: "${member?.name ?? ""} ${member?.surname ?? ""}"`}>
-            <Button type="secondary" isCancel={true} on:click={async () => await push("/members")}>
-                <p class="text-dt-4 ml-3">Abbrechen</p>
-            </Button>
-            <Button type="primary" disabled={!edited} on:click={handleUpdateMember} isSubmit={true}>
-                <span class="material-symbols-rounded text-icon-dt-5">person_edit</span>
-                <p class="text-dt-4 ml-3">Speichern</p>
-            </Button>
+<main class="flex h-screen overflow-hidden">
+    <div class="flex flex-col w-full flex-1 overflow-y-auto p-7 min-h-0">
+        <PageHeader title="Mitglied bearbeiten" subTitle={`Bearbeitung von Mitglied: "${member?.name ?? ""} ${member?.surname ?? ""}"`}
+                    slotCentered={false}>
+            <button class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-2 rounded-2" 
+                    on:click={async () => await push("/members")}>
+                <span class="material-symbols-rounded text-icon-dt-2">close</span>
+            </button>
         </PageHeader>
-        <div class="flex flex-col w-2/3 gap-5 mt-10">
-            <div class="flex items-center gap-4 mt-5">
-                <Input bind:value={nameInput} title="Vorname" placeholder="Max" />
-                <Input bind:value={surnameInput} title="Nachname" placeholder="Mustermann" />
+        <div class="flex flex-col min-[1150px]:w-2/3 w-full gap-5 mt-10">
+            <Input bind:value={nameInput} title="Vorname" placeholder="Max" />
+            <Input bind:value={surnameInput} title="Nachname" placeholder="Mustermann" />
+            <Input bind:value={emailInput} title="E-Mail" placeholder="max.mustermann@email.com" />
+            <Input bind:value={phoneInput} title="Telefon" placeholder="01701234 5678" />
+            <Input bind:value={addressInput} title="Adresse" placeholder="Hauptstraße 1, 12345 Musterstadt" />
+            <Dropdown selected={voiceMap[member.voice]} onChange={(value) => {voiceInput = value}} title="Stimmlage"
+                      options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
+            <Dropdown selected={statusMap[member.status]} onChange={(value) => {statusInput = value}} title="Status" options={["Aktiv", "Passiv"]} />
+            <Dropdown selected={roleMap[member.role]} onChange={(value) => {roleInput = value}} title="Rolle"
+                      options={["Mitglied", "Vorstand", "Schriftführer"]} />
+            <div class="flex flex-col items-start w-full">
+                <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>
+                <DefaultDatepicker selected={member.birthdate} onChange={(value) => {birthdayInput = value}} />
             </div>
-            <Input bind:value={emailInput} marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com" />
-            <Input bind:value={phoneInput} marginTop="5" title="Telefon" placeholder="01701234 5678" />
-            <Input bind:value={addressInput} marginTop="5" title="Adresse" placeholder="Hauptstraße 1, 12345 Musterstadt" />
-            <div class="w-full flex items-center gap-4 mt-5">
-                <Dropdown selected={voiceMap[member.voice]} onChange={(value) => {voiceInput = value}} title="Stimmlage"
-                          options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
-                <Dropdown selected={statusMap[member.status]} onChange={(value) => {statusInput = value}} title="Status" options={["Aktiv", "Passiv"]} />
-                <Dropdown selected={roleMap[member.role]} onChange={(value) => {roleInput = value}} title="Rolle"
-                          options={["Mitglied", "Vorstand", "Schriftführer"]} />
+            <div class="flex flex-col items-start w-full">
+                <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>
+                <YearDatepicker selected={member.joined} onChange={(value) => {joinedInput = value}} />
             </div>
-            <div class="w-full flex items-center gap-4 mt-5 max-[1700px]:flex-col">
-                <div class="flex flex-col items-start w-full">
-                    <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>
-                    <DefaultDatepicker selected={member.birthdate} onChange={(value) => {birthdayInput = value}} />
-                </div>
-                <div class="flex flex-col items-start w-full">
-                    <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>
-                    <YearDatepicker selected={member.joined} onChange={(value) => {joinedInput = value}} />
-                </div>
+            <div class="flex w-full items-center gap-2">
+                <Button type="secondary" isCancel={true} on:click={async () => await push("/members")}>
+                    <p class="text-dt-6 ml-3">Abbrechen</p>
+                </Button>
+                <Button type="primary" disabled={!edited} on:click={handleUpdateMember} isSubmit={true}>
+                    <span class="material-symbols-rounded text-icon-dt-5">person_edit</span>
+                    <p class="text-dt-6 ml-3">Speichern</p>
+                </Button>
             </div>
         </div>
     </div>
