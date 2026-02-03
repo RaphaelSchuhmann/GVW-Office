@@ -1,10 +1,12 @@
 <script>
-    import { innerWidth } from "svelte/reactivity/window";
+    import { isMobile } from "../../stores/viewport";
     import LoginDesktop from "./LoginDesktop.svelte";
     import LoginMobile from "./LoginMobile.svelte";
+
+    console.log(isMobile);
 </script>
 
-{#if innerWidth.current < 768}
+{#if $isMobile}
     <LoginMobile/>
 {:else}
     <LoginDesktop/>

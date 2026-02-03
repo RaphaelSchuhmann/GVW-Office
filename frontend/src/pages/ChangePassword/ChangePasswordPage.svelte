@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { viewportWidth } from "../../stores/viewport";
+    import { isMobile } from "../../stores/viewport";
     import ChangePasswordDesktop from "./ChangePasswordDesktop.svelte";
     import ChangePasswordMobile from "./ChangePasswordMobile.svelte";
 
@@ -22,7 +22,7 @@
     });
 </script>
 
-{#if $viewportWidth < 768}
+{#if $isMobile < 768}
     <ChangePasswordMobile message={message}/>
 {:else}
     <ChangePasswordDesktop message={message}/>

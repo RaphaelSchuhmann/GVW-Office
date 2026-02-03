@@ -1,11 +1,9 @@
 <script>
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
-    import { get } from "svelte/store";
-    import { loadUserData, logout } from "../../services/user";
+    import { logout } from "../../services/user";
     import { addToast } from "../../stores/toasts";
     import { roleMap, voiceMap, statusMap, updateMember } from "../../services/members";
-    import { membersStore } from "../../stores/members";
     import { viewportWidth } from "../../stores/viewport";
 
     import ToastStack from "../../components/ToastStack.svelte";
