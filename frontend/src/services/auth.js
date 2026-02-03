@@ -1,22 +1,6 @@
 const apiUrl = __API_URL__;
 
 /**
- * Authenticates user with email and password
- * @param {string} email - User's email address
- * @param {string} password - User's password
- * @returns {Promise<Response>} API response with authentication token
- */
-export async function login(email, password) {
-    return await fetch(`${apiUrl}/auth/login`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password })
-    });
-}
-
-/**
  * Changes user's password
  * @param {string} oldPw - Current password
  * @param {string} newPw - New password

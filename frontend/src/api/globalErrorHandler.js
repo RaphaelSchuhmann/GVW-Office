@@ -1,5 +1,5 @@
 import { get } from "svelte/store";
-import { addToast } from "../src/stores/toasts";
+import { addToast } from "../stores/toasts";
 import { isMobile } from "../stores/viewport";
 
 export function handleGlobalApiError(result) {
