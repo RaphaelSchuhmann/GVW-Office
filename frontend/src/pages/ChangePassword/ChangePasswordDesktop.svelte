@@ -129,7 +129,7 @@
             } 
             
             // Status Code 409 (passwords are not the same)
-            if (normalizedResponse.errorType === "ALREADYEXISTS") {
+            if (normalizedResponse.errorType === "RATELIMITED") {
                 addToast({
                     title: "Ungültiges Passwort",
                     subTitle: "Das neue Passwort darf nicht mit dem aktuellen Passwort übereinstimmen. Bitte wählen Sie ein anderes Passwort.",

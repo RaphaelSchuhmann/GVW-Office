@@ -122,7 +122,7 @@
             } 
             
             // Status Code 409 (passwords are not the same)
-            if (normalizedResponse.errorType === "ALREADYEXISTS") {
+            if (normalizedResponse.errorType === "RATELIMITED") {
                 addToast({
                     title: "Neues Passwort ist identisch",
                     type: "error"

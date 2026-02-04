@@ -102,6 +102,15 @@
             return;
         }
 
+        if (!body?.authToken) {
+            addToast({
+                title: "Anmeldung fehlgeschalgen",
+                subTitle: "Vom Server wurde keine gültige Sitzung zurückgegeben. Bitte versuchen Sie es erneut.",
+                type: "error",
+            });
+            return;
+        }
+
         if (body.changePassword) {
             // Note that the auth token cannot be stored under the key "authToken",
             // cause this would allow the user to move back one page and automatically login
