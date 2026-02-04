@@ -13,7 +13,7 @@ export function normalizeResponse(response) {
     return { ok: true, status: response.status };
 }
 
-export async function httpGet(url, customToken, doAuth = true) {
+export async function httpGet(url, customToken = "", doAuth = true) {
     const headers = {};
     const token = customToken ? customToken : get(auth).token;
     if (doAuth && token) headers["Authorization"] = `Bearer ${token}`;
@@ -28,7 +28,7 @@ export async function httpGet(url, customToken, doAuth = true) {
     }
 }
 
-export async function httpPost(url, body, customToken, doAuth = true) {
+export async function httpPost(url, body, customToken = "", doAuth = true) {
     const headers = {};
     headers["Content-Type"] = "application/json";
     

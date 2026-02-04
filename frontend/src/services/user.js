@@ -121,7 +121,8 @@ export function logout() {
         role: "",
         loaded: false,
         phone: "",
-        address: ""
+        address: "",
+        lastFetched: null,
     });
 
     // remove auth token
