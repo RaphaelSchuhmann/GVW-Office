@@ -104,7 +104,7 @@
 
         if (!body?.authToken) {
             addToast({
-                title: "Anmeldung fehlgeschalgen",
+                title: "Anmeldung fehlgeschlagen",
                 subTitle: "Vom Server wurde keine gültige Sitzung zurückgegeben. Bitte versuchen Sie es erneut.",
                 type: "error",
             });

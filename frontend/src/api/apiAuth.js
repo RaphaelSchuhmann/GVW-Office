@@ -25,7 +25,7 @@ const apiUrl = __API_URL__;
  * }
  */
 export async function login(email, password) {
-    const resp = await httpPost(`${apiUrl}/auth/login`, { email: email, password: password }, false);
+    const resp = await httpPost(`${apiUrl}/auth/login`, { email: email, password: password }, "", false);
     if (!resp) return { resp: null, body: null };
     const body = await resp.json();
     return { resp, body };
@@ -58,7 +58,7 @@ export async function login(email, password) {
  * }
  */
 export async function changePw(data) {
-    const resp = await httpPost(`${apiUrl}/auth/changePw`, data, false);
+    const resp = await httpPost(`${apiUrl}/auth/changePw`, data, "", false);
     if (!resp) return { resp: null, body: null };
     const body = await resp.json();
     return { resp, body };

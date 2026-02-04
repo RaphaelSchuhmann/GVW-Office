@@ -87,7 +87,7 @@
 
         if (!body?.authToken) {
             addToast({
-                title: "Anmeldung fehlgeschalgen",
+                title: "Anmeldung fehlgeschlagen",
                 type: "error",
             });
             return;
