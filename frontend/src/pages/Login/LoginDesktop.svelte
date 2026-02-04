@@ -6,7 +6,7 @@
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import ToastStack from "../../components/ToastStack.svelte";
-    import { authenticate } from "../../services/auth.js";
+    import { authenticateUser } from "../../services/loginService.js";
     import { clearValue, getValue, setValue } from "../../services/store";
     import { auth } from "../../stores/auth";
     import { user } from "../../stores/user";
@@ -22,32 +22,24 @@
         const authToken = getValue("authToken");
 
         if (authToken) {
-            const response = await authenticate(authToken);
+            const { resp, body } = await authenticateUser(authToken);
 
-            if (!response) {
-                addToast({
-                    title: "Interner Serverfehler",
-                    subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                    type: "error"
-                });
+            const normalizedResponse = normalizeResponse(resp);
+            if (handleGlobalApiError(normalizedResponse)) return;
+
+            if (!body || normalizedResponse.status !== 200) return;
+
+            auth.set({ token: authToken });
+            user.update(u => ({ ...u, email: body.email }));
+
+            if (body.changePassword) {
+                clearValue("authToken");
+                setValue("authToken_BCPW", authToken);
+                await push(`/changePassword?firstLogin=${body.firstLogin}`);
                 return;
             }
 
-            const body = await response.json();
-
-            if (response && body && response.status === 200) {
-                auth.set({ token: authToken });
-                user.update(u => ({ ...u, email: body.email }));
-
-                if (body.changePassword) {
-                    clearValue("authToken");
-                    setValue("authToken_BCPW", authToken);
-                    await push(`/changePassword?firstLogin=${body.firstLogin}`);
-                    return;
-                }
-
-                await push("/dashboard");
-            }
+            await push("/dashboard");
         }
     });
 

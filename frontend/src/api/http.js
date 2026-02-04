@@ -13,9 +13,9 @@ export function normalizeResponse(response) {
     return { ok: true, status: response.status };
 }
 
-export async function httpGet(url, doAuth = true) {
+export async function httpGet(url, customToken, doAuth = true) {
     const headers = {};
-    const token = get(auth).token;
+    const token = customToken ? customToken : get(auth).token;
     if (doAuth && token) headers["Authorization"] = `Bearer ${token}`;
 
     return await fetch(url, {

@@ -4,7 +4,7 @@ import { push } from "svelte-spa-router";
 import { user } from "../stores/user";
 import { auth } from "../stores/auth";
 import { addToast } from "../stores/toasts";
-import { authenticate } from "./auth";
+import { authenticateUser } from "./loginService";
 
 const apiUrl = __API_URL__;
 
@@ -35,11 +35,10 @@ export async function loadUserData() {
     let email = "";
 
     try {
-        const responseAutoLogin = await authenticate(authStore.token);
-        const bodyAutoLogin = await responseAutoLogin.json();
+        const { resp, body } = await authenticateUser(authStore.token);
 
-        if (responseAutoLogin && bodyAutoLogin && responseAutoLogin.status === 200) {
-            email = bodyAutoLogin.email;
+        if (resp && body && resp.status === 200) {
+            email = body.email;
         } else {
             logout();
             await push("/?cpwErr=false");
@@ -120,7 +119,9 @@ export function logout() {
         name: "",
         email: "",
         role: "",
-        loaded: false
+        loaded: false,
+        phone: "",
+        address: ""
     });
 
     // remove auth token
