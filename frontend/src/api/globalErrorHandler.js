@@ -8,7 +8,7 @@ export function handleGlobalApiError(result) {
     switch (result.errorType) {
         case "UNAUTHORIZED":
             addToast({
-                title: "Ungültiger Token",
+                title: "Ungültiges Token",
                 subTitle: !get(isMobile) ? "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten." : "",
                 type: "error"
             });

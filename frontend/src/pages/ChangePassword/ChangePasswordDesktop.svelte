@@ -21,13 +21,13 @@
     /**
      * Validates password change form inputs and displays user-facing error toasts.
      * 
-     * Checks for missing fields, minimum password legth, and matching
+     * Checks for missing fields, minimum password length, and matching
      * password confirmation. If a validation error occurs, an error toast
      * is shown and the function returns `true`.
      * 
      * @param {Object} params
-     * @param {string} params.currentPw - the users's current password
-     * @param {string} params.newPw - the new password entered by teh user
+     * @param {string} params.currentPw - the user's current password
+     * @param {string} params.newPw - the new password entered by the user
      * @param {string} params.confirmNewPw - Confirmation of the new password
      * 
      * @returns {boolean} `true` if validation failed and execution should stop.
@@ -83,11 +83,11 @@
     }
 
     /**
-     * Handles t he complete password update flow from the view layer.
+     * Handles the complete password update flow from the view layer.
      * 
      * Performs client-side input validation, verifies the presence of a valid
      * user session, executes the password change request, and handles all
-     * relevant API eror states with user-facing toasts and navigation.
+     * relevant API error states with user-facing toasts and navigation.
      * 
      * On success, updates the stored authentication token and redirects
      * the user to the dashboard.
@@ -136,11 +136,20 @@
                     type: "error"
                 });
             }
-            return
+            return;
         }
 
         // Update auth token entry to use the actual expected key
         let authToken = getValue("authToken_BCPW");
+        if (!authToken) {
+            addToast({
+                title: "Sitzungsfehler",
+                subTitle: "Ihre Sitzung ist ungültig. Bitte melden Sie sich erneut an.",
+                type: "error",
+            });
+            await push("/");
+            return;
+        }
         clearValue("authToken_BCPW");
         setValue("authToken", authToken);
 

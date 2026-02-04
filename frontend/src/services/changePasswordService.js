@@ -1,7 +1,7 @@
 import { changePw } from "../api/apiAuth";
 
 /**
- * Attempts to change the usere's password with the given data.
+ * Attempts to change the user's password with the given data.
  * 
  * Sends a POST request to the /auth/changePw endpoint without an Authorization header.
  * 
@@ -13,7 +13,7 @@ import { changePw } from "../api/apiAuth";
  *          `body` typically includes `ok` flag which can be discarded.
  * 
  * @example
- * const { resp, body } = await changePw({email: "user@example.com", oldPw: "password123" newPw: "NewPassword"});
+ * const { resp, body } = await changePassword({email: "user@example.com", oldPw: "password123" newPw: "NewPassword"});
  * if (resp.ok) {
  *   console.log("Password changed")
  * }

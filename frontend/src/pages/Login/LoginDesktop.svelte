@@ -6,12 +6,11 @@
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import ToastStack from "../../components/ToastStack.svelte";
-    import { authenticateUser } from "../../services/loginService.js";
     import { clearValue, getValue, setValue } from "../../services/store";
     import { auth } from "../../stores/auth";
     import { user } from "../../stores/user";
     import { addToast } from "../../stores/toasts";
-    import { loginUser } from "../../services/loginService";
+    import { loginUser, authenticateUser } from "../../services/loginService";
     import { handleGlobalApiError } from "../../api/globalErrorHandler";
     import { normalizeResponse } from "../../api/http";
 
@@ -27,7 +26,7 @@
             const normalizedResponse = normalizeResponse(resp);
             if (handleGlobalApiError(normalizedResponse)) return;
 
-            if (!body || normalizedResponse.status !== 200) return;
+            if (!body || !normalizedResponse.ok) return;
 
             auth.set({ token: authToken });
             user.update(u => ({ ...u, email: body.email }));
@@ -75,7 +74,7 @@
 
         if (!normalizedResponse.ok) {
 
-            if (normalizedResponse.errorType === "REQUESTTIMEOUT") {
+            if (normalizedResponse.errorType === "REQUESTTIMEOUT" && body?.retryAfter) {
                 const lockUntil = new Date(body.retryAfter).getTime();
                 const now = Date.now();
                 const remainingMs = lockUntil - now;
@@ -85,6 +84,12 @@
                     title: "Zu viele Anmeldeversuche",
                     subTitle: `Ihr Konto wurde vorübergehend gesperrt. Bitte versuchen Sie es in ${remainingMinutes} Minute${remainingMinutes !== 1 ? "n" : ""} erneut.`,
                     type: "warning",
+                });
+            } else if (normalizedResponse.errorType === "REQUESTTIMEOUT") {
+                addToast({
+                    title: "Zu viele Anmeldeversuche",
+                    subTitle: "Ihr Konto wurde vorübergehend gesperrt. Bitte versuchen Sie es später erneut.",
+                    type: "warning"
                 });
             } else if (normalizedResponse.errorType === "NOTFOUND") {
                 addToast({

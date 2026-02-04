@@ -18,10 +18,14 @@ export async function httpGet(url, customToken, doAuth = true) {
     const token = customToken ? customToken : get(auth).token;
     if (doAuth && token) headers["Authorization"] = `Bearer ${token}`;
 
-    return await fetch(url, {
-        method: "GET",
-        headers: headers
-    });
+    try {
+        return await fetch(url, {
+            method: "GET",
+            headers: headers
+        });
+    } catch {
+        return null;
+    }
 }
 
 export async function httpPost(url, body, doAuth = true) {
@@ -31,9 +35,13 @@ export async function httpPost(url, body, doAuth = true) {
     const token = get(auth).token;
     if (doAuth && token) headers["Authorization"] = `Bearer ${token}`;
 
-    return await fetch(url, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(body)
-    });
+    try {
+        return await fetch(url, {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(body)
+        });
+    } catch {
+        return null;
+    }
 }

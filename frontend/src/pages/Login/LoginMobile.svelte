@@ -5,12 +5,11 @@
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import ToastStack from "../../components/ToastStack.svelte";
-    import { authenticateUser } from "../../services/loginService";
     import { clearValue, getValue, setValue } from "../../services/store";
     import { auth } from "../../stores/auth";
     import { user } from "../../stores/user";
     import { addToast } from "../../stores/toasts";
-    import { loginUser } from "../../services/loginService";
+    import { loginUser, authenticateUser } from "../../services/loginService";
     import { normalizeResponse } from "../../api/http";
     import { handleGlobalApiError } from "../../api/globalErrorHandler";
 
