@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { innerWidth } from "svelte/reactivity/window";
+    import { isMobile } from "../../stores/viewport";
     import { get } from "svelte/store";
     import { push } from "svelte-spa-router";
     import MemberViewerDesktop from "./MemberViewerDesktop.svelte";
@@ -50,7 +50,7 @@
     });
 </script>
 
-{#if innerWidth.current < 768}
+{#if $isMobile}
     <MemberViewerMobile {member}/>
 {:else}
     <MemberViewerDesktop {member}/>

@@ -6,11 +6,13 @@
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import ToastStack from "../../components/ToastStack.svelte";
-    import { login, authenticate } from "../../services/auth.js";
     import { clearValue, getValue, setValue } from "../../services/store";
     import { auth } from "../../stores/auth";
     import { user } from "../../stores/user";
     import { addToast } from "../../stores/toasts";
+    import { loginUser, authenticateUser } from "../../services/loginService";
+    import { handleGlobalApiError } from "../../api/globalErrorHandler";
+    import { normalizeResponse } from "../../api/http";
 
     let email = "";
     let password = "";
@@ -19,32 +21,24 @@
         const authToken = getValue("authToken");
 
         if (authToken) {
-            const response = await authenticate(authToken);
+            const { resp, body } = await authenticateUser(authToken);
 
-            if (!response) {
-                addToast({
-                    title: "Interner Serverfehler",
-                    subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                    type: "error"
-                });
+            const normalizedResponse = normalizeResponse(resp);
+            if (handleGlobalApiError(normalizedResponse)) return;
+
+            if (!body || !normalizedResponse.ok) return;
+
+            auth.set({ token: authToken });
+            user.update(u => ({ ...u, email: body.email }));
+
+            if (body.changePassword) {
+                clearValue("authToken");
+                setValue("authToken_BCPW", authToken);
+                await push(`/changePassword?firstLogin=${body.firstLogin}`);
                 return;
             }
 
-            const body = await response.json();
-
-            if (response && body && response.status === 200) {
-                auth.set({ token: authToken });
-                user.update(u => ({ ...u, email: body.email }));
-
-                if (body.changePassword) {
-                    clearValue("authToken");
-                    setValue("authToken_BCPW", authToken);
-                    await push(`/changePassword?firstLogin=${body.firstLogin}`);
-                    return;
-                }
-
-                await push("/dashboard");
-            }
+            await push("/dashboard");
         }
     });
 
@@ -73,64 +67,63 @@
             return;
         }
 
-        // Try to log in
-        let response = await login(email, password);
-        let body = await response.json();
+        const { resp, body } = await loginUser(email, password);
 
-        if (!response) {
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+
+            if (normalizedResponse.errorType === "REQUESTTIMEOUT" && body?.retryAfter) {
+                const lockUntil = new Date(body.retryAfter).getTime();
+                const now = Date.now();
+                const remainingMs = lockUntil - now;
+                const remainingMinutes = Math.ceil(remainingMs / 60000);
+
+                addToast({
+                    title: "Zu viele Anmeldeversuche",
+                    subTitle: `Ihr Konto wurde vorübergehend gesperrt. Bitte versuchen Sie es in ${remainingMinutes} Minute${remainingMinutes !== 1 ? "n" : ""} erneut.`,
+                    type: "warning",
+                });
+            } else if (normalizedResponse.errorType === "REQUESTTIMEOUT") {
+                addToast({
+                    title: "Zu viele Anmeldeversuche",
+                    subTitle: "Ihr Konto wurde vorübergehend gesperrt. Bitte versuchen Sie es später erneut.",
+                    type: "warning"
+                });
+            } else if (normalizedResponse.errorType === "NOTFOUND") {
+                addToast({
+                    title: "Benutzer nicht gefunden",
+                    subTitle: "Es wurde kein Konto mit der angegebenen E-Mail-Adresse gefunden. Bitte prüfen Sie die Eingabe oder registrieren Sie sich.",
+                    type: "error"
+                });
+            }
+
+            return;
+        }
+
+        if (!body?.authToken) {
             addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
+                title: "Anmeldung fehlgeschlagen",
+                subTitle: "Vom Server wurde keine gültige Sitzung zurückgegeben. Bitte versuchen Sie es erneut.",
+                type: "error",
             });
             return;
         }
 
-        if (response.status === 200) {
-            if (body.changePassword) {
-                // Note that the auth token cannot be stored under the key "authToken",
-                // cause this would allow the user to move back one page and automatically login
-                // and bypass the changePassword page
-                setValue("authToken_BCPW", body.authToken);
-                user.update(u => ({ ...u, email: email }));
-                auth.set({ token: body.authToken });
-                await push(`/changePassword?firstLogin=${body.firstLogin}`);
-            } else {
-                setValue("authToken", body.authToken);
-                auth.set({ token: body.authToken });
-                user.update(u => ({ ...u, email: email }));
-                await push("/dashboard");
-            }
-        } else if (response.status === 429) {
-            const lockUntil = new Date(body.retryAfter).getTime();
-            const now = Date.now();
-
-            const remainingMs = lockUntil - now;
-            const remainingMinutes = Math.ceil(remainingMs / 60000);
-
-            addToast({
-                title: "Zu viele Anmeldeversuche",
-                subTitle: `Ihr Konto wurde vorübergehend gesperrt. Bitte versuchen Sie es in ${remainingMinutes} Minute${remainingMinutes !== 1 ? "n" : ""} erneut.`,
-                type: "warning",
-            });
-        } else if (response.status === 404) {
-            addToast({
-                title: "Benutzer nicht gefunden",
-                subTitle: "Es wurde kein Konto mit der angegebenen E-Mail-Adresse gefunden. Bitte prüfen Sie die Eingabe oder registrieren Sie sich.",
-                type: "error"
-            });
-        } else if (response.status === 401) {
-            addToast({
-                title: "Ungültiges Passwort",
-                subTitle: "Das eingegebene Passwort ist falsch. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
-                type: "error"
-            });
+        if (body.changePassword) {
+            // Note that the auth token cannot be stored under the key "authToken",
+            // cause this would allow the user to move back one page and automatically login
+            // and bypass the changePassword page
+            setValue("authToken_BCPW", body.authToken);
+            user.update(u => ({ ...u, email: email }));
+            auth.set({ token: body.authToken });
+            await push(`/changePassword?firstLogin=${body.firstLogin}`);
         } else {
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
-            });
+            setValue("authToken", body.authToken);
+            auth.set({ token: body.authToken });
+            user.update(u => ({ ...u, email: email }));
+            await push("/dashboard");
         }
     }
 </script>

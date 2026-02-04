@@ -5,10 +5,12 @@
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import ToastStack from "../../components/ToastStack.svelte";
-    import { changePw } from "../../services/auth";
     import { getValue, setValue, clearValue } from "../../services/store";
     import { user } from "../../stores/user";
     import { addToast } from "../../stores/toasts";
+    import { changePassword } from "../../services/changePasswordService";
+    import { normalizeResponse } from "../../api/http";
+    import { handleGlobalApiError } from "../../api/globalErrorHandler";
 
     export let message = "";
 
@@ -17,54 +19,89 @@
     let confirmNewPw = "";
 
     /**
-     * Updates user password after validation
-     * Validates current password, new password requirements, and confirmation match
-     * Handles API response and manages token storage for successful changes
+     * Validates password change form inputs and displays user-facing error toasts.
+     * 
+     * Checks for missing fields, minimum password length, and matching
+     * password confirmation. If a validation error occurs, an error toast
+     * is shown and the function returns `true`.
+     * 
+     * @param {Object} params
+     * @param {string} params.currentPw - the user's current password
+     * @param {string} params.newPw - the new password entered by the user
+     * @param {string} params.confirmNewPw - Confirmation of the new password
+     * 
+     * @returns {boolean} `true` if validation failed and execution should stop.
+     *                    `false` if all inputs are valid
      */
-    async function updatePassword() {
-        // Validate inputs
+    function validateInputs({ currentPw, newPw, confirmNewPw }) {
         if (!currentPw) {
             addToast({
                 title: "Ungültige Eingabe",
                 subTitle: "Bitte geben Sie Ihr aktuelles Passwort ein, damit wir Ihre Identität überprüfen und die Passwortänderung durchführen können.",
                 type: "error"
             });
-            return;
-        } else if (!newPw) {
+            return true;
+        }
+
+        if (!newPw) {
             addToast({
                 title: "Ungültige Eingabe",
                 subTitle: "Bitte geben Sie ein neues Passwort ein, das künftig für die Anmeldung verwendet werden soll.",
                 type: "error"
             });
-            return;
-        } else if (!confirmNewPw) {
+            return true;
+        }
+
+        if (!confirmNewPw) {
             addToast({
                 title: "Ungültige Eingabe",
                 subTitle: "Bitte bestätigen Sie Ihr neues Passwort, um sicherzustellen, dass keine Tippfehler vorliegen.",
                 type: "error"
             });
-            return;
+            return true;
         }
 
-        // Ensure new password is at least 8 characters
         if (newPw.length < 8) {
             addToast({
                 title: "Passwort zu kurz",
                 subTitle: "Das neue Passwort muss mindestens 8 Zeichen lang sein, um den Sicherheitsanforderungen zu entsprechen.",
                 type: "error"
             });
-            return;
+            return true;
         }
-
-        // Ensure new password and confirm password match
+        
         if (newPw !== confirmNewPw) {
             addToast({
                 title: "Passwörter stimmen nicht überein",
                 subTitle: "Das neue Passwort und die Passwortbestätigung sind nicht identisch. Bitte überprüfen Sie Ihre Eingabe.",
                 type: "error"
             });
-            return;
+            return true;
         }
+
+        return false;
+    }
+
+    /**
+     * Handles the complete password update flow from the view layer.
+     * 
+     * Performs client-side input validation, verifies the presence of a valid
+     * user session, executes the password change request, and handles all
+     * relevant API error states with user-facing toasts and navigation.
+     * 
+     * On success, updates the stored authentication token and redirects
+     * the user to the dashboard.
+     * 
+     * @returns {Promise<void>}
+     */    
+    async function updatePassword() {
+        const hasValidationError = validateInputs({
+            currentPw,
+            newPw,
+            confirmNewPw
+        });
+
+        if (hasValidationError) return;
 
         let email = $user.email;
         if (!email || email.length === 0) {
@@ -75,65 +112,48 @@
             return;
         }
 
-        let response;
+        const { resp } = await changePassword(email, currentPw, newPw);
 
-        try {
-            response = await changePw(currentPw, newPw, email)
-        } catch (error) {
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Ändern Ihres Passworts ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-                type: "error"
-            });
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            // Status Code 404
+            if (normalizedResponse.errorType === "NOTFOUND") {
+                addToast({
+                    title: "Sitzung ungültig",
+                    subTitle: "Ihre E-Mail-Adresse konnte nicht eindeutig zugeordnet werden. Bitte melden Sie sich erneut an, um den Vorgang fortzusetzen.",
+                    type: "error"
+                });
+                await push("/");
+            } 
+            
+            // Status Code 409 (passwords are not the same)
+            if (normalizedResponse.errorType === "RATELIMITED") {
+                addToast({
+                    title: "Ungültiges Passwort",
+                    subTitle: "Das neue Passwort darf nicht mit dem aktuellen Passwort übereinstimmen. Bitte wählen Sie ein anderes Passwort.",
+                    type: "error"
+                });
+            }
             return;
         }
 
-        if (!response) {
+        // Update auth token entry to use the actual expected key
+        let authToken = getValue("authToken_BCPW");
+        if (!authToken) {
             addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Ändern Ihres Passworts ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-                type: "error"
-            });
-            return;
-        }
-
-        if (response.status === 200) {
-            // Update auth token entry to use the actual expected key
-            let authToken = getValue("authToken_BCPW");
-            clearValue("authToken_BCPW");
-            setValue("authToken", authToken);
-
-            await push("/dashboard");
-        } else if (response.status === 404) {
-            // Invalid Email
-            addToast({
-                title: "Sitzung ungültig",
-                subTitle: "Ihre E-Mail-Adresse konnte nicht eindeutig zugeordnet werden. Bitte melden Sie sich erneut an, um den Vorgang fortzusetzen.",
-                type: "error"
+                title: "Sitzungsfehler",
+                subTitle: "Ihre Sitzung ist ungültig. Bitte melden Sie sich erneut an.",
+                type: "error",
             });
             await push("/");
-        } else if (response.status === 409) {
-            // New password is the same as the old
-            addToast({
-                title: "Ungültiges Passwort",
-                subTitle: "Das neue Passwort darf nicht mit dem aktuellen Passwort übereinstimmen. Bitte wählen Sie ein anderes Passwort.",
-                type: "error"
-            });
-        } else if (response.status === 401) {
-            // Current password is invalid
-            addToast({
-                title: "Falsches Passwort",
-                subTitle: "Das eingegebene aktuelle Passwort ist nicht korrekt. Bitte überprüfen Sie Ihre Eingabe und versuchen Sie es erneut.",
-                type: "error"
-            });
-        } else {
-            // Internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Ändern Ihres Passworts ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-                type: "error"
-            });
+            return;
         }
+        clearValue("authToken_BCPW");
+        setValue("authToken", authToken);
+
+        await push("/dashboard");
     }
 </script>
 

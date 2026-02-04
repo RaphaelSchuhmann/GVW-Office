@@ -1,10 +1,10 @@
 <script>
-    import { innerWidth } from "svelte/reactivity/window";
+    import { isMobile } from "../../stores/viewport";
     import DashboardDesktop from "./DashboardDesktop.svelte";
     import DashboardMobile from "./DashboardMobile.svelte";
 </script>
 
-{#if innerWidth.current < 768}
+{#if $isMobile}
     <DashboardMobile />
 {:else}
     <DashboardDesktop />

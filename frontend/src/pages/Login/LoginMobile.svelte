@@ -5,11 +5,13 @@
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import ToastStack from "../../components/ToastStack.svelte";
-    import { login, authenticate } from "../../services/auth.js";
     import { clearValue, getValue, setValue } from "../../services/store";
     import { auth } from "../../stores/auth";
     import { user } from "../../stores/user";
     import { addToast } from "../../stores/toasts";
+    import { loginUser, authenticateUser } from "../../services/loginService";
+    import { normalizeResponse } from "../../api/http";
+    import { handleGlobalApiError } from "../../api/globalErrorHandler";
 
     let email = "";
     let password = "";
@@ -18,31 +20,24 @@
         const authToken = getValue("authToken");
 
         if (authToken) {
-            const response = await authenticate(authToken);
+            const { resp, body } = await authenticateUser(authToken);
 
-            if (!response) {
-                addToast({
-                    title: "Interner Serverfehler",
-                    type: "error"
-                });
+            const normalizedResponse = normalizeResponse(resp);
+            if (handleGlobalApiError(normalizedResponse)) return;
+
+            if (!body || !normalizedResponse.ok) return;
+
+            auth.set({ token: authToken });
+            user.update(u => ({ ...u, email: body.email }));
+
+            if (body.changePassword) {
+                clearValue("authToken");
+                setValue("authToken_BCPW", authToken);
+                await push(`/changePassword?firstLogin=${body.firstLogin}`);
                 return;
             }
 
-            const body = await response.json();
-
-            if (response && body && response.status === 200) {
-                auth.set({ token: authToken });
-                user.update(u => ({ ...u, email: body.email }));
-
-                if (body.changePassword) {
-                    clearValue("authToken");
-                    setValue("authToken_BCPW", authToken);
-                    await push(`/changePassword?firstLogin=${body.firstLogin}`);
-                    return;
-                }
-
-                await push("/dashboard");
-            }
+            await push("/dashboard");
         }
     });
 
@@ -69,53 +64,48 @@
             return;
         }
 
-        // Try to log in
-        let response = await login(email, password);
-        let body = await response.json();
+        const { resp, body } = await loginUser(email, password);
 
-        if (!response) {
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "REQUESTTIMEOUT") {
+                addToast({
+                    title: "Zu viele Anmeldeversuche",
+                    type: "warning",
+                });
+            } else if (normalizedResponse.errorType === "NOTFOUND") {
+                addToast({
+                    title: "Benutzer nicht gefunden",
+                    type: "error"
+                });
+            }
+
+            return;
+        }
+
+        if (!body?.authToken) {
             addToast({
-                title: "Interner Serverfehler",
-                type: "error"
+                title: "Anmeldung fehlgeschlagen",
+                type: "error",
             });
             return;
         }
 
-        if (response.status === 200) {
-            if (body.changePassword) {
-                // Note that the auth token cannot be stored under the key "authToken",
-                // cause this would allow the user to move back one page and automatically login
-                // and bypass the changePassword page
-                setValue("authToken_BCPW", body.authToken);
-                user.update(u => ({ ...u, email: email }));
-                auth.set({ token: body.authToken });
-                await push(`/changePassword?firstLogin=${body.firstLogin}`);
-            } else {
-                setValue("authToken", body.authToken);
-                auth.set({ token: body.authToken });
-                user.update(u => ({ ...u, email: email }));
-                await push("/dashboard");
-            }
-        } else if (response.status === 429) {
-            addToast({
-                title: "Zu viele Anmeldeversuche",
-                type: "warning",
-            });
-        } else if (response.status === 404) {
-            addToast({
-                title: "Benutzer nicht gefunden",
-                type: "error"
-            });
-        } else if (response.status === 401) {
-            addToast({
-                title: "Ungültiges Passwort",
-                type: "error"
-            });
+        if (body.changePassword) {
+            // Note that the auth token cannot be stored under the key "authToken",
+            // cause this would allow the user to move back one page and automatically login
+            // and bypass the changePassword page
+            setValue("authToken_BCPW", body.authToken);
+            user.update(u => ({ ...u, email: email }));
+            auth.set({ token: body.authToken });
+            await push(`/changePassword?firstLogin=${body.firstLogin}`);
         } else {
-            addToast({
-                title: "Interner Serverfehler",
-                type: "error"
-            });
+            setValue("authToken", body.authToken);
+            auth.set({ token: body.authToken });
+            user.update(u => ({ ...u, email: email }));
+            await push("/dashboard");
         }
     }
 </script>

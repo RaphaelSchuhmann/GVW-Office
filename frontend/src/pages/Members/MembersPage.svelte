@@ -1,10 +1,10 @@
 <script>
-    import { viewportWidth } from "../../stores/viewport";
+    import { isMobile } from "../../stores/viewport";
     import MembersDesktop from "./MembersDesktop.svelte";
     import MembersMobile from "./MembersMobile.svelte";
 </script>
 
-{#if $viewportWidth < 768}
+{#if $isMobile}
     <MembersMobile />
 {:else}
     <MembersDesktop />
