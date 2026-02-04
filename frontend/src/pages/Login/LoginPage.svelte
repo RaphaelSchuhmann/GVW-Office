@@ -2,8 +2,6 @@
     import { isMobile } from "../../stores/viewport";
     import LoginDesktop from "./LoginDesktop.svelte";
     import LoginMobile from "./LoginMobile.svelte";
-
-    console.log(isMobile);
 </script>
 
 {#if $isMobile}

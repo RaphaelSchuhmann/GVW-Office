@@ -24,3 +24,25 @@ export async function login(email, password) {
     const body = await resp.json();
     return { resp, body };
 }
+
+/**
+ * Attempts to change the usere's password with the given data.
+ * 
+ * Sends a POST request to the /auth/changePw endpoint without an Authorization header.
+ * 
+ * @param {Object} data - The user's new password, old password, and email
+ * @returns {Promise<{ resp: Response, body: any }>} 
+ *           An object containing the raw fetch Response (`resp`) and the parsed JSON body (`body`).
+ *          `body` typically includes `ok` flag which can be discarded.
+ * 
+ * @example
+ * const { resp, body } = await changePw({email: "user@example.com", oldPw: "password123" newPw: "NewPassword"});
+ * if (resp.ok) {
+ *   console.log("Password changed")
+ * }
+ */
+export async function changePw(data) {
+    const resp = await httpPost(`${apiUrl}/auth/changePw`, data, false);
+    const body = await resp.json();
+    return { resp, body };
+}

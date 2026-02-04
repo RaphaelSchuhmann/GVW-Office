@@ -22,7 +22,7 @@
     });
 </script>
 
-{#if $isMobile < 768}
+{#if $isMobile}
     <ChangePasswordMobile message={message}/>
 {:else}
     <ChangePasswordDesktop message={message}/>
