@@ -24,7 +24,7 @@ userRouter.get("/data", async (req, resp) => {
     try {
         const userId = req.user;
 
-        if (!userId) return resp.status(404).json({ errorMessage: "UserNotFound" });
+        if (!userId) return resp.status(401).json({ errorMessage: "Unauthorized" });
 
         const users = await dbService.find("users", {
             selector: { userId: userId },

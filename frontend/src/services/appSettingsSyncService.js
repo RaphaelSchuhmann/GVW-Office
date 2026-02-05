@@ -8,6 +8,7 @@ import { appSettings } from "../stores/appSettings";
 
 let isRunning = false;
 let intervalId;
+let isFetching = false;
 
 /**
  * Starts the periodic synchronization of global application settings.
@@ -31,30 +32,43 @@ export function startSyncService() {
 /**
  * Fetches the latest global application settings from the API
  * and updates the `appSettings` store.
- * 
+ *
+ * Prevents concurrent fetches using an internal `isFetching` flag,
+ * ensuring that multiple calls (e.g., from an interval) do not cause
+ * overlapping updates or race conditions.
+ *
  * Handles global API errors and user-facing error feedback internally.
  * This function does not return the fetched data and is safe to call
- * repeatedly (e.g. from an interval).
- * 
+ * repeatedly.
+ *
+ * @async
  * @returns {Promise<void>}
  */
 export async function loadAppSettings() {
-    const { resp, body } = await getSettings();
-
-    const normalizedResponse = normalizeResponse(resp);
-    if (handleGlobalApiError(normalizedResponse)) return;
-
-    if (!resp.ok) {
-        addToast({
-            title: "App Einstellungen nicht verfügbar",
-            subTitle: !get(isMobile) ? "Beim Laden der globalen App Einstellungen ist ein unerwarteter Fehler aufgetreten." : "",
-            type: "error",
-        });
-        console.error("Unable to load app settings");
-        return;
+    if (isFetching) return;
+    isFetching = true;
+    try {
+        const { resp, body } = await getSettings();
+    
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+    
+        if (!resp.ok) {
+            addToast({
+                title: "App Einstellungen nicht verfügbar",
+                subTitle: !get(isMobile) ? "Beim Laden der globalen App Einstellungen ist ein unerwarteter Fehler aufgetreten." : "",
+                type: "error",
+            });
+            console.error("Unable to load app settings");
+            return;
+        }
+    
+        appSettings.set(body);
+    } catch (err) {
+        console.error("Unable to load app settings", err);
+    } finally {
+        isFetching = false;
     }
-
-    appSettings.set(body);
 }
 
 /**

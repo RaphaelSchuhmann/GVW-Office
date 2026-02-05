@@ -1,5 +1,4 @@
 <script>
-    import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
     import { logout } from "../../services/user";

@@ -7,7 +7,7 @@
 
     onMount(async () => {
         await ensureUserData();
-    })
+    });
 </script>
 
 {#if $isMobile}

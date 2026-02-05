@@ -24,12 +24,15 @@ export async function ensureUserData() {
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
         
-        if (normalizedResponse.status === 404) {
-            addToast({
-                title: "Benutzer nicht gefunden",
-                subTitle: !get(isMobile) ? "Es wurde kein Benutzer unter den angegebenen Daten gefunden." : "",
-                type: "error"
-            });
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.status === 404) {
+                addToast({
+                    title: "Benutzer nicht gefunden",
+                    subTitle: !get(isMobile) ? "Es wurde kein Benutzer unter den angegebenen Daten gefunden." : "",
+                    type: "error"
+                });
+                return;
+            }
             return;
         }
 
