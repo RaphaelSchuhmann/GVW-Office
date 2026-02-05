@@ -28,8 +28,13 @@
     let address = $user.address;
 
     /**
-     * Updates user data on the server and handles API response
-     * Shows appropriate toast messages and handles authentication errors
+     * Updates the user data with the current input values.
+     * 
+     * Falls back to existing values from teh `$user` store if any field is empty.
+     * Calls `tryUpdateUserData` to perform the update, and hides the modal once complete.
+     * 
+     * @async
+     * @returns {Promise<void>}
      */
     async function updateUserData() {
         if (email.length === 0) email = $user.email;
@@ -42,8 +47,9 @@
     }
 
     /**
-     * Resets all input fields to readonly state
-     * Called when modal is closed or opened
+     * Resets the input fields to readonly mode.
+     * 
+     * Typically used when closing or resetting the modal to prevent editing until explicitly allowed.
      */
     function resetStates() {
         readonlyMail = true;
@@ -52,8 +58,8 @@
     }
 
     /**
-     * Shows the settings modal and initializes form values
-     * Resets form data to current user values
+     * Opens the user data modal and initializes the input fields
+     * with the current values from the `$user` store.
      */
     export function showModal() {
         modal.showModal();
