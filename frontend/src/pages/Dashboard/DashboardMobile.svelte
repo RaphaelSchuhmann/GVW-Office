@@ -1,8 +1,8 @@
 <script>
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
-    import { logout } from "../../services/user";
-    import { ensureUserData } from "../../services/generalService";
+    import { logout } from "../../services/userService";
+    import { ensureUserData } from "../../services/userService";
     import { user } from "../../stores/user";
     import { appSettings } from "../../stores/appSettings";
     import { addToast } from "../../stores/toasts";

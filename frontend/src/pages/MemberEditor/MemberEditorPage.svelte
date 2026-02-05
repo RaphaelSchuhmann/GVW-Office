@@ -6,7 +6,7 @@
     import MemberEditorDesktop from "./MemberEditorDesktop.svelte";
     import MemberEditorMobile from "./MemberEditorMobile.svelte";
     import { membersStore } from "../../stores/members";
-    import { ensureUserData } from "../../services/generalService";
+    import { ensureUserData } from "../../services/userService";
 
     let member = {
         name: "",

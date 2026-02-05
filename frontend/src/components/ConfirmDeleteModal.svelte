@@ -7,7 +7,7 @@
     import { deleteReport } from "../services/reports";
     import { deleteScore } from "../services/library";
     import { addToast } from "../stores/toasts";
-    import { logout } from "../services/user";
+    import { logout } from "../services/userService";
     import { push } from "svelte-spa-router";
 
     const actionMap = {

@@ -4,8 +4,8 @@
     import { user } from "../stores/user";
     import { eventsStore } from "../stores/events";
     import { modeMap, statusMap, typeMap } from "../services/events";
-    import { logout } from "../services/user";
-    import { ensureUserData } from "../services/generalService";
+    import { logout } from "../services/userService";
+    import { ensureUserData } from "../services/userService";
     import {
         parseDMYToDate,
         getLastDayOfCurrentMonth,

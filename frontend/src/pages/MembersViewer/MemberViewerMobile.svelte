@@ -1,6 +1,6 @@
 <script>
     import { push } from "svelte-spa-router";
-    import { logout } from "../../services/user";
+    import { logout } from "../../services/userService";
     import { addToast } from "../../stores/toasts";
     import { roleMap, voiceMap, statusMap, resetPassword } from "../../services/members";
 

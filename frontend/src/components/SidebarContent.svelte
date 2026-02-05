@@ -2,7 +2,7 @@
     import { push } from "svelte-spa-router";
     import { user } from "../stores/user";
     import SidebarButton from "./SidebarButton.svelte";
-    import { logout } from "../services/user";
+    import { logout } from "../services/userService";
 
     export let currentPage = "";
     export let onSettingsClick = () => {};

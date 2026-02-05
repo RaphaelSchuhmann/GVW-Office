@@ -5,8 +5,9 @@ import { normalizeResponse } from "../api/http";
 import { handleGlobalApiError } from "../api/globalErrorHandler";
 import { isMobile } from "../stores/viewport";
 import { addToast } from "../stores/toasts";
-import { logout } from "./user";
 import { push } from "svelte-spa-router";
+import { auth } from "../stores/auth";
+import { clearValue } from "./store";
 
 const USER_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
@@ -91,4 +92,32 @@ export async function tryUpdateUserData(data) {
         subTitle: !get(isMobile) ? "Ihre persönlichen Daten wurden erfolgreich aktualisiert und sind nun in Ihrem Benutzerkonto gespeichert." : "",
         type: "success"
     });
+}
+
+/**
+ * Logs out the current user by clearing all user-related data and authentication state.
+ * 
+ * - Resets the `user` store to its initial empty state.
+ * - Clears teh auth token from the `auth` store.
+ * - Removes the persisted auth token from local storage.
+ * 
+ * This effectively de-authenticates teh user and should be called whenever
+ * the user needs to be logged out (e.g., manual logout or session expiration).
+ * 
+ * @returns {void}
+ */
+export function logout() {
+    user.set({
+        name: "",
+        email: "",
+        role: "",
+        loaded: false,
+        phone: "",
+        address: "",
+        lastFetched: 0,
+    });
+
+    // remove auth token
+    auth.set({ token: "" });
+    clearValue("authToken");
 }

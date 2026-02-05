@@ -3,7 +3,7 @@ import { appSettings } from "../stores/appSettings";
 import { loadAppSettings } from "./appSettingsSyncService";
 import { auth } from "../stores/auth";
 import { addToast } from "../stores/toasts";
-import { logout } from "./user";
+import { logout } from "./userService";
 import { push } from "svelte-spa-router";
 import { libraryStore } from "../stores/library";
 

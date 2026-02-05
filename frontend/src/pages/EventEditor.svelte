@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { ensureUserData } from "../services/generalService";
+    import { ensureUserData } from "../services/userService";
 
     import ToastStack from "../components/ToastStack.svelte";
     import DesktopSidebar from "../components/DesktopSidebar.svelte";

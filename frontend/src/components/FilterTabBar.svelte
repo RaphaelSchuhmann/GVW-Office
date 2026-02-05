@@ -3,7 +3,7 @@
     import { filterRegistry } from "../lib/filterRegistry";
     import { onDestroy, onMount } from "svelte";
     import { addToast } from "../stores/toasts";
-    import { logout } from "../services/user";
+    import { logout } from "../services/userService";
     import { push } from "svelte-spa-router";
     import { auth } from "../stores/auth";
 

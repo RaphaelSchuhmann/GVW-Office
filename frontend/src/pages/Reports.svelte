@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { ensureUserData } from "../services/generalService";
+    import { ensureUserData } from "../services/userService";
     import { addReport, reportsTypeMap } from "../services/reports";
     import { get } from "svelte/store";
     import { push } from "svelte-spa-router";

@@ -6,7 +6,7 @@
     import MemberViewerDesktop from "./MemberViewerDesktop.svelte";
     import MemberViewerMobile from "./MemberViewerMobile.svelte";
     import { membersStore } from "../../stores/members";
-    import { ensureUserData } from "../../services/generalService";
+    import { ensureUserData } from "../../services/userService";
 
     let member = {
         name: "",

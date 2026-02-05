@@ -1,13 +1,10 @@
 <script>
     import { user } from "../stores/user";
-    import { logout, updateData } from "../services/user";
-    import { onMount, tick } from "svelte";
+    import { tick } from "svelte";
     import Modal from "./Modal.svelte";
     import Input from "./Input.svelte";
     import Button from "./Button.svelte";
-    import { addToast } from "../stores/toasts";
-    import { push } from "svelte-spa-router";
-    import { tryUpdateUserData } from "../services/generalService";
+    import { tryUpdateUserData } from "../services/userService";
 
     export let isMobile = false;
 
