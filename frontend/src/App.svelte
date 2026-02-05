@@ -13,6 +13,9 @@
     import Reports from "./pages/Reports.svelte";
     import Library from "./pages/Library.svelte";
     import LibraryEditor from "./pages/LibraryEditor.svelte";
+    
+    import { onMount } from "svelte";
+    import { startSyncService, stopSyncService } from "./services/appSettingsSyncService";
 
     const routes = {
         "/": Login,
@@ -27,6 +30,11 @@
         "/library": Library,
         "/library/edit": LibraryEditor,
     };
+
+    onMount(() => {
+        startSyncService();
+        return () => stopSyncService();
+    });
 </script>
 <Viewport />
 <Router {routes}/>

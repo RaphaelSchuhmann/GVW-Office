@@ -13,7 +13,7 @@
     } from "../services/library";
     import { user } from "../stores/user";
     import { libraryStore } from "../stores/library";
-    import { appSettings, loadSettings } from "../stores/appSettings";
+    import { appSettings } from "../stores/appSettings";
     import { push } from "svelte-spa-router";
 
     import ToastStack from "../components/ToastStack.svelte";
@@ -258,7 +258,6 @@
 
     onMount(async () => {
         await ensureUserData();
-        intervalId = setInterval(loadSettings, 40000); // Reload settings here every 40 seconds
     });
 
     onDestroy(() => {

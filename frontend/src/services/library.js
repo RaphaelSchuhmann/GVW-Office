@@ -1,5 +1,6 @@
 import { get } from "svelte/store";
-import { appSettings, loadSettings } from "../stores/appSettings";
+import { appSettings } from "../stores/appSettings";
+import { loadAppSettings } from "./appSettingsSyncService";
 import { auth } from "../stores/auth";
 import { addToast } from "../stores/toasts";
 import { logout } from "./user";
@@ -70,7 +71,7 @@ export async function addCategory(type, displayName) {
         });
     }
 
-    await loadSettings();
+    await loadAppSettings();
 }
 
 /**
@@ -115,7 +116,7 @@ export async function removeCategory(type) {
         });
     }
 
-    await loadSettings();
+    await loadAppSettings();
 }
 
 export async function addScore(scoreData) {

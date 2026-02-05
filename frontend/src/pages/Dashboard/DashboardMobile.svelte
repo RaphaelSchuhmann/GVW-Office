@@ -4,7 +4,7 @@
     import { logout } from "../../services/user";
     import { ensureUserData } from "../../services/generalService";
     import { user } from "../../stores/user";
-    import { appSettings, loadSettings } from "../../stores/appSettings";
+    import { appSettings } from "../../stores/appSettings";
     import { addToast } from "../../stores/toasts";
 
     import ToastStack from "../../components/ToastStack.svelte";
@@ -30,7 +30,6 @@
 
     onMount(async () => {
         await ensureUserData();
-        await loadSettings();
         DEVPopulateEvents();
         maxMembers = $appSettings.maxMembers.toString();
     });
