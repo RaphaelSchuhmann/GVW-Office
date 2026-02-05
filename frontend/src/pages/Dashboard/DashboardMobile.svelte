@@ -1,7 +1,8 @@
 <script>
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
-    import { loadUserData, logout } from "../../services/user";
+    import { logout } from "../../services/user";
+    import { ensureUserData } from "../../services/generalService";
     import { user } from "../../stores/user";
     import { appSettings, loadSettings } from "../../stores/appSettings";
     import { addToast } from "../../stores/toasts";
@@ -28,7 +29,7 @@
     let events = [];
 
     onMount(async () => {
-        await loadUserData();
+        await ensureUserData();
         await loadSettings();
         DEVPopulateEvents();
         maxMembers = $appSettings.maxMembers.toString();

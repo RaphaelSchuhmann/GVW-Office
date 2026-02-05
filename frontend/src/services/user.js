@@ -30,60 +30,60 @@ export async function getData(email, token) {
  * Handles authentication errors and redirects if necessary
  * @returns {Promise<void>} Updates user store or shows error toast
  */
-export async function loadUserData() {
-    const authStore = get(auth);
-    let email = "";
+// export async function loadUserData() {
+//     const authStore = get(auth);
+//     let email = "";
 
-    try {
-        const { resp, body } = await authenticateUser(authStore.token);
+//     try {
+//         const { resp, body } = await authenticateUser(authStore.token);
 
-        if (resp && body && resp.status === 200) {
-            email = body.email;
-        } else {
-            logout();
-            await push("/?cpwErr=false");
-            return;
-        }
-    } catch (error) {
-        logout();
-        await push("/?cpwErr=false");
-        return;
-    }
+//         if (resp && body && resp.status === 200) {
+//             email = body.email;
+//         } else {
+//             logout();
+//             await push("/?cpwErr=false");
+//             return;
+//         }
+//     } catch (error) {
+//         logout();
+//         await push("/?cpwErr=false");
+//         return;
+//     }
 
 
-    // Get user data
-    const response = await getData(email, authStore.token);
-    const body = await response.json();
+//     // Get user data
+//     const response = await getData(email, authStore.token);
+//     const body = await response.json();
 
-    if (response.status === 200) {
-        user.update(u => ({ ...u, name: body.name, email: body.email, role: body.role, address: body.address, phone: body.phone, loaded: true }));
-    } else if (response.status === 401) {
-        // Auth token invalid / unauthorized
-        addToast({
-            title: "Ungültiges Token",
-            subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-            type: "error"
-        });
-        logout();
-        await push("/?cpwErr=false");
-    } else if (response.status === 404) {
-        // user not found route back to log in
-        addToast({
-            title: "Konto nicht gefunden",
-            subTitle: "Ihr Konto konnte nicht gefunden werden. Bitte melden Sie sich erneut an, um fortzufahren.",
-            type: "error"
-        });
-        logout();
-        await push("/?cpwErr=false");
-    } else {
-        // internal server error / unknown error
-        addToast({
-            title: "Interner Serverfehler",
-            subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-            type: "error"
-        });
-    }
-}
+//     if (response.status === 200) {
+//         user.update(u => ({ ...u, name: body.name, email: body.email, role: body.role, address: body.address, phone: body.phone, loaded: true }));
+//     } else if (response.status === 401) {
+//         // Auth token invalid / unauthorized
+//         addToast({
+//             title: "Ungültiges Token",
+//             subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+//             type: "error"
+//         });
+//         logout();
+//         await push("/?cpwErr=false");
+//     } else if (response.status === 404) {
+//         // user not found route back to log in
+//         addToast({
+//             title: "Konto nicht gefunden",
+//             subTitle: "Ihr Konto konnte nicht gefunden werden. Bitte melden Sie sich erneut an, um fortzufahren.",
+//             type: "error"
+//         });
+//         logout();
+//         await push("/?cpwErr=false");
+//     } else {
+//         // internal server error / unknown error
+//         addToast({
+//             title: "Interner Serverfehler",
+//             subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+//             type: "error"
+//         });
+//     }
+// }
 
 /**
  * Updates user data on the server

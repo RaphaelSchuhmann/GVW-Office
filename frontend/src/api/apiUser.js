@@ -7,7 +7,6 @@ const apiUrl = __API_URL__;
  * 
  * Sends a POST request to `/user/data` endpoint with an Authorization header.
  * 
- * @param {string} email - the user's email
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
  * An object containing the raw fetch Response (`resp`) and the parsed
  * JSON response body (`body`). Returns `{ resp: null, body: null }`
@@ -23,8 +22,8 @@ const apiUrl = __API_URL__;
  *   console.log("User data: ", body);
  * }
  */
-export async function getUserData(email) {
-    const resp = await httpPost(`${apiUrl}/user/data`, { email: email });
+export async function getUserData() {
+    const resp = await httpGet(`${apiUrl}/user/data`);
     if (!resp) return { resp: null, body: null };
     const body = await resp.json();
     return { resp, body };

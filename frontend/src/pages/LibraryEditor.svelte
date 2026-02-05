@@ -2,7 +2,7 @@
 
 <script>
     import { onMount } from "svelte";
-    import { loadUserData } from "../services/user";
+    import { ensureUserData } from "../services/generalService";
     import { getLibraryCategories, updateScore } from "../services/library";
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
@@ -96,7 +96,7 @@
     )
 
     onMount(async () => {
-        await loadUserData();
+        await ensureUserData();
 
         const hash = window.location.hash;
         const queryString = hash.split("?")[1];

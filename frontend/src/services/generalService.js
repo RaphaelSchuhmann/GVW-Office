@@ -11,15 +11,15 @@ const USER_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 export async function ensureUserData() {
     const { lastFetched, email } = get(user);
 
-    if ((!lastFetched || isStale(lastFetched)) && email) {
-        const { resp, body } = await getUserData(email);
+    if ((!lastFetched || isStale(lastFetched)) || !email) {
+        const { resp, body } = await getUserData();
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
         
         if (normalizedResponse.status === 404) {
             addToast({
                 title: "Benutzer nicht gefunden",
-                subTitle: !get(isMobile) ? "Es wurde kein Benutzer unter der angegebenen E-Mail gefunden." : "",
+                subTitle: !get(isMobile) ? "Es wurde kein Benutzer unter den angegebenen Daten gefunden." : "",
                 type: "error"
             });
             return;

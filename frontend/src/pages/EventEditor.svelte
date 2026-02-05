@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { loadUserData } from "../services/user";
+    import { ensureUserData } from "../services/generalService";
 
     import ToastStack from "../components/ToastStack.svelte";
     import DesktopSidebar from "../components/DesktopSidebar.svelte";
@@ -99,7 +99,7 @@
     );
 
     onMount(async () => {
-        await loadUserData();
+        await ensureUserData();
 
         const hash = window.location.hash;
         const queryString = hash.split("?")[1];

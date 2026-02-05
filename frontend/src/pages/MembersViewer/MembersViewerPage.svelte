@@ -6,7 +6,7 @@
     import MemberViewerDesktop from "./MemberViewerDesktop.svelte";
     import MemberViewerMobile from "./MemberViewerMobile.svelte";
     import { membersStore } from "../../stores/members";
-    import { loadUserData } from "../../services/user";
+    import { ensureUserData } from "../../services/generalService";
 
     let member = {
         name: "",
@@ -23,7 +23,7 @@
     };
 
     onMount(async () => {
-        await loadUserData();
+        await ensureUserData();
 
         const hash = window.location.hash;
         const params = new URLSearchParams(hash.split("?")[1]);

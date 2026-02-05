@@ -1,7 +1,7 @@
 <script>
     import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
-    import { loadUserData } from "../services/user";
+    import { ensureUserData } from "../services/generalService";
     import {
         voiceMap,
         getLibraryCategories,
@@ -257,7 +257,7 @@
     }
 
     onMount(async () => {
-        await loadUserData();
+        await ensureUserData();
         intervalId = setInterval(loadSettings, 40000); // Reload settings here every 40 seconds
     });
 

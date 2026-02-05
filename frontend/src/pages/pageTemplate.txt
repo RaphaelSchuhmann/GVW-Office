@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { loadUserData } from "../services/user";
+    import { ensureUserData } from "../services/generalService";
 
     import ToastStack from "../components/ToastStack.svelte";
     import Sidebar from "../components/Sidebar.svelte";
@@ -11,7 +11,7 @@
     let settingsModal;
 
     onMount(async () => {
-        await loadUserData();
+        await ensureUserData();
     });
 
     function settingsClick() {

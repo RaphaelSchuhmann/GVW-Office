@@ -2,7 +2,7 @@
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
-    import { loadUserData, logout } from "../../services/user";
+    import { logout } from "../../services/user";
     import { membersStore } from "../../stores/members";
     import { addMember, updateStatus, roleMap, voiceMap, statusMap } from "../../services/members";
     import { addToast } from "../../stores/toasts";
@@ -230,10 +230,6 @@
         activeMemberId = null;
         await searchBar.fetchData();
     }
-
-    onMount(async () => {
-        await loadUserData();
-    });
 
     function settingsClick() {
         settingsModal.showModal();
