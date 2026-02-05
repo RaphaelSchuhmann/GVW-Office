@@ -1,10 +1,12 @@
 import { get } from "svelte/store";
 import { user } from "../stores/user";
-import { getUserData } from "../api/apiUser";
+import { getUserData, updateUserData } from "../api/apiUser";
 import { normalizeResponse } from "../api/http";
 import { handleGlobalApiError } from "../api/globalErrorHandler";
 import { isMobile } from "../stores/viewport";
 import { addToast } from "../stores/toasts";
+import { logout } from "./user";
+import { push } from "svelte-spa-router";
 
 const USER_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
@@ -52,4 +54,41 @@ export async function ensureUserData() {
 function isStale(lastFetched) {
     if (!lastFetched) return true;
     return Date.now() - lastFetched > USER_CACHE_TTL_MS;
+}
+
+/**
+  * Attempts to update the user data and its associated member data.
+ * 
+ * Sends a POST request to `/user/update` endpoint with an Authorization header.
+ * The server identifies the user from the auth token.
+ * 
+ * @param {Object} data - the updated user data.
+ * @param {string} data.email - the user's email address
+ * @param {string} data.phone - the user's phone number
+ * @param {string} data.address - the user's address
+ * @returns {Promise<{void}>}
+ */
+export async function tryUpdateUserData(data) {
+    const { resp } = await updateUserData(data);
+
+    const normalizedResponse = normalizeResponse(resp);
+    if (handleGlobalApiError(normalizedResponse)) return;
+
+    if (normalizedResponse.errorType === "NOTFOUND") {
+        addToast({
+            title: "Konto nicht gefunden",
+            subTitle: !get(isMobile) ? "Ihr Konto konnte nicht gefunden werden. Bitte melden Sie sich erneut an, um fortzufahren." : "",
+            type: "error"
+        });
+        logout();
+        await push("/?cpwErr=false");
+        return;
+    }
+
+    user.update(u => ({ ...u, email: data.email, phone: data.phone, address: data.address }));
+    addToast({
+        title: "Erfolgreich gespeichert",
+        subTitle: !get(isMobile) ? "Ihre persönlichen Daten wurden erfolgreich aktualisiert und sind nun in Ihrem Benutzerkonto gespeichert." : "",
+        type: "success"
+    });
 }

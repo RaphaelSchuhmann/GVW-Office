@@ -7,6 +7,7 @@
     import Button from "./Button.svelte";
     import { addToast } from "../stores/toasts";
     import { push } from "svelte-spa-router";
+    import { tryUpdateUserData } from "../services/generalService";
 
     export let isMobile = false;
 
@@ -31,47 +32,11 @@
      * Shows appropriate toast messages and handles authentication errors
      */
     async function updateUserData() {
-        let originalEmail = $user.email;
-
         if (email.length === 0) email = $user.email;
         if (phone.length === 0) phone = $user.phone;
         if (address.length === 0) address = $user.address;
 
-        user.update(u => ({ ...u, email: email, phone: phone, address: address }));
-        const response = await updateData(originalEmail);
-
-        if (response.status === 200) {
-            addToast({
-                title: "Erfolgreich gespeichert",
-                subTitle: "Ihre persönlichen Daten wurden erfolgreich aktualisiert und sind nun in Ihrem Benutzerkonto gespeichert.",
-                type: "success"
-            });
-        } else if (response.status === 401) {
-            // Auth token invalid / unauthorized
-            addToast({
-                title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
-        } else if (response.status === 404) {
-            // user not found route back to log in
-            addToast({
-                title: "Konto nicht gefunden",
-                subTitle: "Ihr Konto konnte nicht gefunden werden. Bitte melden Sie sich erneut an, um fortzufahren.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
-        } else {
-            // internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
-            });
-        }
+        await tryUpdateUserData({ email, phone, address });
 
         modal.hideModal();
     }
