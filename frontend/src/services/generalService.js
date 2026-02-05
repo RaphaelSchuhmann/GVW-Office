@@ -8,6 +8,14 @@ import { addToast } from "../stores/toasts";
 
 const USER_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
+/**
+ * Attempts to retrieve the latest user data from the API.
+ * 
+ * Only calls the API if `user` store is either empty, the `lastFetched`
+ * is null or empty, or the last request was 2 minutes ago.
+ * 
+ * @returns {Promise<{void}>}
+ */
 export async function ensureUserData() {
     const { lastFetched, email } = get(user);
 
@@ -30,6 +38,14 @@ export async function ensureUserData() {
     }
 }
 
+/**
+ * Determines if the last request is 2 minutes or older.
+ * 
+ * @param {number} lastFetched - the timestamp of the last request
+ * @returns {boolean}
+ * If `lastFetched` is older than the `USER_CACHE_TTL_MS` it returns true.
+ * Else it returns false.
+ */
 function isStale(lastFetched) {
     if (!lastFetched) return true;
     return Date.now() - lastFetched > USER_CACHE_TTL_MS;
