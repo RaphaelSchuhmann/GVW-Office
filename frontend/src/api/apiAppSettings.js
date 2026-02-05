@@ -1,5 +1,6 @@
 import { httpGet, httpPost } from "./http";
 
+// @ts-ignore
 const apiUrl = __API_URL__;
 
 /**

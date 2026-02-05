@@ -52,6 +52,7 @@ export const modeMap = {
     "monthly": "Monatlich"
 }
 
+// @ts-ignore
 const apiUrl = __API_URL__;
 
 /**
