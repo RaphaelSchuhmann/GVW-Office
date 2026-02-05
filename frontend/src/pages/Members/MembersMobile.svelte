@@ -1,7 +1,5 @@
 <script>
-    import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
-    import { loadUserData, logout } from "../../services/user";
     import { membersStore } from "../../stores/members";
     import { addMember, roleMap, voiceMap, statusMap } from "../../services/members";
     import { addToast } from "../../stores/toasts";
@@ -97,10 +95,6 @@
         addMemberModal.hideModal();
         await searchBar.fetchData();
     }
-
-    onMount(async () => {
-        await loadUserData();
-    });
 
     let sidebarOpen = false;
 

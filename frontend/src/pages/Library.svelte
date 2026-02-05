@@ -1,7 +1,7 @@
 <script>
     import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
-    import { loadUserData } from "../services/user";
+    import { ensureUserData } from "../services/generalService";
     import {
         voiceMap,
         getLibraryCategories,
@@ -13,7 +13,7 @@
     } from "../services/library";
     import { user } from "../stores/user";
     import { libraryStore } from "../stores/library";
-    import { appSettings, loadSettings } from "../stores/appSettings";
+    import { appSettings } from "../stores/appSettings";
     import { push } from "svelte-spa-router";
 
     import ToastStack from "../components/ToastStack.svelte";
@@ -257,8 +257,7 @@
     }
 
     onMount(async () => {
-        await loadUserData();
-        intervalId = setInterval(loadSettings, 40000); // Reload settings here every 40 seconds
+        await ensureUserData();
     });
 
     onDestroy(() => {

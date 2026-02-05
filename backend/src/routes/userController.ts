@@ -20,12 +20,14 @@ const userRouter = Router();
  * - `404`: User not found
  * - `500`: Internal server error
  */
-userRouter.post("/data", async (req, resp) => {
+userRouter.get("/data", async (req, resp) => {
     try {
-        const { email } = req.body;
+        const userId = req.user;
+
+        if (!userId) return resp.status(401).json({ errorMessage: "Unauthorized" });
 
         const users = await dbService.find("users", {
-            selector: { email: email },
+            selector: { userId: userId },
             limit: 1
         });
 

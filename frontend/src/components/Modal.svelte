@@ -1,6 +1,7 @@
 <script>
     import ModalHeader from "./ModalHeader.svelte";
     import { widthMap, heightMap } from "../lib/dynamicStyles";
+    import { onDestroy } from "svelte";
 
     export let title = "";
     export let subTitle = "";
@@ -12,6 +13,10 @@
     export let extraFunctionOnClose = true;
 
     let visible = false;
+
+    onDestroy(() => {
+        document.body.style.overflow = "";
+    });
 
     /**
      * Shows the modal and optionally executes extra function

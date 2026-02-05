@@ -4,7 +4,8 @@
     import { user } from "../stores/user";
     import { eventsStore } from "../stores/events";
     import { modeMap, statusMap, typeMap } from "../services/events";
-    import { loadUserData, logout } from "../services/user";
+    import { logout } from "../services/user";
+    import { ensureUserData } from "../services/generalService";
     import {
         parseDMYToDate,
         getLastDayOfCurrentMonth,
@@ -286,7 +287,7 @@
     }
 
     onMount(async () => {
-        await loadUserData();
+        await ensureUserData();
     });
 
     function settingsClick() {

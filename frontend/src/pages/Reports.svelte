@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { loadUserData } from "../services/user";
+    import { ensureUserData } from "../services/generalService";
     import { addReport, reportsTypeMap } from "../services/reports";
     import { get } from "svelte/store";
     import { push } from "svelte-spa-router";
@@ -150,7 +150,7 @@
     }
 
     onMount(async () => {
-        await loadUserData();
+        await ensureUserData();
     });
 
     function settingsClick() {

@@ -1,9 +1,10 @@
 <script>
     import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
-    import { loadUserData, logout } from "../../services/user";
+    import { logout } from "../../services/user";
+    import { ensureUserData } from "../../services/generalService";
     import { user } from "../../stores/user";
-    import { appSettings, loadSettings } from "../../stores/appSettings";
+    import { appSettings } from "../../stores/appSettings";
     import { addToast } from "../../stores/toasts";
 
     import ToastStack from "../../components/ToastStack.svelte";
@@ -28,8 +29,7 @@
     let events = [];
 
     onMount(async () => {
-        await loadUserData();
-        await loadSettings();
+        await ensureUserData();
         DEVPopulateEvents();
         maxMembers = $appSettings.maxMembers.toString();
     });
