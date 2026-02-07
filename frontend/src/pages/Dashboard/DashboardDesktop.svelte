@@ -1,11 +1,8 @@
 <script>
     import { onMount } from "svelte";
-    import { push } from "svelte-spa-router";
-    import { logout } from "../../services/userService";
-    import { ensureUserData } from "../../services/userService";
     import { user } from "../../stores/user";
     import { appSettings } from "../../stores/appSettings";
-    import { addToast } from "../../stores/toasts";
+    import { tryUpdateMaxMembers } from "../../services/appSettingsService";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
@@ -17,21 +14,18 @@
     import Modal from "../../components/Modal.svelte";
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
-    import { updateMaxMembers } from "../../services/appSettings";
 
     /** @type {import("../../components/SettingsModal.svelte").default} */
     let settingsModal;
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal;
-    let maxMembers;
+    let maxMembers = "";
 
     let events = [];
 
-    onMount(async () => {
-        await ensureUserData();
+    onMount(() => {
         DEVPopulateEvents();
-        maxMembers = $appSettings.maxMembers.toString();
     });
 
     function DEVPopulateEvents() {
@@ -93,45 +87,16 @@
         };
     }
 
-    /**
-     * Updates the maximum members per voice setting
-     * Validates input and handles API response with appropriate toast messages
-     */
     async function updateMaxMembersVoiceDistribution() {
         let updatedMaxMembers = Number(maxMembers);
 
-        if (isNaN(updatedMaxMembers)) updatedMaxMembers = $appSettings.maxMembers;
-        if (maxMembers.length === 0) updatedMaxMembers = $appSettings.maxMembers;
-        if (Number(maxMembers) < 1) updatedMaxMembers = $appSettings.maxMembers;
+        if (isNaN(updatedMaxMembers) || maxMembers.length === 0 || updatedMaxMembers < 1) {
+            updatedMaxMembers = $appSettings.maxMembers;
+        }
 
-        appSettings.update(u => ({...u, maxMembers: updatedMaxMembers}));
+        await tryUpdateMaxMembers(updatedMaxMembers);
 
         voiceDistributionSettingsModal.hideModal();
-        const response = await updateMaxMembers();
-
-        if (response.status === 200) {
-            addToast({
-                title: "Erfolgreich gespeichert",
-                subTitle: "Die maximale Anzahl and Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert.",
-                type: "success"
-            });
-        } else if (response.status === 401) {
-            // Auth token invalid / unauthorized
-            addToast({
-                title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
-        } else {
-            // internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
-            });
-        }
     }
 
     function settingsClick() {
@@ -140,7 +105,8 @@
 </script>
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
-<Modal bind:this={voiceDistributionSettingsModal} title="Stimmenverteilung Einstellungen" subTitle="Einstellungen für die Stimmverteilung">
+<Modal bind:this={voiceDistributionSettingsModal} title="Stimmenverteilung Einstellungen" subTitle="Einstellungen für die Stimmverteilung"
+       extraFunctionOnClose={false} extraFunction={() => maxMembers = String($appSettings.maxMembers)}>
     <Input title="Maximale Anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers}/>
     <div class="w-full flex items-center justify-end mt-5 gap-2">
         <Button type="secondary" on:click={voiceDistributionSettingsModal.hideModal}>Abbrechen</Button>

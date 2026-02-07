@@ -13,8 +13,8 @@
     import Reports from "./pages/Reports.svelte";
     import Library from "./pages/Library.svelte";
     import LibraryEditor from "./pages/LibraryEditor.svelte";
-    
-    import { onMount } from "svelte";
+
+    import { onDestroy, onMount } from "svelte";
     import { startSyncService, stopSyncService } from "./services/appSettingsSyncService";
 
     const routes = {
@@ -31,9 +31,12 @@
         "/library/edit": LibraryEditor,
     };
 
-    onMount(() => {
-        startSyncService();
-        return () => stopSyncService();
+    onMount(async () => {
+        await startSyncService();
+    });
+
+    onDestroy(() => {
+        stopSyncService();
     });
 </script>
 <Viewport />
