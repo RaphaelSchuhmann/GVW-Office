@@ -187,3 +187,6 @@ Thumbs.db
 package-lock.json
 
 .angular/
+
+*.mdv
+scripts/output.json
