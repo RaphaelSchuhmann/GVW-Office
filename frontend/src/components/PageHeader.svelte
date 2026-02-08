@@ -2,7 +2,7 @@
     export let title = "";
     export let subTitle = "";
     export let showSlot = true;
-    export let slotCentered = true;
+    export let slotCentered = false;
 </script>
 
 <div class="w-full flex items-center">

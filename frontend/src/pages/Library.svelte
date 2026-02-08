@@ -1,7 +1,7 @@
 <script>
     import { onDestroy, onMount } from "svelte";
     import { get } from "svelte/store";
-    import { ensureUserData } from "../services/generalService";
+    import { ensureUserData } from "../services/userService";
     import {
         voiceMap,
         getLibraryCategories,

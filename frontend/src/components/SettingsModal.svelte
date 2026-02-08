@@ -1,12 +1,10 @@
 <script>
     import { user } from "../stores/user";
-    import { logout, updateData } from "../services/user";
-    import { onMount, tick } from "svelte";
+    import { tick } from "svelte";
     import Modal from "./Modal.svelte";
     import Input from "./Input.svelte";
     import Button from "./Button.svelte";
-    import { addToast } from "../stores/toasts";
-    import { push } from "svelte-spa-router";
+    import { tryUpdateUserData } from "../services/userService";
 
     export let isMobile = false;
 
@@ -27,58 +25,28 @@
     let address = $user.address;
 
     /**
-     * Updates user data on the server and handles API response
-     * Shows appropriate toast messages and handles authentication errors
+     * Updates the user data with the current input values.
+     * 
+     * Falls back to existing values from teh `$user` store if any field is empty.
+     * Calls `tryUpdateUserData` to perform the update, and hides the modal once complete.
+     * 
+     * @async
+     * @returns {Promise<void>}
      */
     async function updateUserData() {
-        let originalEmail = $user.email;
-
         if (email.length === 0) email = $user.email;
         if (phone.length === 0) phone = $user.phone;
         if (address.length === 0) address = $user.address;
 
-        user.update(u => ({ ...u, email: email, phone: phone, address: address }));
-        const response = await updateData(originalEmail);
-
-        if (response.status === 200) {
-            addToast({
-                title: "Erfolgreich gespeichert",
-                subTitle: "Ihre persönlichen Daten wurden erfolgreich aktualisiert und sind nun in Ihrem Benutzerkonto gespeichert.",
-                type: "success"
-            });
-        } else if (response.status === 401) {
-            // Auth token invalid / unauthorized
-            addToast({
-                title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
-        } else if (response.status === 404) {
-            // user not found route back to log in
-            addToast({
-                title: "Konto nicht gefunden",
-                subTitle: "Ihr Konto konnte nicht gefunden werden. Bitte melden Sie sich erneut an, um fortzufahren.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
-        } else {
-            // internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
-            });
-        }
+        await tryUpdateUserData({ email, phone, address });
 
         modal.hideModal();
     }
 
     /**
-     * Resets all input fields to readonly state
-     * Called when modal is closed or opened
+     * Resets the input fields to readonly mode.
+     * 
+     * Typically used when closing or resetting the modal to prevent editing until explicitly allowed.
      */
     function resetStates() {
         readonlyMail = true;
@@ -87,8 +55,8 @@
     }
 
     /**
-     * Shows the settings modal and initializes form values
-     * Resets form data to current user values
+     * Opens the user data modal and initializes the input fields
+     * with the current values from the `$user` store.
      */
     export function showModal() {
         modal.showModal();

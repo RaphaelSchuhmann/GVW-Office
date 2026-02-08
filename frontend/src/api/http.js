@@ -1,6 +1,20 @@
 import { get } from "svelte/store";
 import { auth } from "../stores/auth";
 
+/**
+ * Normalizes a fetch `Response` object into a consistent format.
+ * 
+ * Converts HTTP status codes and network errors into a standard oject
+ * with `ok` and `errorType` fields, optionally including the original status code.
+ * 
+ * @param {Response | null} response 
+ * @returns {{ ok: boolean, errorType?: string, status?: number }}
+ * Returns `ok: true` for successfull responses, otherwise `ok: false` with a descriptive `errorType`.
+ * 
+ * @example
+ * const normalized = normalizeResponse(resp);
+ * if (!normalized.ok) console.error(normalized.errorType);
+ */
 export function normalizeResponse(response) {
     if (!response) return { ok: false, errorType: "NETWORK" };
     if (response.status === 400) return { ok: false, errorType: "BADREQUEST", status: 400 };
@@ -13,10 +27,22 @@ export function normalizeResponse(response) {
     return { ok: true, status: response.status };
 }
 
+/**
+ * Performs an HTTP GET request with optional bearer token authorization.
+ * 
+ * @param {string} url - The endpoint URL to fetch.
+ * @param {string} [customToken=""] - Optional token to override the auth store token.
+ * @param {boolean} [doAuth=true] - Whether to include the Authorization header.
+ * @returns {Promise<Response | null>} The fetch response, or `null` if the request fails.
+ * 
+ * @example
+ * const resp = await httpGet("/api/data");
+ * if (resp?.ok) console.log(await resp.json());
+ */
 export async function httpGet(url, customToken = "", doAuth = true) {
-    const headers = {};
+    const headers = new Headers();
     const token = customToken ? customToken : get(auth).token;
-    if (doAuth && token) headers["Authorization"] = `Bearer ${token}`;
+    if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
 
     try {
         return await fetch(url, {
@@ -28,12 +54,25 @@ export async function httpGet(url, customToken = "", doAuth = true) {
     }
 }
 
+/**
+ * Performs an HTTP POST request with JSON body and optional bearer token authorization.
+ *
+ * @param {string} url - The endpoint URL to post to.
+ * @param {any} body - The data to send as JSON in the request body.
+ * @param {string} [customToken=""] - Optional token to override the auth store token.
+ * @param {boolean} [doAuth=true] - Whether to include the Authorization header.
+ * @returns {Promise<Response | null>} The fetch response, or `null` if the request fails.
+ *
+ * @example
+ * const resp = await httpPost("/api/update", { name: "Raphael" });
+ * if (resp?.ok) console.log("Update successful");
+ */
 export async function httpPost(url, body, customToken = "", doAuth = true) {
-    const headers = {};
-    headers["Content-Type"] = "application/json";
-    
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+
     const token = customToken ? customToken : get(auth).token;
-    if (doAuth && token) headers["Authorization"] = `Bearer ${token}`;
+    if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
 
     try {
         return await fetch(url, {

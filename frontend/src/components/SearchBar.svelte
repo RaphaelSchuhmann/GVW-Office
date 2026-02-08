@@ -5,7 +5,7 @@
 
     import { marginMap } from "../lib/dynamicStyles";
     import { addToast } from "../stores/toasts";
-    import { logout } from "../services/user";
+    import { logout } from "../services/userService";
     import { push } from "svelte-spa-router";
     export let marginTop = "";
     export let placeholder = "Suchen...";

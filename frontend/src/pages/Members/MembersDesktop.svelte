@@ -1,7 +1,7 @@
 <script>
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
-    import { logout } from "../../services/user";
+    import { logout } from "../../services/userService";
     import { membersStore } from "../../stores/members";
     import { addMember, updateStatus, roleMap, voiceMap, statusMap } from "../../services/members";
     import { addToast } from "../../stores/toasts";

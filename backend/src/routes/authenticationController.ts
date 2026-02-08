@@ -87,6 +87,19 @@ authRouter.post("/dev", async (req, resp) => {
             await dbService.delete("members", member._id, member._rev);
         }
 
+        const member = await dbService.create("members", {
+            name: "Raphael",
+            surname: "Schuhmann",
+            email: "raphael221@outlook.de",
+            phone: "01701234 5678",
+            address: "Musterstraße 1, 12345 Musterstadt",
+            voice: "tenor1",
+            status: "active",
+            role: "admin",
+            birthdate: "01.01.2000",
+            joined: "2016"
+        });
+
         await dbService.create("users", {
             email: "raphael221@outlook.de",
             name: "Raphael Schuhmann",
@@ -97,7 +110,7 @@ authRouter.post("/dev", async (req, resp) => {
             firstLogin: true,
             userId: uuidv4(),
             role: "admin",
-            memberId: "1",
+            memberId: member.id,
             failedLoginAttempts: 0,
             lockUntil: null
         });

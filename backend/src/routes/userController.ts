@@ -59,10 +59,13 @@ userRouter.get("/data", async (req, resp) => {
  */
 userRouter.post("/update", async (req, resp) => {
     try {
-        const { originalEmail, email, phone, address } = req.body;
+        const { email, phone, address } = req.body;
+        const userId = req.user;
+
+        if (!userId) return resp.status(401).json({ errorMessage: "Unauthorized" });
 
         const users = await dbService.find("users", {
-            selector: { email: originalEmail },
+            selector: { userId: userId },
             limit: 1
         });
 

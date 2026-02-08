@@ -1,11 +1,7 @@
 <script>
     import { onMount } from "svelte";
-    import { push } from "svelte-spa-router";
-    import { logout } from "../../services/user";
-    import { ensureUserData } from "../../services/generalService";
     import { user } from "../../stores/user";
     import { appSettings } from "../../stores/appSettings";
-    import { addToast } from "../../stores/toasts";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -16,7 +12,7 @@
     import Modal from "../../components/Modal.svelte";
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
-    import { updateMaxMembers } from "../../services/appSettings";
+    import { tryUpdateMaxMembers } from "../../services/appSettingsService";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
 
     /** @type {import("../../components/SettingsModal.svelte").default} */
@@ -28,8 +24,7 @@
 
     let events = [];
 
-    onMount(async () => {
-        await ensureUserData();
+    onMount(() => {
         DEVPopulateEvents();
         maxMembers = $appSettings.maxMembers.toString();
     });
@@ -100,38 +95,13 @@
     async function updateMaxMembersVoiceDistribution() {
         let updatedMaxMembers = Number(maxMembers);
 
-        if (isNaN(updatedMaxMembers)) updatedMaxMembers = $appSettings.maxMembers;
-        if (maxMembers.length === 0) updatedMaxMembers = $appSettings.maxMembers;
-        if (Number(maxMembers) < 1) updatedMaxMembers = $appSettings.maxMembers;
+        if (isNaN(updatedMaxMembers) || maxMembers.length === 0 || updatedMaxMembers < 1) {
+            updatedMaxMembers = $appSettings.maxMembers;
+        }
 
-        appSettings.update(u => ({...u, maxMembers: updatedMaxMembers}));
+        await tryUpdateMaxMembers(updatedMaxMembers);
 
         voiceDistributionSettingsModal.hideModal();
-        const response = await updateMaxMembers();
-
-        if (response.status === 200) {
-            addToast({
-                title: "Erfolgreich gespeichert",
-                subTitle: "Die maximale Anzahl and Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert.",
-                type: "success"
-            });
-        } else if (response.status === 401) {
-            // Auth token invalid / unauthorized
-            addToast({
-                title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
-        } else {
-            // internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
-            });
-        }
     }
 
     let sidebarOpen = false;
@@ -142,8 +112,8 @@
 </script>
 
 <SettingsModal bind:this={settingsModal} isMobile={true}></SettingsModal>
-<Modal bind:this={voiceDistributionSettingsModal} title="Stimmenvereteilung Einstellungen" subTitle="Einstellungen für die Stimmverteilung"
-       isMobile={true}>
+<Modal bind:this={voiceDistributionSettingsModal} title="Stimmenverteilung Einstellungen" subTitle="Einstellungen für die Stimmverteilung"
+       extraFunctionOnClose={false} extraFunction={() => maxMembers = String($appSettings.maxMembers)} isMobile={true}>
     <Input title="Maximale anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers}/>
     <div class="w-full flex items-center justify-end mt-5 gap-2">
         <Button type="secondary" on:click={voiceDistributionSettingsModal.hideModal}>Abbrechen</Button>

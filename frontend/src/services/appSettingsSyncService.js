@@ -18,14 +18,15 @@ let isFetching = false;
  * then refreshes them at a fixed interval (every 40 seconds).
  * 
  * Intended to be called from a view lifecycle (e.g. onMount).
- * 
- * @returns {void}
+ *
+ * @async
+ * @returns {Promise<void>}
  */
-export function startSyncService() {
+export async function startSyncService() {
     if (isRunning) return;
 
     isRunning = true;
-    loadAppSettings(); // Immediate fetch when starting
+    await loadAppSettings(); // Immediate fetch when starting
     intervalId = setInterval(loadAppSettings, 40000)
 }
 
@@ -62,7 +63,7 @@ export async function loadAppSettings() {
             console.error("Unable to load app settings");
             return;
         }
-    
+
         appSettings.set(body);
     } catch (err) {
         console.error("Unable to load app settings", err);

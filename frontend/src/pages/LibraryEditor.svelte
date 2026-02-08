@@ -2,7 +2,7 @@
 
 <script>
     import { onMount } from "svelte";
-    import { ensureUserData } from "../services/generalService";
+    import { ensureUserData } from "../services/userService";
     import { getLibraryCategories, updateScore } from "../services/library";
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";

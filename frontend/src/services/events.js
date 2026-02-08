@@ -1,7 +1,7 @@
 import { get } from "svelte/store";
 import { auth } from "../stores/auth";
 import { addToast } from "../stores/toasts";
-import { logout } from "./user";
+import { logout } from "./userService";
 import { push } from "svelte-spa-router";
 
 export const typeMap = {
@@ -52,6 +52,7 @@ export const modeMap = {
     "monthly": "Monatlich"
 }
 
+// @ts-ignore
 const apiUrl = __API_URL__;
 
 /**

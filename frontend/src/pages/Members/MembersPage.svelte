@@ -3,7 +3,7 @@
     import { isMobile } from "../../stores/viewport";
     import MembersDesktop from "./MembersDesktop.svelte";
     import MembersMobile from "./MembersMobile.svelte";
-    import { ensureUserData } from "../../services/generalService";
+    import { ensureUserData } from "../../services/userService";
 
     onMount(async () => {
         await ensureUserData();
