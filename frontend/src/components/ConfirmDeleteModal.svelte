@@ -4,7 +4,6 @@
     import Input from "./Input.svelte";
     import { deleteMember } from "../services/members";
     import { deleteEvent } from "../services/events";
-    import { deleteReport } from "../services/reports";
     import { deleteScore } from "../services/library";
     import { addToast } from "../stores/toasts";
     import { logout } from "../services/userService";
@@ -13,7 +12,6 @@
     const actionMap = {
         "deleteMember": deleteMember,
         "deleteEvent": deleteEvent,
-        "deleteReport": deleteReport,
         "deleteLibEntry": deleteScore,
     }
 
