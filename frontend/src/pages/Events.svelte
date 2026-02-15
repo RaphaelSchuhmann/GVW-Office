@@ -34,12 +34,10 @@
     import ConfirmDeleteModal from "../components/ConfirmDeleteModal.svelte";
     import { addToast } from "../stores/toasts";
     import { push } from "svelte-spa-router";
+    import { fetchAndSetRaw, init } from "../services/filterService";
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
-
-    /** @type {import("../components/FilterTabBar.svelte").default} */
-    let filterBar;
 
     // ADD EVENT MODAL
     /** @type {import("../components/Modal.svelte").default} */
@@ -94,7 +92,7 @@
 
         await addEvent(event);
 
-        await filterBar.fetchData();
+        await fetchAndSetRaw();
         addEventModal?.hideModal();
     }
 
@@ -283,11 +281,12 @@
         }
         menuOpen = false;
         activeEventId = null;
-        await filterBar.fetchData();
+        await fetchAndSetRaw();
     }
 
     onMount(async () => {
         await ensureUserData();
+        await init("events");
     });
 
     function settingsClick() {
@@ -370,7 +369,7 @@
                     title="Veranstaltung löschen"
                     subTitle="Sind Sie sich sicher das Sie diese Veranstaltung löschen möchten?"
                     toastMap={deleteEventToast} action="deleteEvent"
-                    onClose={async () => {menuOpen = false; activeEventId = null; await filterBar.fetchData();}}
+                    onClose={async () => {menuOpen = false; activeEventId = null; await fetchAndSetRaw();}}
                     bind:this={confirmDeleteEventModal}
 />
 
@@ -385,11 +384,9 @@
             </Button>
         </PageHeader>
         <div class="flex items-center mt-10 max-w-1/5">
-            <Filter options={["Alle Typen", "Proben", "Meeting", "Konzerte", "Sonstiges"]} page="events"
-                    debounce={false} />
+            <Filter options={["Alle Typen", "Proben", "Meeting", "Konzerte", "Sonstiges"]} page="events" />
         </div>
-        <FilterTabBar contents={["Bevorstehend", "Abgeschlossen"]} selected="Bevorstehend" marginTop="5" page="events"
-                      debounce={true} bind:this={filterBar} />
+        <FilterTabBar contents={["Bevorstehend", "Abgeschlossen"]} selected="Bevorstehend" marginTop="5" page="events" />
         <div class="flex-1 min-h-0 overflow-y-auto mt-5">
             <div class="grid grid-cols-2 gap-4 overflow-y-auto overflow-x-hidden">
                 {#each $eventsStore.display as event}

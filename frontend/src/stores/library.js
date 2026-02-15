@@ -6,7 +6,16 @@ import { writable } from "svelte/store";
  */
 export const libraryStore = writable({
     raw: [],
-    all: [],
     display: [],
     loading: false
+});
+
+/**
+ * Svelte store for library filter state
+ * @type {import('svelte/store').Writable<{dropdown: String, tab: String, search: String}>}
+ */
+export const libraryFilterState = writable({
+    dropdown: "",
+    tab: "",
+    search: ""
 });

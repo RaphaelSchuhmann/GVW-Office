@@ -14,6 +14,8 @@ let lastRaw = null;
 let isFetching = false;
 let fetchIntervalId = null;
 
+let entry = null;
+
 export async function init(pageKey) {
     if (currentPageKey === pageKey) return;
 
@@ -37,30 +39,28 @@ export async function init(pageKey) {
 
     currentPageKey = pageKey;
 
-    const entry = filterRegistry[pageKey];
+    entry = filterRegistry[pageKey];
 
     currentFilterStateUnsubscribe = entry.filterState.subscribe(() => {
-        processFilters(entry);
+        processFilters();
     });
 
     currentDataStoreUnsubscribe = entry.store.subscribe((store) => {
         if (store.raw === lastRaw) return; // Only update data when raw got updated
         lastRaw = store.raw;
-        processFilters(entry);
+        processFilters();
     });
 
-    await fetchAndSetRaw(entry);
+    await fetchAndSetRaw();
 
     fetchIntervalId = setInterval(() => {
-        fetchAndSetRaw(entry);
+        fetchAndSetRaw();
     }, 20000);
 }
 
-function processFilters(entry) {
-    let working = get(entry.store).raw;
+function processFilters() {
+    let working = get(entry.store).raw ?? [];
     const filterState = get(entry.filterState);
-
-    console.log(working);
 
     if (filterState.dropdown !== "" && filterState.dropdown !== "all") {
         working = working.filter(item => item.type === filterState.dropdown);
@@ -75,24 +75,21 @@ function processFilters(entry) {
         working = fuse.search(filterState.search).map(res => res.item);
     }
 
-    entry.store.update(store => ({ ...store, display: working }));
+    entry.store.update(store => ({ ...store, display: Array.isArray(working) ? [...working] : [] }));
 }
 
-export async function fetchAndSetRaw(entry) {
+export async function fetchAndSetRaw() {
     if (isFetching) return;
     isFetching = true;
-
-    entry.store.update(store => ({ ...store, loading: true}));
 
     const { resp, body } = await entry.fetch();
     const normalizedResponse = normalizeResponse(resp);
     if (handleGlobalApiError(normalizedResponse)) {
         isFetching = false;
-        entry.store.update(store => ({ ...store, loading: false}));
         return;
     }
 
-    entry.store.update(store => ({ ...store, raw: body, loading: false}));
+    entry.store.update(store => ({ ...store, raw: body.data }));
 
     isFetching = false;
 }

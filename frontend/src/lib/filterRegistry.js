@@ -1,14 +1,11 @@
-import { eventsStore } from "../stores/events";
+import { eventsFilterState, eventsStore } from "../stores/events";
 import { membersFilterState, membersStore } from "../stores/members";
-import { reportsStore } from "../stores/reports";
-import { libraryStore } from "../stores/library";
+import { libraryFilterState, libraryStore } from "../stores/library";
 import { statusMap, typeMap } from "../services/events";
-import { reportsTypeMap } from "../services/reports";
 import { appSettings } from "../stores/appSettings";
 import { get } from "svelte/store";
 import { getMembers } from "../api/apiMembers";
 import { getEvents } from "../api/apiEvents";
-import { getReports } from "../api/apiReports";
 import { getScores } from "../api/apiLibrary";
 
 /**
@@ -17,7 +14,7 @@ import { getScores } from "../api/apiLibrary";
  */
 export const filterRegistry = {
     members: {
-        fetch: getMembers(),
+        fetch: getMembers,
         store: membersStore,
         filterState: membersFilterState,
         fuse: {
@@ -31,8 +28,9 @@ export const filterRegistry = {
         }
     },
     events: {
-        fetch: getEvents(),
+        fetch: getEvents,
         store: eventsStore,
+        filterState: eventsFilterState,
         optionMap: typeMap,
         tabMap: statusMap,
         config: {
@@ -44,26 +42,10 @@ export const filterRegistry = {
             }
         }
     },
-    reports: {
-        fetch: getReports(),
-        store: reportsStore,
-        optionMap: reportsTypeMap,
-        fuse: {
-            keys: ["title", "author", "description", "type"], // Add search for date
-            threshold: 0.3
-        },
-        config: {
-            search: {
-                placeholder: "Bericht suchen..."
-            },
-            dropdown: {
-                options: ["Anwesenheit", "Finanzbericht", "Veranstaltung", "Jahresbericht", "Protokoll", "Geburtstag", "Todesfall", "Vereinsjubiläum", "Vereinsveranstaltung", "Hochzeit", "Sonstiges"]
-            }
-        }
-    },
     library: {
-        fetch: getScores(),
+        fetch: getScores,
         store: libraryStore,
+        filterState: libraryFilterState,
         get optionMap() { return get(appSettings).scoreCategories; },
         fuse: {
             keys: ["title", "artist", "voices"],

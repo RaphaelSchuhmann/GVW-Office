@@ -15,6 +15,7 @@
     import { libraryStore } from "../stores/library";
     import { appSettings } from "../stores/appSettings";
     import { push } from "svelte-spa-router";
+    import { init, fetchAndSetRaw } from "../services/filterService";
 
     import ToastStack from "../components/ToastStack.svelte";
     import DesktopSidebar from "../components/DesktopSidebar.svelte";
@@ -39,9 +40,6 @@
 
     /** @type {import("../components/SettingsModal.svelte").default} */
     let settingsModal;
-
-    /** @type {import("../components/SearchBar.svelte").default} */
-    let searchBar;
 
     let filterOptions = getLibraryCategories(true);
 
@@ -152,7 +150,7 @@
         await addScore(newScore);
 
         newScoreModal?.hideModal();
-        await searchBar.fetchData();
+        await fetchAndSetRaw();
     }
 
     // DELETE SCORE
@@ -258,6 +256,7 @@
 
     onMount(async () => {
         await ensureUserData();
+        await init("library");
     });
 
     onDestroy(() => {
@@ -297,7 +296,7 @@
                     title="Noten löschen"
                     subTitle="Sind Sie sich sicher das Sie diese Noten löschen möchten?"
                     toastMap={deleteScoreToast} action="deleteLibEntry"
-                    onClose={async () => {menuOpen = false; activeScoreId = null; await searchBar.fetchData();}}
+                    onClose={async () => {menuOpen = false; activeScoreId = null; await fetchAndSetRaw();}}
                     bind:this={confirmDeleteScoreModal}
 />
 
@@ -369,10 +368,9 @@
         </PageHeader>
 
         <div class="flex items-center w-full gap-2 mt-5">
-            <SearchBar bind:this={searchBar} placeholder="Noten durchsuchen..." page="library" doDebounce={true} />
+            <SearchBar placeholder="Noten durchsuchen..." page="library" />
             <div class="h-full max-w-1/3">
-                <Filter debounce={false} page="library" options={filterOptions} textWrap={false}
-                        customDefault="Alle Kategorien" />
+                <Filter page="library" options={filterOptions} textWrap={false} customDefault="Alle Kategorien" />
             </div>
         </div>
 

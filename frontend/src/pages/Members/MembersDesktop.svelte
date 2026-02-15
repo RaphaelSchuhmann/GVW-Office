@@ -6,6 +6,7 @@
     import { addMember, updateStatus, roleMap, voiceMap, statusMap } from "../../services/members";
     import { addToast } from "../../stores/toasts";
     import { viewportWidth } from "../../stores/viewport";
+    import { fetchAndSetRaw } from "../../services/filterService";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
@@ -25,8 +26,6 @@
 
     /** @type {import("../../components/SettingsModal.svelte").default} */
     let settingsModal;
-
-    let searchBar;
 
     // ADD MEMBER
     /** @type {import("../../components/Modal.svelte").default} */
@@ -103,7 +102,7 @@
         }
 
         addMemberModal.hideModal();
-        await searchBar.fetchData();
+        await fetchAndSetRaw()
     }
 
     // DELETE MEMBER
@@ -131,7 +130,7 @@
     function startDeleteMember() {
         menuOpen = false;
 
-        let membersRaw = get(membersStore).raw;
+        const membersRaw = get(membersStore).raw;
         let name = membersRaw.find(item => item.id === activeMemberId)?.name;
         let surname = membersRaw.find(item => item.id === activeMemberId)?.surname;
 
@@ -227,7 +226,7 @@
         }
         menuOpen = false;
         activeMemberId = null;
-        await searchBar.fetchData();
+        await fetchAndSetRaw()
     }
 
     function settingsClick() {
@@ -277,7 +276,7 @@
 <ConfirmDeleteModal expectedInput={memberName} id={activeMemberId}
                     title="Mitglied löschen" subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?"
                     toastMap={deleteMemberToast} action="deleteMember"
-                    onClose={async () => {menuOpen = false; activeMemberId = null; await searchBar.fetchData();}}
+                    onClose={async () => {menuOpen = false; activeMemberId = null; /* TODO: Fetch data */}}
                     bind:this={confirmDeleteMemberModal}
 />
 
@@ -306,14 +305,14 @@
                     <span class="material-symbols-rounded text-icon-dt-5">add</span>
                     <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
                 </Button>
-                <Button type="primary" on:click={searchBar.fetchData}>
+                <Button type="primary" on:click={fetchAndSetRaw}>
                     <span class="material-symbols-rounded text-icon-dt-5">refresh</span>
                     <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Aktualisieren</p>
                 </Button>
             </div>
         {/if}
 
-        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" bind:this={searchBar} doDebounce={true} />
+        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5"/>
 
         <Card padding="0" marginTop="5" borderThickness={$viewportWidth > 1300 ? "2" : "1"}>
             <div class="flex-1 min-h-0 overflow-y-auto w-full">
@@ -340,47 +339,14 @@
                                 <th scope="col" class="px-6 py-3">
                                     <button
                                         class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                                        on:click={searchBar.fetchData}>
+                                        on:click={fetchAndSetRaw}
+                                        >
                                         <span class="material-symbols-rounded min-[1300px]:text-icon-dt-5 text-icon-dt-6 font-bold text-gv-dark-text">refresh</span>
                                     </button>
                                 </th>
                             </tr>
                             </thead>
                             <tbody>
-                            {#if $membersStore.loading}
-                                <tr class="border-t-2 border-gv-border">
-                                    <td class="px-6 py-4">
-                                        <div class="flex flex-col items-start h-full overflow-hidden gap-1">
-                                            <div class="animate-pulse h-7 w-50 bg-gray-200 rounded"></div>
-                                            <div class="animate-pulse h-5 w-40 bg-gray-200 rounded"></div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="animate-pulse h-7 w-30 bg-gray-200 rounded"></div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex flex-col items-start  h-full overflow-hidden gap-2">
-                                            <div class="flex items-center justify-start gap-2">
-                                            <span
-                                                class="material-symbols-rounded text-icon-dt-6 text-gv-dark-turquoise">mail</span>
-                                                <div class="animate-pulse h-5 w-40 bg-gray-200 rounded"></div>
-                                            </div>
-                                            <div class="flex items-center justify-start gap-2">
-                                        <span
-                                            class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">phone</span>
-                                                <div class="animate-pulse h-5 w-40 bg-gray-200 rounded"></div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="animate-pulse h-7 w-30 bg-gray-200 rounded"></div>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="animate-pulse h-7 w-20 bg-gray-200 rounded"></div>
-                                    </td>
-                                    <td class="px-6 py-4"></td>
-                                </tr>
-                            {:else}
                                 {#each $membersStore.display as member}
                                     <tr class="border-t-2 border-gv-border"
                                         on:contextmenu={(e) => openContextMenu(e, member.id)}>
@@ -415,14 +381,13 @@
                                             <button
                                                 class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
                                                 on:click={(e) => openContextMenuFromButton(e, member.id)}>
-                                                <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">
-                                                    more_horiz
-                                                </span>
+                                                    <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">
+                                                        more_horiz
+                                                    </span>
                                             </button>
                                         </td>
                                     </tr>
                                 {/each}
-                            {/if}
                             </tbody>
                         </table>
                     {:else}

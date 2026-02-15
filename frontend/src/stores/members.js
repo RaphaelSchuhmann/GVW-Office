@@ -1,12 +1,21 @@
 import { writable } from "svelte/store";
 
 /**
- * Svelte store for members data with search support
- * @type {import('svelte/store').Writable<{raw: Array, all: Array, display: Array, loading: boolean}>}
+ * Svelte store for members data
+ * @type {import('svelte/store').Writable<{raw: Array, display: Array, loading: boolean}>}
  */
 export const membersStore = writable({
     raw: [],
-    all: [],
     display: [],
     loading: false
+});
+
+/**
+ * Svelte store for members filter state
+ * @type {import('svelte/store').Writable<{dropdown: String, tab: String, search: String}>}
+ */
+export const membersFilterState = writable({
+    dropdown: "",
+    tab: "",
+    search: ""
 });

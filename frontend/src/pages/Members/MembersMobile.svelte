@@ -3,6 +3,7 @@
     import { membersStore } from "../../stores/members";
     import { addMember, roleMap, voiceMap, statusMap } from "../../services/members";
     import { addToast } from "../../stores/toasts";
+    import { fetchAndSetRaw } from "../../services/filterService";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -17,11 +18,10 @@
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import YearDatepicker from "../../components/YearDatepicker.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
+    import { logout } from "../../services/userService";
 
     /** @type {import("../../components/SettingsModal.svelte").default} */
     let settingsModal;
-
-    let searchBar;
 
     // ADD MEMBER
     /** @type {import("../../components/Modal.svelte").default} */
@@ -93,7 +93,7 @@
         }
 
         addMemberModal.hideModal();
-        await searchBar.fetchData();
+        await fetchAndSetRaw();
     }
 
     let sidebarOpen = false;
@@ -150,13 +150,13 @@
                 <span class="material-symbols-rounded text-icon-dt-5">add</span>
                 <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
             </Button>
-            <Button type="primary" on:click={searchBar.fetchData}>
+            <Button type="primary" on:click={fetchAndSetRaw}>
                 <span class="material-symbols-rounded text-icon-dt-5">refresh</span>
                 <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Aktualisieren</p>
             </Button>
         </div>
 
-        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" bind:this={searchBar} doDebounce={true} />
+        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5"/>
 
         <Card padding="0" marginTop="5" rounded="2" borderThickness="1">
             <div class="flex-1 min-h-0 overflow-y-auto w-full max-h-full">
