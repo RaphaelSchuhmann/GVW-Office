@@ -1,26 +1,28 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
 
-    // Output value
-    export let value = "";
+    let {
+        value = $bindable(""),
+        title = "Title",
+        placeholder = "",
+        marginTop = "",
+        readonly = false,
+        disabled = false,
+        width = "w-full",
+        height = "h-auto",
+        resizable = false,
+        onChange = () => {},
+        onblur = undefined,
+        ...restProps
+    } = $props();
 
-    export let title = "Title";
-    export let placeholder = "";
-    export let marginTop = "";
-    export let readonly = false;
-    export let disabled = false;
-    export let width = "w-full";
-    export let height = "h-auto";
-    export let resizable = false;
-    export let onChange = () => {};
-
-    let inputEl;
+    let inputEl = $state();
 
     /**
-     * Focuses the input element
+     * Focuses the input element (Exposed via bind:this)
      */
     export function focus() {
-        inputEl.focus();
+        inputEl?.focus();
     }
 </script>
 
@@ -29,11 +31,12 @@
     <textarea
         bind:value
         bind:this={inputEl}
-        on:blur
-        placeholder={placeholder}
-        readonly={readonly}
-        disabled={disabled}
-        on:change={onChange}
+        {onblur}
+        {placeholder}
+        {readonly}
+        {disabled}
+        onchange={(e) => onChange?.(e)}
         class={`rounded-1 w-full ${height} p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6 ${resizable ? "resize" : "resize-none"}`}
+        {...restProps}
     ></textarea>
 </div>

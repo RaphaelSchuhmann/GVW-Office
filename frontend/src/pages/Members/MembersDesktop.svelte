@@ -24,27 +24,23 @@
     import ContextMenu from "../../components/ContextMenu.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
 
-    /** @type {import("../../components/SettingsModal.svelte").default} */
-    let settingsModal;
+    // Refs
+    let settingsModal = $state();
+    let addMemberModal = $state();
+    let confirmDeleteMemberModal = $state();
 
-    // ADD MEMBER
-    /** @type {import("../../components/Modal.svelte").default} */
-    let addMemberModal;
+    // ADD MEMBER STATE
+    let voiceInput = $state();
+    let statusInput = $state();
+    let roleInput = $state();
+    let birthdayInput = $state();
+    let joinedInput = $state();
+    let nameInput = $state("");
+    let surnameInput = $state("");
+    let emailInput = $state("");
+    let phoneInput = $state("");
+    let addressInput = $state("");
 
-    let voiceInput;
-    let statusInput;
-    let roleInput;
-    let birthdayInput;
-    let joinedInput;
-    let nameInput = "";
-    let surnameInput = "";
-    let emailInput = "";
-    let phoneInput = "";
-    let addressInput = "";
-
-    /**
-     * Resets all input fields in the add member modal
-     */
     function resetAddInputs() {
         nameInput = "";
         surnameInput = "";
@@ -53,10 +49,6 @@
         addressInput = "";
     }
 
-    /**
-     * Submits a new member to the system with all form data
-     * Validates inputs and handles API response with appropriate toast messages
-     */
     async function submitMember() {
         if (!birthdayInput || !joinedInput || !nameInput || !surnameInput || !emailInput || !phoneInput || !addressInput) return;
         if (voiceInput === "wählen" || statusInput === "wählen" || roleInput === "wählen") return;
@@ -66,93 +58,75 @@
         if (resp.status === 200) {
             addToast({
                 title: "Mitglied hinzugefügt",
-                subTitle: "Das neue Mitglied wurde erfolgreich angelegt und ist ab sofort in der Mitgliederübersicht verfügbar.",
+                subTitle: "Das neue Mitglied wurde erfolgreich angelegt...",
                 type: "success"
             });
         } else if (resp.status === 401) {
-            // Auth token invalid / unauthorized
             addToast({
                 title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen...",
                 type: "error"
             });
             logout();
             await push("/?cpwErr=false");
             return;
         } else if (resp.status === 400) {
-            // user not found route back to log in
             addToast({
                 title: "Eingaben unvollständig",
-                subTitle: "Bitte überprüfen Sie Ihre Angaben. Einige Pflichtfelder sind entweder leer oder enthalten ungültige Werte.",
+                subTitle: "Bitte überprüfen Sie Ihre Angaben...",
                 type: "error"
             });
         } else if (resp.status === 409) {
             addToast({
                 title: "Eingabe ungültig",
-                subTitle: `Es gibt bereits einen Benutzer mit der E-Mail ${emailInput}. Bitte verwenden Sie eine andere E-Mail-Adresse.`,
+                subTitle: `Es gibt bereits einen Benutzer mit der E-Mail ${emailInput}.`,
                 type: "error"
             });
         } else {
-            // internal server error / unknown error
             addToast({
                 title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten.",
                 type: "error"
             });
         }
 
         addMemberModal.hideModal();
-        await fetchAndSetRaw()
+        await fetchAndSetRaw();
     }
 
-    // DELETE MEMBER
-    /** @type {import("../../components/ConfirmDeleteModal.svelte").default} */
-    let confirmDeleteMemberModal;
-
-    let memberName = "";
+    // DELETE MEMBER STATE
+    let memberName = $state("");
     let deleteMemberToast = {
         success: {
             title: "Mitglied gelöscht",
-            subTitle: "Das Mitglied und der zugehörige Benutzeraccount wurden erfolgreich aus dem System entfernt.",
+            subTitle: "Das Mitglied wurde erfolgreich entfernt.",
             type: "success"
         },
         notFound: {
             title: "Nicht gefunden",
-            subTitle: "Das angegebene Mitglied oder der zugehörige Benutzer konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+            subTitle: "Das Mitglied konnte nicht gefunden werden.",
             type: "error"
         },
     };
 
-    /**
-     * Initiates the delete process for a member
-     * Sets up the confirmation modal with member details
-     */
     function startDeleteMember() {
         menuOpen = false;
-
         const membersRaw = get(membersStore).raw;
-        let name = membersRaw.find(item => item.id === activeMemberId)?.name;
-        let surname = membersRaw.find(item => item.id === activeMemberId)?.surname;
+        let member = membersRaw.find(item => item.id === activeMemberId);
 
-        memberName = `${name} ${surname}`;
+        memberName = `${member?.name} ${member?.surname}`;
         confirmDeleteMemberModal.startDelete();
     }
 
-    // CONTEXT MENU
-    let menuOpen = false;
-    let menuX = 0;
-    let menuY = 0;
-    let activeMemberId = null;
+    // CONTEXT MENU STATE
+    let menuOpen = $state(false);
+    let menuX = $state(0);
+    let menuY = $state(0);
+    let activeMemberId = $state(null);
 
-    /**
-     * Opens context menu on right-click at cursor position
-     * @param {MouseEvent} event - The right-click event
-     * @param {string} memberId - ID of the member being right-clicked
-     */
     function openContextMenu(event, memberId) {
         event.preventDefault();
         event.stopPropagation();
-
         activeMemberId = memberId;
 
         requestAnimationFrame(() => {
@@ -162,71 +136,36 @@
         });
     }
 
-    /**
-     * Opens context menu from the three-dot button click
-     * @param {MouseEvent} event - The button click event
-     * @param {string} memberId - ID of the member whose button was clicked
-     */
     function openContextMenuFromButton(event, memberId) {
         event.preventDefault();
         event.stopPropagation();
-
         activeMemberId = memberId;
 
         const rect = event.currentTarget.getBoundingClientRect();
-
         menuOpen = true;
 
         requestAnimationFrame(() => {
             const menuWidth = 170;
             const menuHeight = 150;
-
             menuX = rect.left - menuWidth;
             menuY = Math.min(rect.bottom, window.innerHeight - menuHeight);
         });
     }
 
-    /**
-     * Toggles the status of a member between active and inactive
-     * Handles API response and shows appropriate toast messages
-     */
     async function switchStatus() {
         const resp = await updateStatus(activeMemberId);
-
         if (resp.status === 200) {
-            addToast({
-                title: "Status aktualisiert",
-                subTitle: "Der Status des Mitglieds wurde erfolgreich geändert und im System übernommen.",
-                type: "success"
-            });
+            addToast({ title: "Status aktualisiert", subTitle: "Erfolgreich geändert.", type: "success" });
         } else if (resp.status === 401) {
-            // Auth token invalid / unauthorized
-            addToast({
-                title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-                type: "error"
-            });
             logout();
             await push("/?cpwErr=false");
             return;
-        } else if (resp.status === 404) {
-            // member not found
-            addToast({
-                title: "Mitglied nicht gefunden",
-                subTitle: "Das angegebene Mitglied konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
-                type: "error"
-            });
         } else {
-            // internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
-            });
+            addToast({ title: "Fehler", subTitle: "Ein Fehler ist aufgetreten.", type: "error" });
         }
         menuOpen = false;
         activeMemberId = null;
-        await fetchAndSetRaw()
+        await fetchAndSetRaw();
     }
 
     function settingsClick() {
@@ -234,12 +173,11 @@
     }
 </script>
 
-<svelte:window on:contextmenu={() => (menuOpen = false)} />
+<svelte:window oncontextmenu={() => (menuOpen = false)} />
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 
-<!-- Add member modal -->
 <Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
        subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5">
     <div class="flex items-center gap-4 mt-5">
@@ -248,13 +186,13 @@
     </div>
     <Input bind:value={emailInput} marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com" />
     <Input bind:value={phoneInput} marginTop="5" title="Telefon" placeholder="01701234 5678" />
-    <Input bind:value={addressInput} marginTop="5" title="Adresse" placeholder="Hauptstraße 1, 12345 Musterstadt" />
+    <Input bind:value={addressInput} marginTop="5" title="Adresse" placeholder="Hauptstraße 1..." />
     <div class="w-full flex items-center gap-4 mt-5">
         <Dropdown onChange={(value) => voiceInput = value} title="Stimmlage"
                   options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
         <Dropdown onChange={(value) => statusInput = value} title="Status" options={["Aktiv", "Passiv"]} />
         <Dropdown onChange={(value) => roleInput = value} title="Rolle"
-                  options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} />
+                  options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true}/>
     </div>
     <div class="w-full flex items-center gap-4 mt-5 max-[1700px]:flex-col">
         <div class="flex flex-col items-start w-full">
@@ -267,32 +205,30 @@
         </div>
     </div>
     <div class="w-full flex items-center justify-end mt-5 gap-4">
-        <Button type="secondary" on:click={addMemberModal.hideModal}>Abbrechen</Button>
-        <Button type="primary" on:click={submitMember} isSubmit={true}>Hinzufügen</Button>
+        <Button type="secondary" onclick={() => addMemberModal.hideModal()}>Abbrechen</Button>
+        <Button type="primary" onclick={submitMember} isSubmit={true}>Hinzufügen</Button>
     </div>
 </Modal>
 
-<!-- Confirm delete member modal -->
 <ConfirmDeleteModal expectedInput={memberName} id={activeMemberId}
-                    title="Mitglied löschen" subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?"
+                    title="Mitglied löschen" subTitle="Sicher löschen?"
                     toastMap={deleteMemberToast} action="deleteMember"
-                    onClose={async () => {menuOpen = false; activeMemberId = null; /* TODO: Fetch data */}}
+                    onClose={async () => {menuOpen = false; activeMemberId = null;}}
                     bind:this={confirmDeleteMemberModal}
 />
 
 <ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
-    <Button on:click={async () =>  await push(`/members/view?id=${activeMemberId}`)} type="contextMenu">Bearbeiten
-    </Button>
-    <Button on:click={switchStatus} type="contextMenu">Status ändern</Button>
-    <Button on:click={startDeleteMember} type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
+    <Button onclick={async () => await push(`/members/view?id=${activeMemberId}`)} type="contextMenu">Bearbeiten</Button>
+    <Button onclick={switchStatus} type="contextMenu">Status ändern</Button>
+    <Button onclick={startDeleteMember} type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
 </ContextMenu>
 
 <main class="flex overflow-hidden">
     <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
-        <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={$viewportWidth > 1000}>
+        <PageHeader title="Mitglieder" subTitle="Verwaltung" showSlot={$viewportWidth > 1000}>
             {#if $viewportWidth > 1000}
-                <Button type="primary" on:click={addMemberModal.showModal}>
+                <Button type="primary" onclick={() => addMemberModal.showModal()}>
                     <span class="material-symbols-rounded text-icon-dt-4">add</span>
                     <p class="text-dt-4 text-nowrap">Mitglied hinzufügen</p>
                 </Button>
@@ -301,11 +237,11 @@
 
         {#if $viewportWidth <= 1000}
             <div class="flex max-[430px]:flex-col w-full items-center justify-start gap-2 mt-4">
-                <Button type="primary" on:click={addMemberModal.showModal}>
+                <Button type="primary" onclick={addMemberModal.showModal}>
                     <span class="material-symbols-rounded text-icon-dt-5">add</span>
                     <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
                 </Button>
-                <Button type="primary" on:click={fetchAndSetRaw}>
+                <Button type="primary" onclick={fetchAndSetRaw}>
                     <span class="material-symbols-rounded text-icon-dt-5">refresh</span>
                     <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Aktualisieren</p>
                 </Button>
@@ -339,7 +275,7 @@
                                 <th scope="col" class="px-6 py-3">
                                     <button
                                         class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                                        on:click={fetchAndSetRaw}
+                                        onclick={fetchAndSetRaw}
                                         >
                                         <span class="material-symbols-rounded min-[1300px]:text-icon-dt-5 text-icon-dt-6 font-bold text-gv-dark-text">refresh</span>
                                     </button>
@@ -349,7 +285,7 @@
                             <tbody>
                                 {#each $membersStore.display as member}
                                     <tr class="border-t-2 border-gv-border"
-                                        on:contextmenu={(e) => openContextMenu(e, member.id)}>
+                                        oncontextmenu={(e) => openContextMenu(e, member.id)}>
                                         <td class="px-6 py-4">
                                             <div class="flex flex-col items-start h-full overflow-hidden gap-1">
                                                 <p class="min-[1300px]:text-dt-6 text-dt-7 text-gv-dark-text text-nowrap truncate">{`${member.name} ${member.surname}`}</p>
@@ -380,7 +316,7 @@
                                         <td class="px-6 py-4">
                                             <button
                                                 class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                                                on:click={(e) => openContextMenuFromButton(e, member.id)}>
+                                                onclick={(e) => openContextMenuFromButton(e, member.id)}>
                                                     <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">
                                                         more_horiz
                                                     </span>
@@ -392,7 +328,7 @@
                         </table>
                     {:else}
                         {#each $membersStore.display as member}
-                            <button class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`} on:click={async () =>  await push(`/members/view?id=${member.id}`)}>
+                            <button class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`} onclick={async () =>  await push(`/members/view?id=${member.id}`)}>
                                 <div class="flex flex-col items-start justify-between mr-auto max-w-3/4">
                                     <p class="text-gv-dark-text text-dt-7">{`${member.name} ${member.surname}`}</p>
                                     <div class="flex items-center justify-start gap-2">

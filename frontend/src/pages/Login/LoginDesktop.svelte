@@ -1,5 +1,4 @@
 <script>
-    import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
     import Form from "../../components/Form.svelte";
     import Logo from "../../assets/logo.svg";
@@ -14,45 +13,46 @@
     import { handleGlobalApiError } from "../../api/globalErrorHandler";
     import { normalizeResponse } from "../../api/http";
 
-    let email = "";
-    let password = "";
+    // 1. Local state using Runes
+    let email = $state("");
+    let password = $state("");
 
-    onMount(async () => {
-        const authToken = getValue("authToken");
+    // 2. Modern Lifecycle for initial auth check
+    $effect(() => {
+        const checkAuth = async () => {
+            const authToken = getValue("authToken");
 
-        if (authToken) {
-            const { resp, body } = await authenticateUser(authToken);
+            if (authToken) {
+                const { resp, body } = await authenticateUser(authToken);
+                const normalizedResponse = normalizeResponse(resp);
 
-            const normalizedResponse = normalizeResponse(resp);
-            if (handleGlobalApiError(normalizedResponse)) return;
+                if (handleGlobalApiError(normalizedResponse)) return;
+                if (!body || !normalizedResponse.ok) return;
 
-            if (!body || !normalizedResponse.ok) return;
+                auth.set({ token: authToken });
+                user.update(u => ({ ...u, email: body.email }));
 
-            auth.set({ token: authToken });
-            user.update(u => ({ ...u, email: body.email }));
+                if (body.changePassword) {
+                    clearValue("authToken");
+                    setValue("authToken_BCPW", authToken);
+                    await push(`/changePassword?firstLogin=${body.firstLogin}`);
+                    return;
+                }
 
-            if (body.changePassword) {
-                clearValue("authToken");
-                setValue("authToken_BCPW", authToken);
-                await push(`/changePassword?firstLogin=${body.firstLogin}`);
-                return;
+                await push("/dashboard");
             }
-
-            await push("/dashboard");
-        }
+        };
+        checkAuth();
     });
 
     /**
      * Handles user login process
-     * Validates inputs, authenticates with server, and handles various response scenarios
-     * Manages token storage and navigation based on authentication result
      */
     async function btnLogin() {
-        // Ensure neither email nor password is empty
         if (!email) {
             addToast({
                 title: "Ungültige Eingabe!",
-                subTitle: "Die E-Mail darf nicht leer sein! Bitte geben Sie eine gültige E-Mail-Adresse ein, um fortzufahren.",
+                subTitle: "Die E-Mail darf nicht leer sein!",
                 type: "error"
             });
             return;
@@ -61,74 +61,60 @@
         if (!password) {
             addToast({
                 title: "Ungültige Eingabe!",
-                subTitle: "Das Passwort darf nicht leer sein! Bitte geben Sie ihr Passwort ein, um fortzufahren.",
+                subTitle: "Das Passwort darf nicht leer sein!",
                 type: "error"
             });
             return;
         }
 
         const { resp, body } = await loginUser(email, password);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-
             if (normalizedResponse.errorType === "REQUESTTIMEOUT" && body?.retryAfter) {
-                const lockUntil = new Date(body.retryAfter).getTime();
-                const now = Date.now();
-                const remainingMs = lockUntil - now;
-                const remainingMinutes = Math.ceil(remainingMs / 60000);
-
+                const remainingMinutes = Math.ceil((new Date(body.retryAfter).getTime() - Date.now()) / 60000);
                 addToast({
                     title: "Zu viele Anmeldeversuche",
-                    subTitle: `Ihr Konto wurde vorübergehend gesperrt. Bitte versuchen Sie es in ${remainingMinutes} Minute${remainingMinutes !== 1 ? "n" : ""} erneut.`,
+                    subTitle: `Konto gesperrt. Versuchen Sie es in ${remainingMinutes} Minute${remainingMinutes !== 1 ? "n" : ""} erneut.`,
                     type: "warning",
-                });
-            } else if (normalizedResponse.errorType === "REQUESTTIMEOUT") {
-                addToast({
-                    title: "Zu viele Anmeldeversuche",
-                    subTitle: "Ihr Konto wurde vorübergehend gesperrt. Bitte versuchen Sie es später erneut.",
-                    type: "warning"
                 });
             } else if (normalizedResponse.errorType === "NOTFOUND") {
                 addToast({
                     title: "Benutzer nicht gefunden",
-                    subTitle: "Es wurde kein Konto mit der angegebenen E-Mail-Adresse gefunden. Bitte prüfen Sie die Eingabe oder registrieren Sie sich.",
+                    subTitle: "Es wurde kein Konto mit dieser E-Mail gefunden.",
                     type: "error"
                 });
             }
-
             return;
         }
 
         if (!body?.authToken) {
             addToast({
                 title: "Anmeldung fehlgeschlagen",
-                subTitle: "Vom Server wurde keine gültige Sitzung zurückgegeben. Bitte versuchen Sie es erneut.",
+                subTitle: "Vom Server wurde keine gültige Sitzung zurückgegeben.",
                 type: "error",
             });
             return;
         }
 
+        // Sync Stores and Navigate
+        auth.set({ token: body.authToken });
+        user.update(u => ({ ...u, email: email }));
+
         if (body.changePassword) {
-            // Note that the auth token cannot be stored under the key "authToken",
-            // cause this would allow the user to move back one page and automatically login
-            // and bypass the changePassword page
             setValue("authToken_BCPW", body.authToken);
-            user.update(u => ({ ...u, email: email }));
-            auth.set({ token: body.authToken });
             await push(`/changePassword?firstLogin=${body.firstLogin}`);
         } else {
             setValue("authToken", body.authToken);
-            auth.set({ token: body.authToken });
-            user.update(u => ({ ...u, email: email }));
             await push("/dashboard");
         }
     }
 </script>
 
 <ToastStack></ToastStack>
+
 <main class="bg-gv-bg-bar w-dvw h-dvh flex items-center justify-center">
     <div class="h-auto min-[1400px]:w-1/3 w-2/3">
         <Form padding="10" height="auto" width="full">
@@ -141,6 +127,7 @@
             <p class="text-gv-light-text text-dt-3 text-center">
                 Gesangverein Weppersdorf
             </p>
+
             <Input
                 bind:value={email}
                 type="email"
@@ -148,6 +135,7 @@
                 title="E-Mail"
                 marginTop="5"
             />
+
             <Input
                 bind:value={password}
                 type="password"
@@ -155,7 +143,13 @@
                 title="Passwort"
                 marginTop="10"
             />
-            <Button type="primary" marginTop="10" on:click={btnLogin} isSubmit={true}>
+
+            <Button
+                type="primary"
+                marginTop="10"
+                onclick={btnLogin}
+                isSubmit={true}
+            >
                 <span class="material-symbols-rounded">login</span>
                 <p class="ml-3">Anmelden</p>
             </Button>

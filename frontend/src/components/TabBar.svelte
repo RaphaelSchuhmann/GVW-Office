@@ -1,57 +1,62 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { onMount } from "svelte";
 
-    export let contents = [];
-    export let selected = "";
-    export let marginTop = "";
-    export let onChange = () => {};
+    let {
+        contents = [],
+        selected = $bindable(""),
+        marginTop = "",
+        onChange = undefined,
+        ...restProps
+    } = $props();
 
-    let tabs = [];
-    for (const item of contents) {
-        tabs.push({ title: item, count: 0 });
-    }
+    const tabs = $derived(contents.map(item => ({ title: item, count: 0 })));
 
-    // Animation variables
-    let tabElements = [];
-    let sliderStyle = "";
+    let tabElements = $state([]);
+    let sliderStyle = $state("");
 
     /**
      * Updates the position and width of the sliding background indicator
-     * Positions the slider behind the currently selected tab
      */
     function updateSliderPosition() {
-        const selectedIndex = tabs.findIndex(tab => tab.title === selected);
+        const selectedIndex = contents.findIndex(item => item === selected);
         if (selectedIndex >= 0 && tabElements[selectedIndex]) {
             const selectedTab = tabElements[selectedIndex];
             const { offsetLeft, offsetWidth } = selectedTab;
-            sliderStyle = `transform: translateX(${offsetLeft - 3}px); width: ${offsetWidth}px;`;
+            sliderStyle = `transform: translateX(${offsetLeft - 4}px); width: ${offsetWidth}px;`;
         }
     }
 
-    $: if (selected) {
-        onChange(selected);
-        setTimeout(updateSliderPosition, 0); // Wait for DOM update
-    }
+    $effect(() => {
+        if (selected) {
+            // Wait for DOM to be ready before measuring
+            updateSliderPosition();
+            // Safely call onChange
+            onChange?.(selected);
+        }
+    });
 
-    onMount(() => {
-        updateSliderPosition();
-        selected = selected;
+    // Handle window resize to keep slider in position
+    $effect(() => {
+        window.addEventListener('resize', updateSliderPosition);
+        return () => window.removeEventListener('resize', updateSliderPosition);
     });
 </script>
+
 <div
-    class={`relative flex w-full items-stretch p-1 rounded-full bg-gv-input-bg ${marginMap[marginTop]} gap-2 overflow-x-auto overflow-y-hidden`}>
-    <!-- Sliding background -->
+    class={`relative flex w-full items-stretch p-1 rounded-full bg-gv-input-bg ${marginMap[marginTop]} gap-2 overflow-x-auto overflow-y-hidden`}
+    {...restProps}
+>
     <div
-        class="absolute top-1 bottom-1 bg-white rounded-full transition-all duration-300 ease-out z-0"
+        class="absolute top-1 bottom-1 bg-white rounded-full shadow-sm transition-all duration-300 ease-out z-0"
         style={sliderStyle}
     ></div>
 
     {#each tabs as tab, index}
         <button
             bind:this={tabElements[index]}
+            type="button"
             class="relative z-10 w-full p-1 rounded-full flex items-center justify-center text-center text-dt-5 text-gv-dark cursor-pointer hover:bg-gv-hover-effect/50 transition-colors duration-150"
-            on:click={() => selected = tab.title}
+            onclick={() => selected = tab.title}
         >
             {tab.title}
         </button>

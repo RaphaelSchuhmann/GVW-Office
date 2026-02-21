@@ -1,5 +1,4 @@
 <script>
-    import { onMount } from "svelte";
     import { user } from "../../stores/user";
     import { appSettings } from "../../stores/appSettings";
 
@@ -16,17 +15,16 @@
     import MobileSidebar from "../../components/MobileSidebar.svelte";
 
     /** @type {import("../../components/SettingsModal.svelte").default} */
-    let settingsModal;
+    let settingsModal = $state();
 
     /** @type {import("../../components/Modal.svelte").default} */
-    let voiceDistributionSettingsModal;
-    let maxMembers;
+    let voiceDistributionSettingsModal = $state();
 
-    let events = [];
+    let maxMembers = $state("");
+    let events = $state([]);
 
-    onMount(() => {
+    $effect(() => {
         DEVPopulateEvents();
-        maxMembers = $appSettings.maxMembers.toString();
     });
 
     function DEVPopulateEvents() {
@@ -104,7 +102,7 @@
         voiceDistributionSettingsModal.hideModal();
     }
 
-    let sidebarOpen = false;
+    let sidebarOpen = $state(false);
 
     function settingsClick() {
         settingsModal.showModal();
@@ -112,21 +110,25 @@
 </script>
 
 <SettingsModal bind:this={settingsModal} isMobile={true}></SettingsModal>
+
 <Modal bind:this={voiceDistributionSettingsModal} title="Stimmenverteilung Einstellungen" subTitle="Einstellungen für die Stimmverteilung"
        extraFunctionOnClose={false} extraFunction={() => maxMembers = String($appSettings.maxMembers)} isMobile={true}>
     <Input title="Maximale anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers}/>
     <div class="w-full flex items-center justify-end mt-5 gap-2">
-        <Button type="secondary" on:click={voiceDistributionSettingsModal.hideModal}>Abbrechen</Button>
-        <Button type="primary" on:click={updateMaxMembersVoiceDistribution} isSubmit={true}>Speichern</Button>
+        <Button type="secondary" onclick={voiceDistributionSettingsModal.hideModal}>Abbrechen</Button>
+        <Button type="primary" onclick={updateMaxMembersVoiceDistribution} isSubmit={true}>Speichern</Button>
     </div>
 </Modal>
+
 <ToastStack></ToastStack>
+
 <MobileSidebar currentPage="dashboard" onSettingsClick={settingsClick} bind:isOpen={sidebarOpen}/>
+
 <main class="flex overflow-hidden">
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full flex-1 overflow-hidden p-7 min-h-0">
             <div class="w-full flex items-center justify-start">
-                <button class="flex items-center justify-center" on:click={() => sidebarOpen = true}>
+                <button class="flex items-center justify-center" onclick={() => sidebarOpen = true}>
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">menu</span>
                 </button>
             </div>
@@ -199,7 +201,7 @@
                         <div class="w-full flex items-center justify-end pr-2 mt-5">
                             <button
                                 class="cursor-pointer flex items-center justify-center rounded-2 p-2 hover:bg-gv-hover-effect"
-                                on:click={voiceDistributionSettingsModal.showModal}>
+                                onclick={voiceDistributionSettingsModal.showModal}>
                                 <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">settings</span>
                             </button>
                         </div>

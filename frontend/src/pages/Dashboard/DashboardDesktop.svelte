@@ -1,5 +1,4 @@
 <script>
-    import { onMount } from "svelte";
     import { user } from "../../stores/user";
     import { appSettings } from "../../stores/appSettings";
     import { tryUpdateMaxMembers } from "../../services/appSettingsService";
@@ -16,15 +15,15 @@
     import Button from "../../components/Button.svelte";
 
     /** @type {import("../../components/SettingsModal.svelte").default} */
-    let settingsModal;
+    let settingsModal = $state();
 
     /** @type {import("../../components/Modal.svelte").default} */
-    let voiceDistributionSettingsModal;
-    let maxMembers = "";
+    let voiceDistributionSettingsModal = $state();
 
-    let events = [];
+    let maxMembers = $state("");
+    let events = $state([]);
 
-    onMount(() => {
+    $effect(() => {
         DEVPopulateEvents();
     });
 
@@ -105,12 +104,13 @@
 </script>
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
-<Modal bind:this={voiceDistributionSettingsModal} title="Stimmenverteilung Einstellungen" subTitle="Einstellungen für die Stimmverteilung"
+<Modal bind:this={voiceDistributionSettingsModal} title="Stimmenverteilung Einstellungen"
+       subTitle="Einstellungen für die Stimmverteilung"
        extraFunctionOnClose={false} extraFunction={() => maxMembers = String($appSettings.maxMembers)}>
-    <Input title="Maximale Anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers}/>
+    <Input title="Maximale Anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers} />
     <div class="w-full flex items-center justify-end mt-5 gap-2">
-        <Button type="secondary" on:click={voiceDistributionSettingsModal.hideModal}>Abbrechen</Button>
-        <Button type="primary" on:click={updateMaxMembersVoiceDistribution} isSubmit={true}>Speichern</Button>
+        <Button type="secondary" onclick={voiceDistributionSettingsModal.hideModal}>Abbrechen</Button>
+        <Button type="primary" onclick={updateMaxMembersVoiceDistribution} isSubmit={true}>Speichern</Button>
     </div>
 </Modal>
 <ToastStack></ToastStack>
@@ -118,14 +118,16 @@
     <DesktopSidebar onSettingsClick={settingsClick} currentPage="dashboard"></DesktopSidebar>
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full flex-1 overflow-hidden p-10 min-h-0">
-            <PageHeader title="Dashboard" subTitle="Willkommen in GVW Office - Übersicht Gesangverein Weppersdorf" showSlot={false}/>
+            <PageHeader title="Dashboard" subTitle="Willkommen in GVW Office - Übersicht Gesangverein Weppersdorf"
+                        showSlot={false} />
 
             <!-- Small cards -->
             <div class="flex max-[1300px]:flex-col items-center overflow-hidden mt-5 gap-5 min-[1300px]:max-h-1/7">
                 <Card padding="5" justify="justify-around">
                     <div class="flex w-full items-center">
                         <p class="text-dt-5 text-gv-dark-text">Aktive Mitglieder</p>
-                        <span class="material-symbols-rounded text-icon-dt-4 text-gv-secondary-text ml-auto">group</span>
+                        <span
+                            class="material-symbols-rounded text-icon-dt-4 text-gv-secondary-text ml-auto">group</span>
                     </div>
                     <p class="text-dt-3 text-black w-full text-start">
                         <span>7</span>
@@ -154,14 +156,16 @@
             </div>
 
             <!-- Big cards -->
-            <div class="w-full flex-1 mt-5 gap-5 flex max-[1300px]:flex-col max-[1300px]:h-[calc(100vh-100px)] h-full min-h-0 max-[1300px]:overflow-y-auto">
+            <div
+                class="w-full flex-1 mt-5 gap-5 flex max-[1300px]:flex-col max-[1300px]:h-[calc(100vh-100px)] h-full min-h-0 max-[1300px]:overflow-y-auto">
                 <!-- Upcoming Events -->
                 <Card padding="5">
                     <p class="min-[1200px]:text-dt-3 text-dt-5 text-gv-dark-text w-full text-start flex flex-col mb-3">
                         <span>Kommende Veranstaltungen</span>
                         <span class="text-gv-light-text min-[1200px]:text-dt-4 text-dt-6">Nächste Veranstaltungen und Proben</span>
                     </p>
-                    <div class="w-full flex-1 min-h-0 overflow-x-hidden overflow-y-auto max-h-[45dvh] flex flex-col items-center pr-2">
+                    <div
+                        class="w-full flex-1 min-h-0 overflow-x-hidden overflow-y-auto max-h-[45dvh] flex flex-col items-center pr-2">
                         {#each events as event}
                             <ComingEvent margin="5" title={event.title} time={event.time} location={event.location}
                                          type={event.type} />
@@ -187,7 +191,7 @@
                         <div class="w-full flex items-center justify-end pr-2 mt-5">
                             <button
                                 class="cursor-pointer flex items-center justify-center rounded-2 p-2 hover:bg-gv-hover-effect"
-                                on:click={voiceDistributionSettingsModal.showModal}>
+                                onclick={voiceDistributionSettingsModal.showModal}>
                                 <span class="material-symbols-rounded text-icon-dt-2 text-gv-dark-text">settings</span>
                             </button>
                         </div>

@@ -1,5 +1,4 @@
 <script>
-    import { onMount } from "svelte";
     import { push } from "svelte-spa-router";
     import Logo from "../../assets/logo.svg";
     import Input from "../../components/Input.svelte";
@@ -13,41 +12,42 @@
     import { normalizeResponse } from "../../api/http";
     import { handleGlobalApiError } from "../../api/globalErrorHandler";
 
-    let email = "";
-    let password = "";
+    // 1. Reactive State
+    let email = $state("");
+    let password = $state("");
 
-    onMount(async () => {
-        const authToken = getValue("authToken");
+    // 2. Svelte 5 Auth Check on Mount
+    $effect(() => {
+        const checkAuth = async () => {
+            const authToken = getValue("authToken");
 
-        if (authToken) {
-            const { resp, body } = await authenticateUser(authToken);
+            if (authToken) {
+                const { resp, body } = await authenticateUser(authToken);
+                const normalizedResponse = normalizeResponse(resp);
 
-            const normalizedResponse = normalizeResponse(resp);
-            if (handleGlobalApiError(normalizedResponse)) return;
+                if (handleGlobalApiError(normalizedResponse)) return;
+                if (!body || !normalizedResponse.ok) return;
 
-            if (!body || !normalizedResponse.ok) return;
+                auth.set({ token: authToken });
+                user.update(u => ({ ...u, email: body.email }));
 
-            auth.set({ token: authToken });
-            user.update(u => ({ ...u, email: body.email }));
+                if (body.changePassword) {
+                    clearValue("authToken");
+                    setValue("authToken_BCPW", authToken);
+                    await push(`/changePassword?firstLogin=${body.firstLogin}`);
+                    return;
+                }
 
-            if (body.changePassword) {
-                clearValue("authToken");
-                setValue("authToken_BCPW", authToken);
-                await push(`/changePassword?firstLogin=${body.firstLogin}`);
-                return;
+                await push("/dashboard");
             }
-
-            await push("/dashboard");
-        }
+        };
+        checkAuth();
     });
 
     /**
      * Handles user login process
-     * Validates inputs, authenticates with server, and handles various response scenarios
-     * Manages token storage and navigation based on authentication result
      */
     async function btnLogin() {
-        // Ensure neither email nor password is empty
         if (!email) {
             addToast({
                 title: "Email darf nicht leer sein",
@@ -65,8 +65,8 @@
         }
 
         const { resp, body } = await loginUser(email, password);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
@@ -81,7 +81,6 @@
                     type: "error"
                 });
             }
-
             return;
         }
 
@@ -93,24 +92,22 @@
             return;
         }
 
+        // Sync and Redirect
+        auth.set({ token: body.authToken });
+        user.update(u => ({ ...u, email: email }));
+
         if (body.changePassword) {
-            // Note that the auth token cannot be stored under the key "authToken",
-            // cause this would allow the user to move back one page and automatically login
-            // and bypass the changePassword page
             setValue("authToken_BCPW", body.authToken);
-            user.update(u => ({ ...u, email: email }));
-            auth.set({ token: body.authToken });
             await push(`/changePassword?firstLogin=${body.firstLogin}`);
         } else {
             setValue("authToken", body.authToken);
-            auth.set({ token: body.authToken });
-            user.update(u => ({ ...u, email: email }));
             await push("/dashboard");
         }
     }
 </script>
 
 <ToastStack isMobile={true} />
+
 <main class="bg-gv-bg-bar w-dvw h-dvh flex items-center justify-center">
     <div class="p-10 h-full w-full bg-white flex flex-col items-center">
         <img
@@ -122,6 +119,7 @@
         <p class="text-gv-light-text text-dt-3 text-center">
             Gesangverein Weppersdorf
         </p>
+
         <Input
             bind:value={email}
             type="email"
@@ -129,6 +127,7 @@
             title="E-Mail"
             marginTop="5"
         />
+
         <Input
             bind:value={password}
             type="password"
@@ -136,7 +135,13 @@
             title="Passwort"
             marginTop="10"
         />
-        <Button type="primary" marginTop="10" on:click={btnLogin} isSubmit={true}>
+
+        <Button
+            type="primary"
+            marginTop="10"
+            onclick={btnLogin}
+            isSubmit={true}
+        >
             <span class="material-symbols-rounded">login</span>
             <p class="ml-3">Anmelden</p>
         </Button>

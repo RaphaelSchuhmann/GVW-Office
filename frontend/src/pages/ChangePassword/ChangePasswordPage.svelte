@@ -1,12 +1,11 @@
 <script>
-    import { onMount } from "svelte";
     import { isMobile } from "../../stores/viewport";
     import ChangePasswordDesktop from "./ChangePasswordDesktop.svelte";
     import ChangePasswordMobile from "./ChangePasswordMobile.svelte";
 
-    let message = "";
+    let message = $state("");
 
-    onMount(() => {
+    $effect(() => {
         const hash = window.location.hash;
         const queryString = hash.split("?")[1];
         if (!queryString) return;

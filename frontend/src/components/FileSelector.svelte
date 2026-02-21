@@ -2,64 +2,75 @@
     import { marginMap } from "../lib/dynamicStyles";
     import { addToast } from "../stores/toasts";
 
-    export let title = "";
-    export let marginTop = "";
-    export let page = "";
-    export let validTypes = [];
-    export let files = [];
+    let {
+        title = "",
+        marginTop = "",
+        page = "library",
+        validTypes = [],
+        files = $bindable([]),
+        ...restProps
+    } = $props();
 
-    const validPages = ["library"];
-    if (!validPages.includes(page)) {
-        console.error(`Page ${page} is not a valid page`);
-        page = "library";
-    }
+    const activePage = $derived(["library"].includes(page) ? page : "library");
+    const icon = $derived(activePage === "library" ? "audio_file" : "draft");
+    const acceptString = $derived(validTypes.map(t => `.${t}`).join(","));
 
-    let icon = page === "library" ? "audio_file" : "draft";
-
+    /**
+     * Handles file selection via a dynamic input element
+     */
     async function addFile() {
         const input = document.createElement("input");
         input.type = "file";
-        input.accept = validTypes.map(t => `.${t}`).join(",");
+        input.accept = acceptString;
         input.multiple = false;
 
         input.onchange = () => {
             const file = input.files?.[0];
             if (!file) return;
 
-            // Prevent duplicates
             if (!files.some(p => p.name === file.name)) {
-                files = [...files, file];
+                files.push(file);
             } else {
                 addToast({
                     title: "Datei wird schon verwendet",
-                    subTitle: "Die von ihnen ausgewählte Datei ist bereits im Anhang und wird schon verwendet.",
+                    subTitle: "Die von ihnen ausgewählte Datei ist bereits im Anhang.",
                     type: "warning"
                 });
             }
-        }
+        };
 
         input.click();
     }
 
+    /**
+     * Removes a file from the list
+     */
     function removeFile(file) {
         files = files.filter(f => f !== file);
     }
 </script>
 
-<div class={`flex flex-col items-start justify-start gap-1 w-full ${marginMap[marginTop]}`}>
+<div class={`flex flex-col items-start justify-start gap-1 w-full ${marginMap[marginTop]}`} {...restProps}>
     <p class="text-dt-6 font-medium">{title}</p>
     <div class="flex-1 min-w-0 overflow-x-auto w-full">
         <div class="flex items-center justify-start gap-2 flex-nowrap">
-            <button class="shrink-0 flex items-center justify-center rounded-2 border-2 border-gv-border p-2 cursor-pointer hover:bg-gv-input-bg duration-200"
-                on:click={addFile} aria-label="Datei hinzufügen">
+            <button
+                type="button"
+                class="shrink-0 flex items-center justify-center rounded-2 border-2 border-gv-border p-2 cursor-pointer hover:bg-gv-input-bg duration-200"
+                onclick={addFile}
+                aria-label="Datei hinzufügen"
+            >
                 <span class="material-symbols-rounded text-dt-6">attach_file_add</span>
             </button>
+
             {#each files as file}
                 <button
-                        class="group shrink-0 relative flex items-center justify-center rounded-2 border-2 border-gv-border p-2 cursor-pointer hover:bg-gv-input-bg duration-200"
-                        on:click={() => removeFile(file)}>
-                    <!-- Normal content (defines size) -->
-                    <div class="flex items-center gap-2 whitespace-nowrap transition-opacity duration-200 group-hover:opacity-0">
+                    type="button"
+                    class="group shrink-0 relative flex items-center justify-center rounded-2 border-2 border-gv-border p-2 cursor-pointer hover:bg-gv-input-bg duration-200"
+                    onclick={() => removeFile(file)}
+                >
+                    <div
+                        class="flex items-center gap-2 whitespace-nowrap transition-opacity duration-200 group-hover:opacity-0">
                         <span class="material-symbols-rounded text-icon-dt-6">
                           {icon}
                         </span>
@@ -68,8 +79,8 @@
                         </p>
                     </div>
 
-                    <!-- Hover overlay -->
-                    <div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div
+                        class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <span class="material-symbols-rounded text-red-600 text-icon-dt-6">
                           attach_file_off
                         </span>

@@ -1,63 +1,69 @@
 <script>
     import ModalHeader from "./ModalHeader.svelte";
     import { widthMap, heightMap } from "../lib/dynamicStyles";
-    import { onDestroy } from "svelte";
 
-    export let title = "";
-    export let subTitle = "";
-    export let height = "auto";
-    export let width = "1/3";
-    export let isMobile = false;
+    // 1. Define Props & Snippets
+    let {
+        title = "",
+        subTitle = "",
+        height = "auto",
+        width = "1/3",
+        isMobile = false,
+        extraFunction = () => {},
+        extraFunctionOnClose = true,
+        children
+    } = $props();
 
-    export let extraFunction = () => {};
-    export let extraFunctionOnClose = true;
+    // 2. Internal State
+    let visible = $state(false);
 
-    let visible = false;
+    /**
+     * Logic: Side effect for body scroll
+     * This replaces the manual logic in show/hide and onDestroy.
+     */
+    $effect(() => {
+        if (visible) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
 
-    onDestroy(() => {
-        document.body.style.overflow = "";
+        // Cleanup: Ensures scroll is restored if component is unmounted
+        return () => {
+            document.body.style.overflow = "";
+        };
     });
 
     /**
-     * Shows the modal and optionally executes extra function
-     * Executes extraFunction if extraFunctionOnClose is false
+     * Methods exposed to the parent via bind:this
      */
     export function showModal() {
         visible = true;
-        document.body.style.overflow = "hidden";
         if (!extraFunctionOnClose) extraFunction();
     }
 
-    /**
-     * Hides the modal and optionally executes extra function
-     * Executes extraFunction if extraFunctionOnClose is true
-     */
     export function hideModal() {
         visible = false;
-        document.body.style.overflow = "";
         if (extraFunctionOnClose) extraFunction();
     }
 </script>
 
 {#if visible}
-    {#if !isMobile}
-        <div class="absolute z-999 top-0 left-0 w-dvw h-dvh flex items-center justify-center bg-gv-overlay">
-            <div
-                class={`${widthMap[width]} ${heightMap[height]} bg-white flex flex-col p-5 rounded-1 overflow-hidden`}>
-                <ModalHeader title={title} subTitle={subTitle} on:click={hideModal} />
-                <div class="w-full flex-1 min-h-0 flex flex-col overflow-y-scroll overflow-x-hidden mt-2">
-                    <slot />
-                </div>
+    <div
+        class="z-999 top-0 left-0 w-dvw h-dvh flex bg-gv-overlay
+               {isMobile ? 'fixed items-end' : 'absolute items-center justify-center'}"
+    >
+        <div
+            class="bg-white flex flex-col p-5 overflow-hidden
+                   {isMobile ? 'w-full h-8/9 rounded-t-1' : `${widthMap[width]} ${heightMap[height]} rounded-1`}"
+        >
+            <ModalHeader {title} {subTitle} onclick={hideModal} />
+
+            <div class="w-full flex-1 min-h-0 flex flex-col overflow-y-scroll overflow-x-hidden mt-2">
+                {#if children}
+                    {@render children()}
+                {/if}
             </div>
         </div>
-    {:else}
-        <div class="fixed z-999 top-0 left-0 w-dvw h-dvh flex items-end bg-gv-overlay">
-            <div class={`w-full h-8/9 bg-white flex flex-col p-5 rounded-t-1 overflow-hidden`}>
-                <ModalHeader title={title} subTitle={subTitle} on:click={hideModal} />
-                <div class="w-full flex-1 min-h-0 flex flex-col overflow-y-scroll overflow-x-hidden mt-2">
-                    <slot />
-                </div>
-            </div>
-        </div>
-    {/if}
+    </div>
 {/if}

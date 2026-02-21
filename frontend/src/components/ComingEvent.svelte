@@ -2,30 +2,39 @@
     import { marginMap } from "../lib/dynamicStyles";
     import { capitalizeWords } from "../services/utils";
     import Chip from "./Chip.svelte";
-    export let title = "";
-    export let time = "";
-    export let location = "";
-    export let type = "konzert";
-    export let margin = "";
-    export let isMobile = false;
 
-    // Normalize type
-    type = type.toLowerCase();
+    let {
+        title = "",
+        time = "",
+        location = "",
+        type = "konzert",
+        margin = "",
+        isMobile = false,
+        ...restProps
+    } = $props();
 
-    const validTypes = ["probe", "konzert", "meeting"];
-    if (!validTypes.includes(type)) {
-        console.warn(`Type ${type} is not a valid type`);
-        type = "Konzert";
-    }
+    const displayType = $derived.by(() => {
+        const normalized = type.toLowerCase();
+        const validTypes = ["probe", "konzert", "meeting"];
+
+        if (!validTypes.includes(normalized)) {
+            console.warn(`Type ${type} is not a valid type`);
+            return "Konzert";
+        }
+        return capitalizeWords(normalized);
+    });
 </script>
 
-<div class={`flex ${isMobile ? "flex-col items-start" : "items-center"} w-full ${marginMap[margin]}`}>
+<div
+    class={`flex ${isMobile ? "flex-col items-start" : "items-center"} w-full ${marginMap[margin]}`}
+    {...restProps}
+>
     <div class="flex flex-col items-start justify-around">
         <p class="text-dt-5 text-gv-dark-text text-nowrap truncate">{title}</p>
         <p class="text-dt-6 text-gv-light-text text-nowrap truncate">{time}</p>
         <p class="text-dt-6 text-gv-light-text">{location}</p>
     </div>
     <div class={`${isMobile ? "mt-2" : "ml-auto"}`}>
-        <Chip text={capitalizeWords(type)}/>
+        <Chip text={displayType}/>
     </div>
 </div>
