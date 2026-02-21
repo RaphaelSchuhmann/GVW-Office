@@ -93,7 +93,7 @@
         </button>
         {#if open && options.length > 0}
             <div bind:this={menuRef}
-                 class={`absolute w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${displayTop ? "bottom-10 rounded-t-1" : "rounded-b-1"} max-h-[20vh] flex flex-col items-center z-999 overflow-y-auto`}
+                 class={`absolute w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${displayTop ? "bottom-10.5 rounded-t-1" : "rounded-b-1"} max-h-[20vh] flex flex-col items-center z-999 overflow-y-auto`}
                  style={computeMinWidth() > 0 ? `min-width: ${computeMinWidth()}px` : ""}>
                 {#each options as option}
                     <button
