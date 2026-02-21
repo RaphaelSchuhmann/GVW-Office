@@ -1,7 +1,7 @@
 <script>
     import "./app.css";
-    import Viewport from "./components/Viewport.svelte";
     import Router from "svelte-spa-router";
+
     import Login from "./pages/Login/LoginPage.svelte";
     import Dashboard from "./pages/Dashboard/DashboardPage.svelte";
     import ChangePassword from "./pages/ChangePassword/ChangePasswordPage.svelte";
@@ -11,7 +11,6 @@
     import Library from "./pages/Library.svelte";
     import LibraryEditor from "./pages/LibraryEditor.svelte";
 
-    import { onDestroy, onMount } from "svelte";
     import { startSyncService, stopSyncService } from "./services/appSettingsSyncService";
 
     const routes = {
@@ -25,13 +24,13 @@
         "/library/edit": LibraryEditor,
     };
 
-    onMount(async () => {
-        await startSyncService();
-    });
+    $effect(() => {
+        startSyncService();
 
-    onDestroy(() => {
-        stopSyncService();
+        return () => {
+            stopSyncService();
+        };
     });
 </script>
-<Viewport />
-<Router {routes}/>
+
+<Router {routes} />

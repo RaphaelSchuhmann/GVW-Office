@@ -1,13 +1,13 @@
-import { get } from "svelte/store";
-import { user } from "../stores/user";
-import { getUserData, updateUserData } from "../api/apiUser";
-import { normalizeResponse } from "../api/http";
-import { handleGlobalApiError } from "../api/globalErrorHandler";
-import { isMobile } from "../stores/viewport";
+import { viewport } from "../stores/viewport.svelte";
 import { addToast } from "../stores/toasts";
 import { push } from "svelte-spa-router";
 import { auth } from "../stores/auth";
 import { clearValue } from "./store";
+import { get } from "svelte/store";
+import { user } from "../stores/user";
+import { handleGlobalApiError } from "../api/globalErrorHandler";
+import { getUserData, updateUserData } from "../api/apiUser";
+import { normalizeResponse } from "../api/http";
 
 const USER_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
@@ -31,7 +31,7 @@ export async function ensureUserData() {
             if (normalizedResponse.status === 404) {
                 addToast({
                     title: "Benutzer nicht gefunden",
-                    subTitle: !get(isMobile) ? "Es wurde kein Benutzer unter den angegebenen Daten gefunden." : "",
+                    subTitle: !viewport.isMobile ? "Es wurde kein Benutzer unter den angegebenen Daten gefunden." : "",
                     type: "error"
                 });
                 return;
@@ -40,7 +40,6 @@ export async function ensureUserData() {
         }
 
         user.update(u => ({ ...u, name: body.name, email: body.email, role: body.role, address: body.address, phone: body.phone, loaded: true, lastFetched: Date.now() }));
-        return;
     }
 }
 
@@ -78,7 +77,7 @@ export async function tryUpdateUserData(data) {
     if (normalizedResponse.errorType === "NOTFOUND") {
         addToast({
             title: "Konto nicht gefunden",
-            subTitle: !get(isMobile) ? "Ihr Konto konnte nicht gefunden werden. Bitte melden Sie sich erneut an, um fortzufahren." : "",
+            subTitle: !viewport.isMobile ? "Ihr Konto konnte nicht gefunden werden. Bitte melden Sie sich erneut an, um fortzufahren." : "",
             type: "error"
         });
         logout();
@@ -89,7 +88,7 @@ export async function tryUpdateUserData(data) {
     user.update(u => ({ ...u, email: data.email, phone: data.phone, address: data.address }));
     addToast({
         title: "Erfolgreich gespeichert",
-        subTitle: !get(isMobile) ? "Ihre persönlichen Daten wurden erfolgreich aktualisiert und sind nun in Ihrem Benutzerkonto gespeichert." : "",
+        subTitle: !viewport.isMobile ? "Ihre persönlichen Daten wurden erfolgreich aktualisiert und sind nun in Ihrem Benutzerkonto gespeichert." : "",
         type: "success"
     });
 }

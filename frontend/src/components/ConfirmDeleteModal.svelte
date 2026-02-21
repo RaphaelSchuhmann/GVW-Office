@@ -2,7 +2,7 @@
     import Modal from "./Modal.svelte";
     import Button from "./Button.svelte";
     import Input from "./Input.svelte";
-    import { deleteMember } from "../services/members";
+    import { removeMember } from "../services/membersService";
     import { deleteEvent } from "../services/events";
     import { deleteScore } from "../services/library";
     import { addToast } from "../stores/toasts";
@@ -10,7 +10,7 @@
     import { push } from "svelte-spa-router";
 
     const actionMap = {
-        "deleteMember": deleteMember,
+        "deleteMember": removeMember,
         "deleteEvent": deleteEvent,
         "deleteLibEntry": deleteScore,
     };
@@ -29,6 +29,7 @@
     } = $props();
 
     let confirmInput = $state("");
+    /** @type {import("./Modal.svelte").default} */
     let confirmDeleteModal = $state();
 
     const invalidConfirm = $derived(!(confirmInput === expectedInput && expectedInput));
@@ -52,6 +53,16 @@
      */
     async function handleDelete() {
         confirmDeleteModal?.hideModal();
+
+        const DEV_refactoredRemoveServices = ["deleteMember"];
+
+        if (activeAction !== "none" && DEV_refactoredRemoveServices.includes(activeAction)) {
+            const apiFunction = actionMap[activeAction];
+            await apiFunction(id);
+
+            onClose();
+            return;
+        }
 
         if (activeAction !== "none") {
             const apiFunction = actionMap[activeAction];

@@ -3,7 +3,7 @@ import { getSettings } from "../api/apiAppSettings";
 import { handleGlobalApiError } from "../api/globalErrorHandler";
 import { normalizeResponse } from "../api/http";
 import { addToast } from "../stores/toasts";
-import { isMobile } from "../stores/viewport";
+import { viewport } from "../stores/viewport.svelte";
 import { appSettings } from "../stores/appSettings";
 
 let isRunning = false;
@@ -57,7 +57,7 @@ export async function loadAppSettings() {
         if (!resp.ok) {
             addToast({
                 title: "App Einstellungen nicht verfügbar",
-                subTitle: !get(isMobile) ? "Beim Laden der globalen App Einstellungen ist ein unerwarteter Fehler aufgetreten." : "",
+                subTitle: !get(viewport.isMobile) ? "Beim Laden der globalen App Einstellungen ist ein unerwarteter Fehler aufgetreten." : "",
                 type: "error",
             });
             console.error("Unable to load app settings");

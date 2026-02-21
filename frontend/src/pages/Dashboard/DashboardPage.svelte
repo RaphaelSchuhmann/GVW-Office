@@ -1,5 +1,5 @@
 <script>
-    import { isMobile } from "../../stores/viewport";
+    import { viewport } from "../../stores/viewport.svelte";
     import DashboardDesktop from "./DashboardDesktop.svelte";
     import DashboardMobile from "./DashboardMobile.svelte";
     import { ensureUserData } from "../../services/userService";
@@ -9,7 +9,7 @@
     });
 </script>
 
-{#if $isMobile}
+{#if viewport.isMobile}
     <DashboardMobile />
 {:else}
     <DashboardDesktop />

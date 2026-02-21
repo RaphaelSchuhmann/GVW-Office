@@ -1,5 +1,5 @@
 <script>
-    import { isMobile } from "../../stores/viewport";
+    import { viewport } from "../../stores/viewport.svelte";
     import ChangePasswordDesktop from "./ChangePasswordDesktop.svelte";
     import ChangePasswordMobile from "./ChangePasswordMobile.svelte";
 
@@ -21,7 +21,7 @@
     });
 </script>
 
-{#if $isMobile}
+{#if viewport.isMobile}
     <ChangePasswordMobile message={message}/>
 {:else}
     <ChangePasswordDesktop message={message}/>

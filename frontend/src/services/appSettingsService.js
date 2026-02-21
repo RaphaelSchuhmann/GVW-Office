@@ -4,7 +4,7 @@ import { normalizeResponse } from "../api/http";
 import { handleGlobalApiError } from "../api/globalErrorHandler";
 import { addToast } from "../stores/toasts";
 import { get } from "svelte/store";
-import { isMobile } from "../stores/viewport";
+import { viewport } from "../stores/viewport.svelte";
 
 /**
  * Updates the maximum members app settings on the server and
@@ -29,7 +29,7 @@ export async function tryUpdateMaxMembers(value) {
 
     addToast({
         title: "Erfolgreich gespeichert",
-        subTitle: !get(isMobile)
+        subTitle: !get(viewport.isMobile)
             ? "Die maximale Anzahl and Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert."
             : "",
         type: "success"
