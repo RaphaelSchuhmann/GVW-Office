@@ -1,183 +1,129 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { onDestroy, onMount } from "svelte";
     import { daysInMonth, firstWeekdayOfMonth, currentYear, currentMonth, isToday } from "../services/utils";
     import Dropdown from "./Dropdown.svelte";
 
-    export let selected = "";
-    export let marginTop = "";
-    export let onChange = () => {};
+    let {
+        selected = $bindable(""),
+        marginTop = "",
+        onChange = () => {}
+    } = $props();
 
-    let open = false;
-    let datepickerRef;
+    // 2. Component State
+    let open = $state(false);
+    let datepickerRef = $state(null);
+    let usedMonth = $state(currentMonth);
+    let usedYear = $state(currentYear);
+    let selectedDate = $state(new Date().getDate());
 
-    let monthOptions = ["Januar", "Februar", "März", "April", "Mai", "Juni", "July", "August", "September", "Oktober", "November", "Dezember"];
-    let yearOptions = generateYears(currentYear, 101);
+    const monthOptions = ["Januar", "Februar", "März", "April", "Mai", "Juni", "July", "August", "September", "Oktober", "November", "Dezember"];
 
-    /**
-     * Generates an array of year strings centered around a given year
-     * @param {number} center - The center year
-     * @param {number} range - The range of years on each side of center
-     * @returns {string[]} Array of year strings
-     */
     function generateYears(center, range = 10) {
-        return Array.from(
-            { length: range * 2 + 1 },
-            (_, i) => String(center - range + i)
-        );
+        return Array.from({ length: range * 2 + 1 }, (_, i) => String(center - range + i));
     }
+    const yearOptions = generateYears(currentYear, 101);
 
-    let usedMonth = currentMonth;
-    let usedYear = currentYear;
-    let selectedDate = new Date().getDate();
+    let calendar = $derived(buildCalendar(usedYear, usedMonth));
 
-    /**
-     * Handles clicks outside the datepicker to close it
-     * @param {MouseEvent} event - The click event
-     */
-    function handleClickOutside(event) {
-        if (datepickerRef && !datepickerRef.contains(event.target)) {
-            open = false;
+    let formattedDate = $derived(`${selectedDate}.${usedMonth + 1}.${usedYear}`);
+
+    $effect(() => {
+        selected = formattedDate;
+        onChange(formattedDate);
+    });
+
+    $effect(() => {
+        const maxDays = daysInMonth(usedYear, usedMonth);
+        if (selectedDate > maxDays) {
+            selectedDate = maxDays;
         }
-    }
+    });
 
-    /**
-     * Builds a calendar grid for the given year and month
-     * @param {number} year - The year
-     * @param {number} month - The month (0-indexed)
-     * @returns {Array<Array<number|null>>} 2D array representing calendar weeks
-     */
+    $effect(() => {
+        const handleClickOutside = (event) => {
+            if (datepickerRef && !datepickerRef.contains(event.target)) {
+                open = false;
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    });
+
     function buildCalendar(year, month) {
         const days = daysInMonth(year, month);
         const startDay = firstWeekdayOfMonth(year, month);
-
-        const calendar = [];
+        const calendarGrid = [];
         let week = [];
 
         for (let i = 0; i < startDay; i++) week.push(null);
-
         for (let day = 1; day <= days; day++) {
             week.push(day);
             if (week.length === 7) {
-                calendar.push(week);
+                calendarGrid.push(week);
                 week = [];
             }
         }
-
         if (week.length > 0) {
             while (week.length < 7) week.push(null);
-            calendar.push(week);
+            calendarGrid.push(week);
         }
-
-        return calendar;
+        return calendarGrid;
     }
 
-    onMount(() => {
-        document.addEventListener("mousedown", handleClickOutside);
-    });
-
-    onDestroy(() => {
-        document.removeEventListener("mousedown", handleClickOutside);
-    });
-
-    /**
-     * Toggles the datepicker open/closed and updates selected date
-     */
-    function openDatepicker() {
+    function toggleDatepicker() {
         open = !open;
-        selected = `${selectedDate}.${usedMonth + 1}.${usedYear}`;
     }
 
-    /**
-     * Handles day selection and closes the datepicker
-     * @param {number} value - The selected day
-     */
-    function itemClicked(value) {
-        selectedDate = value;
+    function itemClicked(day) {
+        selectedDate = day;
         open = false;
     }
 
-    /**
-     * Navigates to the next month/year
-     */
     function next() {
         if (!yearOptions.includes(String(usedYear + 1)) && usedMonth === 11) return;
-
         if (usedMonth === 11) {
             usedMonth = 0;
             usedYear++;
-            return;
+        } else {
+            usedMonth++;
         }
-
-        usedMonth++;
     }
 
-    /**
-     * Navigates to the previous month/year
-     */
     function back() {
         if (!yearOptions.includes(String(usedYear - 1)) && usedMonth === 0) return;
-
         if (usedMonth === 0) {
             usedMonth = 11;
             usedYear--;
-            return;
+        } else {
+            usedMonth--;
         }
-
-        usedMonth--;
     }
-
-    $: calendar = buildCalendar(usedYear, usedMonth);
-
-    $: if (selectedDate && selectedDate > daysInMonth(usedYear, usedMonth)) {
-        selectedDate = null;
-    }
-
-    $: selected = `${selectedDate}.${usedMonth + 1}.${usedYear}`;
-    $: onChange(selected);
 </script>
 
-<div class={`relative w-full ${marginMap[marginTop]}`} bind:this={datepickerRef}>
-    <div
-        class={`flex items-center w-full bg-gv-input-bg ${open ? "rounded-b-1 border-l border-r border-b border-gv-primary" : "rounded-1"} gap-1`}>
-        <input type="text" class="w-full p-2 pl-3 pr-3 rounded-l-1 text-gv-dark-text outline-gv-primary text-dt-6"
-               placeholder="DD.MM.YYYY" bind:value={selected} readonly>
+<div class="relative w-full {marginMap[marginTop]}" bind:this={datepickerRef}>
+    <div class="flex items-center w-full bg-gv-input-bg {open ? 'border border-gv-primary' : ''} rounded-1 gap-1">
+        <input
+            type="text"
+            class="w-full p-2 pl-3 pr-3 rounded-l-1 text-gv-dark-text outline-gv-primary text-dt-6"
+            placeholder="DD.MM.YYYY"
+            value={selected}
+            readonly
+        >
         <button
+            type="button"
             class="p-1.5 rounded-2 h-full aspect-square mr-1 flex items-center justify-center cursor-pointer hover:bg-gv-hover-effect"
-            on:click={openDatepicker}>
+            onclick={toggleDatepicker}>
             <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">calendar_month</span>
         </button>
     </div>
+
     {#if open}
-        <div
-            class="absolute flex flex-col bottom-full rounded-t-1 w-full bg-gv-input-bg border-l border-t border-r border-gv-primary p-2 gap-4">
-            <div class="flex items-center w-full justify-between gap-1">
-                <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                        on:click={back}>
-                    <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_left</span>
-                </button>
-                <div class="flex items-center w-full gap-2">
-                    <Dropdown bgWhite={true} padding="2" options={monthOptions} selected={monthOptions[usedMonth]}
-                              onChange={(value) => usedMonth = monthOptions.indexOf(value)} disableMinWidth={true} />
-                    <Dropdown bgWhite={true} padding="2" options={yearOptions} selected={String(usedYear)}
-                              onChange={(value) => usedYear = Number(value)} disableMinWidth={true} />
-                </div>
-                <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                        on:click={next}>
-                    <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_right</span>
-                </button>
-            </div>
+        <div class="absolute flex flex-col bottom-full rounded-1 w-max min-w-full bg-gv-input-bg border border-gv-primary p-2 pt-4 gap-2 mb-1">
             <div class="w-full items-center flex flex-col">
                 <table class="w-full border-collapse">
                     <thead>
-                    <tr>
-                        <th>Mo</th>
-                        <th>Di</th>
-                        <th>Mi</th>
-                        <th>Do</th>
-                        <th>Fr</th>
-                        <th>Sa</th>
-                        <th>So</th>
+                    <tr class="text-gv-light-text text-dt-8">
+                        <th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -187,13 +133,14 @@
                                 <td class="text-center p-1">
                                     {#if day}
                                         <button
+                                            type="button"
                                             class="w-10 h-10 rounded-full text-dt-8 cursor-pointer transition-colors"
                                             class:bg-gv-dark-turquoise={selectedDate === day}
                                             class:text-white={selectedDate === day || isToday(day, usedMonth, usedYear)}
                                             class:bg-gv-primary={isToday(day, usedMonth, usedYear) && selectedDate !== day}
                                             class:text-gv-light-text={selectedDate !== day && !isToday(day, usedMonth, usedYear)}
                                             class:hover:bg-gv-hover-effect={selectedDate !== day}
-                                            on:click={() => itemClicked(day)}
+                                            onclick={() => itemClicked(day)}
                                         >
                                             {day}
                                         </button>
@@ -206,6 +153,43 @@
                     {/each}
                     </tbody>
                 </table>
+            </div>
+
+            <div class="flex items-center w-full justify-between gap-1">
+                <button
+                    type="button"
+                    class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
+                    onclick={back}>
+                    <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_left</span>
+                </button>
+
+                <div class="flex items-center w-full gap-2">
+                    <Dropdown
+                        bgWhite={true}
+                        padding="2"
+                        options={monthOptions}
+                        selected={monthOptions[usedMonth]}
+                        onChange={(val) => usedMonth = monthOptions.indexOf(val)}
+                        disableMinWidth={true}
+                        displayTop={true}
+                    />
+                    <Dropdown
+                        bgWhite={true}
+                        padding="2"
+                        options={yearOptions}
+                        selected={String(usedYear)}
+                        onChange={(val) => usedYear = Number(val)}
+                        disableMinWidth={true}
+                        displayTop={true}
+                    />
+                </div>
+
+                <button
+                    type="button"
+                    class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
+                    onclick={next}>
+                    <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_right</span>
+                </button>
             </div>
         </div>
     {/if}

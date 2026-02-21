@@ -1,105 +1,74 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { onDestroy, onMount } from "svelte";
     import { currentYear } from "../services/utils";
 
-    export let selected = "";
-    export let marginTop = "";
-    export let onChange = () => {};
+    let {
+        selected = $bindable(""),
+        marginTop = "",
+        onChange = () => {}
+    } = $props();
 
-    let open = false;
-    let datepickerRef;
+    let open = $state(false);
+    let datepickerRef = $state(null);
 
-    // State for navigation
-    let usedYear = selected ? Number(selected) : currentYear;
+    let usedYear = $state(selected ? Number(selected) : currentYear);
 
-    // This calculates the start of the 12-year grid (e.g., 2024 -> 2016)
-    $: gridStart = Math.floor(usedYear / 12) * 12;
-    $: yearsGrid = Array.from({ length: 12 }, (_, i) => gridStart + i);
+    let gridStart = $derived(Math.floor(usedYear / 12) * 12);
+    let yearsGrid = $derived(Array.from({ length: 12 }, (_, i) => gridStart + i));
 
-    /**
-     * Handles clicks outside the datepicker to close it
-     * @param {MouseEvent} event - The click event
-     */
-    function handleClickOutside(event) {
-        if (datepickerRef && !datepickerRef.contains(event.target)) {
-            open = false;
+    $effect(() => {
+        const handleClickOutside = (event) => {
+            if (datepickerRef && !datepickerRef.contains(event.target)) {
+                open = false;
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    });
+
+    function updateSelection(year) {
+        usedYear = year;
+        selected = String(year);
+        onChange(selected);
+    }
+
+    function toggleOpen() {
+        open = !open;
+        if (!selected) {
+            updateSelection(usedYear);
         }
     }
 
-    onMount(() => {
-        document.addEventListener("mousedown", handleClickOutside);
-    });
-
-    onDestroy(() => {
-        document.removeEventListener("mousedown", handleClickOutside);
-    });
-
-    /**
-     * Toggles the datepicker open/closed state
-     * Sets default selected year if none is selected
-     */
-    function toggleOpen() {
-        open = !open;
-        if (!selected) selected = String(usedYear);
-    }
-
-    /**
-     * Selects a year and closes the datepicker
-     * @param {number} year - The year to select
-     */
     function selectYear(year) {
-        usedYear = year;
-        selected = String(year);
+        updateSelection(year);
         open = false;
     }
 
-    /**
-     * Navigates to the next 12-year range
-     */
     function nextRange() {
         usedYear += 12;
     }
 
-    /**
-     * Navigates to the previous 12-year range
-     */
     function backRange() {
+        if (usedYear - 12 < 0) return;
         usedYear -= 12;
     }
-
-    $: selected = String(usedYear);
-    $: onChange(selected);
 </script>
 
 <div class="relative w-full {marginMap[marginTop]}" bind:this={datepickerRef}>
     <div
-        class="flex items-center w-full bg-gv-input-bg border-gv-primary {open ? 'rounded-b-1 border-l border-r border-b' : 'rounded-1'} gap-1">
+        class="flex items-center w-full bg-gv-input-bg border-gv-primary rounded-1 {open ? 'border' : ''} gap-1">
         <input type="text" class="w-full p-2 pl-3 pr-3 rounded-l-1 text-gv-dark-text outline-gv-primary text-dt-6"
                placeholder="YYYY" bind:value={selected} readonly>
         <button
             class="p-1.5 rounded-2 h-full aspect-square mr-1 flex items-center justify-center cursor-pointer hover:bg-gv-hover-effect"
-            on:click={toggleOpen}>
+            onclick={toggleOpen}>
             <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">calendar_month</span>
         </button>
     </div>
 
     {#if open}
-        <div class="absolute bottom-full mb-0 flex flex-col rounded-t-1 w-full bg-gv-input-bg border-l border-t border-r border-gv-primary p-4 gap-4">
-
-            <div class="flex items-center justify-between">
-                <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect" on:click={backRange}>
-                    <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_left</span>
-                </button>
-
-                <span class="text-dt-6 font-bold text-gv-dark-text">
-                    {yearsGrid[0]} - {yearsGrid[11]}
-                </span>
-
-                <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect" on:click={nextRange}>
-                    <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_right</span>
-                </button>
-            </div>
+        <div class="absolute bottom-full flex flex-col rounded-1 w-full bg-gv-input-bg border border-gv-primary p-4 gap-4 mb-1">
 
             <div class="grid grid-cols-3 gap-2">
                 {#each yearsGrid as year}
@@ -109,11 +78,25 @@
                         class:text-white={String(selected) === String(year)}
                         class:text-gv-light-text={String(selected) !== String(year)}
                         class:hover:bg-gv-hover-effect={String(selected) !== String(year)}
-                        on:click={() => selectYear(year)}
+                        onclick={() => selectYear(year)}
                     >
                         {year}
                     </button>
                 {/each}
+            </div>
+
+            <div class="flex items-center justify-between">
+                <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect" onclick={backRange}>
+                    <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_left</span>
+                </button>
+
+                <span class="text-dt-6 font-bold text-gv-dark-text">
+                    {yearsGrid[0]} - {yearsGrid[11]}
+                </span>
+
+                <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect" onclick={nextRange}>
+                    <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_right</span>
+                </button>
             </div>
         </div>
     {/if}
