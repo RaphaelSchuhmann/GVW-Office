@@ -1,5 +1,5 @@
 <script>
-    import { onMount, onDestroy } from "svelte";
+    import { onMount, onDestroy, tick } from "svelte";
     import { marginMap, paddingMap } from "../lib/dynamicStyles";
     import { capitalizeWords } from "../services/utils";
 
@@ -10,20 +10,23 @@
     export let title = "";
     export let bgWhite = false;
     export let disableMinWidth = false;
-    export let onChange = () => {};
+    export let onChange = () => {
+    };
     export let textWrap = true;
+    export let displayTop = false; // Toggles the position of the open state select
 
     let open = false;
     let dropdownRef;
-    let minWidth = 0;
+    let menuRef;
 
-    $: {
-        if (options.length > 0 && !disableMinWidth) {
-            const longestOption = options.reduce((a, b) => a.length > b.length ? a : b);
-            minWidth = Math.max(longestOption.length * 8 + 80, 120); // 8px per char + padding
-        } else {
-            minWidth = 0;
-        }
+    function computeMinWidth() {
+        if (disableMinWidth || options.length === 0) return 0;
+
+        const longestOption = options.reduce((a, b) =>
+            a.length > b.length ? a : b
+        );
+
+        return Math.max(longestOption.length * 8 + 80, 120); // 8px per char + padding
     }
 
     /**
@@ -48,6 +51,23 @@
         }
     }
 
+    async function toggleDropdown() {
+        open = !open;
+
+        if (!open) return;
+
+        if (options.length === 0) return;
+        if (selected === "wählen" || selected === "Wählen") return;
+
+        const index = options.indexOf(selected);
+        if (index === -1) return;
+
+        await tick();
+
+        const selectedElement = menuRef?.children[index];
+        selectedElement?.scrollIntoView({ block: "center", behavior: "smooth" });
+    }
+
     onMount(() => {
         document.addEventListener("mousedown", handleClickOutside);
     });
@@ -63,19 +83,22 @@
     {/if}
     <div class="relative inline-block w-full">
         <button
-            class={`flex items-center w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${open && options.length > 0 ? "rounded-t-1" : "rounded-1"} text-dt-6 ${paddingMap[padding]} pl-3 pr-3 cursor-pointer text-gv-dark-text hover:bg-gv-hover-effect`}
-            style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}
-            on:click={() => open = !open}>
+            class={`flex items-center w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${open && options.length > 0 ? !displayTop ? "rounded-t-1" : "rounded-b-1" : "rounded-1"} text-dt-6 ${paddingMap[padding]} pl-3 pr-3 cursor-pointer text-gv-dark-text hover:bg-gv-hover-effect`}
+            style={computeMinWidth() > 0 ? `min-width: ${computeMinWidth()}px` : ""}
+            on:click={toggleDropdown}>
             <div class="flex w-full">
                 <p class={`${selected === "wählen" ? "text-gv-input-placeholder" : "text-gv-dark-text"} ${textWrap ? "text-wrap" : "text-nowrap"}`}>{capitalizeWords(selected)}</p>
                 <span class="material-symbols-rounded ml-auto">{open ? "arrow_drop_up" : "arrow_drop_down"}</span>
             </div>
         </button>
         {#if open && options.length > 0}
-            <div class={`absolute w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} max-h-[20vh] flex flex-col items-center rounded-b-1 z-999 overflow-y-auto`} style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}>
+            <div bind:this={menuRef}
+                 class={`absolute w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${displayTop ? "bottom-10 rounded-t-1" : "rounded-b-1"} max-h-[20vh] flex flex-col items-center z-999 overflow-y-auto`}
+                 style={computeMinWidth() > 0 ? `min-width: ${computeMinWidth()}px` : ""}>
                 {#each options as option}
-                    <button class={`text-left p-2 pl-4 pr-4 cursor-pointer hover:bg-gv-hover-effect w-full rounded-1 ${textWrap ? "text-wrap" : "text-nowrap"}`}
-                            on:click={() => selectOption(option)}>{capitalizeWords(option)}</button>
+                    <button
+                        class={`text-left p-2 pl-4 pr-4 cursor-pointer hover:bg-gv-hover-effect w-full rounded-1 ${textWrap ? "text-wrap" : "text-nowrap"}`}
+                        on:click={() => selectOption(option)}>{capitalizeWords(option)}</button>
                 {/each}
             </div>
         {/if}
