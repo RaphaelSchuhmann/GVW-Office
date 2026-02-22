@@ -19,15 +19,33 @@
     import YearDatepicker from "../../components/YearDatepicker.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
 
-    // Refs
-    /** @type {import("../../components/SettingsModal.svelte").default} */
+    // ==================
+    // MODAL REFERENCES
+    // ==================
+    /**
+     * Reference to the global settings modal.
+     * Used to programmatically open the application settings dialog.
+     * @type {import("../../components/SettingsModal.svelte").default}
+     */
     let settingsModal = $state();
-    /** @type {import("../../components/Modal.svelte").default} */
+
+    /**
+     * Reference to the "Add Member" modal.
+     * Controls visibility and lifecycle of the member creation dialog.
+     * @type {import("../../components/Modal.svelte").default}
+     */
     let addMemberModal = $state();
 
     // ----------------
     // ADD MEMBER STATE
     // ----------------
+    /**
+     * Reactive state object representing the input fields
+     * of the "Add Member" form.
+     *
+     * Dropdown values are stored as display labels
+     * and mapped to backend enums on submission.
+     */
     let memberInput = $state({
         name: "",
         surname: "",
@@ -41,6 +59,16 @@
         joined: ""
     });
 
+    /**
+     * Derived flag determining whether the "Add Member"
+     * submit button should be disabled.
+     *
+     * Disabled if:
+     * - Any required text field is empty
+     * - Any dropdown has no valid selection
+     *
+     * Ensures basic client-side validation before submission.
+     */
     const addDisabled = $derived.by(() => {
         const hasEmptyFields = [
             memberInput.name, memberInput.surname, memberInput.email,
@@ -54,6 +82,12 @@
         return hasEmptyFields || hasUnselectedDropdowns;
     });
 
+    /**
+     * Resets all input fields of the "Add Member" form
+     * to their initial default values.
+     *
+     * Called after successful submission or when closing the modal.
+     */
     function resetAddInputs() {
         memberInput.name = "";
         memberInput.surname = "";
@@ -67,6 +101,18 @@
         memberInput.role = null;
     }
 
+    /**
+     * Submits the new member to the backend.
+     *
+     * Workflow:
+     * 1. Map dropdown display values to backend enum values.
+     * 2. Send member payload to API.
+     * 3. Close the modal.
+     * 4. Refresh member list from backend.
+     *
+     * @async
+     * @returns {Promise<void>}
+     */
     async function submitMember() {
         memberInput.voice = voiceMap[memberInput.voice];
         memberInput.status = statusMap[memberInput.status];
@@ -81,6 +127,9 @@
 
     let sidebarOpen = $state(false);
 
+    /**
+     * Opens the global settings modal.
+     */
     function settingsClick() {
         settingsModal.showModal();
     }

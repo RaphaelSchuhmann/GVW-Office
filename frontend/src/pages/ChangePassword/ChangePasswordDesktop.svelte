@@ -12,10 +12,8 @@
     import { normalizeResponse } from "../../api/http";
     import { handleGlobalApiError } from "../../api/globalErrorHandler";
 
-    // 1. Props using $props()
     let { message = "" } = $props();
 
-    // 2. Reactive State using $state()
     let currentPw = $state("");
     let newPw = $state("");
     let confirmNewPw = $state("");
