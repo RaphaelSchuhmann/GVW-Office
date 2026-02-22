@@ -9,12 +9,15 @@
         onChange = () => {}
     } = $props();
 
-    // 2. Component State
     let open = $state(false);
     let datepickerRef = $state(null);
-    let usedMonth = $state(currentMonth);
-    let usedYear = $state(currentYear);
-    let selectedDate = $state(new Date().getDate());
+
+    // Parse initial value or fallback to current date
+    const initialDate = selected && selected.includes('.') ? selected.split('.').map(Number) : null;
+
+    let usedMonth = $state(initialDate ? initialDate[1] - 1 : currentMonth);
+    let usedYear = $state(initialDate ? initialDate[2] : currentYear);
+    let selectedDate = $state(initialDate ? initialDate[0] : new Date().getDate());
 
     const monthOptions = ["Januar", "Februar", "März", "April", "Mai", "Juni", "July", "August", "September", "Oktober", "November", "Dezember"];
 
@@ -28,8 +31,10 @@
     let formattedDate = $derived(`${selectedDate}.${usedMonth + 1}.${usedYear}`);
 
     $effect(() => {
-        selected = formattedDate;
-        onChange(formattedDate);
+        if (selected !== formattedDate) {
+            selected = formattedDate;
+            onChange(formattedDate);
+        }
     });
 
     $effect(() => {

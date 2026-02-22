@@ -4,7 +4,7 @@ import { libraryFilterState, libraryStore } from "../stores/library";
 import { statusMap, typeMap } from "../services/events";
 import { appSettings } from "../stores/appSettings";
 import { get } from "svelte/store";
-import { getMembers } from "../api/apiMembers";
+import { apiGetMembers } from "../api/apiMembers";
 import { getEvents } from "../api/apiEvents";
 import { getScores } from "../api/apiLibrary";
 
@@ -14,7 +14,7 @@ import { getScores } from "../api/apiLibrary";
  */
 export const filterRegistry = {
     members: {
-        fetch: getMembers,
+        fetch: apiGetMembers,
         store: membersStore,
         filterState: membersFilterState,
         fuse: {

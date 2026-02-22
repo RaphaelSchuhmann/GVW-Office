@@ -1,38 +1,6 @@
 import { get } from "svelte/store";
 import { auth } from "../stores/auth";
 
-export const roleMap = {
-    "Mitglied": "member",
-    "Vorstand": "vorstand",
-    "Schriftführer": "schriftführer",
-    "Chorleitung": "chorleitung",
-    "Notenwart": "notenwart",
-    "admin": "admin",
-    "schriftführer": "Schriftführer",
-    "vorstand": "Vorstand",
-    "member": "Mitglied",
-    "chorleitung": "Chorleitung",
-    "notenwart": "Notenwart"
-};
-
-export const voiceMap = {
-    "1. Tenor": "tenor1",
-    "2. Tenor": "tenor2",
-    "1. Bass": "bass1",
-    "2. Bass": "bass2",
-    "tenor1": "1. Tenor",
-    "tenor2": "2. Tenor",
-    "bass1": "1. Bass",
-    "bass2": "2. Bass"
-};
-
-export const statusMap = {
-    "Aktiv": "active",
-    "Passiv": "inactive",
-    "active": "Aktiv",
-    "inactive": "Passiv"
-};
-
 const apiUrl = __API_URL__;
 
 /**

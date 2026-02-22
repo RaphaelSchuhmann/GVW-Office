@@ -6,6 +6,7 @@
     import Dashboard from "./pages/Dashboard/DashboardPage.svelte";
     import ChangePassword from "./pages/ChangePassword/ChangePasswordPage.svelte";
     import Members from "./pages/Members/MembersPage.svelte";
+    import MemberDetails from "./pages/MemberDetails/MemberDetailsPage.svelte";
     import Events from "./pages/Events.svelte";
     import EventEditor from "./pages/EventEditor.svelte";
     import Library from "./pages/Library.svelte";
@@ -18,6 +19,7 @@
         "/dashboard": Dashboard,
         "/changePassword": ChangePassword,
         "/members": Members,
+        "/members/details": MemberDetails,
         "/events": Events,
         "/events/edit": EventEditor,
         "/library": Library,

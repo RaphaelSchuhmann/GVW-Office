@@ -49,10 +49,10 @@
     const baseClasses = "flex items-center justify-center rounded-1 min-[768px]:text-dt-4 min-[470px]:text-dt-5 text-dt-6 duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
 
     const typeClasses = {
-        primary: `bg-gv-primary p-2 pr-4 text-white hover:bg-gv-primary-hover ${width} ${marginMap[marginTop]}`,
+        primary: `bg-gv-primary p-2 pl-4 pr-4 text-white hover:bg-gv-primary-hover ${width} ${marginMap[marginTop]}`,
         contextMenu: `bg-transparent w-full pl-4 p-1 pr-4 hover:bg-gv-hover-effect ${fontColorMap[fontColor]}`,
-        delete: `bg-gv-delete p-2 pr-4 text-white hover:bg-gv-delete-hover disabled:hover:bg-gv-delete ${width} ${marginMap[marginTop]}`,
-        secondary: `bg-white border-2 border-gv-border p-2 pr-4 hover:bg-gv-input-bg ${width} ${marginMap[marginTop]} ${fontColorMap[fontColor]}`
+        delete: `bg-gv-delete p-2 pl-4 pr-4 text-white hover:bg-gv-delete-hover disabled:hover:bg-gv-delete ${width} ${marginMap[marginTop]}`,
+        secondary: `bg-white border-2 border-gv-border p-2 pl-4 pr-4 hover:bg-gv-input-bg ${width} ${marginMap[marginTop]} ${fontColorMap[fontColor]}`
     };
 </script>
 

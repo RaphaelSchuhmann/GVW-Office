@@ -205,7 +205,7 @@
                     {#each $membersStore.display as member}
                         <button
                             class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`}
-                            onclick={async () =>  await push(`/members/view?id=${member.id}`)}>
+                            onclick={async () =>  await push(`/members/details?id=${member.id}&editing=false`)}>
                             <div class="flex flex-col items-start justify-between mr-auto max-w-3/4">
                                 <p class="text-gv-dark-text text-dt-7">{`${member.name} ${member.surname}`}</p>
                                 <div class="flex items-center justify-start gap-2">
