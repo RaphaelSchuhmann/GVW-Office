@@ -19,7 +19,7 @@
     let usedYear = $state(initialDate ? initialDate[2] : currentYear);
     let selectedDate = $state(initialDate ? initialDate[0] : new Date().getDate());
 
-    const monthOptions = ["Januar", "Februar", "März", "April", "Mai", "Juni", "July", "August", "September", "Oktober", "November", "Dezember"];
+    const monthOptions = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
     function generateYears(center, range = 10) {
         return Array.from({ length: range * 2 + 1 }, (_, i) => String(center - range + i));
@@ -116,6 +116,7 @@
         >
         <button
             type="button"
+            aria-label={open ? "Close date picker" : "Open date picker"}
             class="p-1.5 rounded-2 h-full aspect-square mr-1 flex items-center justify-center cursor-pointer hover:bg-gv-hover-effect"
             onclick={toggleDatepicker}>
             <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">calendar_month</span>
@@ -163,6 +164,7 @@
             <div class="flex items-center w-full justify-between gap-1">
                 <button
                     type="button"
+                    aria-label="Previous month"
                     class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
                     onclick={back}>
                     <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_left</span>
@@ -191,6 +193,7 @@
 
                 <button
                     type="button"
+                    aria-label="Next month"
                     class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
                     onclick={next}>
                     <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_right</span>
