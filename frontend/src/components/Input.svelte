@@ -79,6 +79,8 @@
             <button
                 type="button"
                 class="flex items-center justify-center bg-gv-input-bg px-3 mt-1 rounded-tr-1 rounded-br-1 cursor-pointer"
+                aria-label={passwordVisible ? "Hide password" : "Show password"}
+                aria-pressed={passwordVisible}
                 onclick={togglePasswordView}
             >
                 <span class="material-symbols-rounded text-icon-dt-3 max-[470px]:text-icon-dt-5">
