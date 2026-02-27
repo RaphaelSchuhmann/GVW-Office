@@ -13,6 +13,10 @@
 
     let usedYear = $state(selected ? Number(selected) : currentYear);
 
+    $effect(() => {
+        if (selected) usedYear = Number(selected);
+    });
+
     let gridStart = $derived(Math.floor(usedYear / 12) * 12);
     let yearsGrid = $derived(Array.from({ length: 12 }, (_, i) => gridStart + i));
 
