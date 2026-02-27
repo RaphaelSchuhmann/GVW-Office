@@ -4,7 +4,8 @@
 
     let {
         currentPage = "",
-        onSettingsClick = () => {},
+        onSettingsClick = () => {
+        },
         isOpen = $bindable(false),
         ...restProps
     } = $props();
@@ -18,7 +19,7 @@
          tabindex="0"
          aria-label="Close sidebar"
          onclick={closeSidebar}
-         onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') closeSidebar(); }}
+         onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeSidebar(); } }}
          transition:fade></div>
 
     <div
