@@ -51,7 +51,7 @@
 {#if visible}
     <div
         class="z-999 top-0 left-0 w-dvw h-dvh flex bg-gv-overlay
-               {isMobile ? 'fixed items-end' : 'absolute items-center justify-center'}"
+               {isMobile ? 'fixed items-end' : 'fixed items-center justify-center'}"
     >
         <div
             class="bg-white flex flex-col p-5 overflow-hidden
