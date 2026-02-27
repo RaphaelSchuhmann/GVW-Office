@@ -16,6 +16,19 @@ let fetchIntervalId = null;
 
 let entry = null;
 
+/**
+ * Initializes page-specific data handling and filter wiring.
+ *
+ * Responsibilities:
+ * - Prevents re-initialization if the same page is already active
+ * - Unsubscribes previous filter and data store subscriptions
+ * - Clears any active periodic fetch interval
+ * - Registers new subscriptions for filter state and raw data changes
+ * - Performs an initial data fetch
+ * - Starts periodic background fetching (every 20 seconds)
+ *
+ * @param pageKey Unique identifier used to resolve the page entry from the filter registry
+ */
 export async function init(pageKey) {
     if (currentPageKey === pageKey) return;
 
@@ -58,6 +71,21 @@ export async function init(pageKey) {
     }, 20000);
 }
 
+/**
+ * Applies the active filter state to the current raw dataset.
+ *
+ * Processing steps:
+ * 1. Start with the store's `raw` dataset
+ * 2. Apply dropdown filtering (by type)
+ * 3. Apply tab filtering (by status)
+ * 4. Apply fuzzy search using Fuse.js if:
+ *    - A search term exists
+ *    - The dataset is non-empty
+ *    - All configured Fuse keys exist on the data items
+ * 5. Update the store's `display` field with the filtered result
+ *
+ * Ensures the `display` array is always a shallow copy to maintain reactivity.
+ */
 function processFilters() {
     let working = get(entry.store).raw ?? [];
     const filterState = get(entry.filterState);
@@ -78,6 +106,19 @@ function processFilters() {
     entry.store.update(store => ({ ...store, display: Array.isArray(working) ? [...working] : [] }));
 }
 
+/**
+ * Fetches fresh data from the API and updates the corresponding store.
+ *
+ * Handles:
+ * - Duplicate request prevention via `isFetching`
+ * - API fetch request
+ * - Global error delegation
+ * - Store update on successful response
+ *
+ * @async
+ * @function fetchAndSetRaw
+ * @returns {Promise<void>}
+ */
 export async function fetchAndSetRaw() {
     if (isFetching) return;
     isFetching = true;

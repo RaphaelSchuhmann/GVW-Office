@@ -6,8 +6,6 @@
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
-    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import Button from "../../components/Button.svelte";
     import Input from "../../components/Input.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
@@ -121,36 +119,24 @@
     // MODAL REFERENCES
     // ==================
     /**
-     * Reference to the global settings modal.
-     * Used to programmatically open the application settings dialog.
-     * @type {import("../../components/SettingsModal.svelte").default}
-     */
-    let settingsModal = $state();
-
-    /**
      * Reference to the delete confirmation modal.
      * Used to initiate and confirm member deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
     let confirmDeleteMemberModal = $state();
 
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 </script>
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
-<ToastStack></ToastStack>
+<ToastStack isMobile={true}></ToastStack>
 
 <ConfirmDeleteModal expectedInput={`${memberData.name} ${memberData.surname}`} id={memberData.id}
                     title="Mitglied löschen" subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?"
                     action="deleteMember"
                     onClose={async () => {await push("/members")}}
-                    bind:this={confirmDeleteMemberModal}
+                    bind:this={confirmDeleteMemberModal} isMobile={true}
 />
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
     <div class="flex flex-col min-h-0 w-full p-10 overflow-hidden">
         <PageHeader title="Mitglied" subTitle={`Daten von "${memberData?.name ?? ""} ${memberData?.surname ?? ""}"`}>
             {#if viewport.width > 900}
@@ -285,7 +271,7 @@
                     </div>
                 {/if}
 
-                {#if viewport.width > 900 && isEditing}
+                {#if isEditing}
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
                         <Button type="primary" disabled={!hasChanges} onclick={async () => await updateMemberData()}>

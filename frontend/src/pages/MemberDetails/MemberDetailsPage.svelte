@@ -1,9 +1,11 @@
 <script>
     import { viewport } from "../../stores/viewport.svelte";
-    import MemberDetailsDesktop from "./MemberDetailsDesktop.svelte";
     import { get } from "svelte/store";
     import { membersStore } from "../../stores/members";
     import { push } from "svelte-spa-router";
+
+    import MemberDetailsDesktop from "./MemberDetailsDesktop.svelte";
+    import MemberDetailsMobile from "./MemberDetailsMobile.svelte";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -28,7 +30,7 @@
 
 {#if memberData}
     {#if viewport.isMobile}
-        <MemberDetailsDesktop {memberData} bind:isEditing />
+        <MemberDetailsMobile {memberData} bind:isEditing />
     {:else}
         <MemberDetailsDesktop {memberData} bind:isEditing />
     {/if}
