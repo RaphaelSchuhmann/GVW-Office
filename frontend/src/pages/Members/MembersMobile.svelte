@@ -18,6 +18,7 @@
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import YearDatepicker from "../../components/YearDatepicker.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
+    import { addToast } from "../../stores/toasts";
 
     // ==================
     // MODAL REFERENCES
@@ -114,14 +115,25 @@
      * @returns {Promise<void>}
      */
     async function submitMember() {
-        memberInput.voice = voiceMap[memberInput.voice];
-        memberInput.status = statusMap[memberInput.status];
-        memberInput.role = roleMap[memberInput.role];
+        const payload = {
+            ...$state.snapshot(memberInput),
+            voice: voiceMap[memberInput.voice],
+            status: statusMap[memberInput.status],
+            role: roleMap[memberInput.role]
+        };
 
-        await newMember($state.snapshot(memberInput));
+        if (!payload.voice || !payload.status || !payload.role) {
+            addToast({
+                title: "Ungültige Auswahl",
+                subTitle: "Bitte prüfen Sie Stimmlage, Status und Rolle.",
+                type: "error",
+            });
+            return;
+        }
+
+        await newMember(payload);
 
         addMemberModal.hideModal();
-
         await fetchAndSetRaw();
     }
 

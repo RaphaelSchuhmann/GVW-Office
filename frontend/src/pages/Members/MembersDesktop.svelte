@@ -126,14 +126,25 @@
      * @returns {Promise<void>}
      */
     async function submitMember() {
-        memberInput.voice = voiceMap[memberInput.voice];
-        memberInput.status = statusMap[memberInput.status];
-        memberInput.role = roleMap[memberInput.role];
+        const payload = {
+            ...$state.snapshot(memberInput),
+            voice: voiceMap[memberInput.voice],
+            status: statusMap[memberInput.status],
+            role: roleMap[memberInput.role]
+        };
 
-        await newMember($state.snapshot(memberInput));
+        if (!payload.voice || !payload.status || !payload.role) {
+            addToast({
+                title: "Ungültige Auswahl",
+                subTitle: "Bitte prüfen Sie Stimmlage, Status und Rolle.",
+                type: "error",
+            });
+            return;
+        }
+
+        await newMember(payload);
 
         addMemberModal.hideModal();
-
         await fetchAndSetRaw();
     }
 
@@ -166,7 +177,7 @@
         if (!member) {
             addToast({
                 title: "Mitglied nicht gefunden",
-                subTitle: "Das ausgewählte Mitglied wrude nicht gefunden. Bitte versuchen Sie es erneut.",
+                subTitle: "Das ausgewählte Mitglied wurde nicht gefunden. Bitte versuchen Sie es erneut.",
                 type: "error"
             });
             return;
@@ -215,7 +226,7 @@
 <svelte:window oncontextmenu={() => (menu.data.open = false)} />
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
-<ToastStack isMobile={false}/>
+<ToastStack isMobile={false} />
 
 <Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
        subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5">
@@ -266,10 +277,12 @@
 />
 
 <ContextMenu bind:open={menu.data.open} x={menu.data.x} y={menu.data.y}>
-    <Button onclick={async () => await push(`/members/details?id=${menu.data.activeId}&editing=false`)} type="contextMenu">
+    <Button onclick={async () => await push(`/members/details?id=${menu.data.activeId}&editing=false`)}
+            type="contextMenu">
         Details
     </Button>
-    <Button onclick={async () => await push(`/members/details?id=${menu.data.activeId}&editing=true`)} type="contextMenu">
+    <Button onclick={async () => await push(`/members/details?id=${menu.data.activeId}&editing=true`)}
+            type="contextMenu">
         Bearbeiten
     </Button>
     <Button onclick={handleSwitchStatus} type="contextMenu">Status ändern</Button>

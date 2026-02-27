@@ -6,8 +6,10 @@
     import { init } from "../../services/filterService";
 
     $effect(() => {
-        ensureUserData();
-        init("members");
+        (async () => {
+            await ensureUserData();
+            await init("members");
+        })();
     });
 </script>
 

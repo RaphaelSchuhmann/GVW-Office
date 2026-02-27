@@ -68,7 +68,7 @@ const isFetching = {
  *
  * @async
  * @function newMember
- * @param {Object} member - Member payload to persist.
+ * @param {*&{voice: *, status: *, role: *}} member - Member payload to persist.
  * @param {string} member.name - First name.
  * @param {string} member.surname - Last name.
  * @param {string} member.email - Unique email address.
@@ -84,8 +84,6 @@ const isFetching = {
 export async function newMember(member) {
     if (isFetching.newMember) return;
     isFetching.newMember = true;
-
-    console.log(viewport.isMobile);
 
     try {
         const { resp } = await apiAddMember(member);
