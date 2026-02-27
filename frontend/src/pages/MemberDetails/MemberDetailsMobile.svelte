@@ -33,7 +33,6 @@
         isEditing = true;
     }
 
-
     /**
      * Cancels the current editing session.
      *
@@ -124,7 +123,6 @@
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
     let confirmDeleteMemberModal = $state();
-
 </script>
 
 <ToastStack isMobile={true}></ToastStack>
@@ -226,15 +224,15 @@
                     <Input bind:value={draft.address} title="Adresse" placeholder="Hauptstraße 1..." />
 
                     <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
-                        <Dropdown onChange={(value) => draft.voice = value} selected={voiceMap[draft.voice]}
+                        <Dropdown onChange={(value) => draft.voice = voiceMap[value]} selected={voiceMap[draft.voice]}
                                   title="Stimmlage"
                                   options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
 
-                        <Dropdown onChange={(value) => draft.status = value}
+                        <Dropdown onChange={(value) => draft.status = statusMap[value]}
                                   selected={statusMap[draft.status]} title="Status"
                                   options={["Aktiv", "Passiv"]} />
 
-                        <Dropdown onChange={(value) => draft.role = value} selected={roleMap[draft.role]}
+                        <Dropdown onChange={(value) => draft.role = roleMap[value]} selected={roleMap[draft.role]}
                                   title="Rolle"
                                   options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} />
                     </div>
