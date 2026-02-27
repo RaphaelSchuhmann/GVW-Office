@@ -1,4 +1,4 @@
-import { httpGet, httpPost } from "./http";
+import { httpGet, httpPost, parseBodySafe } from "./http";
 
 const apiUrl = __API_URL__;
 
@@ -24,7 +24,7 @@ const apiUrl = __API_URL__;
 export async function apiGetMembers() {
     const resp = await httpGet(`${apiUrl}/members/all`);
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
 
@@ -60,7 +60,7 @@ export async function apiGetMembers() {
 export async function apiAddMember(member) {
     const resp = await httpPost(`${apiUrl}/members/add`, member);
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
 
@@ -85,7 +85,7 @@ export async function apiAddMember(member) {
 export async function apiDeleteMember(id) {
     const resp = await httpPost(`${apiUrl}/members/delete`, { id: id });
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
 
@@ -110,7 +110,7 @@ export async function apiDeleteMember(id) {
 export async function apiUpdateMemberStatus(id) {
     const resp = await httpPost(`${apiUrl}/members/update/status`, { id: id });
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
 
@@ -135,7 +135,7 @@ export async function apiUpdateMemberStatus(id) {
 export async function apiResetMembersPassword(id) {
     const resp = await httpPost(`${apiUrl}/user/reset/password`, { memberId: id });
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
 
@@ -172,6 +172,6 @@ export async function apiResetMembersPassword(id) {
 export async function apiUpdateMember(member) {
     const resp = await httpPost(`${apiUrl}/members/update`, member);
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }

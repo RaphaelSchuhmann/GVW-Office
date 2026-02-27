@@ -1,4 +1,4 @@
-import { httpGet, httpPost } from "./http";
+import { httpGet, httpPost, parseBodySafe } from "./http";
 
 // @ts-ignore
 const apiUrl = __API_URL__;
@@ -28,7 +28,7 @@ const apiUrl = __API_URL__;
 export async function login(email, password) {
     const resp = await httpPost(`${apiUrl}/auth/login`, { email: email, password: password }, "", false);
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
 
@@ -61,7 +61,7 @@ export async function login(email, password) {
 export async function changePw(data) {
     const resp = await httpPost(`${apiUrl}/auth/changePw`, data, "", false);
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
 
@@ -86,6 +86,6 @@ export async function changePw(data) {
 export async function authenticate(token) {
     const resp = await httpGet(`${apiUrl}/auth/auto`, token);
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
