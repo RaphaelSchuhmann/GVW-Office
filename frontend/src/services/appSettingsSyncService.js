@@ -57,7 +57,7 @@ export async function loadAppSettings() {
         if (!resp.ok) {
             addToast({
                 title: "App Einstellungen nicht verfügbar",
-                subTitle: !get(viewport.isMobile) ? "Beim Laden der globalen App Einstellungen ist ein unerwarteter Fehler aufgetreten." : "",
+                subTitle: !viewport.isMobile ? "Beim Laden der globalen App Einstellungen ist ein unerwarteter Fehler aufgetreten." : "",
                 type: "error",
             });
             console.error("Unable to load app settings");

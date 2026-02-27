@@ -29,7 +29,7 @@ export async function tryUpdateMaxMembers(value) {
 
     addToast({
         title: "Erfolgreich gespeichert",
-        subTitle: !get(viewport.isMobile)
+        subTitle: !viewport.isMobile
             ? "Die maximale Anzahl and Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert."
             : "",
         type: "success"
