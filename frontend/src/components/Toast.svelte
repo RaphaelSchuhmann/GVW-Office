@@ -17,6 +17,8 @@
         type = "info";
     }
 
+    let closeTimer;
+
     const styles = $derived.by(() => {
         let icon = "";
         let iconColor = "";
@@ -56,12 +58,19 @@
      * Closes the toast by calling the onClose callback
      */
     function closeToast() {
+        if (closeTimer) {
+            clearTimeout(closeTimer);
+            closeTimer = null;
+        }
         onClose();
     }
 
     $effect(() => {
-        const timer = setTimeout(closeToast, 10000);
-        return () => clearTimeout(timer);
+        closeTimer = setTimeout(closeToast, 10000);
+        return () => {
+            if (closeTimer) clearTimeout(closeTimer);
+            closeTimer = null;
+        }
     });
 </script>
 
@@ -84,6 +93,7 @@
         <button
             type="button"
             class="flex items-center justify-center bg-transparent border-0 ml-auto cursor-pointer"
+            aria-label="Toast schließen"
             onclick={closeToast}
         >
             <span class={`material-symbols-rounded ${!isMobile ? "text-icon-dt-4" : "text-icon-dt-3"}`}>
