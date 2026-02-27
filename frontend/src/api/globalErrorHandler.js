@@ -1,4 +1,3 @@
-import { get } from "svelte/store";
 import { addToast } from "../stores/toasts";
 import { viewport } from "../stores/viewport.svelte";
 

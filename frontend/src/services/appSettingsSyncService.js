@@ -1,4 +1,3 @@
-import { get } from "svelte/store";
 import { getSettings } from "../api/apiAppSettings";
 import { handleGlobalApiError } from "../api/globalErrorHandler";
 import { normalizeResponse } from "../api/http";

@@ -3,7 +3,6 @@ import { updateMaxMembers } from "../api/apiAppSettings";
 import { normalizeResponse } from "../api/http";
 import { handleGlobalApiError } from "../api/globalErrorHandler";
 import { addToast } from "../stores/toasts";
-import { get } from "svelte/store";
 import { viewport } from "../stores/viewport.svelte";
 
 /**

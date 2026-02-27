@@ -14,11 +14,11 @@
     } = $props();
 
     const displayType = $derived.by(() => {
-        const normalized = type.toLowerCase();
+        const normalized = typeof type === "string" ? type.trim().toLowerCase() : "";
         const validTypes = ["probe", "konzert", "meeting"];
 
         if (!validTypes.includes(normalized)) {
-            console.warn(`Type ${type} is not a valid type`);
+            console.warn(`Type ${String(type)} is not a valid type`);
             return "Konzert";
         }
         return capitalizeWords(normalized);
