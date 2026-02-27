@@ -29,7 +29,7 @@
             if (!file) return;
 
             if (!files.some(p => p.name === file.name)) {
-                files.push(file);
+                files = [...files, file];
             } else {
                 addToast({
                     title: "Datei wird schon verwendet",
