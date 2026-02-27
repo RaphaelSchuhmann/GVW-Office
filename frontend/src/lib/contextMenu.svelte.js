@@ -1,4 +1,6 @@
 export function createContextMenu() {
+    const clamp = (value, min, max) => Math.max(min, Math.min(value, max))
+
     let state = $state({
         open: false,
         x: 0,
@@ -12,8 +14,10 @@ export function createContextMenu() {
         state.activeId = id;
 
         requestAnimationFrame(() => {
-            state.x = Math.min(event.clientX, window.innerWidth - width);
-            state.y = Math.min(event.clientY, window.innerHeight - height);
+            const maxX = Math.max(0, window.innerWidth - width);
+            const maxY = Math.max(0, window.innerHeight - height);
+            state.x = clamp(event.clientX, 0, maxX);
+            state.y = clamp(event.clientY, 0, maxY);
             state.open = true;
         });
     }
@@ -27,8 +31,11 @@ export function createContextMenu() {
         state.open = true;
 
         requestAnimationFrame(() => {
-            state.x = rect.left - width;
-            state.y = Math.min(rect.bottom, window.innerHeight - height);
+            const maxX = Math.max(0, window.innerWidth - width);
+            const maxY = Math.max(0, window.innerHeight - height);
+            state.x = clamp(rect.left - width, 0, maxX);
+            state.y = clamp(rect.bottom, 0, maxY);
+            state.open = true;
         });
     }
 
