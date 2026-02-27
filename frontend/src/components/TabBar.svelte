@@ -14,6 +14,8 @@
     let tabElements = $state([]);
     let sliderStyle = $state("");
 
+    let lastEmittedSelection = $state("");
+
     /**
      * Updates the position and width of the sliding background indicator
      */
@@ -23,15 +25,18 @@
             const selectedTab = tabElements[selectedIndex];
             const { offsetLeft, offsetWidth } = selectedTab;
             sliderStyle = `transform: translateX(${offsetLeft - 4}px); width: ${offsetWidth}px;`;
+        } else {
+            sliderStyle = "";
         }
     }
 
     $effect(() => {
         if (selected) {
-            // Wait for DOM to be ready before measuring
             updateSliderPosition();
-            // Safely call onChange
-            onChange?.(selected);
+            if (selected !== lastEmittedSelection) {
+                lastEmittedSelection = selected;
+                onChange?.(selected);
+            }
         }
     });
 
