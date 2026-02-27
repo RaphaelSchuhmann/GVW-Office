@@ -15,12 +15,18 @@
 
     let searchEl = $state(null);
     let debounce;
+    $effect(() => () => clearTimeout(debounce));
 
     // Get filter logic from registry based on the "page" key
-    const { filterState, config } = filterRegistry[page];
+    const entry = filterRegistry[page];
+    if (!entry) {
+        console.warn(`Unknown SearchBar page key: ${page}`);
+    }
+    const filterState = entry?.filterState;
+    const config = entry?.config ?? {};
 
     // Use $derived so the placeholder updates automatically if config changes
-    let usedPlaceholder = $derived(config.search.placeholder ? config.search.placeholder : placeholder);
+    let usedPlaceholder = $derived(config?.search?.placeholder ?? placeholder);
 
     /**
      * Handles search input with debouncing
@@ -29,7 +35,7 @@
         const value = event.target.value;
         clearTimeout(debounce);
         debounce = setTimeout(() => {
-            filterState.update(u => ({ ...u, search: value }));
+            filterState?.update(u => ({ ...u, search: value }));
         }, 250);
     }
 
