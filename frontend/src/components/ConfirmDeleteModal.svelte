@@ -34,12 +34,8 @@
 
     const invalidConfirm = $derived(!(confirmInput === expectedInput && expectedInput));
 
-    const validActions = ["deleteMember", "deleteEvent", "deleteReport", "deleteLibEntry"];
-    let activeAction = $state(action);
-    if (!validActions.includes(action)) {
-        console.warn(`Action ${action} is not a valid action`);
-        activeAction = "none";
-    }
+    const validActions = Object.keys(actionMap);
+    let activeAction = $derived(validActions.includes(action) ? action : "none");
 
     /**
      * Shows the confirmation delete modal
@@ -58,6 +54,16 @@
 
         if (activeAction !== "none" && DEV_refactoredRemoveServices.includes(activeAction)) {
             const apiFunction = actionMap[activeAction];
+            if (!apiFunction) {
+                addToast({
+                    title: "Unerwarteter Fehler",
+                    subTitle: !isMobile ? "Aktion wird nicht unterstützt." : "",
+                    type: "error"
+                });
+                onClose();
+                return;
+            }
+
             await apiFunction(id);
 
             onClose();
@@ -73,7 +79,7 @@
             } else if (resp.status === 401) {
                 addToast({
                     title: "Ungültiges Token",
-                    subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen...",
+                    subTitle: !isMobile ? "Ihr Authentifizierungstoken ist ungültig oder abgelaufen..." : "",
                     type: "error"
                 });
                 logout();
@@ -82,7 +88,7 @@
             } else if (resp.status === 400) {
                 addToast({
                     title: "Unvollständige Daten",
-                    subTitle: "Es wurden unvollständige Daten übermittelt.",
+                    subTitle: !isMobile ? "Es wurden unvollständige Daten übermittelt." : "",
                     type: "error"
                 });
             } else if (resp.status === 404) {
@@ -90,14 +96,14 @@
             } else {
                 addToast({
                     title: "Interner Serverfehler",
-                    subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten.",
+                    subTitle: !isMobile ? "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten." : "",
                     type: "error"
                 });
             }
         } else {
             addToast({
                 title: "Unerwarteter Fehler",
-                subTitle: "Es ist ein unerwarteter Fehler aufgetreten.",
+                subTitle: !isMobile ? "Aktion wird nicht unterstützt." : "",
                 type: "error"
             });
         }
