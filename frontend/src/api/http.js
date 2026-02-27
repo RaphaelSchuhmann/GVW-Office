@@ -84,3 +84,26 @@ export async function httpPost(url, body, customToken = "", doAuth = true) {
         return null;
     }
 }
+
+/**
+ * Safely parses the body of a fetch `Response` as JSON.
+ *
+ * If the body is empty or not valid JSON, returns `null`.
+ *
+ * @param {Response} resp - The response to parse.
+ * @returns {Promise<any|null>} The parsed JSON object, or `null` if parsing fails.
+ *
+ * @example
+ * const resp = await httpGet("/api/data");
+ * const data = await parseBodySafe(resp);
+ * console.log(data);
+ */
+export async function parseBodySafe(resp) {
+    const text = await resp.text();
+    if (!text) return null;
+    try {
+        return JSON.parse(text);
+    } catch {
+        return null;
+    }
+}

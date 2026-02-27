@@ -1,16 +1,15 @@
 <script>
-    import { isMobile } from "../../stores/viewport";
+    import { viewport } from "../../stores/viewport.svelte";
     import DashboardDesktop from "./DashboardDesktop.svelte";
     import DashboardMobile from "./DashboardMobile.svelte";
-    import { onMount } from "svelte";
     import { ensureUserData } from "../../services/userService";
 
-    onMount(async () => {
-        await ensureUserData();
+    $effect(() => {
+        ensureUserData();
     });
 </script>
 
-{#if $isMobile}
+{#if viewport.isMobile}
     <DashboardMobile />
 {:else}
     <DashboardDesktop />

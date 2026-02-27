@@ -1,4 +1,4 @@
-import { httpGet, httpPost } from "./http";
+import { httpGet, httpPost, parseBodySafe } from "./http";
 
 // @ts-ignore
 const apiUrl = __API_URL__;
@@ -25,7 +25,7 @@ const apiUrl = __API_URL__;
 export async function getSettings() {
     const resp = await httpGet(`${apiUrl}/settings/get`, "", false);
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
 
@@ -51,7 +51,7 @@ export async function getSettings() {
 export async function updateMaxMembers(maxMembers) {
     const resp = await httpPost(`${apiUrl}/settings/update/max-members`, { maxMembers: maxMembers });
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
 
@@ -78,7 +78,7 @@ export async function updateMaxMembers(maxMembers) {
 export async function addCategory(type, displayValue) {
     const resp = await httpPost(`${apiUrl}/settings/update/categories/add`, { type: type, displayName: displayValue });
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
 
@@ -104,6 +104,6 @@ export async function addCategory(type, displayValue) {
 export async function removeCategory(type) {
     const resp = await httpPost(`${apiUrl}/settings/update/categories/remove`, { type: type });
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }

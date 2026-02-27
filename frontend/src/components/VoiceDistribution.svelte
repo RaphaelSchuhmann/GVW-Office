@@ -1,10 +1,13 @@
 <script>
     import ProgressBarVisualizer from "./ProgressBarVisualizer.svelte";
 
-    export let voice = "";
-    export let voiceMembers = 0;
-    export let totalMembers = 1;
-    export let isMobile = false;
+    let {
+        voice = "",
+        voiceMembers = 0,
+        totalMembers = 1,
+        isMobile = false,
+        ...restProps
+    } = $props();
 </script>
 
 <div class="flex flex-col items-center justify-around w-full mt-10">

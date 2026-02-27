@@ -1,4 +1,4 @@
-import { httpGet, httpPost } from "./http";
+import { httpGet, httpPost, parseBodySafe } from "./http";
 
 const apiUrl = __API_URL__;
 
@@ -24,6 +24,6 @@ const apiUrl = __API_URL__;
 export async function getScores() {
     const resp = await httpGet(`${apiUrl}/library/all`);
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }

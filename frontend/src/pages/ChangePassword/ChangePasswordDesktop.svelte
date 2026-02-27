@@ -12,88 +12,62 @@
     import { normalizeResponse } from "../../api/http";
     import { handleGlobalApiError } from "../../api/globalErrorHandler";
 
-    export let message = "";
+    let { message = "" } = $props();
 
-    let currentPw = "";
-    let newPw = "";
-    let confirmNewPw = "";
+    let currentPw = $state("");
+    let newPw = $state("");
+    let confirmNewPw = $state("");
 
     /**
-     * Validates password change form inputs and displays user-facing error toasts.
-     * 
-     * Checks for missing fields, minimum password length, and matching
-     * password confirmation. If a validation error occurs, an error toast
-     * is shown and the function returns `true`.
-     * 
-     * @param {Object} params
-     * @param {string} params.currentPw - the user's current password
-     * @param {string} params.newPw - the new password entered by the user
-     * @param {string} params.confirmNewPw - Confirmation of the new password
-     * 
-     * @returns {boolean} `true` if validation failed and execution should stop.
-     *                    `false` if all inputs are valid
+     * Validates password change form inputs
      */
     function validateInputs({ currentPw, newPw, confirmNewPw }) {
         if (!currentPw) {
             addToast({
                 title: "Ungültige Eingabe",
-                subTitle: "Bitte geben Sie Ihr aktuelles Passwort ein, damit wir Ihre Identität überprüfen und die Passwortänderung durchführen können.",
+                subTitle: "Bitte geben Sie Ihr aktuelles Passwort ein...",
                 type: "error"
             });
             return true;
         }
-
         if (!newPw) {
             addToast({
                 title: "Ungültige Eingabe",
-                subTitle: "Bitte geben Sie ein neues Passwort ein, das künftig für die Anmeldung verwendet werden soll.",
+                subTitle: "Bitte geben Sie ein neues Passwort ein...",
                 type: "error"
             });
             return true;
         }
-
         if (!confirmNewPw) {
             addToast({
                 title: "Ungültige Eingabe",
-                subTitle: "Bitte bestätigen Sie Ihr neues Passwort, um sicherzustellen, dass keine Tippfehler vorliegen.",
+                subTitle: "Bitte bestätigen Sie Ihr neues Passwort...",
                 type: "error"
             });
             return true;
         }
-
         if (newPw.length < 8) {
             addToast({
                 title: "Passwort zu kurz",
-                subTitle: "Das neue Passwort muss mindestens 8 Zeichen lang sein, um den Sicherheitsanforderungen zu entsprechen.",
+                subTitle: "Das neue Passwort muss mindestens 8 Zeichen lang sein...",
                 type: "error"
             });
             return true;
         }
-        
         if (newPw !== confirmNewPw) {
             addToast({
                 title: "Passwörter stimmen nicht überein",
-                subTitle: "Das neue Passwort und die Passwortbestätigung sind nicht identisch. Bitte überprüfen Sie Ihre Eingabe.",
+                subTitle: "Das neue Passwort und die Bestätigung sind nicht identisch.",
                 type: "error"
             });
             return true;
         }
-
         return false;
     }
 
     /**
-     * Handles the complete password update flow from the view layer.
-     * 
-     * Performs client-side input validation, verifies the presence of a valid
-     * user session, executes the password change request, and handles all
-     * relevant API error states with user-facing toasts and navigation.
-     * 
-     * On success, updates the stored authentication token and redirects
-     * the user to the dashboard.
-     * 
-     * @returns {Promise<void>}
-     */    
+     * Handles the complete password update flow
+     */
     async function updatePassword() {
         const hasValidationError = validateInputs({
             currentPw,
@@ -105,41 +79,35 @@
 
         let email = $user.email;
         if (!email || email.length === 0) {
-            // Invalid Email
-            // Route back to log in with error parameter set to true to be displayed as a toast
             await push(`/?cpwErr=true`);
             user.update(u => ({...u, name: "", email: "", role: "", loaded: false }));
             return;
         }
 
         const { resp } = await changePassword(email, currentPw, newPw);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            // Status Code 404
             if (normalizedResponse.errorType === "NOTFOUND") {
                 addToast({
                     title: "Sitzung ungültig",
-                    subTitle: "Ihre E-Mail-Adresse konnte nicht eindeutig zugeordnet werden. Bitte melden Sie sich erneut an, um den Vorgang fortzusetzen.",
+                    subTitle: "Ihre E-Mail-Adresse konnte nicht zugeordnet werden.",
                     type: "error"
                 });
                 await push("/");
-            } 
-            
-            // Status Code 409 (passwords are not the same)
+            }
             if (normalizedResponse.errorType === "RATELIMITED") {
                 addToast({
                     title: "Ungültiges Passwort",
-                    subTitle: "Das neue Passwort darf nicht mit dem aktuellen Passwort übereinstimmen. Bitte wählen Sie ein anderes Passwort.",
+                    subTitle: "Das neue Passwort darf nicht mit dem aktuellen übereinstimmen.",
                     type: "error"
                 });
             }
             return;
         }
 
-        // Update auth token entry to use the actual expected key
         let authToken = getValue("authToken_BCPW");
         if (!authToken) {
             addToast({
@@ -150,14 +118,15 @@
             await push("/");
             return;
         }
+
         clearValue("authToken_BCPW");
         setValue("authToken", authToken);
-
         await push("/dashboard");
     }
 </script>
 
 <ToastStack></ToastStack>
+
 <main class="bg-gv-bg-bar w-dvw h-dvh flex items-center justify-center">
     <Form padding="10" height="auto">
         <img
@@ -169,6 +138,7 @@
         <p class="text-gv-light-text text-dt-5 text-center">
             {message}
         </p>
+
         <Input
             bind:value={currentPw}
             type="password"
@@ -176,6 +146,7 @@
             title="Aktuelles Passwort"
             marginTop="5"
         />
+
         <div class="flex flex-col w-full items-start">
             <Input
                 bind:value={newPw}
@@ -186,6 +157,7 @@
             />
             <p class="text-gv-light-text text-dt-6 mt-1">Mindestens 8 Zeichen</p>
         </div>
+
         <Input
             bind:value={confirmNewPw}
             type="password"
@@ -193,9 +165,15 @@
             title="Neues Passwort bestätigen"
             marginTop="5"
         />
-        <Button type="primary" marginTop="10" on:click={updatePassword} isSubmit={true}
-        ><span class="material-symbols-rounded">login</span>
-            <p class="ml-3">Passwort ändern</p></Button
+
+        <Button
+            type="primary"
+            marginTop="10"
+            onclick={updatePassword}
+            isSubmit={true}
         >
+            <span class="material-symbols-rounded">login</span>
+            <p class="ml-3">Passwort ändern</p>
+        </Button>
     </Form>
 </main>

@@ -1,90 +1,91 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
 
-    // Output value
-    export let value = "";
+    let {
+        value = $bindable(""),
+        title = "Title",
+        type = "text",
+        placeholder = "",
+        marginTop = "",
+        readonly = false,
+        disabled = false,
+        width = "w-full",
+        onChange = () => {},
+        onblur = undefined, // Forwarding onblur
+        ...restProps
+    } = $props();
 
-    export let title = "Title";
-    export let type = "text";
-    export let placeholder = "";
-    export let marginTop = "";
-    export let readonly = false;
-    export let disabled = false;
-    export let width = "w-full";
-    export let onChange = () => {};
+    let inputEl = $state(null);
+    let passwordVisible = $state(false);
 
-    let passwordInput = false;
-    let passwordVisible = false;
+    const isOriginallyPassword = type === "password";
 
-    let inputEl;
+    let currentType = $state(type);
 
-    // View password icon
-    let icon;
-    $: icon = passwordVisible ? "visibility_off" : "visibility";
-
-    // Check if type is valid else default to "text"
     const validTypes = ["text", "email", "password"];
     if (!validTypes.includes(type)) {
         console.warn(`Type ${type} is not a valid input type`);
-        type = "text";
+        currentType = "text";
     }
 
-    // Check if original type is password to set a flag
-    if (type === "password") {
-        passwordInput = true;
-    }
+    let icon = $derived(passwordVisible ? "visibility_off" : "visibility");
 
     /**
-     * Toggles password visibility between hidden and visible
-     * Changes input type between 'password' and 'text'
+     * Toggles password visibility
      */
     function togglePasswordView() {
         passwordVisible = !passwordVisible;
-        type = passwordVisible ? "text" : "password";
+        currentType = passwordVisible ? "text" : "password";
     }
 
     /**
-     * Focuses the input element
+     * Focuses the input element (Exposed via bind:this)
      */
     export function focus() {
-        inputEl.focus();
+        inputEl?.focus();
     }
 </script>
 
 <div class={`flex flex-col items-start ${width} ${marginMap[marginTop]}`}>
     <p class="text-dt-6 font-medium">{title}</p>
-    {#if !passwordInput}
+
+    {#if !isOriginallyPassword}
         <input
             bind:value
             bind:this={inputEl}
-            on:blur
-            type={type}
-            placeholder={placeholder}
-            readonly={readonly}
-            disabled={disabled}
-            on:change={onChange}
+            type={currentType}
+            {placeholder}
+            {readonly}
+            {disabled}
+            {onblur}
+            onchange={(e) => onChange?.(e)}
             class="rounded-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6 max-[470px]:text-dt-7"
+            {...restProps}
         />
     {:else}
         <div class={`flex items-stretch ${width}`}>
             <input
                 bind:value
                 bind:this={inputEl}
-                on:blur
-                type={type}
-                placeholder={placeholder}
-                readonly={readonly}
-                disabled={disabled}
-                on:change={onChange}
+                type={currentType}
+                {placeholder}
+                {readonly}
+                {disabled}
+                {onblur}
+                onchange={(e) => onChange?.(e)}
                 class="rounded-tl-1 rounded-bl-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6 max-[470px]:text-dt-7"
+                {...restProps}
             />
             <button
+                type="button"
                 class="flex items-center justify-center bg-gv-input-bg px-3 mt-1 rounded-tr-1 rounded-br-1 cursor-pointer"
-                on:click={togglePasswordView}
+                aria-label={passwordVisible ? "Hide password" : "Show password"}
+                aria-pressed={passwordVisible}
+                onclick={togglePasswordView}
             >
-                <span class="material-symbols-rounded text-icon-dt-3 max-[470px]:text-icon-dt-5"
-                >{icon}</span
-                >
+                <span class="material-symbols-rounded text-icon-dt-3 max-[470px]:text-icon-dt-5">
+                    {icon}
+                </span>
             </button>
         </div>
     {/if}

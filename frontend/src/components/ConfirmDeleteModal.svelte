@@ -2,7 +2,7 @@
     import Modal from "./Modal.svelte";
     import Button from "./Button.svelte";
     import Input from "./Input.svelte";
-    import { deleteMember } from "../services/members";
+    import { removeMember } from "../services/membersService";
     import { deleteEvent } from "../services/events";
     import { deleteScore } from "../services/library";
     import { addToast } from "../stores/toasts";
@@ -10,34 +10,32 @@
     import { push } from "svelte-spa-router";
 
     const actionMap = {
-        "deleteMember": deleteMember,
+        "deleteMember": removeMember,
         "deleteEvent": deleteEvent,
         "deleteLibEntry": deleteScore,
-    }
+    };
 
-    export let action = "none";
-    export let title = "";
-    export let subTitle = "";
-    export let placeholder = "";
-    export let expectedInput = "";
-    export let id = "";
-    export let toastMap = {};
-    export let onClose = () => {};
-    export let isMobile = false;
+    let {
+        action = "none",
+        title = "",
+        subTitle = "",
+        placeholder = "",
+        expectedInput = "",
+        id = "",
+        toastMap = {},
+        onClose = () => {},
+        isMobile = false,
+        ...restProps
+    } = $props();
 
-    const validActions = ["deleteMember", "deleteEvent", "deleteReport", "deleteLibEntry"];
-    if (!validActions.includes(action)) {
-        console.warn(`Action ${action} is not a valid action`);
-        action = "none";
-    }
+    let confirmInput = $state("");
+    /** @type {import("./Modal.svelte").default} */
+    let confirmDeleteModal = $state();
 
-    /** @type {import("../components/Modal.svelte").default} */
-    let confirmDeleteModal;
+    const invalidConfirm = $derived(!(confirmInput === expectedInput && expectedInput));
 
-    let confirmInput = "";
-    let invalidConfirm = true;
-
-    $: (confirmInput === expectedInput && expectedInput) ? invalidConfirm = false : invalidConfirm = true;
+    const validActions = Object.keys(actionMap);
+    let activeAction = $derived(validActions.includes(action) ? action : "none");
 
     /**
      * Shows the confirmation delete modal
@@ -48,21 +46,40 @@
 
     /**
      * Handles the delete operation after confirmation
-     * Calls the appropriate API function and handles responses with toast messages
      */
     async function handleDelete() {
         confirmDeleteModal?.hideModal();
-        if (action !== "none") {
-            const apiFunction = actionMap[action];
+
+        const DEV_refactoredRemoveServices = ["deleteMember"];
+
+        if (activeAction !== "none" && DEV_refactoredRemoveServices.includes(activeAction)) {
+            const apiFunction = actionMap[activeAction];
+            if (!apiFunction) {
+                addToast({
+                    title: "Unerwarteter Fehler",
+                    subTitle: !isMobile ? "Aktion wird nicht unterstützt." : "",
+                    type: "error"
+                });
+                onClose();
+                return;
+            }
+
+            await apiFunction(id);
+
+            onClose();
+            return;
+        }
+
+        if (activeAction !== "none") {
+            const apiFunction = actionMap[activeAction];
             const resp = await apiFunction(id);
 
             if (resp.status === 200) {
                 addToast(toastMap.success);
             } else if (resp.status === 401) {
-                // Auth token invalid / unauthorized
                 addToast({
                     title: "Ungültiges Token",
-                    subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
+                    subTitle: !isMobile ? "Ihr Authentifizierungstoken ist ungültig oder abgelaufen..." : "",
                     type: "error"
                 });
                 logout();
@@ -71,36 +88,58 @@
             } else if (resp.status === 400) {
                 addToast({
                     title: "Unvollständige Daten",
-                    subTitle: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es später erneut.",
+                    subTitle: !isMobile ? "Es wurden unvollständige Daten übermittelt." : "",
                     type: "error"
-                })
+                });
             } else if (resp.status === 404) {
                 addToast(toastMap.notFound);
             } else {
-                // internal server error / unknown error
                 addToast({
                     title: "Interner Serverfehler",
-                    subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+                    subTitle: !isMobile ? "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten." : "",
                     type: "error"
                 });
             }
         } else {
             addToast({
                 title: "Unerwarteter Fehler",
-                subTitle: "Es ist ein unerwarteter Fehler aufgetreten. Bitte kontaktieren Sie umgehend den Vorstand!",
-               type: "error"
+                subTitle: !isMobile ? "Aktion wird nicht unterstützt." : "",
+                type: "error"
             });
         }
 
         onClose();
     }
 </script>
-<Modal bind:this={confirmDeleteModal} extraFunction={() => {confirmInput = ""}} title={title}
-       subTitle={subTitle} isMobile={isMobile} width="2/5">
-    <Input marginTop="5" bind:value={confirmInput} title={`Geben Sie: "${expectedInput}" ein um fortzufahren`}
-           placeholder={placeholder} />
+
+<Modal
+    bind:this={confirmDeleteModal}
+    extraFunction={() => { confirmInput = "" }}
+    {title}
+    {subTitle}
+    {isMobile}
+    width="2/5"
+>
+    <Input
+        marginTop="5"
+        bind:value={confirmInput}
+        title={`Geben Sie: "${expectedInput}" ein um fortzufahren`}
+        {placeholder}
+    />
+
     <div class="w-full flex items-center justify-end mt-5 gap-4">
-        <Button type="secondary" on:click={confirmDeleteModal.hideModal}>Abbrechen</Button>
-        <Button type="delete" on:click={handleDelete} disabled={invalidConfirm}>Löschen</Button>
+        <Button
+            type="secondary"
+            onclick={() => confirmDeleteModal.hideModal()}
+        >
+            Abbrechen
+        </Button>
+        <Button
+            type="delete"
+            onclick={handleDelete}
+            disabled={invalidConfirm}
+        >
+            Löschen
+        </Button>
     </div>
 </Modal>

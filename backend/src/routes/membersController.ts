@@ -173,6 +173,7 @@ membersRouter.post("/delete", async (req, resp) => {
 membersRouter.post("/update", async (req, resp) => {
     try {
         const { id, name, surname, email, phone, address, voice, status, role, birthdate, joined } = req.body;
+
         if (!validInputs(name, surname, email, phone, address, voice, status, role, birthdate, joined) || !id) {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }

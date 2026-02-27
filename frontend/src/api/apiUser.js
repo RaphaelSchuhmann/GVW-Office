@@ -1,4 +1,4 @@
-import { httpGet, httpPost } from "./http";
+import { httpGet, httpPost, parseBodySafe } from "./http";
 
 // @ts-ignore
 const apiUrl = __API_URL__;
@@ -27,7 +27,7 @@ const apiUrl = __API_URL__;
 export async function getUserData() {
     const resp = await httpGet(`${apiUrl}/user/data`);
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }
 
@@ -58,6 +58,6 @@ export async function getUserData() {
 export async function updateUserData(data) {
     const resp = await httpPost(`${apiUrl}/user/update`, data);
     if (!resp) return { resp: null, body: null };
-    const body = await resp.json();
+    const body = await parseBodySafe(resp);
     return { resp, body };
 }

@@ -1,12 +1,12 @@
 <script>
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
-    import { logout } from "../../services/userService";
     import { membersStore } from "../../stores/members";
-    import { addMember, updateStatus, roleMap, voiceMap, statusMap } from "../../services/members";
+    import { newMember, roleMap, voiceMap, statusMap, switchMemberStatus } from "../../services/membersService";
     import { addToast } from "../../stores/toasts";
-    import { viewportWidth } from "../../stores/viewport";
+    import { viewport } from "../../stores/viewport.svelte";
     import { fetchAndSetRaw } from "../../services/filterService";
+    import { createContextMenu } from "../../lib/contextMenu.svelte.js";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
@@ -24,302 +24,305 @@
     import ContextMenu from "../../components/ContextMenu.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
 
-    /** @type {import("../../components/SettingsModal.svelte").default} */
-    let settingsModal;
-
-    // ADD MEMBER
-    /** @type {import("../../components/Modal.svelte").default} */
-    let addMemberModal;
-
-    let voiceInput;
-    let statusInput;
-    let roleInput;
-    let birthdayInput;
-    let joinedInput;
-    let nameInput = "";
-    let surnameInput = "";
-    let emailInput = "";
-    let phoneInput = "";
-    let addressInput = "";
+    // ==================
+    // MODAL REFERENCES
+    // ==================
+    /**
+     * Reference to the global settings modal.
+     * Used to programmatically open the application settings dialog.
+     * @type {import("../../components/SettingsModal.svelte").default}
+     */
+    let settingsModal = $state();
 
     /**
-     * Resets all input fields in the add member modal
+     * Reference to the "Add Member" modal.
+     * Controls visibility and lifecycle of the member creation dialog.
+     * @type {import("../../components/Modal.svelte").default}
+     */
+    let addMemberModal = $state();
+
+    /**
+     * Reference to the delete confirmation modal.
+     * Used to initiate and confirm member deletion flow.
+     * @type {import("../../components/ConfirmDeleteModal.svelte").default}
+     */
+    let confirmDeleteMemberModal = $state();
+
+    // ----------------
+    // ADD MEMBER STATE
+    // ----------------
+    /**
+     * Reactive state object representing the input fields
+     * of the "Add Member" form.
+     *
+     * Dropdown values are stored as display labels
+     * and mapped to backend enums on submission.
+     */
+    let memberInput = $state({
+        name: "",
+        surname: "",
+        email: "",
+        phone: "",
+        address: "",
+        voice: null,
+        status: null,
+        role: null,
+        birthdate: "",
+        joined: ""
+    });
+
+    /**
+     * Derived flag determining whether the "Add Member"
+     * submit button should be disabled.
+     *
+     * Disabled if:
+     * - Any required text field is empty
+     * - Any dropdown has no valid selection
+     *
+     * Ensures basic client-side validation before submission.
+     */
+    const addDisabled = $derived.by(() => {
+        const hasEmptyFields = [
+            memberInput.name, memberInput.surname, memberInput.email,
+            memberInput.phone, memberInput.address, memberInput.birthdate, memberInput.joined
+        ].some(val => !val || val.trim() === "");
+
+        const hasUnselectedDropdowns = [
+            memberInput.voice, memberInput.status, memberInput.role
+        ].some(val => !val || val.toLowerCase() === "wählen");
+
+        return hasEmptyFields || hasUnselectedDropdowns;
+    });
+
+    /**
+     * Resets all input fields of the "Add Member" form
+     * to their initial default values.
+     *
+     * Called after successful submission or when closing the modal.
      */
     function resetAddInputs() {
-        nameInput = "";
-        surnameInput = "";
-        emailInput = "";
-        phoneInput = "";
-        addressInput = "";
+        memberInput.name = "";
+        memberInput.surname = "";
+        memberInput.email = "";
+        memberInput.phone = "";
+        memberInput.address = "";
+        memberInput.birthdate = "";
+        memberInput.joined = "";
+        memberInput.voice = null;
+        memberInput.status = null;
+        memberInput.role = null;
     }
 
     /**
-     * Submits a new member to the system with all form data
-     * Validates inputs and handles API response with appropriate toast messages
+     * Submits the new member to the backend.
+     *
+     * Workflow:
+     * 1. Map dropdown display values to backend enum values.
+     * 2. Send member payload to API.
+     * 3. Close the modal.
+     * 4. Refresh member list from backend.
+     *
+     * @async
+     * @returns {Promise<void>}
      */
     async function submitMember() {
-        if (!birthdayInput || !joinedInput || !nameInput || !surnameInput || !emailInput || !phoneInput || !addressInput) return;
-        if (voiceInput === "wählen" || statusInput === "wählen" || roleInput === "wählen") return;
+        const payload = {
+            ...$state.snapshot(memberInput),
+            voice: voiceMap[memberInput.voice],
+            status: statusMap[memberInput.status],
+            role: roleMap[memberInput.role]
+        };
 
-        const resp = await addMember(nameInput, surnameInput, emailInput, phoneInput, addressInput, voiceMap[voiceInput], statusMap[statusInput], roleMap[roleInput], birthdayInput, joinedInput);
-
-        if (resp.status === 200) {
+        if (!payload.voice || !payload.status || !payload.role) {
             addToast({
-                title: "Mitglied hinzugefügt",
-                subTitle: "Das neue Mitglied wurde erfolgreich angelegt und ist ab sofort in der Mitgliederübersicht verfügbar.",
-                type: "success"
+                title: "Ungültige Auswahl",
+                subTitle: "Bitte prüfen Sie Stimmlage, Status und Rolle.",
+                type: "error",
             });
-        } else if (resp.status === 401) {
-            // Auth token invalid / unauthorized
-            addToast({
-                title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
             return;
-        } else if (resp.status === 400) {
-            // user not found route back to log in
-            addToast({
-                title: "Eingaben unvollständig",
-                subTitle: "Bitte überprüfen Sie Ihre Angaben. Einige Pflichtfelder sind entweder leer oder enthalten ungültige Werte.",
-                type: "error"
-            });
-        } else if (resp.status === 409) {
-            addToast({
-                title: "Eingabe ungültig",
-                subTitle: `Es gibt bereits einen Benutzer mit der E-Mail ${emailInput}. Bitte verwenden Sie eine andere E-Mail-Adresse.`,
-                type: "error"
-            });
-        } else {
-            // internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
-            });
         }
 
+        await newMember(payload);
+
         addMemberModal.hideModal();
-        await fetchAndSetRaw()
+        await fetchAndSetRaw();
     }
 
-    // DELETE MEMBER
-    /** @type {import("../../components/ConfirmDeleteModal.svelte").default} */
-    let confirmDeleteMemberModal;
-
-    let memberName = "";
-    let deleteMemberToast = {
-        success: {
-            title: "Mitglied gelöscht",
-            subTitle: "Das Mitglied und der zugehörige Benutzeraccount wurden erfolgreich aus dem System entfernt.",
-            type: "success"
-        },
-        notFound: {
-            title: "Nicht gefunden",
-            subTitle: "Das angegebene Mitglied oder der zugehörige Benutzer konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
-            type: "error"
-        },
-    };
+    // -------------------
+    // DELETE MEMBER STATE
+    // -------------------
+    /**
+     * Stores the full name of the member currently selected
+     * for deletion. Displayed inside the confirmation modal.
+     */
+    let memberName = $state("");
 
     /**
-     * Initiates the delete process for a member
-     * Sets up the confirmation modal with member details
+     * Initializes the member deletion process.
+     *
+     * Workflow:
+     * 1. Close context menu.
+     * 2. Resolve selected member from store.
+     * 3. If not found, show error toast.
+     * 4. Otherwise, open confirmation modal.
+     *
+     * @async
+     * @returns {Promise<void>}
      */
-    function startDeleteMember() {
-        menuOpen = false;
-
+    async function startDeleteMember() {
+        menu.data.open = false;
         const membersRaw = get(membersStore).raw;
-        let name = membersRaw.find(item => item.id === activeMemberId)?.name;
-        let surname = membersRaw.find(item => item.id === activeMemberId)?.surname;
+        const member = membersRaw.find(item => item.id === menu.data.activeId);
 
-        memberName = `${name} ${surname}`;
+        if (!member) {
+            addToast({
+                title: "Mitglied nicht gefunden",
+                subTitle: "Das ausgewählte Mitglied wurde nicht gefunden. Bitte versuchen Sie es erneut.",
+                type: "error"
+            });
+            return;
+        }
+
+        memberName = `${member?.name} ${member?.surname}`;
+
         confirmDeleteMemberModal.startDelete();
     }
 
-    // CONTEXT MENU
-    let menuOpen = false;
-    let menuX = 0;
-    let menuY = 0;
-    let activeMemberId = null;
+    // ------------------
+    // CONTEXT MENU STATE
+    // ------------------
+    /**
+     * Reactive context menu instance for member actions.
+     * Stores open state, position, and currently active member ID.
+     */
+    let menu = createContextMenu();
 
     /**
-     * Opens context menu on right-click at cursor position
-     * @param {MouseEvent} event - The right-click event
-     * @param {string} memberId - ID of the member being right-clicked
+     * Toggles the status of the currently selected member.
+     *
+     * If no active member is selected, the function exits early.
+     * After updating, the member list is refreshed.
+     *
+     * @async
+     * @returns {Promise<void>}
      */
-    function openContextMenu(event, memberId) {
-        event.preventDefault();
-        event.stopPropagation();
+    async function handleSwitchStatus() {
+        if (!menu.data.activeId) return;
 
-        activeMemberId = memberId;
+        await switchMemberStatus(menu.data.activeId);
 
-        requestAnimationFrame(() => {
-            menuX = Math.min(event.clientX, window.innerWidth - 200);
-            menuY = Math.min(event.clientY, window.innerHeight - 150);
-            menuOpen = true;
-        });
+        menu.data.open = false;
+        await fetchAndSetRaw();
     }
 
     /**
-     * Opens context menu from the three-dot button click
-     * @param {MouseEvent} event - The button click event
-     * @param {string} memberId - ID of the member whose button was clicked
+     * Opens the global settings modal.
      */
-    function openContextMenuFromButton(event, memberId) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        activeMemberId = memberId;
-
-        const rect = event.currentTarget.getBoundingClientRect();
-
-        menuOpen = true;
-
-        requestAnimationFrame(() => {
-            const menuWidth = 170;
-            const menuHeight = 150;
-
-            menuX = rect.left - menuWidth;
-            menuY = Math.min(rect.bottom, window.innerHeight - menuHeight);
-        });
-    }
-
-    /**
-     * Toggles the status of a member between active and inactive
-     * Handles API response and shows appropriate toast messages
-     */
-    async function switchStatus() {
-        const resp = await updateStatus(activeMemberId);
-
-        if (resp.status === 200) {
-            addToast({
-                title: "Status aktualisiert",
-                subTitle: "Der Status des Mitglieds wurde erfolgreich geändert und im System übernommen.",
-                type: "success"
-            });
-        } else if (resp.status === 401) {
-            // Auth token invalid / unauthorized
-            addToast({
-                title: "Ungültiges Token",
-                subTitle: "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
-            return;
-        } else if (resp.status === 404) {
-            // member not found
-            addToast({
-                title: "Mitglied nicht gefunden",
-                subTitle: "Das angegebene Mitglied konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
-                type: "error"
-            });
-        } else {
-            // internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
-                type: "error"
-            });
-        }
-        menuOpen = false;
-        activeMemberId = null;
-        await fetchAndSetRaw()
-    }
-
     function settingsClick() {
         settingsModal.showModal();
     }
 </script>
 
-<svelte:window on:contextmenu={() => (menuOpen = false)} />
+<svelte:window oncontextmenu={() => (menu.data.open = false)} />
 
 <SettingsModal bind:this={settingsModal}></SettingsModal>
-<ToastStack></ToastStack>
+<ToastStack isMobile={false} />
 
-<!-- Add member modal -->
 <Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
        subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5">
+
     <div class="flex items-center gap-4 mt-5">
-        <Input bind:value={nameInput} title="Vorname" placeholder="Max" />
-        <Input bind:value={surnameInput} title="Nachname" placeholder="Mustermann" />
+        <Input bind:value={memberInput.name} title="Vorname" placeholder="Max" />
+
+        <Input bind:value={memberInput.surname} title="Nachname" placeholder="Mustermann" />
     </div>
-    <Input bind:value={emailInput} marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com" />
-    <Input bind:value={phoneInput} marginTop="5" title="Telefon" placeholder="01701234 5678" />
-    <Input bind:value={addressInput} marginTop="5" title="Adresse" placeholder="Hauptstraße 1, 12345 Musterstadt" />
+
+    <Input bind:value={memberInput.email} marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com" />
+
+    <Input bind:value={memberInput.phone} marginTop="5" title="Telefon" placeholder="01701234 5678" />
+
+    <Input bind:value={memberInput.address} marginTop="5" title="Adresse" placeholder="Hauptstraße 1..." />
     <div class="w-full flex items-center gap-4 mt-5">
-        <Dropdown onChange={(value) => voiceInput = value} title="Stimmlage"
+        <Dropdown onChange={(value) => memberInput.voice = value} title="Stimmlage"
                   options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
-        <Dropdown onChange={(value) => statusInput = value} title="Status" options={["Aktiv", "Passiv"]} />
-        <Dropdown onChange={(value) => roleInput = value} title="Rolle"
-                  options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} />
+
+        <Dropdown onChange={(value) => memberInput.status = value} title="Status" options={["Aktiv", "Passiv"]} />
+
+        <Dropdown onChange={(value) => memberInput.role = value} title="Rolle"
+                  options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true} />
     </div>
+
     <div class="w-full flex items-center gap-4 mt-5 max-[1700px]:flex-col">
         <div class="flex flex-col items-start w-full">
             <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>
-            <DefaultDatepicker onChange={(value) => birthdayInput = value} />
+            <DefaultDatepicker onChange={(value) => memberInput.birthdate = value} />
         </div>
+
         <div class="flex flex-col items-start w-full">
             <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>
-            <YearDatepicker onChange={(value) => joinedInput = value} />
+            <YearDatepicker onChange={(value) => memberInput.joined = value} />
         </div>
     </div>
     <div class="w-full flex items-center justify-end mt-5 gap-4">
-        <Button type="secondary" on:click={addMemberModal.hideModal}>Abbrechen</Button>
-        <Button type="primary" on:click={submitMember} isSubmit={true}>Hinzufügen</Button>
+        <Button type="secondary" onclick={() => addMemberModal.hideModal()}>Abbrechen</Button>
+        <Button type="primary" disabled={addDisabled} onclick={submitMember} isSubmit={true}>Hinzufügen</Button>
     </div>
 </Modal>
 
-<!-- Confirm delete member modal -->
-<ConfirmDeleteModal expectedInput={memberName} id={activeMemberId}
+<ConfirmDeleteModal expectedInput={memberName} id={menu.data.activeId}
                     title="Mitglied löschen" subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?"
-                    toastMap={deleteMemberToast} action="deleteMember"
-                    onClose={async () => {menuOpen = false; activeMemberId = null; /* TODO: Fetch data */}}
+                    action="deleteMember"
+                    onClose={async () => {menu.data.open = false; menu.data.activeId = null; await fetchAndSetRaw();}}
                     bind:this={confirmDeleteMemberModal}
 />
 
-<ContextMenu bind:open={menuOpen} x={menuX} y={menuY}>
-    <Button on:click={async () =>  await push(`/members/view?id=${activeMemberId}`)} type="contextMenu">Bearbeiten
+<ContextMenu bind:open={menu.data.open} x={menu.data.x} y={menu.data.y}>
+    <Button onclick={async () => await push(`/members/details?id=${menu.data.activeId}&editing=false`)}
+            type="contextMenu">
+        Details
     </Button>
-    <Button on:click={switchStatus} type="contextMenu">Status ändern</Button>
-    <Button on:click={startDeleteMember} type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
+    <Button onclick={async () => await push(`/members/details?id=${menu.data.activeId}&editing=true`)}
+            type="contextMenu">
+        Bearbeiten
+    </Button>
+    <Button onclick={handleSwitchStatus} type="contextMenu">Status ändern</Button>
+    <Button onclick={startDeleteMember} type="contextMenu" fontColor="text-gv-delete">Löschen</Button>
 </ContextMenu>
 
 <main class="flex overflow-hidden">
     <DesktopSidebar onSettingsClick={settingsClick} currentPage="members"></DesktopSidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
-        <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={$viewportWidth > 1000}>
-            {#if $viewportWidth > 1000}
-                <Button type="primary" on:click={addMemberModal.showModal}>
-                    <span class="material-symbols-rounded text-icon-dt-4">add</span>
+        <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={viewport.width > 1000}>
+            {#if viewport.width > 1000}
+                <Button type="primary" onclick={() => addMemberModal.showModal()}>
+                    <span class="material-symbols-rounded text-icon-dt-4 mr-2">add</span>
                     <p class="text-dt-4 text-nowrap">Mitglied hinzufügen</p>
                 </Button>
             {/if}
         </PageHeader>
 
-        {#if $viewportWidth <= 1000}
+        {#if viewport.width <= 1000}
             <div class="flex max-[430px]:flex-col w-full items-center justify-start gap-2 mt-4">
-                <Button type="primary" on:click={addMemberModal.showModal}>
+                <Button type="primary" onclick={() => addMemberModal.showModal()}>
                     <span class="material-symbols-rounded text-icon-dt-5">add</span>
                     <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
                 </Button>
-                <Button type="primary" on:click={fetchAndSetRaw}>
+                <Button type="primary" onclick={fetchAndSetRaw}>
                     <span class="material-symbols-rounded text-icon-dt-5">refresh</span>
                     <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Aktualisieren</p>
                 </Button>
             </div>
         {/if}
 
-        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5"/>
+        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" />
 
-        <Card padding="0" marginTop="5" borderThickness={$viewportWidth > 1300 ? "2" : "1"}>
+        <Card padding="0" marginTop="5" borderThickness={viewport.width > 1300 ? "2" : "1"}>
             <div class="flex-1 min-h-0 overflow-y-auto w-full">
                 {#if $membersStore.display.length !== 0}
-                    {#if $viewportWidth > 1300}
+                    {#if viewport.width > 1300}
                         <table class="w-full text-left border-gv-border">
-                            <thead class="sticky top-0 z-10 bg-white min-[1300px]:text-dt-4 text-dt-6 text-gv-dark-text">
+                            <thead
+                                class="sticky top-0 z-10 bg-white min-[1300px]:text-dt-4 text-dt-6 text-gv-dark-text">
                             <tr>
                                 <th scope="col" class="px-6 py-3 font-bold">
                                     Name
@@ -339,60 +342,66 @@
                                 <th scope="col" class="px-6 py-3">
                                     <button
                                         class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                                        on:click={fetchAndSetRaw}
-                                        >
-                                        <span class="material-symbols-rounded min-[1300px]:text-icon-dt-5 text-icon-dt-6 font-bold text-gv-dark-text">refresh</span>
+                                        onclick={fetchAndSetRaw}
+                                    >
+                                        <span
+                                            class="material-symbols-rounded min-[1300px]:text-icon-dt-5 text-icon-dt-6 font-bold text-gv-dark-text">refresh</span>
                                     </button>
                                 </th>
                             </tr>
                             </thead>
                             <tbody>
-                                {#each $membersStore.display as member}
-                                    <tr class="border-t-2 border-gv-border"
-                                        on:contextmenu={(e) => openContextMenu(e, member.id)}>
-                                        <td class="px-6 py-4">
-                                            <div class="flex flex-col items-start h-full overflow-hidden gap-1">
-                                                <p class="min-[1300px]:text-dt-6 text-dt-7 text-gv-dark-text text-nowrap truncate">{`${member.name} ${member.surname}`}</p>
-                                                <p class="min-[1300px]:text-dt-8 text-dt-8 text-gv-light-text text-nowrap truncate">{member.address}</p>
+                            {#each $membersStore.display as member}
+                                <tr class="border-t-2 border-gv-border"
+                                    oncontextmenu={(e) => menu.openFromEvent(e, member.id)}>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col items-start h-full overflow-hidden gap-1">
+                                            <p class="min-[1300px]:text-dt-6 text-dt-7 text-gv-dark-text text-nowrap truncate">{`${member.name} ${member.surname}`}</p>
+                                            <p class="min-[1300px]:text-dt-8 text-dt-8 text-gv-light-text text-nowrap truncate">{member.address}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{voiceMap[member.voice]}</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col items-start  h-full overflow-hidden gap-2">
+                                            <div class="flex items-center justify-start gap-2">
+                                                <span
+                                                    class="material-symbols-rounded min-[1300px]:text-icon-dt-6 text-icon-dt-7 text-gv-dark-turquoise">mail</span>
+                                                <p class="min-[1300px]:text-dt-7 text-dt-8 text-gv-dark-turquoise">{member.email}</p>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{voiceMap[member.voice]}</p>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex flex-col items-start  h-full overflow-hidden gap-2">
-                                                <div class="flex items-center justify-start gap-2">
-                                                    <span class="material-symbols-rounded min-[1300px]:text-icon-dt-6 text-icon-dt-7 text-gv-dark-turquoise">mail</span>
-                                                    <p class="min-[1300px]:text-dt-7 text-dt-8 text-gv-dark-turquoise">{member.email}</p>
-                                                </div>
-                                                <div class="flex items-center justify-start gap-2">
-                                                    <span class="material-symbols-rounded min-[1300px]:text-icon-dt-6 text-icon-dt-7 text-gv-light-text">phone</span>
-                                                    <p class="min-[1300px]:text-dt-7 text-dt-8 text-gv-light-text">{member.phone}</p>
-                                                </div>
+                                            <div class="flex items-center justify-start gap-2">
+                                                <span
+                                                    class="material-symbols-rounded min-[1300px]:text-icon-dt-6 text-icon-dt-7 text-gv-light-text">phone</span>
+                                                <p class="min-[1300px]:text-dt-7 text-dt-8 text-gv-light-text">{member.phone}</p>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{member.joined}</p>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <Chip text={statusMap[member.status]} />
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <button
-                                                class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                                                on:click={(e) => openContextMenuFromButton(e, member.id)}>
-                                                    <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{member.joined}</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <Chip text={statusMap[member.status]} />
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <button
+                                            class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
+                                            onclick={(e) => menu.openFromButton(e, member.id)}>
+                                                    <span
+                                                        class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">
                                                         more_horiz
                                                     </span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                {/each}
+                                        </button>
+                                    </td>
+                                </tr>
+                            {/each}
                             </tbody>
                         </table>
                     {:else}
                         {#each $membersStore.display as member}
-                            <button class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`} on:click={async () =>  await push(`/members/view?id=${member.id}`)}>
+                            <button
+                                class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`}
+                                onclick={async () =>  await push(`/members/details?id=${member.id}&editing=false`)}>
                                 <div class="flex flex-col items-start justify-between mr-auto max-w-3/4">
                                     <p class="text-gv-dark-text text-dt-7">{`${member.name} ${member.surname}`}</p>
                                     <div class="flex items-center justify-start gap-2">
@@ -401,7 +410,7 @@
                                     </div>
                                 </div>
 
-                                <Chip text={statusMap[member.status]} fontSize="7"/>
+                                <Chip text={statusMap[member.status]} fontSize="7" />
                             </button>
                         {/each}
                     {/if}

@@ -1,6 +1,9 @@
 <script>
-    export let value = 0;
-    export let max = 1;
+    let {
+        value = 0,
+        max = 1,
+        ...restProps
+    } = $props()
 </script>
 
 <div class="w-full h-4 rounded-full bg-gv-secondary overflow-hidden">

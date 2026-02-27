@@ -1,8 +1,8 @@
 <script>
     import { push } from "svelte-spa-router";
     import { membersStore } from "../../stores/members";
-    import { addMember, roleMap, voiceMap, statusMap } from "../../services/members";
-    import { addToast } from "../../stores/toasts";
+    import { newMember, roleMap, voiceMap, statusMap } from "../../services/membersService";
+    import { viewport } from "../../stores/viewport.svelte";
     import { fetchAndSetRaw } from "../../services/filterService";
 
     import ToastStack from "../../components/ToastStack.svelte";
@@ -18,164 +18,221 @@
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import YearDatepicker from "../../components/YearDatepicker.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
-    import { logout } from "../../services/userService";
+    import { addToast } from "../../stores/toasts";
 
-    /** @type {import("../../components/SettingsModal.svelte").default} */
-    let settingsModal;
-
-    // ADD MEMBER
-    /** @type {import("../../components/Modal.svelte").default} */
-    let addMemberModal;
-
-    let voiceInput;
-    let statusInput;
-    let roleInput;
-    let birthdayInput;
-    let joinedInput;
-    let nameInput = "";
-    let surnameInput = "";
-    let emailInput = "";
-    let phoneInput = "";
-    let addressInput = "";
+    // ==================
+    // MODAL REFERENCES
+    // ==================
+    /**
+     * Reference to the global settings modal.
+     * Used to programmatically open the application settings dialog.
+     * @type {import("../../components/SettingsModal.svelte").default}
+     */
+    let settingsModal = $state();
 
     /**
-     * Resets all input fields in the add member modal
+     * Reference to the "Add Member" modal.
+     * Controls visibility and lifecycle of the member creation dialog.
+     * @type {import("../../components/Modal.svelte").default}
+     */
+    let addMemberModal = $state();
+
+    // ----------------
+    // ADD MEMBER STATE
+    // ----------------
+    /**
+     * Reactive state object representing the input fields
+     * of the "Add Member" form.
+     *
+     * Dropdown values are stored as display labels
+     * and mapped to backend enums on submission.
+     */
+    let memberInput = $state({
+        name: "",
+        surname: "",
+        email: "",
+        phone: "",
+        address: "",
+        voice: null,
+        status: null,
+        role: null,
+        birthdate: "",
+        joined: ""
+    });
+
+    /**
+     * Derived flag determining whether the "Add Member"
+     * submit button should be disabled.
+     *
+     * Disabled if:
+     * - Any required text field is empty
+     * - Any dropdown has no valid selection
+     *
+     * Ensures basic client-side validation before submission.
+     */
+    const addDisabled = $derived.by(() => {
+        const hasEmptyFields = [
+            memberInput.name, memberInput.surname, memberInput.email,
+            memberInput.phone, memberInput.address, memberInput.birthdate, memberInput.joined
+        ].some(val => !val || val.trim() === "");
+
+        const hasUnselectedDropdowns = [
+            memberInput.voice, memberInput.status, memberInput.role
+        ].some(val => !val || val.toLowerCase() === "wählen");
+
+        return hasEmptyFields || hasUnselectedDropdowns;
+    });
+
+    /**
+     * Resets all input fields of the "Add Member" form
+     * to their initial default values.
+     *
+     * Called after successful submission or when closing the modal.
      */
     function resetAddInputs() {
-        nameInput = "";
-        surnameInput = "";
-        emailInput = "";
-        phoneInput = "";
-        addressInput = "";
+        memberInput.name = "";
+        memberInput.surname = "";
+        memberInput.email = "";
+        memberInput.phone = "";
+        memberInput.address = "";
+        memberInput.birthdate = "";
+        memberInput.joined = "";
+        memberInput.voice = null;
+        memberInput.status = null;
+        memberInput.role = null;
     }
 
     /**
-     * Submits a new member to the system with all form data
-     * Validates inputs and handles API response with appropriate toast messages
+     * Submits the new member to the backend.
+     *
+     * Workflow:
+     * 1. Map dropdown display values to backend enum values.
+     * 2. Send member payload to API.
+     * 3. Close the modal.
+     * 4. Refresh member list from backend.
+     *
+     * @async
+     * @returns {Promise<void>}
      */
     async function submitMember() {
-        if (!birthdayInput || !joinedInput || !nameInput || !surnameInput || !emailInput || !phoneInput || !addressInput) return;
-        if (voiceInput === "wählen" || statusInput === "wählen" || roleInput === "wählen") return;
+        const payload = {
+            ...$state.snapshot(memberInput),
+            voice: voiceMap[memberInput.voice],
+            status: statusMap[memberInput.status],
+            role: roleMap[memberInput.role]
+        };
 
-        const resp = await addMember(nameInput, surnameInput, emailInput, phoneInput, addressInput, voiceMap[voiceInput], statusMap[statusInput], roleMap[roleInput], birthdayInput, joinedInput);
-
-        if (resp.status === 200) {
+        if (!payload.voice || !payload.status || !payload.role) {
             addToast({
-                title: "Mitglied hinzugefügt",
-                type: "success"
+                title: "Ungültige Auswahl",
+                subTitle: "Bitte prüfen Sie Stimmlage, Status und Rolle.",
+                type: "error",
             });
-        } else if (resp.status === 401) {
-            // Auth token invalid / unauthorized
-            addToast({
-                title: "Ungültiges Token",
-                type: "error"
-            });
-            logout();
-            await push("/?cpwErr=false");
             return;
-        } else if (resp.status === 400) {
-            // user not found route back to log in
-            addToast({
-                title: "Eingaben unvollständig",
-                type: "error"
-            });
-        } else if (resp.status === 409) {
-            addToast({
-                title: "E-Mail in verwendung",
-                type: "error"
-            });
-        } else {
-            // internal server error / unknown error
-            addToast({
-                title: "Interner Serverfehler",
-                type: "error"
-            });
         }
+
+        await newMember(payload);
 
         addMemberModal.hideModal();
         await fetchAndSetRaw();
     }
 
-    let sidebarOpen = false;
+    let sidebarOpen = $state(false);
 
+    /**
+     * Opens the global settings modal.
+     */
     function settingsClick() {
         settingsModal.showModal();
     }
 </script>
 
-<SettingsModal bind:this={settingsModal} isMobile={true}></SettingsModal>
+<SettingsModal bind:this={settingsModal} />
 <ToastStack isMobile={true} />
 
-<!-- Add member modal -->
 <Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
-       subTitle="Erfassen Sie hier die Mitgliedsdaten" isMobile={true}>
-    <Input bind:value={nameInput} title="Vorname" placeholder="Max" />
-    <Input bind:value={surnameInput} marginTop="5" title="Nachname" placeholder="Mustermann" />
-    <Input bind:value={emailInput} marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com" />
-    <Input bind:value={phoneInput} marginTop="5" title="Telefon" placeholder="01701234 5678" />
-    <Input bind:value={addressInput} marginTop="5" title="Adresse" placeholder="Hauptstraße 1, 12345 Musterstadt" />
-    <Dropdown onChange={(value) => voiceInput = value} title="Stimmlage" marginTop="5"
-              options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
-    <Dropdown onChange={(value) => statusInput = value} title="Status" marginTop="5" options={["Aktiv", "Passiv"]} />
-    <Dropdown onChange={(value) => roleInput = value} title="Rolle" marginTop="5"
-              options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} />
-    <div class="flex flex-col items-start w-full mt-5">
-        <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>
-        <DefaultDatepicker onChange={(value) => birthdayInput = value} />
-    </div>
-    <div class="flex flex-col items-start w-full mt-5">
-        <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>
-        <YearDatepicker onChange={(value) => joinedInput = value} />
+       subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5" isMobile={true}>
+    <Input bind:value={memberInput.name} marginTop="5" title="Vorname" placeholder="Max" />
+
+    <Input bind:value={memberInput.surname} marginTop="5" title="Nachname" placeholder="Mustermann" />
+
+    <Input bind:value={memberInput.email} marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com" />
+
+    <Input bind:value={memberInput.phone} marginTop="5" title="Telefon" placeholder="01701234 5678" />
+
+    <Input bind:value={memberInput.address} marginTop="5" title="Adresse" placeholder="Hauptstraße 1..." />
+
+    <Dropdown onChange={(value) => memberInput.voice = value} title="Stimmlage"
+              options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} marginTop="5" />
+
+    <Dropdown onChange={(value) => memberInput.status = value} title="Status" options={["Aktiv", "Passiv"]} marginTop="5" />
+
+    <Dropdown onChange={(value) => memberInput.role = value} title="Rolle"
+              options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true} marginTop="5" />
+
+    <div class="w-full flex items-center gap-4 mt-5 flex-col">
+        <div class="flex flex-col items-start w-full">
+            <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>
+            <DefaultDatepicker onChange={(value) => memberInput.birthdate = value} />
+        </div>
+
+        <div class="flex flex-col items-start w-full">
+            <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>
+            <YearDatepicker onChange={(value) => memberInput.joined = value} />
+        </div>
     </div>
     <div class="w-full flex items-center justify-end mt-5 gap-4">
-        <Button type="secondary" on:click={addMemberModal.hideModal}>Abbrechen</Button>
-        <Button type="primary" on:click={submitMember} isSubmit={true}>Hinzufügen</Button>
+        <Button type="secondary" onclick={() => addMemberModal.hideModal()}>Abbrechen</Button>
+        <Button type="primary" disabled={addDisabled} onclick={submitMember} isSubmit={true}>Hinzufügen</Button>
     </div>
 </Modal>
 
-<MobileSidebar currentPage="members" onSettingsClick={settingsClick} bind:isOpen={sidebarOpen}/>
+<MobileSidebar onSettingsClick={settingsClick} currentPage="members" bind:isOpen={sidebarOpen} />
 
 <main class="flex overflow-hidden">
-    <div class="flex flex-col w-full h-dvh overflow-hidden p-7 min-h-0">
+    <div class="flex flex-col flex-1 min-h-0 w-full p-7 overflow-y-auto overflow-x-hidden">
         <div class="w-full flex items-center justify-start">
-            <button class="flex items-center justify-center" on:click={() => sidebarOpen = true}>
+            <button class="flex items-center justify-center" onclick={() => sidebarOpen = true}>
                 <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">menu</span>
             </button>
         </div>
-        <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={false}>
-        </PageHeader>
+        <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={false} />
 
         <div class="flex max-[430px]:flex-col w-full items-center justify-start gap-2 mt-4">
-            <Button type="primary" on:click={addMemberModal.showModal}>
+            <Button type="primary" onclick={() => addMemberModal.showModal()}>
                 <span class="material-symbols-rounded text-icon-dt-5">add</span>
                 <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
             </Button>
-            <Button type="primary" on:click={fetchAndSetRaw}>
+            <Button type="primary" onclick={fetchAndSetRaw}>
                 <span class="material-symbols-rounded text-icon-dt-5">refresh</span>
                 <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Aktualisieren</p>
             </Button>
         </div>
 
-        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5"/>
+        <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" />
 
-        <Card padding="0" marginTop="5" rounded="2" borderThickness="1">
-            <div class="flex-1 min-h-0 overflow-y-auto w-full max-h-full">
+        <Card padding="0" marginTop="5" borderThickness={viewport.width > 1300 ? "2" : "1"}>
+            <div class="flex-1 min-h-0 overflow-y-auto w-full">
                 {#if $membersStore.display.length !== 0}
                     {#each $membersStore.display as member}
-                        <button class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`} on:click={async () =>  await push(`/members/view?id=${member.id}`)}>
+                        <button
+                            class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`}
+                            onclick={async () =>  await push(`/members/details?id=${member.id}&editing=false`)}>
                             <div class="flex flex-col items-start justify-between mr-auto max-w-3/4">
                                 <p class="text-gv-dark-text text-dt-7">{`${member.name} ${member.surname}`}</p>
                                 <div class="flex items-center justify-start gap-2">
-                                    <span class="material-symbols-rounded text-icon-dt-7 text-gv-dark-turquoise">mail</span>
+                                    <span
+                                        class="material-symbols-rounded text-icon-dt-7 text-gv-dark-turquoise">mail</span>
                                     <p class="text-dt-8 text-gv-dark-turquoise text-nowrap truncate">{member.email}</p>
                                 </div>
                             </div>
 
-                            <Chip text={statusMap[member.status]} fontSize="7"/>
+                            <Chip text={statusMap[member.status]} fontSize="7" />
                         </button>
                     {/each}
                 {:else}
-                    <p class="text-dt-5 text-gv-dark-text text-center w-full h-full p-10 font-semibold">Es wurden keine Mitglieder gefunden!</p>
+                    <p class="text-dt-3 text-gv-dark-text text-center w-full h-full p-10 font-semibold">Es wurden keine
+                        Mitglieder gefunden!</p>
                 {/if}
             </div>
         </Card>

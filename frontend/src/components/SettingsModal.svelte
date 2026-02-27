@@ -5,24 +5,27 @@
     import Input from "./Input.svelte";
     import Button from "./Button.svelte";
     import { tryUpdateUserData } from "../services/userService";
-
-    export let isMobile = false;
+    
+    let {
+        isMobile = false,
+        ...restProps
+    } = $props();
 
     /** @type {import("../components/Modal.svelte").default} */
-    let modal;
+    let modal = $state(null);
 
     // Get updated if their edit button is clicked
-    let readonlyMail = true;
-    let readonlyPhone = true;
-    let readonlyAddress = true;
+    let readonlyMail = $state(true);
+    let readonlyPhone = $state(true);
+    let readonlyAddress = $state(true);
 
     let emailInput;
     let phoneInput;
     let addressInput;
 
-    let email = $user.email;
-    let phone = $user.phone;
-    let address = $user.address;
+    let email = $state($user.email);
+    let phone = $state($user.phone);
+    let address = $state($user.address);
 
     /**
      * Updates the user data with the current input values.
@@ -75,7 +78,7 @@
                type="email"
                bind:this={emailInput} />
         <Button type="primary" width="w-1/3"
-                on:click={() => {readonlyMail = !readonlyMail; tick().then(() => emailInput.focus());}}>{readonlyMail ? "Bearbeiten" : "Fertig"}
+                onclick={() => {readonlyMail = !readonlyMail; tick().then(() => emailInput.focus());}}>{readonlyMail ? "Bearbeiten" : "Fertig"}
         </Button>
     </div>
 
@@ -83,7 +86,7 @@
         <Input title="Telefon" bind:value={phone} readonly={readonlyPhone} width="w-2/3"
                bind:this={phoneInput} />
         <Button type="primary" width="w-1/3"
-                on:click={() => {readonlyPhone = !readonlyPhone; tick().then(() => phoneInput.focus());}}>{readonlyPhone ? "Bearbeiten" : "Fertig"}
+                onclick={() => {readonlyPhone = !readonlyPhone; tick().then(() => phoneInput.focus());}}>{readonlyPhone ? "Bearbeiten" : "Fertig"}
         </Button>
     </div>
 
@@ -91,12 +94,12 @@
         <Input title="Adresse" bind:value={address} readonly={readonlyAddress} width="w-2/3"
                bind:this={addressInput} />
         <Button type="primary" width="w-1/3"
-                on:click={() => {readonlyAddress = !readonlyAddress; tick().then(() => addressInput.focus());}}>{readonlyAddress ? "Bearbeiten" : "Fertig"}
+                onclick={() => {readonlyAddress = !readonlyAddress; tick().then(() => addressInput.focus());}}>{readonlyAddress ? "Bearbeiten" : "Fertig"}
         </Button>
     </div>
 
     <div class="w-full flex items-center justify-end mt-5 gap-2">
-        <Button type="secondary" on:click={modal.hideModal}>Abbrechen</Button>
-        <Button type="primary" on:click={updateUserData} isSubmit={true}>Speichern</Button>
+        <Button type="secondary" onclick={modal.hideModal}>Abbrechen</Button>
+        <Button type="primary" onclick={updateUserData} isSubmit={true}>Speichern</Button>
     </div>
 </Modal>

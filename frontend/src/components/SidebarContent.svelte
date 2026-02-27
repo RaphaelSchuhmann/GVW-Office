@@ -4,15 +4,18 @@
     import SidebarButton from "./SidebarButton.svelte";
     import { logout } from "../services/userService";
 
-    export let currentPage = "";
-    export let onSettingsClick = () => {};
-    export let minimized = false;
-
+    let {
+        currentPage = "",
+        onSettingsClick = () => {},
+        minimized = false,
+        ...restProps
+    } = $props();
+    
     const mitgliederAccess = ["admin", "vorstand"];
     const reportsAccess = ["admin", "schriftführer"];
 
-    let userOptionsVisible = false;
-    let userOptionsIcon = "expand_all";
+    let userOptionsVisible = $state(false);
+    let userOptionsIcon = $state("expand_all");
 
     function toggleUserOptions() {
         userOptionsVisible = !userOptionsVisible;
@@ -27,31 +30,31 @@
 
 <div class="flex flex-col items-center w-full flex-1">
     <div class="flex flex-col items-center w-full h-full flex-1 p-5">
-        <SidebarButton selected={currentPage === "dashboard"} minimized={minimized} on:click={async () => await push("/dashboard")}>
+        <SidebarButton selected={currentPage === "dashboard"} minimized={minimized} onclick={async () => await push("/dashboard")}>
             <span class="material-symbols-rounded text-icon-dt-4">dashboard</span>
             {#if !minimized}<p class="ml-2">Dashboard</p>{/if}
         </SidebarButton>
 
         {#if mitgliederAccess.includes($user.role)}
-            <SidebarButton selected={currentPage === "members"} minimized={minimized} marginTop="5" on:click={async () => await push("/members")}>
+            <SidebarButton selected={currentPage === "members"} minimized={minimized} marginTop="5" onclick={async () => await push("/members")}>
                 <span class="material-symbols-rounded text-icon-dt-4">group</span>
                 {#if !minimized}<p class="ml-2">Mitglieder</p>{/if}
             </SidebarButton>
         {/if}
 
-        <SidebarButton selected={currentPage === "events"} minimized={minimized} marginTop="5" on:click={async () => await push("/events")}>
+        <SidebarButton selected={currentPage === "events"} minimized={minimized} marginTop="5" onclick={async () => await push("/events")}>
             <span class="material-symbols-rounded text-icon-dt-4">calendar_today</span>
             {#if !minimized}<p class="ml-2">Veranstaltungen</p>{/if}
         </SidebarButton>
 
         {#if reportsAccess.includes($user.role)}
-            <SidebarButton selected={currentPage === "reports"} minimized={minimized} marginTop="5" on:click={async () => await push("/reports")}>
+            <SidebarButton selected={currentPage === "reports"} minimized={minimized} marginTop="5" onclick={async () => await push("/reports")}>
                 <span class="material-symbols-rounded text-icon-dt-4">docs</span>
                 {#if !minimized}<p class="ml-2">Berichte</p>{/if}
             </SidebarButton>
         {/if}
 
-        <SidebarButton selected={currentPage === "library"} minimized={minimized} marginTop="5" on:click={async () => await push("/library")}>
+        <SidebarButton selected={currentPage === "library"} minimized={minimized} marginTop="5" onclick={async () => await push("/library")}>
             <span class="material-symbols-rounded text-icon-dt-4">music_note_2</span>
             {#if !minimized}<p class="ml-2">Notenbibliothek</p>{/if}
         </SidebarButton>
@@ -60,7 +63,7 @@
     <div class="flex flex-col items-center w-full mt-auto p-5">
         {#if !minimized}
             <div class="relative inline-block text-left w-full">
-                <button on:click={toggleUserOptions} class="flex w-full items-center bg-white border border-gv-border rounded-1 p-3 cursor-pointer hover:bg-gv-secondary-btn-hover duration-200 overflow-hidden">
+                <button onclick={toggleUserOptions} class="flex w-full items-center bg-white border border-gv-border rounded-1 p-3 cursor-pointer hover:bg-gv-secondary-btn-hover duration-200 overflow-hidden">
                     <div class="flex flex-col items-start justify-around w-full">
                         {#if $user.loaded}
                             <p class="text-dt-5 text-gv-dark-text truncate">{$user.name}</p>
@@ -75,12 +78,12 @@
 
                 {#if userOptionsVisible}
                     <div class="absolute bottom-22 w-full bg-white border border-gv-border rounded-1 p-2 flex flex-col items-center">
-                        <button on:click={() => { toggleUserOptions(); onSettingsClick(); }}
+                        <button onclick={() => { toggleUserOptions(); onSettingsClick(); }}
                                 class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
                             <span class="material-symbols-rounded text-icon-dt-5 mr-2">settings</span>
                             Einstellungen
                         </button>
-                        <button on:click={handleLogout}
+                        <button onclick={handleLogout}
                                 class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
                             <span class="material-symbols-rounded text-icon-dt-5 mr-2">logout</span>
                             Abmelden
@@ -90,10 +93,10 @@
             </div>
         {:else}
             <div class="flex flex-col items-center">
-                <SidebarButton minimized={minimized} on:click={onSettingsClick}>
+                <SidebarButton minimized={minimized} onclick={onSettingsClick}>
                     <span class="material-symbols-rounded text-icon-dt-3">settings</span>
                 </SidebarButton>
-                <SidebarButton minimized={minimized} on:click={handleLogout}>
+                <SidebarButton minimized={minimized} onclick={handleLogout}>
                     <span class="material-symbols-rounded text-icon-dt-3">logout</span>
                 </SidebarButton>
             </div>

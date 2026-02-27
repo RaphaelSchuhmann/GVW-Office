@@ -1,17 +1,17 @@
 <script>
     import "./app.css";
-    import Viewport from "./components/Viewport.svelte";
     import Router from "svelte-spa-router";
+
     import Login from "./pages/Login/LoginPage.svelte";
     import Dashboard from "./pages/Dashboard/DashboardPage.svelte";
     import ChangePassword from "./pages/ChangePassword/ChangePasswordPage.svelte";
     import Members from "./pages/Members/MembersPage.svelte";
+    import MemberDetails from "./pages/MemberDetails/MemberDetailsPage.svelte";
     import Events from "./pages/Events.svelte";
     import EventEditor from "./pages/EventEditor.svelte";
     import Library from "./pages/Library.svelte";
     import LibraryEditor from "./pages/LibraryEditor.svelte";
 
-    import { onDestroy, onMount } from "svelte";
     import { startSyncService, stopSyncService } from "./services/appSettingsSyncService";
 
     const routes = {
@@ -19,19 +19,20 @@
         "/dashboard": Dashboard,
         "/changePassword": ChangePassword,
         "/members": Members,
+        "/members/details": MemberDetails,
         "/events": Events,
         "/events/edit": EventEditor,
         "/library": Library,
         "/library/edit": LibraryEditor,
     };
 
-    onMount(async () => {
-        await startSyncService();
-    });
+    $effect(() => {
+        startSyncService();
 
-    onDestroy(() => {
-        stopSyncService();
+        return () => {
+            stopSyncService();
+        };
     });
 </script>
-<Viewport />
-<Router {routes}/>
+
+<Router {routes} />

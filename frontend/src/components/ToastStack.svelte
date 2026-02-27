@@ -2,7 +2,10 @@
     import Toast from "./Toast.svelte";
     import { toasts, removeToast } from "../stores/toasts";
 
-    export let isMobile = false;
+    let {
+        isMobile = false,
+        ...restProps
+    } = $props();
 </script>
 
 {#if !isMobile}
