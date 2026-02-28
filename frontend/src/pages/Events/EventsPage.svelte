@@ -1,20 +1,20 @@
 <script>
     import { viewport } from "../../stores/viewport.svelte";
-    import MembersDesktop from "./MembersDesktop.svelte";
-    import MembersMobile from "./MembersMobile.svelte";
     import { ensureUserData } from "../../services/userService.svelte";
     import { init } from "../../services/filterService.svelte";
+
+    import EventsDesktop from "./EventsDesktop.svelte";
 
     $effect(() => {
         (async () => {
             await ensureUserData();
-            await init("members");
+            await init("events");
         })();
     });
 </script>
 
 {#if viewport.isMobile}
-    <MembersMobile />
+    <EventsDesktop />
 {:else}
-    <MembersDesktop />
+    <EventsDesktop />
 {/if}

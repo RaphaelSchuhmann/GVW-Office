@@ -1,4 +1,4 @@
-import { addToast } from "../stores/toasts";
+import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
 
 export function handleGlobalApiError(result) {

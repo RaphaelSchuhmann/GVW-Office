@@ -1,6 +1,6 @@
 <script>
     import { onMount } from "svelte";
-    import { ensureUserData } from "../services/userService";
+    import { ensureUserData } from "../services/userService.svelte";
 
     import ToastStack from "../components/ToastStack.svelte";
     import DesktopSidebar from "../components/DesktopSidebar.svelte";
@@ -8,8 +8,7 @@
     import SettingsModal from "../components/SettingsModal.svelte";
     import { push } from "svelte-spa-router";
     import Button from "../components/Button.svelte";
-    import { get } from "svelte/store";
-    import { eventsStore } from "../stores/events";
+    import { eventsStore } from "../stores/events.svelte";
     import { modeMap, ordinalMap, statusMap, typeMap, updateEvent, weekDayMap } from "../services/events";
     import Input from "../components/Input.svelte";
     import TabBar from "../components/TabBar.svelte";
@@ -64,7 +63,6 @@
         await updateEvent(event);
 
         await push("/events");
-        return;
     }
 
     let selectedType;
@@ -109,8 +107,7 @@
         let eventId = params.get("id");
 
         if (eventId) {
-            let events = get(eventsStore);
-            event = events.raw.find(item => item.id === eventId);
+            event = eventsStore.raw.find(item => item.id === eventId);
         } else {
             await push("/events");
         }

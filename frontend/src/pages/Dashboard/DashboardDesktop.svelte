@@ -1,7 +1,7 @@
 <script>
-    import { user } from "../../stores/user";
-    import { appSettings } from "../../stores/appSettings";
-    import { tryUpdateMaxMembers } from "../../services/appSettingsService";
+    import { user } from "../../stores/user.svelte";
+    import { appSettings } from "../../stores/appSettings.svelte.js";
+    import { tryUpdateMaxMembers } from "../../services/appSettingsService.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
@@ -90,7 +90,7 @@
         let updatedMaxMembers = Number(maxMembers);
 
         if (isNaN(updatedMaxMembers) || maxMembers.length === 0 || updatedMaxMembers < 1) {
-            updatedMaxMembers = $appSettings.maxMembers;
+            updatedMaxMembers = appSettings.maxMembers;
         }
 
         await tryUpdateMaxMembers(updatedMaxMembers);
@@ -106,7 +106,7 @@
 <SettingsModal bind:this={settingsModal}></SettingsModal>
 <Modal bind:this={voiceDistributionSettingsModal} title="Stimmenverteilung Einstellungen"
        subTitle="Einstellungen für die Stimmverteilung"
-       extraFunctionOnClose={false} extraFunction={() => maxMembers = String($appSettings.maxMembers)}>
+       extraFunctionOnClose={false} extraFunction={() => maxMembers = String(appSettings.maxMembers)}>
     <Input title="Maximale Anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers} />
     <div class="w-full flex items-center justify-end mt-5 gap-2">
         <Button type="secondary" onclick={voiceDistributionSettingsModal.hideModal}>Abbrechen</Button>
@@ -182,12 +182,12 @@
                         </p>
                     </div>
                     <div class="w-full min-h-0 overflow-x-hidden overflow-y-auto flex flex-col items-center pr-2">
-                        <VoiceDistribution voice="1. Tenor" voiceMembers={4} totalMembers={$appSettings.maxMembers} />
-                        <VoiceDistribution voice="2. Tenor" voiceMembers={5} totalMembers={$appSettings.maxMembers} />
-                        <VoiceDistribution voice="1. Bass" voiceMembers={5} totalMembers={$appSettings.maxMembers} />
-                        <VoiceDistribution voice="2. Bass" voiceMembers={4} totalMembers={$appSettings.maxMembers} />
+                        <VoiceDistribution voice="1. Tenor" voiceMembers={4} totalMembers={appSettings.maxMembers} />
+                        <VoiceDistribution voice="2. Tenor" voiceMembers={5} totalMembers={appSettings.maxMembers} />
+                        <VoiceDistribution voice="1. Bass" voiceMembers={5} totalMembers={appSettings.maxMembers} />
+                        <VoiceDistribution voice="2. Bass" voiceMembers={4} totalMembers={appSettings.maxMembers} />
                     </div>
-                    {#if $user.role === "vorstand" || $user.role === "admin"}
+                    {#if user.role === "vorstand" || user.role === "admin"}
                         <div class="w-full flex items-center justify-end pr-2 mt-5">
                             <button
                                 class="cursor-pointer flex items-center justify-center rounded-2 p-2 hover:bg-gv-hover-effect"

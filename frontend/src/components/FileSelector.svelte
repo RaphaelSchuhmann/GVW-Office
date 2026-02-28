@@ -1,6 +1,6 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { addToast } from "../stores/toasts";
+    import { addToast } from "../stores/toasts.svelte";
 
     let {
         title = "",

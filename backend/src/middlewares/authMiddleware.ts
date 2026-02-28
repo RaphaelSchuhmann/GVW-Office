@@ -12,7 +12,7 @@ interface JwtPayload {
 
 /**
  * Express middleware that validates the Authorization header bearer token,
- * verifies it and attaches the `user` id to `req.user`.
+ * verifies it and attaches the `userSvelte` id to `req.userSvelte`.
  *
  * If the token is missing or invalid the middleware responds with `401`.
  */
@@ -25,14 +25,14 @@ async function authMiddleware(req: Request, resp: Response, next: NextFunction) 
 
     if (await checkForPasswordReset(payload.userId)) return resp.status(401).json({ errorMessage: "ResetPassword" });
 
-    // Attach the authenticated user id to the request for downstream handlers
+    // Attach the authenticated userSvelte id to the request for downstream handlers
     req.user = payload.userId;
     next();
 }
 
 /**
- * Checks if a user needs to reset their password
- * @param userId - The user ID to check
+ * Checks if a userSvelte needs to reset their password
+ * @param userId - The userSvelte ID to check
  * @returns Promise resolving to true if password reset is required, false otherwise
  */
 async function checkForPasswordReset(userId: string) {

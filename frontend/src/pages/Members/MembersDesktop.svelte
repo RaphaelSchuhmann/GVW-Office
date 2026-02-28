@@ -1,11 +1,10 @@
 <script>
     import { push } from "svelte-spa-router";
-    import { get } from "svelte/store";
-    import { membersStore } from "../../stores/members";
-    import { newMember, roleMap, voiceMap, statusMap, switchMemberStatus } from "../../services/membersService";
-    import { addToast } from "../../stores/toasts";
+    import { membersStore } from "../../stores/members.svelte";
+    import { newMember, roleMap, voiceMap, statusMap, switchMemberStatus } from "../../services/membersService.svelte";
+    import { addToast } from "../../stores/toasts.svelte";
     import { viewport } from "../../stores/viewport.svelte";
-    import { fetchAndSetRaw } from "../../services/filterService";
+    import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { createContextMenu } from "../../lib/contextMenu.svelte.js";
 
     import ToastStack from "../../components/ToastStack.svelte";
@@ -171,7 +170,7 @@
      */
     async function startDeleteMember() {
         menu.data.open = false;
-        const membersRaw = get(membersStore).raw;
+        const membersRaw = membersStore.raw;
         const member = membersRaw.find(item => item.id === menu.data.activeId);
 
         if (!member) {
@@ -318,7 +317,7 @@
 
         <Card padding="0" marginTop="5" borderThickness={viewport.width > 1300 ? "2" : "1"}>
             <div class="flex-1 min-h-0 overflow-y-auto w-full">
-                {#if $membersStore.display.length !== 0}
+                {#if membersStore.display.length !== 0}
                     {#if viewport.width > 1300}
                         <table class="w-full text-left border-gv-border">
                             <thead
@@ -351,7 +350,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {#each $membersStore.display as member}
+                            {#each membersStore.display as member}
                                 <tr class="border-t-2 border-gv-border"
                                     oncontextmenu={(e) => menu.openFromEvent(e, member.id)}>
                                     <td class="px-6 py-4">
@@ -398,9 +397,9 @@
                             </tbody>
                         </table>
                     {:else}
-                        {#each $membersStore.display as member}
+                        {#each membersStore.display as member}
                             <button
-                                class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`}
+                                class={`flex items-center w-full ${membersStore.display.indexOf(member) !== membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`}
                                 onclick={async () =>  await push(`/members/details?id=${member.id}&editing=false`)}>
                                 <div class="flex flex-col items-start justify-between mr-auto max-w-3/4">
                                     <p class="text-gv-dark-text text-dt-7">{`${member.name} ${member.surname}`}</p>

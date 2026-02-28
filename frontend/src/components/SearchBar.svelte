@@ -1,5 +1,5 @@
 <script>
-    import { filterRegistry } from "../lib/filterRegistry";
+    import { filterRegistrySvelte } from "../lib/filterRegistry.svelte";
     import { marginMap } from "../lib/dynamicStyles";
 
     let {
@@ -18,7 +18,7 @@
     $effect(() => () => clearTimeout(debounce));
 
     // Get filter logic from registry based on the "page" key
-    const entry = filterRegistry[page];
+    const entry = filterRegistrySvelte[page];
     if (!entry) {
         console.warn(`Unknown SearchBar page key: ${page}`);
     }
@@ -35,7 +35,7 @@
         const value = event.target.value;
         clearTimeout(debounce);
         debounce = setTimeout(() => {
-            filterState?.update(u => ({ ...u, search: value }));
+            Object.assign(filterState, { search: value });
         }, 250);
     }
 

@@ -1,29 +1,21 @@
-import { filterRegistry } from "../lib/filterRegistry";
-import { get } from "svelte/store";
+import { filterRegistrySvelte } from "../lib/filterRegistry.svelte";
 import Fuse from "fuse.js";
-import { normalizeResponse } from "../api/http";
-import { handleGlobalApiError } from "../api/globalErrorHandler";
+import { normalizeResponse } from "../api/http.svelte";
+import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 
-let currentPageKey = "";
+let isFetching = $state(false);
+let currentPageKey = $state("");
+let entry = $state(null);
 
-let currentFilterStateUnsubscribe = null;
-let currentDataStoreUnsubscribe = null;
-
-let lastRaw = null;
-
-let isFetching = false;
 let fetchIntervalId = null;
-
-let entry = null;
+let cleanupEffect = null;
 
 /**
  * Initializes page-specific data handling and filter wiring.
  *
  * Responsibilities:
  * - Prevents re-initialization if the same page is already active
- * - Unsubscribes previous filter and data store subscriptions
  * - Clears any active periodic fetch interval
- * - Registers new subscriptions for filter state and raw data changes
  * - Performs an initial data fetch
  * - Starts periodic background fetching (every 20 seconds)
  *
@@ -32,38 +24,26 @@ let entry = null;
 export async function init(pageKey) {
     if (currentPageKey === pageKey) return;
 
-    // Unsub previous filter state
-    if (currentFilterStateUnsubscribe) {
-        currentFilterStateUnsubscribe();
-        currentFilterStateUnsubscribe = null;
-    }
-
-    // Unsub previous store
-    if (currentDataStoreUnsubscribe) {
-        currentDataStoreUnsubscribe();
-        currentDataStoreUnsubscribe = null;
-    }
-
     // Reset periodic fetching
-    if (fetchIntervalId) {
-        clearInterval(fetchIntervalId);
-        fetchIntervalId = null;
-    }
+    if (fetchIntervalId) clearInterval(fetchIntervalId);
 
     currentPageKey = pageKey;
+    entry = filterRegistrySvelte[pageKey];
 
-    entry = filterRegistry[pageKey];
+    cleanupEffect = $effect.root(() => {
+        $effect(() => {
+            const _ = [
+                entry?.store.raw,
+                entry?.filterState.search,
+                entry?.filterState.dropdown,
+                entry?.filterState.tab
+            ];
 
-    currentFilterStateUnsubscribe = entry.filterState.subscribe(() => {
-        processFilters();
+            processFilters();
+        });
     });
 
-    currentDataStoreUnsubscribe = entry.store.subscribe((store) => {
-        if (store.raw === lastRaw) return; // Only update data when raw got updated
-        lastRaw = store.raw;
-        processFilters();
-    });
-
+    // Initial fetch
     await fetchAndSetRaw();
 
     fetchIntervalId = setInterval(() => {
@@ -86,9 +66,11 @@ export async function init(pageKey) {
  *
  * Ensures the `display` array is always a shallow copy to maintain reactivity.
  */
-function processFilters() {
-    let working = get(entry.store).raw ?? [];
-    const filterState = get(entry.filterState);
+export function processFilters() {
+    if (!entry) return;
+
+    let working = entry.store.raw ?? [];
+    const filterState = entry.filterState;
 
     if (filterState.dropdown !== "" && filterState.dropdown !== "all") {
         working = working.filter(item => item.type === filterState.dropdown);
@@ -98,12 +80,12 @@ function processFilters() {
         working = working.filter(item => item.status === filterState.tab);
     }
 
-    if (filterState.search !== "" && working.length > 0 && entry.fuse.keys.every(key => key in working[0])) {
+    if (filterState.search !== "" && working.length > 0) {
         const fuse = new Fuse(working, entry.fuse);
         working = fuse.search(filterState.search).map(res => res.item);
     }
 
-    entry.store.update(store => ({ ...store, display: Array.isArray(working) ? [...working] : [] }));
+    entry.store.display = working;
 }
 
 /**
@@ -120,17 +102,19 @@ function processFilters() {
  * @returns {Promise<void>}
  */
 export async function fetchAndSetRaw() {
-    if (isFetching) return;
+    if (isFetching || !entry) return;
     isFetching = true;
 
-    const { resp, body } = await entry.fetch();
-    const normalizedResponse = normalizeResponse(resp);
-    if (handleGlobalApiError(normalizedResponse)) {
+    try {
+        const { resp, body } = await entry.fetch();
+        const normalizedResponse = normalizeResponse(resp);
+
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        entry.store.raw = body.data;
+
+        processFilters();
+    } finally {
         isFetching = false;
-        return;
     }
-
-    entry.store.update(store => ({ ...store, raw: body.data }));
-
-    isFetching = false;
 }

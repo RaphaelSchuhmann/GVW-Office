@@ -10,7 +10,7 @@ const authRouter = Router();
 
 /**
  * POST /login
- * Authenticate a user by email and password and return a JWT auth token.
+ * Authenticate a user by email and password and return a JWT authSvelte token.
  *
  * Request body:
  * - `{ email: string, password: string }`
@@ -30,7 +30,7 @@ authRouter.post("/login", async (req, resp) => {
             limit: 1
         });
 
-        if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" }); // No user with this email
+        if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" });
 
         const user = users[0];
 
@@ -59,7 +59,7 @@ authRouter.post("/login", async (req, resp) => {
             firstLogin: user.firstLogin
         });
     } catch (error: any) {
-        logger.error({ error }, "auth/login route errorMessage");
+        logger.error({ error }, "authSvelte/login route errorMessage");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -138,7 +138,7 @@ authRouter.post("/dev", async (req, resp) => {
 authRouter.get("/auto", authMiddleware, async (req, resp) => {
     try {
         const userId = req.user;
-        if (!userId) return resp.status(401).json({ errorMessage: "InvalidToken" }); // UserId should not be empty: invalid auth token
+        if (!userId) return resp.status(401).json({ errorMessage: "InvalidToken" }); // UserId should not be empty: invalid authSvelte token
 
         const users = await dbService.find("users", {
             selector: { userId: userId },
@@ -151,7 +151,7 @@ authRouter.get("/auto", authMiddleware, async (req, resp) => {
 
         resp.status(200).json({ email: user.email, changePassword: user.changePassword });
     } catch (err: any) {
-        logger.error({ err }, "auth/auto route errorMessage: ");
+        logger.error({ err }, "authSvelte/auto route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -196,7 +196,7 @@ authRouter.post("/changePW", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        logger.error({ err }, "auth/changePW route errorMessage: ");
+        logger.error({ err }, "authSvelte/changePW route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });

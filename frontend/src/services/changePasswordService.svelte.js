@@ -1,9 +1,9 @@
-import { changePw } from "../api/apiAuth";
+import { changePw } from "../api/apiAuth.svelte";
 
 /**
  * Attempts to change the user's password with the given data.
  * 
- * Sends a POST request to the /auth/changePw endpoint without an Authorization header.
+ * Sends a POST request to the /authSvelte/changePw endpoint without an Authorization header.
  * 
  * @param {string} email - the user's email.
  * @param {string} oldPw - the user's old/current password.

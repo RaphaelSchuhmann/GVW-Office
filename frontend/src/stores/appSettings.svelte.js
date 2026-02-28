@@ -1,10 +1,7 @@
-import { writable } from "svelte/store";
-
 /**
  * Svelte store for application settings
- * @type {import('svelte/store').Writable<{maxMembers: number, scoreCategories: Record<string, string>}>}
  */
-export const appSettings = writable({
+export const appSettings = $state({
     maxMembers: 1,  // Dashboard
     scoreCategories: {
         "": "all",

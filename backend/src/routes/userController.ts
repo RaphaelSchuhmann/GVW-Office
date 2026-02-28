@@ -10,7 +10,7 @@ const userRouter = Router();
 
 /**
  * POST /data
- * Retrieves user data by email address
+ * Retrieves userSvelte data by email address
  * 
  * Request body:
  * - `{ email: string }`
@@ -40,14 +40,14 @@ userRouter.get("/data", async (req, resp) => {
             .json({ email: user.email, role: user.role, name: user.name, address: user.address, phone: user.phone });
 
     } catch (err: any) {
-        logger.error({ err }, "user/data route errorMessage: ");
+        logger.error({ err }, "userSvelte/data route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
 
 /**
  * POST /update
- * Updates user and associated member data
+ * Updates userSvelte and associated member data
  * 
  * Request body:
  * - `{ originalEmail: string, email: string, phone: string, address: string }`
@@ -80,7 +80,7 @@ userRouter.post("/update", async (req, resp) => {
         const member = members[0];
         if (!member) return resp.status(404).json({ errorMessage: "MemberNotFound" });
 
-        // Update user
+        // Update userSvelte
         await dbService.update("users", { ...user, email: email, phone: phone, address: address });
 
         // Update member
@@ -88,15 +88,15 @@ userRouter.post("/update", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        logger.error({ err }, "user/update route errorMessage: ");
+        logger.error({ err }, "userSvelte/update route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
 
 /**
  * POST /reset/password
- * Generate and assign a temporary password for the user identified by memberId.
- * Sends the new password via email to the user.
+ * Generate and assign a temporary password for the userSvelte identified by memberId.
+ * Sends the new password via email to the userSvelte.
  *
  * Request body:
  * - `{ memberId: string }`
@@ -134,7 +134,7 @@ userRouter.post("/reset/password", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        logger.error({ err }, "auth/tempPassword route errorMessage: ");
+        logger.error({ err }, "authSvelte/tempPassword route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });

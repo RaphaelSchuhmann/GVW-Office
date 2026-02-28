@@ -91,9 +91,9 @@ class DBService {
      * @example
      * ```typescript
      * const response = await dbService.create("users", {
-     *   email: "user@example.com",
+     *   email: "userSvelte@example.com",
      *   name: "John Doe",
-     *   role: "user"
+     *   role: "userSvelte"
      * });
      * console.log(response.id); // Generated document ID
      * ```
@@ -120,9 +120,9 @@ class DBService {
      * @throws {Error} If the database operation fails (except for 404 errors)
      * @example
      * ```typescript
-     * const user = await dbService.read("users", "user-123");
-     * if (user) {
-     *   console.log(user.name);
+     * const userSvelte = await dbService.read("users", "userSvelte-123");
+     * if (userSvelte) {
+     *   console.log(userSvelte.name);
      * } else {
      *   console.log("User not found");
      * }
@@ -149,10 +149,10 @@ class DBService {
      * @throws {Error} If `_id` or `_rev` are missing, or if the database operation fails
      * @example
      * ```typescript
-     * const user = await dbService.read("users", "user-123");
-     * if (user) {
-     *   user.name = "Updated Name";
-     *   const response = await dbService.update("users", user);
+     * const userSvelte = await dbService.read("users", "userSvelte-123");
+     * if (userSvelte) {
+     *   userSvelte.name = "Updated Name";
+     *   const response = await dbService.update("users", userSvelte);
      *   console.log(response.rev); // New revision
      * }
      * ```
@@ -184,9 +184,9 @@ class DBService {
      * @throws {Error} If the document doesn't exist or revision conflicts
      * @example
      * ```typescript
-     * const user = await dbService.read("users", "user-123");
-     * if (user) {
-     *   await dbService.delete("users", user._id, user._rev);
+     * const userSvelte = await dbService.read("users", "userSvelte-123");
+     * if (userSvelte) {
+     *   await dbService.delete("users", userSvelte._id, userSvelte._rev);
      *   console.log("User deleted");
      * }
      * ```
@@ -216,7 +216,7 @@ class DBService {
      * ```typescript
      * const allUsers = await dbService.list("users");
      * console.log(`Found ${allUsers.length} users`);
-     * allUsers.forEach(user => console.log(user.name));
+     * allUsers.forEach(userSvelte => console.log(userSvelte.name));
      * ```
      */
     async list(dbName: string): Promise<DocumentData[]> {

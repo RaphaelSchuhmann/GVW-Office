@@ -1,4 +1,4 @@
-import { httpGet, httpPost, parseBodySafe } from "./http";
+import { httpGet, httpPost, parseBodySafe } from "./http.svelte";
 
 // @ts-ignore
 const apiUrl = __API_URL__;
@@ -6,7 +6,7 @@ const apiUrl = __API_URL__;
 /**
  * Authenticates a user using email and password credentials.
  *
- * Sends a POST request to the `/auth/login` endpoint without an
+ * Sends a POST request to the `/authSvelte/login` endpoint without an
  * Authorization header.
  *
  * @param {string} email - The user's email address.
@@ -17,7 +17,7 @@ const apiUrl = __API_URL__;
  * if the request fails before a response is received.
  *
  * The response body may include authentication-related data such as
- * an auth token and password-change flags.
+ * an authSvelte token and password-change flags.
  *
  * @example
  * const { resp, body } = await login("user@example.com", "password123");
@@ -35,7 +35,7 @@ export async function login(email, password) {
 /**
  * Changes a user's password.
  *
- * Sends a POST request to the `/auth/changePw` endpoint without an
+ * Sends a POST request to the `/authSvelte/changePw` endpoint without an
  * Authorization header.
  *
  * @param {Object} data - Password change payload.
@@ -68,7 +68,7 @@ export async function changePw(data) {
 /**
  * Attempts to authenticate a user using an existing authentication token.
  *
- * Sends a GET request to the `/auth/auto` endpoint with the token
+ * Sends a GET request to the `/authSvelte/auto` endpoint with the token
  * provided as an Authorization header.
  *
  * @param {string} token - A previously issued authentication token.

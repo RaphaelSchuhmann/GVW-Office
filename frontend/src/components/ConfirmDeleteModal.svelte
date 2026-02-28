@@ -2,11 +2,11 @@
     import Modal from "./Modal.svelte";
     import Button from "./Button.svelte";
     import Input from "./Input.svelte";
-    import { removeMember } from "../services/membersService";
+    import { removeMember } from "../services/membersService.svelte";
     import { deleteEvent } from "../services/events";
     import { deleteScore } from "../services/library";
-    import { addToast } from "../stores/toasts";
-    import { logout } from "../services/userService";
+    import { addToast } from "../stores/toasts.svelte";
+    import { logout } from "../services/userService.svelte";
     import { push } from "svelte-spa-router";
 
     const actionMap = {

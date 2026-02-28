@@ -1,9 +1,9 @@
 <script>
     import { push } from "svelte-spa-router";
-    import { membersStore } from "../../stores/members";
-    import { newMember, roleMap, voiceMap, statusMap } from "../../services/membersService";
+    import { membersStore } from "../../stores/members.svelte";
+    import { newMember, roleMap, voiceMap, statusMap } from "../../services/membersService.svelte";
     import { viewport } from "../../stores/viewport.svelte";
-    import { fetchAndSetRaw } from "../../services/filterService";
+    import { fetchAndSetRaw } from "../../services/filterService.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -18,7 +18,7 @@
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import YearDatepicker from "../../components/YearDatepicker.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
-    import { addToast } from "../../stores/toasts";
+    import { addToast } from "../../stores/toasts.svelte";
 
     // ==================
     // MODAL REFERENCES
@@ -213,10 +213,10 @@
 
         <Card padding="0" marginTop="5" borderThickness={viewport.width > 1300 ? "2" : "1"}>
             <div class="flex-1 min-h-0 overflow-y-auto w-full">
-                {#if $membersStore.display.length !== 0}
-                    {#each $membersStore.display as member}
+                {#if membersStore.display.length !== 0}
+                    {#each membersStore.display as member}
                         <button
-                            class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`}
+                            class={`flex items-center w-full ${membersStore.display.indexOf(member) !== membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`}
                             onclick={async () =>  await push(`/members/details?id=${member.id}&editing=false`)}>
                             <div class="flex flex-col items-start justify-between mr-auto max-w-3/4">
                                 <p class="text-gv-dark-text text-dt-7">{`${member.name} ${member.surname}`}</p>

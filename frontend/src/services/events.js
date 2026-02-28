@@ -1,7 +1,7 @@
 import { get } from "svelte/store";
-import { auth } from "../stores/auth";
-import { addToast } from "../stores/toasts";
-import { logout } from "./userService";
+import { auth } from "../stores/auth.svelte.js";
+import { addToast } from "../stores/toasts.svelte";
+import { logout } from "./userService.svelte";
 import { push } from "svelte-spa-router";
 
 export const typeMap = {
@@ -135,7 +135,6 @@ export async function updateEvent(event) {
         });
         logout();
         await push("/?cpwErr=false");
-        return;
     } else if (resp.status === 400) {
         // user not found route back to log in
         addToast({
@@ -150,7 +149,6 @@ export async function updateEvent(event) {
             type: "error"
         });
         await push("/events");
-        return;
     } else {
         // internal server error / unknown error
         addToast({

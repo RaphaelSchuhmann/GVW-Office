@@ -36,7 +36,7 @@ membersRouter.get("/all", async (_, resp) => {
 
 /**
  * POST /add
- * Creates a new member and associated user account with temporary password
+ * Creates a new member and associated userSvelte account with temporary password
  * Sends welcome email with temporary password to the new member
  * 
  * Request body:
@@ -59,7 +59,7 @@ membersRouter.post("/add", async (req, resp) => {
         if (!validInputs(name, surname, email, phone, address, voice, status, role, birthdate, joined))
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
 
-        // Check if there is already a user with the given email
+        // Check if there is already a userSvelte with the given email
         const users = await dbService.find("users", { selector: { email: email }, limit: 1 });
         if (users.length > 0) return resp.status(409).json({ errorMessage: "EmailAlreadyInUse" });
 
@@ -82,7 +82,7 @@ membersRouter.post("/add", async (req, resp) => {
         memberId = member.id;
         memberRev = member.rev;
 
-        // Add actual user account
+        // Add actual userSvelte account
         await dbService.create("users", {
             email: email,
             name: `${name} ${surname}`,
@@ -122,7 +122,7 @@ membersRouter.post("/add", async (req, resp) => {
 
 /**
  * POST /delete
- * Deletes a member and their associated user account
+ * Deletes a member and their associated userSvelte account
  * 
  * Request body:
  * - `{ id: string }`
@@ -130,7 +130,7 @@ membersRouter.post("/add", async (req, resp) => {
  * Responses:
  * - `200`: Member deleted successfully
  * - `400`: Invalid input data
- * - `404`: Member or user not found
+ * - `404`: Member or userSvelte not found
  * - `500`: Internal server error
  */
 membersRouter.post("/delete", async (req, resp) => {
@@ -159,7 +159,7 @@ membersRouter.post("/delete", async (req, resp) => {
 
 /**
  * POST /update
- * Updates member and associated user account information
+ * Updates member and associated userSvelte account information
  * 
  * Request body:
  * - `{ id, name, surname, email, phone, address, voice, status, role, birthdate, joined }`
@@ -167,7 +167,7 @@ membersRouter.post("/delete", async (req, resp) => {
  * Responses:
  * - `200`: Member updated successfully
  * - `400`: Invalid input data
- * - `404`: Member or user not found
+ * - `404`: Member or userSvelte not found
  * - `500`: Internal server error
  */
 membersRouter.post("/update", async (req, resp) => {

@@ -1,7 +1,7 @@
 <script>
     import Dropdown from "./Dropdown.svelte";
-    import { filterRegistry } from "../lib/filterRegistry";
-    import { addToast } from "../stores/toasts";
+    import { filterRegistrySvelte } from "../lib/filterRegistry.svelte";
+    import { addToast } from "../stores/toasts.svelte";
 
     let {
         options = [],
@@ -14,7 +14,7 @@
     const validPages = ["events", "reports", "library"];
     const activePage = $derived(validPages.includes(page) ? page : "none");
 
-    let regEntry = $state(filterRegistry[activePage] || {
+    let regEntry = $state(filterRegistrySvelte[activePage] || {
         optionMap: {},
         config: { dropdown: { options: null, customDefault: null } },
         filterState: { update: () => {} }
@@ -37,8 +37,8 @@
      * Updates the local regEntry from the global registry
      */
     function updateConfig() {
-        if (filterRegistry[activePage]) {
-            regEntry = filterRegistry[activePage];
+        if (filterRegistrySvelte[activePage]) {
+            regEntry = filterRegistrySvelte[activePage];
         }
     }
 
@@ -48,7 +48,7 @@
     function filter(selected) {
         const rawSelected = $state.snapshot(selected);
 
-        const { optionMap, filterState } = $state.snapshot(regEntry);
+        const { optionMap, filterState } = regEntry;
 
         if (!(rawSelected in optionMap)) {
             console.warn(`Mapping failed for: ${rawSelected}`);
@@ -61,7 +61,7 @@
         }
 
         const filterFor = optionMap[rawSelected];
-        filterState.update(store => ({ ...store, dropdown: filterFor }));
+        Object.assign(filterState, { dropdown: filterFor });
     }
 
     $effect(() => {
