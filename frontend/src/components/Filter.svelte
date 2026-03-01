@@ -1,6 +1,6 @@
 <script>
     import Dropdown from "./Dropdown.svelte";
-    import { filterRegistrySvelte } from "../lib/filterRegistry.svelte";
+    import { filterRegistry } from "../lib/filterRegistry.svelte";
     import { addToast } from "../stores/toasts.svelte";
 
     let {
@@ -14,7 +14,7 @@
     const validPages = ["events", "reports", "library"];
     const activePage = $derived(validPages.includes(page) ? page : "none");
 
-    let regEntry = $state(filterRegistrySvelte[activePage] || {
+    let regEntry = $state(filterRegistry[activePage] || {
         optionMap: {},
         config: { dropdown: { options: null, customDefault: null } },
         filterState: { update: () => {} }
@@ -33,12 +33,14 @@
         return "Alle Typen";
     });
 
+    let isInitialized = $state(false);
+
     /**
      * Updates the local regEntry from the global registry
      */
     function updateConfig() {
-        if (filterRegistrySvelte[activePage]) {
-            regEntry = filterRegistrySvelte[activePage];
+        if (filterRegistry[activePage]) {
+            regEntry = filterRegistry[activePage];
         }
     }
 
@@ -65,10 +67,14 @@
     }
 
     $effect(() => {
-        filter(usedDefault);
+        if (!isInitialized) {
+            filter(usedDefault);
+            isInitialized = true;
+        }
+    });
 
+    $effect(() => {
         const intervalId = setInterval(updateConfig, 5000);
-
         return () => clearInterval(intervalId);
     });
 </script>

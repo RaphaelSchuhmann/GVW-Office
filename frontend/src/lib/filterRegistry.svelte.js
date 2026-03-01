@@ -11,7 +11,7 @@ import { appSettings } from "../stores/appSettings.svelte";
  * Filter registry containing both filter and search configurations
  * @type {Object<string, Object>}
  */
-export const filterRegistrySvelte = {
+export const filterRegistry = {
     members: {
         fetch: apiGetMembers,
         store: membersStore,

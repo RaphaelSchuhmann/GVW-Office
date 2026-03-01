@@ -1,4 +1,4 @@
-import { filterRegistrySvelte } from "../lib/filterRegistry.svelte";
+import { filterRegistry } from "../lib/filterRegistry.svelte";
 import Fuse from "fuse.js";
 import { normalizeResponse } from "../api/http.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
@@ -28,7 +28,7 @@ export async function init(pageKey) {
     if (fetchIntervalId) clearInterval(fetchIntervalId);
 
     currentPageKey = pageKey;
-    entry = filterRegistrySvelte[pageKey];
+    entry = filterRegistry[pageKey];
 
     cleanupEffect = $effect.root(() => {
         $effect(() => {
