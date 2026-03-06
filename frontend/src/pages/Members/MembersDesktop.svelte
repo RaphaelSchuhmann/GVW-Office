@@ -211,6 +211,8 @@
         await switchMemberStatus(menu.data.activeId);
 
         menu.data.open = false;
+        menu.data.activeId = null;
+
         await fetchAndSetRaw();
     }
 

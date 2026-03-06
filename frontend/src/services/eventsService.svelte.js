@@ -3,6 +3,8 @@ import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
+import { eventsStore } from "../stores/events.svelte";
+import { getLastDayOfCurrentMonth, makeDateFromMonthAndDay, parseDMYToDate } from "./utils";
 
 export const typeMap = {
     "all": "Alle Typen",
@@ -58,6 +60,38 @@ const isFetching = {
     updateStatus: false,
     deleteEvent: false
 };
+
+export function getEventOccurrence(eventId) {
+    const event = eventsStore.display.filter(item => item.id === eventId)[0];
+
+    if (!event) return "Unbekannt";
+
+    if (event.mode === "weekly") {
+        const date = parseDMYToDate(event.date);
+        return `Jede Woche am ${weekDayMap[date.getDay()]}`;
+    }
+
+    if (event.recurrence) {
+        if (event.mode === "monthly" && event.recurrence.monthlyKind === "weekday") {
+            return `Jeden Monat am ${ordinalMap[event.recurrence.ordinal]} ${weekDayMap[event.recurrence.weekDay]}`;
+        } else if (event.mode === "monthly" && event.recurrence.monthlyKind === "date") {
+            let dateVal = event.recurrence.dayOfMonth;
+            const lastDate = getLastDayOfCurrentMonth();
+
+            if (dateVal > lastDate) dateVal = lastDate;
+
+            const today = new Date();
+            if (dateVal < today.getDate()) {
+                const month = (today.getMonth() + 1) > 11 ? 0 : today.getMonth() + 1;
+                return makeDateFromMonthAndDay(dateVal, month);
+            } else {
+                return makeDateFromMonthAndDay(dateVal, today.getMonth());
+            }
+        }
+    }
+
+    return event.date;
+}
 
 /**
  * Updates the status of a given event ID.

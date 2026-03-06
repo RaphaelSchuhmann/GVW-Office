@@ -1,14 +1,8 @@
 <script>
     import { user } from "../../stores/user.svelte";
     import { eventsStore } from "../../stores/events.svelte";
-    import { modeMap, statusMap, typeMap, updateStatus } from "../../services/eventsService.svelte";
-    import {
-        getLastDayOfCurrentMonth,
-        getOrdinalFromDMY,
-        getWeekDayFromDMYMondayFirst,
-        makeDateFromMonthAndDay,
-        parseDMYToDate
-    } from "../../services/utils";
+    import { modeMap, statusMap, typeMap, updateStatus, getEventOccurrence } from "../../services/eventsService.svelte";
+    import { getOrdinalFromDMY, getWeekDayFromDMYMondayFirst, } from "../../services/utils";
     import { addEvent, ordinalMap, weekDayMap } from "../../services/events";
 
     import ToastStack from "../../components/ToastStack.svelte";
@@ -52,7 +46,6 @@
     let isMonthlyDateChecked = $state(true);
     let isMonthlyWeekDayChecked = $state(false);
 
-    // DERIVED STATE (Replaces $:)
     const saveDisabled = $derived(!(selectedType && selectedStatus && selectedDate && selectedRecurrence && inputTitle && inputTime && inputLocation));
     const ordinal = $derived(getOrdinalFromDMY(selectedDate));
     const weekDay = $derived(getWeekDayFromDMYMondayFirst(selectedDate));
@@ -111,53 +104,38 @@
         confirmDeleteEventModal.startDelete();
     }
 
-    function getWhenValue(eventId) {
-         // Using reactive store reference
-        const eventArray = eventsStore.display.filter(item => item.id === eventId);
-
-        if (eventArray.length > 0) {
-            const event = eventArray[0];
-
-            if (event.mode === "weekly") {
-                const date = parseDMYToDate(event.date);
-                return `Jede Woche am ${weekDayMap[date.getDay()]}`;
-            }
-
-            if (event.recurrence) {
-                if (event.mode === "monthly" && event.recurrence.monthlyKind === "weekday") {
-                    const ord = ordinalMap[event.recurrence.ordinal];
-                    const wd = weekDayMap[event.recurrence.weekDay];
-                    return `Jeden Monat am ${ord} ${wd}`;
-                } else if (event.mode === "monthly" && event.recurrence.monthlyKind === "date") {
-                    let dateVal = event.recurrence.dayOfMonth;
-                    const lastDate = getLastDayOfCurrentMonth();
-
-                    if (dateVal > lastDate) dateVal = lastDate;
-
-                    const today = new Date();
-                    if (dateVal < today.getDate()) {
-                        const month = (today.getMonth() + 1) > 11 ? 0 : today.getMonth() + 1;
-                        return makeDateFromMonthAndDay(dateVal, month);
-                    } else {
-                        return makeDateFromMonthAndDay(dateVal, today.getMonth());
-                    }
-                }
-            }
-            return event.date;
-        }
-        return "Unbekannt";
-    }
-
+    // ------------------
+    // CONTEXT MENU STATE
+    // ------------------
+    /**
+     * Reactive context menu instance for member actions.
+     * Stores open state, position, and currently active member ID.
+     */
     let menu = createContextMenu();
 
+    /**
+     * Toggles the status of the currently selected member.
+     *
+     * If no active member is selected, the function exits early.
+     * After updating, the member list is refreshed.
+     *
+     * @async
+     * @returns {Promise<void>}
+     */
     async function handleSwitchStatus() {
         if (!menu.data.activeId) return;
+
         await updateStatus(menu.data.activeId);
+
         menu.data.open = false;
         menu.data.activeId = null;
+
         await fetchAndSetRaw();
     }
 
+    /**
+     * Opens the global settings modal.
+     */
     function settingsClick() {
         settingsModal.showModal();
     }
@@ -254,7 +232,8 @@
         <div class="flex items-center mt-10 max-w-1/5">
             <Filter options={["Alle Typen", "Proben", "Meeting", "Konzerte", "Sonstiges"]} page="events" />
         </div>
-        <FilterTabBar contents={["Bevorstehend", "Abgeschlossen"]} selected="Bevorstehend" marginTop="5" page="events" />
+        <FilterTabBar contents={["Bevorstehend", "Abgeschlossen"]} selected="Bevorstehend" marginTop="5"
+                      page="events" />
         <div class="flex-1 min-h-0 overflow-y-auto mt-5">
             <div class="grid grid-cols-2 gap-4 overflow-y-auto overflow-x-hidden">
                 {#each eventsStore.display as event}
@@ -269,7 +248,7 @@
                             <div class="flex items-stretch gap-2">
                                 <span
                                     class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">calendar_today</span>
-                                <p class="text-dt-6 text-gv-light-text">{getWhenValue(event.id)}</p>
+                                <p class="text-dt-6 text-gv-light-text">{getEventOccurrence(event.id)}</p>
                             </div>
                             <div class="flex items-stretch gap-2">
                                 <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">schedule</span>
