@@ -11,7 +11,7 @@
         ...restProps
     } = $props();
 
-    const validPages = ["events", "library"];
+    const validPages = ["events"];
     const activePage = $derived(validPages.includes(page) ? page : "none");
 
     const regEntry = $derived(filterRegistry[activePage] || {

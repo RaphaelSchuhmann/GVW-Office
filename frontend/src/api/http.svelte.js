@@ -19,7 +19,7 @@ export function normalizeResponse(response) {
     if (response.status === 400) return { ok: false, errorType: "BADREQUEST", status: 400 };
     if (response.status === 401) return { ok: false, errorType: "UNAUTHORIZED", status: 401 };
     if (response.status === 404) return { ok: false, errorType: "NOTFOUND", status: 404 };
-    if (response.status === 409) return { ok: false, errorType: "RATELIMITED", status: 409 };
+    if (response.status === 409) return { ok: false, errorType: "CONFLICT", status: 409 };
     if (response.status === 429) return { ok: false, errorType: "REQUESTTIMEOUT", status: 429 };
     if (response.status >= 500) return { ok: false, errorType: "SERVER", status: response.status };
 

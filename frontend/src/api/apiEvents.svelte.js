@@ -54,7 +54,7 @@ export async function apiGetEvents() {
  * }
  */
 export async function apiAddEvent(event) {
-    const resp = await httpPost(`${apiUrl}/events/add`, event);
+    const resp = await httpPost(`${apiUrl}/events/add`, { event: event });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };

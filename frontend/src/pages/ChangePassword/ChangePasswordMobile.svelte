@@ -75,7 +75,7 @@
                 addToast({ title: "Ungültige E-Mail verwendet", type: "error" });
                 await push("/");
             }
-            if (normalizedResponse.errorType === "RATELIMITED") {
+            if (normalizedResponse.errorType === "CONFLICT") {
                 addToast({ title: "Neues Passwort ist identisch", type: "error" });
             }
             return;

@@ -170,8 +170,7 @@
      */
     async function startDeleteMember() {
         menu.data.open = false;
-        const membersRaw = membersStore.raw;
-        const member = membersRaw.find(item => item.id === menu.data.activeId);
+        const member = membersStore.raw.find(item => item.id === menu.data.activeId);
 
         if (!member) {
             addToast({
@@ -183,8 +182,7 @@
         }
 
         memberName = `${member?.name} ${member?.surname}`;
-
-        confirmDeleteMemberModal.startDelete();
+        if (memberName) confirmDeleteMemberModal.startDelete();
     }
 
     // ------------------

@@ -1,4 +1,4 @@
-import { apiUpdateEventStatus } from "../api/apiEvents.svelte";
+import { apiAddEvent, apiDeleteEvent, apiUpdateEventStatus } from "../api/apiEvents.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
@@ -91,6 +91,134 @@ export function getEventOccurrence(eventId) {
     }
 
     return event.date;
+}
+
+/**
+ * Adds a new event using the provided event data.
+ *
+ * Handles:
+ * - Duplicate request prevention.
+ * - API call to add the event.
+ * - Global API error delegation.
+ * - Error-specific and success toast feedback.
+ *
+ * Error cases handled explicitly:
+ * - BADREQUEST
+ * - CONFLICT
+ * - Generic fallback error
+ *
+ * On success, a confirmation toast is displayed.
+ *
+ * @async
+ * @function addEvent
+ * @param {Object} event - The event object to be added.
+ * @returns {Promise<void>}
+ */
+export async function addEvent(event) {
+    if (isFetching.newEvent) return;
+    isFetching.newEvent = true;
+
+    try {
+        const { resp } = await apiAddEvent(event);
+
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "BADREQUEST") {
+                addToast({
+                    title: "Ungültige Daten",
+                    subTitle: !viewport.isMobile ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
+                    type: "error"
+                });
+            } else if (normalizedResponse.errorType === "CONFLICT") {
+                addToast({
+                    title: "Veranstaltung existiert bereits",
+                    subTitle: !viewport.isMobile ? "Die angegebene Veranstaltung existiert bereits. Bitte wählen Sie einen anderen Namen, Zeit oder Ort." : "",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Fehler beim Erstellen",
+                    subTitle: !viewport.isMobile ? "Beim Erstellen der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            }
+            return;
+        }
+
+        addToast({
+            title: "Veranstaltung erstellt",
+            subTitle: !viewport.isMobile ? "Die Veranstaltung wurde erfolgreich erstellt." : "",
+            type: "success"
+        });
+    } finally {
+        isFetching.newEvent = false;
+    }
+}
+
+/**
+ * Deletes an event by its ID.
+ *
+ * Handles:
+ * - Duplicate request prevention.
+ * - API call to delete the event.
+ * - Global API error delegation.
+ * - Error-specific and success toast feedback.
+ *
+ * Error cases handled explicitly:
+ * - NOTFOUND
+ * - BADREQUEST
+ * - Generic fallback error
+ *
+ * On success, a confirmation toast is displayed.
+ *
+ * @async
+ * @function deleteEvent
+ * @param {string} id - Event UUID to delete.
+ * @returns {Promise<void>}
+ */
+export async function deleteEvent(id) {
+    if (isFetching.deleteEvent) return;
+    isFetching.deleteEvent = true;
+
+    try {
+        const { resp } = await apiDeleteEvent(id);
+
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "NOTFOUND") {
+                addToast({
+                    title: "Veranstaltung nicht gefunden",
+                    subTitle: !viewport.isMobile ? "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            } else if (normalizedResponse.errorType === "BADREQUEST") {
+                addToast({
+                    title: "Ungültige Veranstaltung",
+                    subTitle: !viewport.isMobile ? "Die angegebene Veranstaltung ist ungültig. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Fehler beim Löschen",
+                    subTitle: !viewport.isMobile ? "Beim Löschen der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            }
+            return;
+        }
+
+        addToast({
+            title: "Veranstaltung gelöscht",
+            subTitle: !viewport.isMobile ? "Die Veranstaltung wurde erfolgreich gelöscht." : "",
+            type: "success"
+        });
+    } finally {
+        isFetching.deleteEvent = false;
+    }
 }
 
 /**

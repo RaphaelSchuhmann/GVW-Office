@@ -98,7 +98,7 @@
                 });
                 await push("/");
             }
-            if (normalizedResponse.errorType === "RATELIMITED") {
+            if (normalizedResponse.errorType === "CONFLICT") {
                 addToast({
                     title: "Ungültiges Passwort",
                     subTitle: "Das neue Passwort darf nicht mit dem aktuellen übereinstimmen.",
