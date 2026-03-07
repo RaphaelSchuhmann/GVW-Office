@@ -7,7 +7,6 @@
         modeMap,
         statusMap,
         typeMap,
-        updateStatus,
         getEventOccurrence,
         addEvent
     } from "../../services/eventsService.svelte";
@@ -15,14 +14,11 @@
     import { viewport } from "../../stores/viewport.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
-    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import Button from "../../components/Button.svelte";
     import Filter from "../../components/Filter.svelte";
     import FilterTabBar from "../../components/FilterTabBar.svelte";
     import Chip from "../../components/Chip.svelte";
-    import ContextMenu from "../../components/ContextMenu.svelte";
     import Card from "../../components/Card.svelte";
     import Modal from "../../components/Modal.svelte";
     import Input from "../../components/Input.svelte";
@@ -30,11 +26,8 @@
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import TabBar from "../../components/TabBar.svelte";
     import Checkbox from "../../components/Checkbox.svelte";
-    import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
     import { push } from "svelte-spa-router";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
-    import { createContextMenu } from "../../lib/contextMenu.svelte";
-    import { addToast } from "../../stores/toasts.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
 
     // ================
