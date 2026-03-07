@@ -72,11 +72,12 @@
         time: "",
         location: "",
         description: "",
-        recurrenceMode: "Einmalig",
-
-        monthly: {
-            useDate: true,
-            useWeekday: false
+        mode: "single",
+        recurrence: {
+            monthlyKind: "date",
+            dayOfMonth: null,
+            weekDay: null,
+            ordinal: null
         }
     });
 
@@ -84,7 +85,7 @@
         eventInput.type &&
         eventInput.status &&
         eventInput.date &&
-        eventInput.recurrenceMode &&
+        eventInput.mode &&
         eventInput.title &&
         eventInput.time &&
         eventInput.location
@@ -106,37 +107,29 @@
      * @returns {Promise<void>}
      */
     async function submitEvent() {
-        console.log(eventInput);
-
-        const { monthly, ...eventBase } = eventInput;
-
-        let event = {
-            ...eventBase,
-            type: typeMap[eventInput.type],
-            status: statusMap[eventInput.status],
-            mode: modeMap[eventInput.recurrenceMode],
-            description: eventInput.description || "Keine Beschreibung",
-            recurrence: {}
-        };
-
-        if (modeMap[eventInput.recurrenceMode] === "monthly") {
-            if (eventInput.monthly.useDate || (!eventInput.monthly.useWeekday && !eventInput.monthly.useDate)) {
-                const [day] = eventInput.date.split(".").map(Number);
-
-                event.recurrence = {
-                    monthlyKind: "date",
-                    dayOfMonth: day
-                };
-            } else if (eventInput.monthly.useWeekday) {
-                event.recurrence = {
-                    monthlyKind: "weekday",
-                    weekDay: weekDay,
-                    ordinal: ordinal
-                };
+        if (eventInput.mode === "monthly") {
+            if (eventInput.recurrence.monthlyKind === "date") {
+                eventInput.recurrence.dayOfMonth = Number(eventInput.date.split(".")[0]);
+                delete eventInput.recurrence.weekDay;
+                delete eventInput.recurrence.ordinal;
+            } else {
+                eventInput.recurrence.weekDay = weekDay;
+                eventInput.recurrence.ordinal = ordinal;
+                delete eventInput.recurrence.dayOfMonth;
             }
+        } else {
+            eventInput.recurrence = {
+                monthlyKind: null,
+                dayOfMonth: null,
+                weekDay: null,
+                ordinal: null,
+            };
         }
 
-        console.log(event);
+        const event = {
+            ...eventInput,
+            description: eventInput.description || "Keine Beschreibung"
+        };
 
         await addEvent(event);
         await fetchAndSetRaw();
@@ -158,10 +151,12 @@
             time: "",
             location: "",
             description: "",
-            recurrenceMode: "Einmalig",
-            monthly: {
-                useDate: true,
-                useWeekday: false
+            mode: "single",
+            recurrence: {
+                monthlyKind: "date",
+                dayOfMonth: null,
+                weekDay: null,
+                ordinal: null
             }
         };
     }
@@ -185,9 +180,9 @@
     <Input bind:value={eventInput.title} title="Titel" placeholder="Veranstaltung XYZ" marginTop="5" />
 
     <Dropdown title="Typ" options={["Proben", "Meeting", "Konzerte", "Sonstiges"]}
-              onChange={(value) => eventInput.type = value} marginTop="5" />
+              onChange={(value) => eventInput.type = typeMap[value]} marginTop="5" />
     <Dropdown title="Status" options={["Bevorstehend", "Abgeschlossen"]}
-              onChange={(value) => eventInput.status = value} marginTop="5" />
+              onChange={(value) => eventInput.status = statusMap[value]} marginTop="5" />
 
     <Input bind:value={eventInput.location} title="Ort" placeholder="Ort XYZ" marginTop="5" />
 
@@ -201,32 +196,41 @@
     <Input bind:value={eventInput.time} title="Uhrzeit" placeholder="--:--" marginTop="5" />
 
     <div class="h-min mt-5">
-        <TabBar contents={["Einmalig", "Wöchentlich", "Monatlich"]} selected={eventInput.recurrenceMode}
-                onChange={(value) => eventInput.recurrenceMode = value} />
+        <TabBar contents={["Einmalig", "Wöchentlich", "Monatlich"]} selected={modeMap[eventInput.mode]}
+                onChange={(val) => eventInput.mode = modeMap[val]}
+        />
     </div>
 
-    {#if eventInput.recurrenceMode === "Einmalig"}
+    {#if eventInput.mode === "single"}
         <p class="text-gv-dark-text text-dt-6 text-left w-full mt-5">Diese Veranstaltung findet nur einmal statt.</p>
-    {:else if eventInput.recurrenceMode === "Wöchentlich"}
+    {:else if eventInput.mode === "weekly"}
         <p class="text-gv-dark-text text-dt-6 text-left w-full mt-5">Jede Woche am {weekDayMap[weekDay]}</p>
-    {:else if eventInput.recurrenceMode === "Monatlich"}
+    {:else if eventInput.mode === "monthly"}
         <div class="w-full flex flex-col items-start justify-start gap-4 mt-5">
             <Checkbox
                 title="Am gleichen Datum"
-                bind:isChecked={eventInput.monthly.useDate}
-                onChange={() => eventInput.monthly.useWeekday = false}
+                isChecked={eventInput.recurrence.monthlyKind === "date"}
+                onChange={() => {
+                    eventInput.recurrence.monthlyKind = "date";
+                    const [day] = eventInput.date.split(".").map(Number);
+                    eventInput.recurrence.dayOfMonth = day;
+                }}
             />
 
             <Checkbox
                 title="Am gleichen Wochentag"
-                bind:isChecked={eventInput.monthly.useWeekday}
-                onChange={() => eventInput.monthly.useDate = false}
+                isChecked={eventInput.recurrence.monthlyKind === "weekday"}
+                onChange={() => {
+                    eventInput.recurrence.monthlyKind = "weekday";
+                    eventInput.recurrence.weekDay = weekDay;
+                    eventInput.recurrence.ordinal = ordinal;
+                }}
             />
         </div>
 
-        {#if eventInput.monthly.useDate}
+        {#if eventInput.recurrence.monthlyKind === "date"}
             <p class="text-gv-dark-text text-dt-6 text-left mt-5">Jeden Monat am {eventInput.date}.</p>
-        {:else if eventInput.monthly.useWeekday}
+        {:else if eventInput.recurrence.monthlyKind === "weekday"}
             <p class="text-gv-dark-text text-dt-6 text-left mt-5">Jeden Monat
                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
         {:else}
