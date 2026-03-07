@@ -1,4 +1,4 @@
-import { changePw } from "../api/apiAuth";
+import { changePw } from "../api/apiAuth.svelte";
 
 /**
  * Attempts to change the user's password with the given data.

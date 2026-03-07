@@ -1,8 +1,8 @@
 <script>
     import { push } from "svelte-spa-router";
-    import { resetMemberPassword, updateMember } from "../../services/membersService";
+    import { resetMemberPassword, updateMember } from "../../services/membersService.svelte";
     import { viewport } from "../../stores/viewport.svelte";
-    import { roleMap, statusMap, voiceMap } from "../../services/membersService";
+    import { roleMap, statusMap, voiceMap } from "../../services/membersService.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -14,7 +14,7 @@
     import Dropdown from "../../components/Dropdown.svelte";
     import YearDatepicker from "../../components/YearDatepicker.svelte";
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
-    import { fetchAndSetRaw } from "../../services/filterService";
+    import { fetchAndSetRaw } from "../../services/filterService.svelte";
 
     let {
         memberData,
@@ -34,7 +34,6 @@
         draft = JSON.parse(JSON.stringify(memberData));
         isEditing = true;
     }
-
 
     /**
      * Cancels the current editing session.

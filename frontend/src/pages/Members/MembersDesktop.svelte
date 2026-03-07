@@ -1,11 +1,10 @@
 <script>
     import { push } from "svelte-spa-router";
-    import { get } from "svelte/store";
-    import { membersStore } from "../../stores/members";
-    import { newMember, roleMap, voiceMap, statusMap, switchMemberStatus } from "../../services/membersService";
-    import { addToast } from "../../stores/toasts";
+    import { membersStore } from "../../stores/members.svelte";
+    import { newMember, roleMap, voiceMap, statusMap, switchMemberStatus } from "../../services/membersService.svelte";
+    import { addToast } from "../../stores/toasts.svelte";
     import { viewport } from "../../stores/viewport.svelte";
-    import { fetchAndSetRaw } from "../../services/filterService";
+    import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { createContextMenu } from "../../lib/contextMenu.svelte.js";
 
     import ToastStack from "../../components/ToastStack.svelte";
@@ -171,8 +170,7 @@
      */
     async function startDeleteMember() {
         menu.data.open = false;
-        const membersRaw = get(membersStore).raw;
-        const member = membersRaw.find(item => item.id === menu.data.activeId);
+        const member = membersStore.raw.find(item => item.id === menu.data.activeId);
 
         if (!member) {
             addToast({
@@ -184,8 +182,7 @@
         }
 
         memberName = `${member?.name} ${member?.surname}`;
-
-        confirmDeleteMemberModal.startDelete();
+        if (memberName) confirmDeleteMemberModal.startDelete();
     }
 
     // ------------------
@@ -212,6 +209,8 @@
         await switchMemberStatus(menu.data.activeId);
 
         menu.data.open = false;
+        menu.data.activeId = null;
+
         await fetchAndSetRaw();
     }
 
@@ -302,23 +301,17 @@
         </PageHeader>
 
         {#if viewport.width <= 1000}
-            <div class="flex max-[430px]:flex-col w-full items-center justify-start gap-2 mt-4">
-                <Button type="primary" onclick={() => addMemberModal.showModal()}>
-                    <span class="material-symbols-rounded text-icon-dt-5">add</span>
-                    <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
-                </Button>
-                <Button type="primary" onclick={fetchAndSetRaw}>
-                    <span class="material-symbols-rounded text-icon-dt-5">refresh</span>
-                    <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Aktualisieren</p>
-                </Button>
-            </div>
+            <Button type="primary" onclick={() => addMemberModal.showModal()} marginTop="4">
+                <span class="material-symbols-rounded text-icon-dt-5">add</span>
+                <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
+            </Button>
         {/if}
 
         <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" />
 
         <Card padding="0" marginTop="5" borderThickness={viewport.width > 1300 ? "2" : "1"}>
             <div class="flex-1 min-h-0 overflow-y-auto w-full">
-                {#if $membersStore.display.length !== 0}
+                {#if membersStore.display.length !== 0}
                     {#if viewport.width > 1300}
                         <table class="w-full text-left border-gv-border">
                             <thead
@@ -351,7 +344,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {#each $membersStore.display as member}
+                            {#each membersStore.display as member}
                                 <tr class="border-t-2 border-gv-border"
                                     oncontextmenu={(e) => menu.openFromEvent(e, member.id)}>
                                     <td class="px-6 py-4">
@@ -398,9 +391,9 @@
                             </tbody>
                         </table>
                     {:else}
-                        {#each $membersStore.display as member}
+                        {#each membersStore.display as member}
                             <button
-                                class={`flex items-center w-full ${$membersStore.display.indexOf(member) !== $membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`}
+                                class={`flex items-center w-full ${membersStore.display.indexOf(member) !== membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`}
                                 onclick={async () =>  await push(`/members/details?id=${member.id}&editing=false`)}>
                                 <div class="flex flex-col items-start justify-between mr-auto max-w-3/4">
                                     <p class="text-gv-dark-text text-dt-7">{`${member.name} ${member.surname}`}</p>

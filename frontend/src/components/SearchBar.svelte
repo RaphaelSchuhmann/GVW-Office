@@ -1,5 +1,5 @@
 <script>
-    import { filterRegistry } from "../lib/filterRegistry";
+    import { filterRegistry } from "../lib/filterRegistry.svelte";
     import { marginMap } from "../lib/dynamicStyles";
 
     let {
@@ -35,7 +35,7 @@
         const value = event.target.value;
         clearTimeout(debounce);
         debounce = setTimeout(() => {
-            filterState?.update(u => ({ ...u, search: value }));
+            Object.assign(filterState, { search: value });
         }, 250);
     }
 

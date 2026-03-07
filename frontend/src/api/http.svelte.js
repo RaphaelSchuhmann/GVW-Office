@@ -1,5 +1,4 @@
-import { get } from "svelte/store";
-import { auth } from "../stores/auth";
+import { auth } from "../stores/auth.svelte.js";
 
 /**
  * Normalizes a fetch `Response` object into a consistent format.
@@ -20,7 +19,7 @@ export function normalizeResponse(response) {
     if (response.status === 400) return { ok: false, errorType: "BADREQUEST", status: 400 };
     if (response.status === 401) return { ok: false, errorType: "UNAUTHORIZED", status: 401 };
     if (response.status === 404) return { ok: false, errorType: "NOTFOUND", status: 404 };
-    if (response.status === 409) return { ok: false, errorType: "RATELIMITED", status: 409 };
+    if (response.status === 409) return { ok: false, errorType: "CONFLICT", status: 409 };
     if (response.status === 429) return { ok: false, errorType: "REQUESTTIMEOUT", status: 429 };
     if (response.status >= 500) return { ok: false, errorType: "SERVER", status: response.status };
 
@@ -31,7 +30,7 @@ export function normalizeResponse(response) {
  * Performs an HTTP GET request with optional bearer token authorization.
  * 
  * @param {string} url - The endpoint URL to fetch.
- * @param {string} [customToken=""] - Optional token to override the auth store token.
+ * @param {string} [customToken=""] - Optional token to override the authSvelte store token.
  * @param {boolean} [doAuth=true] - Whether to include the Authorization header.
  * @returns {Promise<Response | null>} The fetch response, or `null` if the request fails.
  * 
@@ -41,7 +40,7 @@ export function normalizeResponse(response) {
  */
 export async function httpGet(url, customToken = "", doAuth = true) {
     const headers = new Headers();
-    const token = customToken ? customToken : get(auth).token;
+    const token = customToken ? customToken : auth.token;
     if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
 
     try {
@@ -59,7 +58,7 @@ export async function httpGet(url, customToken = "", doAuth = true) {
  *
  * @param {string} url - The endpoint URL to post to.
  * @param {any} body - The data to send as JSON in the request body.
- * @param {string} [customToken=""] - Optional token to override the auth store token.
+ * @param {string} [customToken=""] - Optional token to override the authSvelte store token.
  * @param {boolean} [doAuth=true] - Whether to include the Authorization header.
  * @returns {Promise<Response | null>} The fetch response, or `null` if the request fails.
  *
@@ -71,7 +70,7 @@ export async function httpPost(url, body, customToken = "", doAuth = true) {
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
 
-    const token = customToken ? customToken : get(auth).token;
+    const token = customToken ? customToken : auth.token;
     if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
 
     try {

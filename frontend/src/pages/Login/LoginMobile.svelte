@@ -5,12 +5,12 @@
     import Button from "../../components/Button.svelte";
     import ToastStack from "../../components/ToastStack.svelte";
     import { clearValue, getValue, setValue } from "../../services/store";
-    import { auth } from "../../stores/auth";
-    import { user } from "../../stores/user";
-    import { addToast } from "../../stores/toasts";
+    import { auth } from "../../stores/auth.svelte.js";
+    import { user } from "../../stores/user.svelte";
+    import { addToast } from "../../stores/toasts.svelte";
     import { loginUser, authenticateUser } from "../../services/loginService";
-    import { normalizeResponse } from "../../api/http";
-    import { handleGlobalApiError } from "../../api/globalErrorHandler";
+    import { normalizeResponse } from "../../api/http.svelte";
+    import { handleGlobalApiError } from "../../api/globalErrorHandler.svelte";
 
     // 1. Reactive State
     let email = $state("");
@@ -28,8 +28,8 @@
                 if (handleGlobalApiError(normalizedResponse)) return;
                 if (!body || !normalizedResponse.ok) return;
 
-                auth.set({ token: authToken });
-                user.update(u => ({ ...u, email: body.email }));
+                Object.assign(auth, { token: authToken });
+                Object.assign(user, { email: body.email });
 
                 if (body.changePassword) {
                     clearValue("authToken");
@@ -92,9 +92,8 @@
             return;
         }
 
-        // Sync and Redirect
-        auth.set({ token: body.authToken });
-        user.update(u => ({ ...u, email: email }));
+        Object.assign(auth, { token: body.authToken });
+        Object.assign(user, { email: email });
 
         if (body.changePassword) {
             setValue("authToken_BCPW", body.authToken);

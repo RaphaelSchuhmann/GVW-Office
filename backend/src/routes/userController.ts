@@ -50,7 +50,7 @@ userRouter.get("/data", async (req, resp) => {
  * Updates user and associated member data
  * 
  * Request body:
- * - `{ originalEmail: string, email: string, phone: string, address: string }`
+ * - `{ email: string, phone: string, address: string }`
  * 
  * Responses:
  * - `200`: Update successful

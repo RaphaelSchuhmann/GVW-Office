@@ -2,12 +2,12 @@
 
 <script>
     import { onMount } from "svelte";
-    import { ensureUserData } from "../services/userService";
+    import { ensureUserData } from "../services/userService.svelte";
     import { getLibraryCategories, updateScore } from "../services/library";
     import { push } from "svelte-spa-router";
     import { get } from "svelte/store";
-    import { libraryStore } from "../stores/library";
-    import { appSettings } from "../stores/appSettings";
+    import { libraryStore } from "../stores/library.svelte";
+    import { appSettings } from "../stores/appSettings.svelte.js";
 
     import ToastStack from "../components/ToastStack.svelte";
     import DesktopSidebar from "../components/DesktopSidebar.svelte";

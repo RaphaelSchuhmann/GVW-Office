@@ -1,7 +1,6 @@
 <script>
     import { viewport } from "../../stores/viewport.svelte";
-    import { get } from "svelte/store";
-    import { membersStore } from "../../stores/members";
+    import { membersStore } from "../../stores/members.svelte";
     import { push } from "svelte-spa-router";
 
     import MemberDetailsDesktop from "./MemberDetailsDesktop.svelte";
@@ -17,8 +16,7 @@
 
     const memberData = $derived.by(() => {
         if (!memberId) return null;
-        const members = get(membersStore);
-        return members.raw.find(item => item.id === memberId) || null;
+        return membersStore.raw.find(item => item.id === memberId) || null;
     });
 
     $effect(() => {

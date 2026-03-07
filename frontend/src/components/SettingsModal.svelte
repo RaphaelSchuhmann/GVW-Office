@@ -1,10 +1,10 @@
 <script>
-    import { user } from "../stores/user";
+    import { user } from "../stores/user.svelte";
     import { tick } from "svelte";
     import Modal from "./Modal.svelte";
     import Input from "./Input.svelte";
     import Button from "./Button.svelte";
-    import { tryUpdateUserData } from "../services/userService";
+    import { tryUpdateUserData } from "../services/userService.svelte";
     
     let {
         isMobile = false,
@@ -23,9 +23,9 @@
     let phoneInput;
     let addressInput;
 
-    let email = $state($user.email);
-    let phone = $state($user.phone);
-    let address = $state($user.address);
+    let email = $state(user.email);
+    let phone = $state(user.phone);
+    let address = $state(user.address);
 
     /**
      * Updates the user data with the current input values.
@@ -37,9 +37,9 @@
      * @returns {Promise<void>}
      */
     async function updateUserData() {
-        if (email.length === 0) email = $user.email;
-        if (phone.length === 0) phone = $user.phone;
-        if (address.length === 0) address = $user.address;
+        if (email.length === 0) email = user.email;
+        if (phone.length === 0) phone = user.phone;
+        if (address.length === 0) address = user.address;
 
         await tryUpdateUserData({ email, phone, address });
 
@@ -64,14 +64,14 @@
     export function showModal() {
         modal.showModal();
 
-        email = $user.email;
-        phone = $user.phone;
-        address = $user.address;
+        email = user.email;
+        phone = user.phone;
+        address = user.address;
     }
 </script>
 
 <Modal title="Benutzer Einstellungen" subTitle="Ihre persönlichen Daten" bind:this={modal} extraFunction={resetStates} isMobile={isMobile}>
-    <Input title="Name" value={$user.name} readonly={true} marginTop="5" />
+    <Input title="Name" value={user.name} readonly={true} marginTop="5" />
 
     <div class="flex items-end w-full mt-5 gap-2">
         <Input title="E-Mail" bind:value={email} readonly={readonlyMail} width="w-2/3"

@@ -1,20 +1,21 @@
 <script>
     import { viewport } from "../../stores/viewport.svelte";
-    import MembersDesktop from "./MembersDesktop.svelte";
-    import MembersMobile from "./MembersMobile.svelte";
     import { ensureUserData } from "../../services/userService.svelte";
     import { init } from "../../services/filterService.svelte";
+
+    import EventsDesktop from "./EventsDesktop.svelte";
+    import EventsMobile from "./EventsMobile.svelte";
 
     $effect(() => {
         (async () => {
             await ensureUserData();
-            await init("members");
+            await init("events");
         })();
     });
 </script>
 
-{#if viewport.isMobile}
-    <MembersMobile />
+{#if viewport.width < 870}
+    <EventsMobile />
 {:else}
-    <MembersDesktop />
+    <EventsDesktop />
 {/if}

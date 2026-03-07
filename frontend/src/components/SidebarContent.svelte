@@ -1,8 +1,8 @@
 <script>
     import { push } from "svelte-spa-router";
-    import { user } from "../stores/user";
+    import { user } from "../stores/user.svelte";
     import SidebarButton from "./SidebarButton.svelte";
-    import { logout } from "../services/userService";
+    import { logout } from "../services/userService.svelte";
 
     let {
         currentPage = "",
@@ -35,7 +35,7 @@
             {#if !minimized}<p class="ml-2">Dashboard</p>{/if}
         </SidebarButton>
 
-        {#if mitgliederAccess.includes($user.role)}
+        {#if mitgliederAccess.includes(user.role)}
             <SidebarButton selected={currentPage === "members"} minimized={minimized} marginTop="5" onclick={async () => await push("/members")}>
                 <span class="material-symbols-rounded text-icon-dt-4">group</span>
                 {#if !minimized}<p class="ml-2">Mitglieder</p>{/if}
@@ -47,7 +47,7 @@
             {#if !minimized}<p class="ml-2">Veranstaltungen</p>{/if}
         </SidebarButton>
 
-        {#if reportsAccess.includes($user.role)}
+        {#if reportsAccess.includes(user.role)}
             <SidebarButton selected={currentPage === "reports"} minimized={minimized} marginTop="5" onclick={async () => await push("/reports")}>
                 <span class="material-symbols-rounded text-icon-dt-4">docs</span>
                 {#if !minimized}<p class="ml-2">Berichte</p>{/if}
@@ -65,9 +65,9 @@
             <div class="relative inline-block text-left w-full">
                 <button onclick={toggleUserOptions} class="flex w-full items-center bg-white border border-gv-border rounded-1 p-3 cursor-pointer hover:bg-gv-secondary-btn-hover duration-200 overflow-hidden">
                     <div class="flex flex-col items-start justify-around w-full">
-                        {#if $user.loaded}
-                            <p class="text-dt-5 text-gv-dark-text truncate">{$user.name}</p>
-                            <p class="text-dt-8 text-gv-light-text truncate">{$user.email}</p>
+                        {#if user.loaded}
+                            <p class="text-dt-5 text-gv-dark-text truncate">{user.name}</p>
+                            <p class="text-dt-8 text-gv-light-text truncate">{user.email}</p>
                         {:else}
                             <div class="animate-pulse h-5 w-40 bg-gray-200 rounded"></div>
                             <div class="animate-pulse h-5 w-24 bg-gray-200 rounded mt-2"></div>

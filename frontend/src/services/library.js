@@ -1,11 +1,11 @@
 import { get } from "svelte/store";
-import { appSettings } from "../stores/appSettings";
-import { loadAppSettings } from "./appSettingsSyncService";
-import { auth } from "../stores/auth";
-import { addToast } from "../stores/toasts";
-import { logout } from "./userService";
+import { appSettings } from "../stores/appSettings.svelte.js";
+import { loadAppSettings } from "./appSettingsSyncService.svelte";
+import { auth } from "../stores/auth.svelte.js";
+import { addToast } from "../stores/toasts.svelte";
+import { logout } from "./userService.svelte";
 import { push } from "svelte-spa-router";
-import { libraryStore } from "../stores/library";
+import { libraryStore } from "../stores/library.svelte";
 
 export const voiceMap = {
     "t": "Tenor",

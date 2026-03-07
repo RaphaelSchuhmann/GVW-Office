@@ -1,8 +1,8 @@
-import { appSettings } from "../stores/appSettings";
-import { updateMaxMembers } from "../api/apiAppSettings";
-import { normalizeResponse } from "../api/http";
-import { handleGlobalApiError } from "../api/globalErrorHandler";
-import { addToast } from "../stores/toasts";
+import { appSettings } from "../stores/appSettings.svelte.js";
+import { updateMaxMembers } from "../api/apiAppSettings.svelte";
+import { normalizeResponse } from "../api/http.svelte";
+import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
 
 /**
@@ -24,7 +24,7 @@ export async function tryUpdateMaxMembers(value) {
     const normalizedResponse = normalizeResponse(resp);
     if (handleGlobalApiError(normalizedResponse)) return;
 
-    appSettings.update(s => ({ ...s, maxMembers: value }));
+    Object.assign(appSettings, { maxMembers: value });
 
     addToast({
         title: "Erfolgreich gespeichert",

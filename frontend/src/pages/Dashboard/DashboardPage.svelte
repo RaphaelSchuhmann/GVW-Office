@@ -2,11 +2,9 @@
     import { viewport } from "../../stores/viewport.svelte";
     import DashboardDesktop from "./DashboardDesktop.svelte";
     import DashboardMobile from "./DashboardMobile.svelte";
-    import { ensureUserData } from "../../services/userService";
+    import { ensureUserData } from "../../services/userService.svelte";
 
-    $effect(() => {
-        ensureUserData();
-    });
+    ensureUserData();
 </script>
 
 {#if viewport.isMobile}

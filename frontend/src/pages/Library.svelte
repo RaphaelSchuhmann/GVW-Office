@@ -1,7 +1,6 @@
 <script>
     import { onDestroy, onMount } from "svelte";
-    import { get } from "svelte/store";
-    import { ensureUserData } from "../services/userService";
+    import { ensureUserData } from "../services/userService.svelte";
     import {
         voiceMap,
         getLibraryCategories,
@@ -11,11 +10,11 @@
         addScore,
         downloadScoreFiles
     } from "../services/library";
-    import { user } from "../stores/user";
-    import { libraryStore } from "../stores/library";
-    import { appSettings } from "../stores/appSettings";
+    import { user } from "../stores/user.svelte";
+    import { libraryStore } from "../stores/library.svelte";
+    import { appSettings } from "../stores/appSettings.svelte.js";
     import { push } from "svelte-spa-router";
-    import { init, fetchAndSetRaw } from "../services/filterService";
+    import { init, fetchAndSetRaw } from "../services/filterService.svelte";
 
     import ToastStack from "../components/ToastStack.svelte";
     import DesktopSidebar from "../components/DesktopSidebar.svelte";
@@ -28,7 +27,7 @@
     import ContextMenu from "../components/ContextMenu.svelte";
     import Chip from "../components/Chip.svelte";
     import Modal from "../components/Modal.svelte";
-    import { addToast } from "../stores/toasts";
+    import { addToast } from "../stores/toasts.svelte";
     import Input from "../components/Input.svelte";
     import Dropdown from "../components/Dropdown.svelte";
     import Checkbox from "../components/Checkbox.svelte";
@@ -77,7 +76,7 @@
     }
 
     async function deleteCategory(category) {
-        const categoryMap = get(appSettings).scoreCategories || {};
+        const categoryMap = appSettings.scoreCategories || {};
         const type = categoryMap[category];
         const count = getCategoryCount(category);
 
@@ -141,7 +140,7 @@
         const newScore = {
             title: newScoreTitle,
             artist: newScoreArtist,
-            type: get(appSettings).scoreCategories[newScoreCategory],
+            type: appSettings.scoreCategories[newScoreCategory],
             voices: voices,
             voiceCount: voices.length,
             files: newScoreFiles
@@ -178,7 +177,7 @@
     function startDeleteScore() {
         menuOpen = false;
 
-        const scores = get(libraryStore).display;
+        const scores = libraryStore.display;
         const score = scores.find(item => item.id === activeScoreId);
 
         if (!activeScoreId ||!score?.title) {
@@ -214,7 +213,7 @@
      * @param {string} eventId - ID of the event being right-clicked
      */
     function openContextMenu(event, eventId) {
-        if ($user.role === "vorstand" || $user.role === "admin") {
+        if (user.role === "vorstand" || user.role === "admin") {
             event.preventDefault();
             event.stopPropagation();
 
@@ -234,7 +233,7 @@
      * @param {string} eventId - ID of the event whose button was clicked
      */
     function openContextMenuFromButton(event, eventId) {
-        if ($user.role === "vorstand" || $user.role === "admin") {
+        if (user.role === "vorstand" || user.role === "admin") {
             event.preventDefault();
             event.stopPropagation();
 
@@ -375,9 +374,9 @@
         </div>
 
         <div class="flex-1 min-h-0 overflow-y-auto mt-5">
-            {#if $libraryStore.display.length !== 0}
+            {#if libraryStore.display.length !== 0}
                 <div class="grid grid-cols-3 gap-4 overflow-y-auto overflow-x-hidden">
-                    {#each $libraryStore.display as item}
+                    {#each libraryStore.display as item}
                         <Card on:contextmenu={(e) => openContextMenu(e, item.id)}>
                             <div class="flex items-stretch w-full gap-2">
                                 <div class="flex flex-col items-start justify-start">
@@ -387,7 +386,7 @@
                                     <p class="text-gv-dark-text text-dt-3 leading-none">{item.title}</p>
                                     <p class="text-gv-light-text text-dt-5">{item.artist}</p>
                                 </div>
-                                {#if $user.role === "vorstand" || $user.role === "admin" || $user.role === "notenwart" || $user.role === "chorleitung"}
+                                {#if user.role === "vorstand" || user.role === "admin" || user.role === "notenwart" || user.role === "chorleitung"}
                                     <button
                                         class="flex self-center items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2 ml-auto"
                                         on:click={(e) => openContextMenuFromButton(e, item.id)}>
@@ -396,7 +395,7 @@
                                 {/if}
                             </div>
                             <div class="flex w-full items-center justify-start mt-2">
-                                <Chip text={$appSettings.scoreCategories[item.type] ?? item.type} fontSize="6" />
+                                <Chip text={appSettings.scoreCategories[item.type] ?? item.type} fontSize="6" />
                             </div>
                             <div class="flex w-full items-start justify-start mt-2 gap-2">
                                 <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">import_contacts</span>

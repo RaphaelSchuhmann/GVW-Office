@@ -6,18 +6,16 @@
     import Button from "../../components/Button.svelte";
     import ToastStack from "../../components/ToastStack.svelte";
     import { clearValue, getValue, setValue } from "../../services/store";
-    import { auth } from "../../stores/auth";
-    import { user } from "../../stores/user";
-    import { addToast } from "../../stores/toasts";
+    import { auth } from "../../stores/auth.svelte.js";
+    import { user } from "../../stores/user.svelte";
+    import { addToast } from "../../stores/toasts.svelte";
     import { loginUser, authenticateUser } from "../../services/loginService";
-    import { handleGlobalApiError } from "../../api/globalErrorHandler";
-    import { normalizeResponse } from "../../api/http";
+    import { handleGlobalApiError } from "../../api/globalErrorHandler.svelte";
+    import { normalizeResponse } from "../../api/http.svelte";
 
-    // 1. Local state using Runes
     let email = $state("");
     let password = $state("");
 
-    // 2. Modern Lifecycle for initial auth check
     $effect(() => {
         const checkAuth = async () => {
             const authToken = getValue("authToken");
@@ -29,8 +27,8 @@
                 if (handleGlobalApiError(normalizedResponse)) return;
                 if (!body || !normalizedResponse.ok) return;
 
-                auth.set({ token: authToken });
-                user.update(u => ({ ...u, email: body.email }));
+                Object.assign(auth, { token: authToken });
+                Object.assign(user, { email: body.email });
 
                 if (body.changePassword) {
                     clearValue("authToken");
@@ -67,7 +65,7 @@
             return;
         }
 
-        const { resp, body } = await loginUser(email, password);
+        const { resp, body } = await loginUser($state.snapshot(email), $state.snapshot(password));
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
@@ -100,8 +98,8 @@
         }
 
         // Sync Stores and Navigate
-        auth.set({ token: body.authToken });
-        user.update(u => ({ ...u, email: email }));
+        Object.assign(auth, { token: body.authToken });
+        Object.assign(user, { email: email });
 
         if (body.changePassword) {
             setValue("authToken_BCPW", body.authToken);

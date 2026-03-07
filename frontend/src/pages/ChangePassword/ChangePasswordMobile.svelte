@@ -5,11 +5,11 @@
     import Button from "../../components/Button.svelte";
     import ToastStack from "../../components/ToastStack.svelte";
     import { getValue, setValue, clearValue } from "../../services/store";
-    import { user } from "../../stores/user";
-    import { addToast } from "../../stores/toasts";
-    import { changePassword } from "../../services/changePasswordService";
-    import { normalizeResponse } from "../../api/http";
-    import { handleGlobalApiError } from "../../api/globalErrorHandler";
+    import { user } from "../../stores/user.svelte";
+    import { addToast } from "../../stores/toasts.svelte";
+    import { changePassword } from "../../services/changePasswordService.svelte";
+    import { normalizeResponse } from "../../api/http.svelte";
+    import { handleGlobalApiError } from "../../api/globalErrorHandler.svelte";
 
     // 1. Props using $props()
     let { message = "" } = $props();
@@ -58,10 +58,10 @@
 
         if (hasValidationError) return;
 
-        let email = $user.email;
+        let email = user.email;
         if (!email || email.length === 0) {
             await push(`/?cpwErr=true`);
-            user.update(u => ({...u, name: "", email: "", role: "", loaded: false }));
+            Object.assign(user, { name: "", email: "", role: "", loaded: false });
             return;
         }
 
@@ -75,7 +75,7 @@
                 addToast({ title: "Ungültige E-Mail verwendet", type: "error" });
                 await push("/");
             }
-            if (normalizedResponse.errorType === "RATELIMITED") {
+            if (normalizedResponse.errorType === "CONFLICT") {
                 addToast({ title: "Neues Passwort ist identisch", type: "error" });
             }
             return;

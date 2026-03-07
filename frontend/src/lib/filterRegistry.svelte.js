@@ -1,12 +1,11 @@
-import { eventsFilterState, eventsStore } from "../stores/events";
-import { membersFilterState, membersStore } from "../stores/members";
-import { libraryFilterState, libraryStore } from "../stores/library";
-import { statusMap, typeMap } from "../services/events";
-import { appSettings } from "../stores/appSettings";
-import { get } from "svelte/store";
-import { apiGetMembers } from "../api/apiMembers";
-import { getEvents } from "../api/apiEvents";
-import { getScores } from "../api/apiLibrary";
+import { eventsFilterState, eventsStore } from "../stores/events.svelte";
+import { membersFilterState, membersStore } from "../stores/members.svelte";
+import { libraryFilterState, libraryStore } from "../stores/library.svelte";
+import { statusMap, typeMap } from "../services/eventsService.svelte";
+import { apiGetMembers } from "../api/apiMembers.svelte";
+import { apiGetEvents } from "../api/apiEvents.svelte";
+import { getScores } from "../api/apiLibrary.svelte";
+import { appSettings } from "../stores/appSettings.svelte";
 
 /**
  * Filter registry containing both filter and search configurations
@@ -28,7 +27,7 @@ export const filterRegistry = {
         }
     },
     events: {
-        fetch: getEvents,
+        fetch: apiGetEvents,
         store: eventsStore,
         filterState: eventsFilterState,
         optionMap: typeMap,
@@ -46,7 +45,7 @@ export const filterRegistry = {
         fetch: getScores,
         store: libraryStore,
         filterState: libraryFilterState,
-        get optionMap() { return get(appSettings).scoreCategories; },
+        get optionMap() { return appSettings.scoreCategories; },
         fuse: {
             keys: ["title", "artist", "voices"],
             threshold: 0.3

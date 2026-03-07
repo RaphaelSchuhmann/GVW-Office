@@ -1,7 +1,7 @@
 <script>
     import Dropdown from "./Dropdown.svelte";
-    import { filterRegistry } from "../lib/filterRegistry";
-    import { addToast } from "../stores/toasts";
+    import { filterRegistry } from "../lib/filterRegistry.svelte";
+    import { addToast } from "../stores/toasts.svelte";
 
     let {
         options = [],
@@ -17,7 +17,10 @@
     let regEntry = $state(filterRegistry[activePage] || {
         optionMap: {},
         config: { dropdown: { options: null, customDefault: null } },
-        filterState: { update: () => {} }
+        filterState: {
+            update: () => {
+            }
+        }
     });
 
     const usedOptions = $derived(regEntry.config.dropdown.options ?? options);
@@ -32,6 +35,8 @@
 
         return "Alle Typen";
     });
+
+    let isInitialized = $state(false);
 
     /**
      * Updates the local regEntry from the global registry
@@ -48,7 +53,7 @@
     function filter(selected) {
         const rawSelected = $state.snapshot(selected);
 
-        const { optionMap, filterState } = $state.snapshot(regEntry);
+        const { optionMap, filterState } = regEntry;
 
         if (!(rawSelected in optionMap)) {
             console.warn(`Mapping failed for: ${rawSelected}`);
@@ -61,14 +66,18 @@
         }
 
         const filterFor = optionMap[rawSelected];
-        filterState.update(store => ({ ...store, dropdown: filterFor }));
+        Object.assign(filterState, { dropdown: filterFor });
     }
 
     $effect(() => {
+        if (isInitialized) return;
+        if (!(usedDefault in regEntry.optionMap)) return;
         filter(usedDefault);
+        isInitialized = true;
+    });
 
+    $effect(() => {
         const intervalId = setInterval(updateConfig, 5000);
-
         return () => clearInterval(intervalId);
     });
 </script>

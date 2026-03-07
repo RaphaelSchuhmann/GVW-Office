@@ -1,10 +1,7 @@
-import { writable } from "svelte/store";
-
 /**
  * Svelte store for toast notifications
- * @type {import('svelte/store').Writable<Array<{id: string, title: string, subTitle: string, type: string}>>}
  */
-export const toasts = writable([]);
+export const toasts = $state([]);
 
 /**
  * Adds a new toast notification to the store
@@ -17,10 +14,10 @@ export const toasts = writable([]);
 export function addToast({ title, subTitle = "", type = "info", timeout = 5000 }) {
     const id = crypto.randomUUID();
 
-    toasts.update(t => [...t, { id: id, title: title, subTitle: subTitle, type: type }]);
+    toasts.push({ id, title, subTitle, type });
 
     setTimeout(() => {
-        toasts.update(t => t.filter(t => t.id !== id));
+        removeToast(id);
     }, timeout);
 }
 
@@ -29,5 +26,8 @@ export function addToast({ title, subTitle = "", type = "info", timeout = 5000 }
  * @param {string} id - Toast ID to remove
  */
 export function removeToast(id) {
-    toasts.update(t => t.filter(toast => toast.id !== id));
+    const index = toasts.findIndex(t => t.id === id);
+    if (index !== -1) {
+        toasts.splice(index, 1);
+    }
 }

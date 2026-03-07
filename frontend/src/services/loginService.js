@@ -1,4 +1,4 @@
-import { authenticate, login } from "../api/apiAuth";
+import { authenticate, login } from "../api/apiAuth.svelte";
 
 /**
  * Attempts to authenticate a user with the given email and password.

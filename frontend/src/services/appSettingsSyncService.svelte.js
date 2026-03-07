@@ -1,9 +1,9 @@
-import { getSettings } from "../api/apiAppSettings";
-import { handleGlobalApiError } from "../api/globalErrorHandler";
-import { normalizeResponse } from "../api/http";
-import { addToast } from "../stores/toasts";
+import { getSettings } from "../api/apiAppSettings.svelte";
+import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { normalizeResponse } from "../api/http.svelte";
+import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
-import { appSettings } from "../stores/appSettings";
+import { appSettings } from "../stores/appSettings.svelte.js";
 
 let isRunning = false;
 let intervalId;
@@ -63,7 +63,7 @@ export async function loadAppSettings() {
             return;
         }
 
-        appSettings.set(body);
+        Object.assign(appSettings, body);
     } catch (err) {
         console.error("Unable to load app settings", err);
     } finally {

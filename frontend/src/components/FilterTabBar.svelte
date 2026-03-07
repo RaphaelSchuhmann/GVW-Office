@@ -1,7 +1,7 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { filterRegistry } from "../lib/filterRegistry";
-    import { addToast } from "../stores/toasts";
+    import { filterRegistry } from "../lib/filterRegistry.svelte";
+    import { addToast } from "../stores/toasts.svelte";
 
     let {
         contents = [],
@@ -11,7 +11,7 @@
         ...restProps
     } = $props();
 
-    const validPages = ["events", "library"];
+    const validPages = ["events"];
     const activePage = $derived(validPages.includes(page) ? page : "none");
 
     const regEntry = $derived(filterRegistry[activePage] || {
@@ -47,7 +47,7 @@
         }
 
         const filterFor = tabMap[selected];
-        filterState.update(store => ({ ...store, tab: filterFor }));
+        Object.assign(filterState, { tab: filterFor });
     }
 
     $effect(() => {

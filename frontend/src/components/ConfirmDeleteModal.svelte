@@ -2,11 +2,11 @@
     import Modal from "./Modal.svelte";
     import Button from "./Button.svelte";
     import Input from "./Input.svelte";
-    import { removeMember } from "../services/membersService";
-    import { deleteEvent } from "../services/events";
+    import { removeMember } from "../services/membersService.svelte";
+    import { deleteEvent } from "../services/eventsService.svelte";
     import { deleteScore } from "../services/library";
-    import { addToast } from "../stores/toasts";
-    import { logout } from "../services/userService";
+    import { addToast } from "../stores/toasts.svelte";
+    import { logout } from "../services/userService.svelte";
     import { push } from "svelte-spa-router";
 
     const actionMap = {
@@ -50,7 +50,7 @@
     async function handleDelete() {
         confirmDeleteModal?.hideModal();
 
-        const DEV_refactoredRemoveServices = ["deleteMember"];
+        const DEV_refactoredRemoveServices = ["deleteMember", "deleteEvent"];
 
         if (activeAction !== "none" && DEV_refactoredRemoveServices.includes(activeAction)) {
             const apiFunction = actionMap[activeAction];

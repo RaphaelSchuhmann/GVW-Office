@@ -4,10 +4,10 @@ import {
     apiResetMembersPassword,
     apiUpdateMember,
     apiUpdateMemberStatus
-} from "../api/apiMembers";
-import { handleGlobalApiError } from "../api/globalErrorHandler";
-import { normalizeResponse } from "../api/http";
-import { addToast } from "../stores/toasts";
+} from "../api/apiMembers.svelte";
+import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { normalizeResponse } from "../api/http.svelte";
+import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
 
 export const roleMap = {
@@ -142,7 +142,7 @@ export async function newMember(member) {
  *
  * @async
  * @function removeMember
- * @param {string|number} id - Unique identifier of the member to delete.
+ * @param {string} id - Unique identifier of the member to delete.
  * @returns {Promise<void>}
  */
 export async function removeMember(id){
@@ -207,7 +207,7 @@ export async function removeMember(id){
  *
  * @async
  * @function switchMemberStatus
- * @param {string|number} id - Unique identifier of the member.
+ * @param {string} id - Unique identifier of the member.
  * @returns {Promise<void>}
  */
 export async function switchMemberStatus(id) {
@@ -274,7 +274,7 @@ export async function switchMemberStatus(id) {
  *
  * @async
  * @function resetMemberPassword
- * @param {string|number} id - Unique identifier of the member.
+ * @param {string} id - Unique identifier of the member.
  * @returns {Promise<void>}
  */
 export async function resetMemberPassword(id) {
