@@ -7,6 +7,7 @@ import { user } from "../stores/user.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { getUserData, updateUserData } from "../api/apiUser.svelte";
 import { normalizeResponse } from "../api/http.svelte";
+import { clearDebounce } from "./filterService.svelte";
 
 const USER_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
@@ -117,7 +118,8 @@ export function logout() {
         lastFetched: 0,
     });
 
-    Object.assign(auth, { token: "" });
+    clearDebounce();
 
+    Object.assign(auth, { token: "" });
     clearValue("authToken");
 }

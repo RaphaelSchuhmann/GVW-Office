@@ -52,6 +52,17 @@ export async function init(pageKey) {
 }
 
 /**
+ * Clears the active periodic fetch interval.
+ *
+ * @function clearDebounce
+ * @global
+ */
+export function clearDebounce() {
+    clearTimeout(fetchIntervalId);
+    fetchIntervalId = null;
+}
+
+/**
  * Applies the active filter state to the current raw dataset.
  *
  * Processing steps:

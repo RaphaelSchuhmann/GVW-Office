@@ -13,11 +13,9 @@
     import { handleGlobalApiError } from "../../api/globalErrorHandler.svelte";
     import { normalizeResponse } from "../../api/http.svelte";
 
-    // 1. Local state using Runes
     let email = $state("");
     let password = $state("");
 
-    // 2. Modern Lifecycle for initial authSvelte check
     $effect(() => {
         const checkAuth = async () => {
             const authToken = getValue("authToken");
