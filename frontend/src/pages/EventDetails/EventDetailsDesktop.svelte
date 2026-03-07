@@ -136,9 +136,9 @@
      * Assumes validation has already been handled externally.
      */
     async function updateEventData() {
-        await updateEvent($state.snapshot(draft));
+        const successful = await updateEvent($state.snapshot(draft));
 
-        eventData = { ...draft };
+        if (successful) eventData = { ...draft };
 
         isEditing = false;
         draft = null;
