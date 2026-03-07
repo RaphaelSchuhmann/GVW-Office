@@ -48,13 +48,6 @@
      */
     let addEventModal = $state();
 
-    /**
-     * Reference to the delete confirmation modal.
-     * Used to initiate and confirm member deletion flow.
-     * @type {import("../../components/ConfirmDeleteModal.svelte").default}
-     */
-    let confirmDeleteEventModal = $state();
-
     // =========
     // ADD EVENT
     // =========
