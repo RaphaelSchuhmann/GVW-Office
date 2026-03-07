@@ -22,7 +22,7 @@
     <button
         type="button"
         disabled={disabled}
-        class="h-6 w-6 flex items-center justify-center aspect-square cursor-pointer rounded-2 {isChecked ? 'bg-gv-primary' : 'bg-gv-input-bg'}"
+        class="h-6 w-6 flex items-center justify-center aspect-square rounded-2 {isChecked ? 'bg-gv-primary' : 'bg-gv-input-bg'} {disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}"
         onclick={toggle}
     >
         {#if isChecked}
