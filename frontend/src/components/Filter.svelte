@@ -17,7 +17,10 @@
     let regEntry = $state(filterRegistry[activePage] || {
         optionMap: {},
         config: { dropdown: { options: null, customDefault: null } },
-        filterState: { update: () => {} }
+        filterState: {
+            update: () => {
+            }
+        }
     });
 
     const usedOptions = $derived(regEntry.config.dropdown.options ?? options);
@@ -67,10 +70,10 @@
     }
 
     $effect(() => {
-        if (!isInitialized) {
-            filter(usedDefault);
-            isInitialized = true;
-        }
+        if (isInitialized) return;
+        if (!(usedDefault in regEntry.optionMap)) return;
+        filter(usedDefault);
+        isInitialized = true;
     });
 
     $effect(() => {
