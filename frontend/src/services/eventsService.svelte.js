@@ -313,7 +313,7 @@ export async function updateStatus(id) {
  * @async
  * @function updateEvent
  * @param {Object} data - The updated event data.
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} successful - If update was successful
  */
 export async function updateEvent(data) {
     if (isFetching.updateEvent) return;
@@ -323,7 +323,7 @@ export async function updateEvent(data) {
         const { resp } = await apiUpdateEvent(data);
 
         const normalizedResponse = normalizeResponse(resp);
-        if (handleGlobalApiError(normalizedResponse)) return;
+        if (handleGlobalApiError(normalizedResponse)) return false;
 
         if (!normalizedResponse.ok) {
             if (normalizedResponse.errorType === "BADREQUEST") {
@@ -345,7 +345,7 @@ export async function updateEvent(data) {
                     type: "error"
                 });
             }
-            return;
+            return false;
         }
 
         addToast({
@@ -353,6 +353,7 @@ export async function updateEvent(data) {
             subTitle: !viewport.isMobile ? "Die Veranstaltung wurde erfolgreich aktualisiert." : "",
             type: "success"
         });
+        return true;
     } finally {
         isFetching.updateEvent = false;
     }

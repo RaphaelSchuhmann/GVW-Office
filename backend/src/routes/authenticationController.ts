@@ -10,7 +10,7 @@ const authRouter = Router();
 
 /**
  * POST /login
- * Authenticate a user by email and password and return a JWT authSvelte token.
+ * Authenticate a user by email and password and return a JWT auth token.
  *
  * Request body:
  * - `{ email: string, password: string }`
@@ -59,7 +59,7 @@ authRouter.post("/login", async (req, resp) => {
             firstLogin: user.firstLogin
         });
     } catch (error: any) {
-        logger.error({ error }, "authSvelte/login route errorMessage");
+        logger.error({ error }, "auth/login route errorMessage");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -138,7 +138,7 @@ authRouter.post("/dev", async (req, resp) => {
 authRouter.get("/auto", authMiddleware, async (req, resp) => {
     try {
         const userId = req.user;
-        if (!userId) return resp.status(401).json({ errorMessage: "InvalidToken" }); // UserId should not be empty: invalid authSvelte token
+        if (!userId) return resp.status(401).json({ errorMessage: "InvalidToken" }); // UserId should not be empty: invalid auth token
 
         const users = await dbService.find("users", {
             selector: { userId: userId },
@@ -151,7 +151,7 @@ authRouter.get("/auto", authMiddleware, async (req, resp) => {
 
         resp.status(200).json({ email: user.email, changePassword: user.changePassword });
     } catch (err: any) {
-        logger.error({ err }, "authSvelte/auto route errorMessage: ");
+        logger.error({ err }, "auth/auto route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });
@@ -196,7 +196,7 @@ authRouter.post("/changePW", async (req, resp) => {
 
         return resp.status(200).json({ ok: true });
     } catch (err: any) {
-        logger.error({ err }, "authSvelte/changePW route errorMessage: ");
+        logger.error({ err }, "auth/changePW route errorMessage: ");
         return resp.status(500).json({ errorMessage: "InternalServerError" });
     }
 });

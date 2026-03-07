@@ -10,7 +10,7 @@ import { viewport } from "../stores/viewport.svelte";
  * synchronizes the local `appSettings` store on success.
  *
  * This function handles all API error cases internally via the
- * global error handler and user-facing toastsSvelte. It does not return
+ * global error handler and user-facing toasts. It does not return
  * the updated value and is intended to be called directly from
  * UI or service layers.
  *

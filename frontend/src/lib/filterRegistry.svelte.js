@@ -1,7 +1,7 @@
 import { eventsFilterState, eventsStore } from "../stores/events.svelte";
 import { membersFilterState, membersStore } from "../stores/members.svelte";
 import { libraryFilterState, libraryStore } from "../stores/library.svelte";
-import { statusMap, typeMap } from "../services/events";
+import { statusMap, typeMap } from "../services/eventsService.svelte";
 import { apiGetMembers } from "../api/apiMembers.svelte";
 import { apiGetEvents } from "../api/apiEvents.svelte";
 import { getScores } from "../api/apiLibrary.svelte";

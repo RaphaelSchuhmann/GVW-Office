@@ -7,7 +7,7 @@ const apiUrl = __API_URL__;
  * Fetches the authenticated user's data
  * 
  * Sends a GET request to `/user/data` endpoint with an Authorization header.
- * The server identifies the user from the authSvelte token.
+ * The server identifies the user from the auth token.
  * 
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
  * An object containing the raw fetch Response (`resp`) and the parsed
@@ -35,7 +35,7 @@ export async function getUserData() {
  * Attempts to update the user data and its associated member data.
  * 
  * Sends a POST request to `/user/update` endpoint with an Authorization header.
- * The server identifies the user from the authSvelte token.
+ * The server identifies the user from the auth token.
  * 
  * @param {Object} data - the updated user data.
  * @param {string} data.email - the user's email address

@@ -23,9 +23,9 @@ export async function loginUser(email, password) {
 /**
  * Attempts to automatically a authenticate the user using a token.
  * 
- * Sends a GET request to the /authSvelte/auto endpoint with an Authorization header.
+ * Sends a GET request to the /auth/auto endpoint with an Authorization header.
  * 
- * @param {string} token - the from localstorage loaded authSvelte token
+ * @param {string} token - the from localstorage loaded auth token
  * @returns {Promise<{ resp: Response, body: any }>} 
  *           An object containing the raw fetch Response (`resp`) and the parsed JSON body (`body`).
  *          `body` typically includes `ok` flag which can be discarded.
