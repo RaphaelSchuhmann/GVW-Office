@@ -29,6 +29,7 @@
     import { push } from "svelte-spa-router";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
+    import Textarea from "../../components/Textarea.svelte";
 
     // ================
     // MODAL REFERENCES
@@ -179,7 +180,7 @@
 
     <Input bind:value={eventInput.location} title="Ort" placeholder="Ort XYZ" marginTop="5" />
 
-    <Input bind:value={eventInput.description} title="Beschreibung (Optional)"
+    <Textarea bind:value={eventInput.description} title="Beschreibung (Optional)"
            placeholder="Kurze Beschreibung zur Veranstaltung..." marginTop="5" />
 
     <div class="flex flex-col items-start w-full h-full mt-5">

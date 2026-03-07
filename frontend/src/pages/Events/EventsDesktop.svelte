@@ -35,6 +35,7 @@
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { createContextMenu } from "../../lib/contextMenu.svelte";
     import { addToast } from "../../stores/toasts.svelte";
+    import Textarea from "../../components/Textarea.svelte";
 
     // ================
     // MODAL REFERENCES
@@ -262,7 +263,7 @@
 
     <Input bind:value={eventInput.location} title="Ort" placeholder="Ort XYZ" marginTop="5" />
 
-    <Input bind:value={eventInput.description} title="Beschreibung (Optional)"
+    <Textarea bind:value={eventInput.description} title="Beschreibung (Optional)"
            placeholder="Kurze Beschreibung zur Veranstaltung..." marginTop="5" />
 
     <div class="w-full flex items-center gap-4 mt-5">
