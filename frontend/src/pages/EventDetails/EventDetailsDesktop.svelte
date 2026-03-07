@@ -302,7 +302,7 @@
                         onChange={(val) => {
                             draft.mode = modeMap[val];
 
-                            if (draft.mode === 'monthly' && draft.recurrence) {
+                            if (draft.mode === 'monthly') {
                                 draft.recurrence.monthlyKind = "date";
                             }
                         }}
