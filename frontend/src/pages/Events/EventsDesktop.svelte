@@ -241,11 +241,13 @@
     <Button type="contextMenu" onclick={async () =>  await push(`/events/details?id=${menu.data.activeId}&editing=false`)}>
         Details
     </Button>
-    <Button type="contextMenu" onclick={async () =>  await push(`/events/details?id=${menu.data.activeId}&editing=true`)}>
-        Bearbeiten
-    </Button>
-    <Button type="contextMenu" onclick={handleSwitchStatus}>Status ändern</Button>
-    <Button type="contextMenu" fontColor="text-gv-delete" onclick={startDeleteEvent}>Löschen</Button>
+    {#if user.role === "vorstand" || user.role === "admin"}
+        <Button type="contextMenu" onclick={async () =>  await push(`/events/details?id=${menu.data.activeId}&editing=true`)}>
+            Bearbeiten
+        </Button>
+        <Button type="contextMenu" onclick={handleSwitchStatus}>Status ändern</Button>
+        <Button type="contextMenu" fontColor="text-gv-delete" onclick={startDeleteEvent}>Löschen</Button>
+    {/if}
 </ContextMenu>
 
 <Modal bind:this={addEventModal} extraFunction={resetAddInputs}

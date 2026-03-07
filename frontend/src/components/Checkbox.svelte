@@ -5,6 +5,7 @@
         title = "",
         isChecked = $bindable(false),
         onChange = () => {},
+        disabled = false,
         textWrap = true
     } = $props();
 
@@ -20,6 +21,7 @@
 <div class="flex items-center justify-start gap-2">
     <button
         type="button"
+        disabled={disabled}
         class="h-6 w-6 flex items-center justify-center aspect-square cursor-pointer rounded-2 {isChecked ? 'bg-gv-primary' : 'bg-gv-input-bg'}"
         onclick={toggle}
     >

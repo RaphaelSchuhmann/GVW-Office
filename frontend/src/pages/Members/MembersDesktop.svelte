@@ -301,16 +301,10 @@
         </PageHeader>
 
         {#if viewport.width <= 1000}
-            <div class="flex max-[430px]:flex-col w-full items-center justify-start gap-2 mt-4">
-                <Button type="primary" onclick={() => addMemberModal.showModal()}>
-                    <span class="material-symbols-rounded text-icon-dt-5">add</span>
-                    <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
-                </Button>
-                <Button type="primary" onclick={fetchAndSetRaw}>
-                    <span class="material-symbols-rounded text-icon-dt-5">refresh</span>
-                    <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Aktualisieren</p>
-                </Button>
-            </div>
+            <Button type="primary" onclick={() => addMemberModal.showModal()} marginTop="4">
+                <span class="material-symbols-rounded text-icon-dt-5">add</span>
+                <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
+            </Button>
         {/if}
 
         <SearchBar placeholder="Mitglieder durchsuchen..." page="members" marginTop="5" />

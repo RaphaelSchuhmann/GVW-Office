@@ -35,7 +35,6 @@
         isEditing = true;
     }
 
-
     /**
      * Cancels the current editing session.
      *

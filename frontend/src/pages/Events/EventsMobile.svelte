@@ -275,32 +275,32 @@
 
         <div class="flex-1 min-h-0 overflow-y-auto mt-5">
             <div
-                class="min-[1470px]:grid min-[1470px]:grid-cols-2 flex flex-col gap-4 overflow-y-auto overflow-x-hidden">
+                class="flex flex-col gap-4 overflow-y-auto overflow-x-hidden">
                 {#each eventsStore.display as event}
                     <button onclick={async () => { await push(`/events/details?id=${event.id}&editing=false`) }}>
                         <Card>
                             <div class="flex items-center w-full">
-                                <p class="text-gv-dark-text text-dt-3 max-w-3/4 text-nowrap truncate">{event.title}</p>
+                                <p class="text-gv-dark-text text-dt-5 max-w-3/4 text-nowrap truncate">{event.title}</p>
                                 <div class="ml-auto">
                                     <Chip text={typeMap[event.type]} />
                                 </div>
                             </div>
-                            <div class="flex items-center w-full mt-2 gap-10">
+                            <div class="flex items-start w-full mt-2 gap-10">
                                 <div class="flex items-stretch gap-2">
                                     <span
-                                        class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">calendar_today</span>
+                                        class="material-symbols-rounded text-icon-dt-8 text-gv-light-text">calendar_today</span>
                                     <p class="text-dt-6 text-gv-light-text text-left">{getEventOccurrence(event.id)}</p>
                                 </div>
                                 <div class="flex items-stretch gap-2">
                                     <span
-                                        class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">schedule</span>
+                                        class="material-symbols-rounded text-icon-dt-8 text-gv-light-text">schedule</span>
                                     <p class="text-dt-6 text-gv-light-text">{event.time}</p>
                                 </div>
                             </div>
                             <div class="flex items-center w-full mt-2 gap-2">
                                 <span
-                                    class="material-symbols-rounded text-icon-dt-5 text-gv-light-text">location_on</span>
-                                <p class="text-dt-5 text-gv-dark-text text-nowrap truncate">{event.location}</p>
+                                    class="material-symbols-rounded text-icon-dt-6 text-gv-light-text">location_on</span>
+                                <p class="text-dt-6 text-gv-dark-text text-nowrap truncate">{event.location}</p>
                             </div>
                         </Card>
                     </button>

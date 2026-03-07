@@ -4,9 +4,7 @@
     import DashboardMobile from "./DashboardMobile.svelte";
     import { ensureUserData } from "../../services/userService.svelte";
 
-    $effect(() => {
-        ensureUserData();
-    });
+    ensureUserData();
 </script>
 
 {#if viewport.isMobile}

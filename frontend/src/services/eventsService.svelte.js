@@ -1,4 +1,4 @@
-import { apiAddEvent, apiDeleteEvent, apiUpdateEventStatus } from "../api/apiEvents.svelte";
+import { apiAddEvent, apiDeleteEvent, apiUpdateEvent, apiUpdateEventStatus } from "../api/apiEvents.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
@@ -61,6 +61,25 @@ const isFetching = {
     deleteEvent: false
 };
 
+/**
+ * Returns a human-readable description or next occurrence for a given event.
+ *
+ * The function looks up the event in `eventsStore.display` by its ID and
+ * determines how the event repeats based on its `mode` and `recurrence` data.
+ *
+ * Behavior:
+ * - **Weekly events** → Returns a string like `"Jede Woche am Montag"`.
+ * - **Monthly weekday recurrence** → Returns a string like `"Jeden Monat am 2. Dienstag"`.
+ * - **Monthly date recurrence** → Calculates the next occurrence date in the current
+ *   or next month depending on whether the day has already passed.
+ *   If the configured day exceeds the last day of the current month, the last
+ *   valid day of that month is used instead.
+ * - **Non-recurring events** → Returns the stored event date.
+ * - **Missing event** → Returns `"Unbekannt"`.
+ *
+ * @param {number|string} eventId - The unique identifier of the event to evaluate.
+ * @returns {string} A formatted occurrence description or date string.
+ */
 export function getEventOccurrence(eventId) {
     const event = eventsStore.display.filter(item => item.id === eventId)[0];
 
@@ -129,12 +148,6 @@ export async function addEvent(event) {
                 addToast({
                     title: "Ungültige Daten",
                     subTitle: !viewport.isMobile ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "CONFLICT") {
-                addToast({
-                    title: "Veranstaltung existiert bereits",
-                    subTitle: !viewport.isMobile ? "Die angegebene Veranstaltung existiert bereits. Bitte wählen Sie einen anderen Namen, Zeit oder Ort." : "",
                     type: "error"
                 });
             } else {
@@ -277,5 +290,70 @@ export async function updateStatus(id) {
         });
     } finally {
         isFetching.updateStatus = false;
+    }
+}
+
+/**
+ * Updates an event with the provided data.
+ *
+ * Handles:
+ * - Duplicate request prevention.
+ * - API call to update the event.
+ * - Global API error delegation.
+ * - Error-specific and success toast feedback.
+ *
+ * Error cases handled explicitly:
+ * - BADREQUEST
+ * - CONFLICT
+ * - NOTFOUND
+ * - Generic fallback error
+ *
+ * On success, a confirmation toast is displayed.
+ *
+ * @async
+ * @function updateEvent
+ * @param {Object} data - The updated event data.
+ * @returns {Promise<void>}
+ */
+export async function updateEvent(data) {
+    if (isFetching.updateEvent) return;
+    isFetching.updateEvent = true;
+
+    try {
+        const { resp } = await apiUpdateEvent(data);
+
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "BADREQUEST") {
+                addToast({
+                    title: "Ungültige Daten",
+                    subTitle: !viewport.isMobile ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
+                    type: "error"
+                });
+            } else if (normalizedResponse.errorType === "NOTFOUND") {
+                addToast({
+                    title: "Veranstaltung nicht gefunden",
+                    subTitle: !viewport.isMobile ? "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Fehler beim Aktualisieren",
+                    subTitle: !viewport.isMobile ? "Beim Aktualisieren der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            }
+            return;
+        }
+
+        addToast({
+            title: "Veranstaltung aktualisiert",
+            subTitle: !viewport.isMobile ? "Die Veranstaltung wurde erfolgreich aktualisiert." : "",
+            type: "success"
+        });
+    } finally {
+        isFetching.updateEvent = false;
     }
 }

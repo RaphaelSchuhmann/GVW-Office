@@ -8,7 +8,7 @@
     import Members from "./pages/Members/MembersPage.svelte";
     import MemberDetails from "./pages/MemberDetails/MemberDetailsPage.svelte";
     import Events from "./pages/Events/EventsPage.svelte";
-    import EventEditor from "./pages/EventEditor.svelte";
+    import EventDetails from "./pages/EventDetails/EventDetailsPage.svelte";
     import Library from "./pages/Library.svelte";
     import LibraryEditor from "./pages/LibraryEditor.svelte";
 
@@ -21,7 +21,7 @@
         "/members": Members,
         "/members/details": MemberDetails,
         "/events": Events,
-        "/events/edit": EventEditor,
+        "/events/details": EventDetails,
         "/library": Library,
         "/library/edit": LibraryEditor,
     };

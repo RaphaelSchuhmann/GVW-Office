@@ -59,20 +59,6 @@ eventsRouter.post("/add", async (req, resp) => {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
-        // Check for duplicate event
-        const duplicate = await dbService.find("events", {
-            selector: {
-                name: event.name,
-                date: event.date,
-                time: event.time
-            },
-            limit: 1
-        });
-
-        if (duplicate.length > 0) {
-            return resp.status(409).json({ errorMessage: "EventAlreadyExists" });
-        }
-
         await dbService.create("events", event);
 
         return resp.status(200).json({ ok: true });

@@ -6,6 +6,7 @@
         selected = $bindable(""),
         marginTop = "",
         onChange = undefined,
+        disabled = false,
         ...restProps
     } = $props();
 
@@ -60,7 +61,8 @@
         <button
             bind:this={tabElements[index]}
             type="button"
-            class="relative z-10 w-full p-1 rounded-full flex items-center justify-center text-center text-dt-5 text-gv-dark cursor-pointer hover:bg-gv-hover-effect/50 transition-colors duration-150"
+            disabled={disabled}
+            class="relative z-10 w-full p-1 rounded-full flex items-center justify-center text-center min-[800px]:text-dt-5 text-dt-6 text-gv-dark cursor-pointer hover:bg-gv-hover-effect/50 transition-colors duration-150"
             onclick={() => selected = tab.title}
         >
             {tab.title}

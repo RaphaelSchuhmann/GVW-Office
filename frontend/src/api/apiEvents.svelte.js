@@ -137,7 +137,7 @@ export async function apiUpdateEventStatus(id) {
  * }
  */
 export async function apiUpdateEvent(event) {
-    const resp = await httpPost(`${apiUrl}/events/update`, event);
+    const resp = await httpPost(`${apiUrl}/events/update`, { event: event });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
