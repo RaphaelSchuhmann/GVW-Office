@@ -22,7 +22,7 @@ const apiUrl = __API_URL__;
  *   console.log(body?.maxMembers);
  * }
  */
-export async function getSettings() {
+export async function apiGetSettings() {
     const resp = await httpGet(`${apiUrl}/settings/get`, "", false);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
@@ -48,7 +48,7 @@ export async function getSettings() {
  *   console.log("Max members updated");
  * }
  */
-export async function updateMaxMembers(maxMembers) {
+export async function apiUpdateMaxMembers(maxMembers) {
     const resp = await httpPost(`${apiUrl}/settings/update/max-members`, { maxMembers: maxMembers });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
@@ -75,7 +75,7 @@ export async function updateMaxMembers(maxMembers) {
  *   console.log("Added category");
  * }
  */
-export async function addCategory(type, displayValue) {
+export async function apiAddCategory(type, displayValue) {
     const resp = await httpPost(`${apiUrl}/settings/update/categories/add`, { type: type, displayName: displayValue });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
@@ -101,7 +101,7 @@ export async function addCategory(type, displayValue) {
  *   console.log("Removed category")
  * }
  */
-export async function removeCategory(type) {
+export async function apiRemoveCategory(type) {
     const resp = await httpPost(`${apiUrl}/settings/update/categories/remove`, { type: type });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
