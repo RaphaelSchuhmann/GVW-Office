@@ -359,7 +359,7 @@
                     </div>
                 {/if}
 
-                {#if viewport.width > 900 && isEditing}
+                {#if isEditing}
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
                         <Button type="primary" disabled={!hasChanges} onclick={async () => await updateEventData()}>

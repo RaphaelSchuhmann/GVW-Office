@@ -30,7 +30,7 @@ authRouter.post("/login", async (req, resp) => {
             limit: 1
         });
 
-        if (users.length === 0) return resp.status(404).json({ errorMessage: "UserNotFound" });
+        if (users.length === 0) return resp.status(401).json({ errorMessage: "UserNotFound" });
 
         const user = users[0];
 
