@@ -20,7 +20,7 @@
     });
 
     $effect(() => {
-        if (!eventId || !eventData) {
+        if (!eventId || (eventsStore.raw.length > 0 && !eventData)) {
             push("/events");
         }
     });

@@ -58,7 +58,7 @@ export async function init(pageKey) {
  * @global
  */
 export function clearDebounce() {
-    clearTimeout(fetchIntervalId);
+    clearInterval(fetchIntervalId);
     fetchIntervalId = null;
 }
 
