@@ -175,3 +175,15 @@ export function getFileExtensionFromPath(path) {
     const splitEnd = pathEnding.split(".");
     return splitEnd[splitEnd.length - 1];
 }
+
+/**
+ * Determines if a string contains a number
+ * @param {string} str - String to check
+ * @returns {boolean} True if string contains a number
+ */
+export function determineChoirType(str) {
+    if (/\d/.test(str)) {
+        return true;
+    }
+    return false;
+}

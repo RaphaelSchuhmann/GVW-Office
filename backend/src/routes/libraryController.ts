@@ -24,7 +24,7 @@ libraryRouter.get("/all", async (_, resp) => {
             ({ _id, _rev, files, ...score }) => ({ 
                 id: _id, 
                 ...score,
-                paths: files?.map(
+                files: files?.map(
                     ({ originalName }: { originalName: string }) => `${originalName}`
                 ) ?? []
             })
