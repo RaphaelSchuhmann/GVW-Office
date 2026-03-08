@@ -44,7 +44,6 @@ export function getLibraryCategories(includeAll) {
             } else {
                 // Neither has underscores, take the one with at least one capital letter
                 const keyHasCapital = /[A-Z]/.test(key);
-                const valueHasCapital = /[A-Z]/.test(value);
                 displayName = keyHasCapital ? key : value;
             }
 
