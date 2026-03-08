@@ -1,0 +1,237 @@
+import { appSettings } from "../stores/appSettings.svelte";
+import { libraryStore } from "../stores/library.svelte";
+import { apiAddScore, apiDeleteScore, apiDownloadScoreFiles } from "../api/apiLibrary.svelte";
+import { normalizeResponse } from "../api/http.svelte";
+import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { addToast } from "../stores/toasts.svelte";
+import { viewport } from "../stores/viewport.svelte";
+
+export const voiceMap = {
+    "t": "Tenor",
+    "t1": "1. Tenor",
+    "t2": "2. Tenor",
+    "b": "Bass",
+    "b1": "1. Bass",
+    "b2": "2. Bass",
+    "s": "Sopran",
+    "a": "Alt"
+};
+
+let isFetching = {
+    newScore: false,
+    updateScore: false,
+    deleteScore: false,
+    downloadScore: false
+};
+
+export function getLibraryCategories(includeAll) {
+    const categories = appSettings.scoreCategories || {};
+    const displayNames = [];
+    const processedKeys = new Set();
+
+    Object.keys(categories).forEach((key) => {
+        // Skip default entries and already processed keys
+        if (key === "" || key === "all" || categories[key] === "all" || processedKeys.has(key)) return;
+
+        const value = categories[key];
+        // If this key maps to a value that maps back to this key, we have a bidirectional pair
+        if (categories[value] === key) {
+            let displayName;
+
+            // Check if either key or value has underscores
+            if (key.includes("_") || value.includes("_")) {
+                // Take the one without underscores as the display name
+                displayName = key.includes("_") ? value : key;
+            } else {
+                // Neither has underscores, take the one with at least one capital letter
+                const keyHasCapital = /[A-Z]/.test(key);
+                displayName = keyHasCapital ? key : value;
+            }
+
+            displayNames.push(displayName);
+            processedKeys.add(key);
+            processedKeys.add(value);
+        }
+    });
+
+    return includeAll ? ["Alle Kategorien", ...displayNames] : displayNames;
+}
+
+export function getCategoryCount(category) {
+    const categoriesMap = appSettings.scoreCategories || {};
+    const categoryType = categoriesMap[category];
+    const items = libraryStore.raw;
+
+    let count = 0;
+    for (const item in items) {
+        if (items[item].type === categoryType) count++;
+    }
+
+    return count;
+}
+
+export async function deleteScore(id) {
+    if (isFetching.deleteScore) return;
+    isFetching.deleteScore = true;
+
+    try {
+        const { resp } = await apiDeleteScore(id);
+
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "NOTFOUND") {
+                addToast({
+                    title: "Noten nicht gefunden",
+                    subTitle: !viewport.isMobile ? "Die Noten die Sie löschen möchten wurden nicht gefunden." : "",
+                    type: "error"
+                });
+            } else if (normalizedResponse.errorType === "BADREQUEST") {
+                addToast({
+                    title: "Ungültige Daten",
+                    subTitle: !viewport.isMobile ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Fehler beim Löschen",
+                    subTitle: !viewport.isMobile ? "Beim Löschen des Eintrags ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            }
+            return;
+        }
+
+        addToast({
+            title: "Eintrag gelöscht",
+            subTitle: !viewport.isMobile ? "Der Eintrag wurde erfolgreich gelöscht." : "",
+            type: "success"
+        });
+    } finally {
+        isFetching.deleteScore = false;
+    }
+}
+
+export async function downloadScoreFiles(id) {
+    if (isFetching.downloadScore) return;
+    isFetching.downloadScore = true;
+
+    try {
+        // Note: The body can contain the error body or the file blob!
+        const { resp, body } = await apiDownloadScoreFiles(id);
+
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "NOTFOUND") {
+                if (body?.errorMessage === "ScoreNotFound") {
+                    addToast({
+                        title: "Noten nicht gefunden",
+                        subTitle: !viewport.isMobile ? "Die Noten wurden in der Notenbibliothek nicht gefunden." : "",
+                        type: "error"
+                    });
+                } else if (body?.errorMessage === "NoFilesFound") {
+                    addToast({
+                        title: "Keine Dateien gefunden",
+                        subTitle: !viewport.isMobile ? "Es sind keine Dateien für diese Noten hinterlegt." : "",
+                        type: "info"
+                    });
+                } else {
+                    addToast({
+                        title: "Unerwarteter Fehler",
+                        subTitle: !viewport.isMobile ? "Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                        type: "error"
+                    });
+                }
+            } else {
+                addToast({
+                    title: "Fehler beim Download",
+                    subTitle: !viewport.isMobile ? "Beim Download der Noten ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            }
+            return;
+        }
+
+        const url = URL.createObjectURL(body);
+
+        const scoreName = libraryStore.raw.find(s => s.id === id)?.title ?? "Noten";
+
+        const a = document.createElement("a");
+        try {
+            a.href = url;
+            a.download = `${scoreName}.zip`;
+            a.click();
+        } finally {
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+        }
+
+        addToast({
+            title: "Download erfolgreich",
+            subTitle: !viewport.isMobile ? "Die Noten wurden erfolgreich aus der Notenbibliothek heruntergeladen." : "",
+            type: "success"
+        });
+    } finally {
+        isFetching.downloadScore = false;
+    }
+}
+
+export async function addScore(score) {
+    if (isFetching.newScore) return;
+    isFetching.newScore = true;
+
+    console.log(score);
+
+    try {
+        const formData = new FormData();
+
+        formData.append("scoreId", score.scoreId);
+        formData.append("title", score.title);
+        formData.append("artist", score.artist);
+        formData.append("type", score.type);
+        formData.append("voices", JSON.stringify(score.voices));
+        formData.append("voiceCount", String(score.voiceCount));
+
+        for (const file of score.files) {
+            formData.append("files", file, file.name);
+        }
+
+        const { resp } = await apiAddScore(formData);
+
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "CONFLICT") {
+                addToast({
+                    title: "Eintrag bereits vorhanden",
+                    subTitle: !viewport.isMobile ? "Es existiert bereits ein Eintrag mit diesem Titel und Künstler in der Notenbibliothek." : "",
+                    type: "error"
+                });
+            } else if (normalizedResponse.errorType === "BADREQUEST") {
+                addToast({
+                    title: "Ungültige Daten",
+                    subTitle: !viewport.isMobile ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Fehler beim Speichern",
+                    subTitle: !viewport.isMobile ? "Beim Speichern des neuen Eintrags ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            }
+            return;
+        }
+
+        addToast({
+            title: "Eintrag hinzugefügt",
+            subTitle: !viewport.isMobile ? "Der neue Eintrag wurde erfolgreich zur Notenbibliothek hinzugefügt." : "",
+            type: "success"
+        });
+    } finally {
+        isFetching.newScore = false;
+    }
+}

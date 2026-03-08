@@ -28,7 +28,7 @@
     }
 </script>
 
-<div class="flex flex-col items-center w-full flex-1">
+<div class="flex flex-col items-center w-full flex-1 overflow-y-auto">
     <div class="flex flex-col items-center w-full h-full flex-1 p-5">
         <SidebarButton selected={currentPage === "dashboard"} minimized={minimized} onclick={async () => await push("/dashboard")}>
             <span class="material-symbols-rounded text-icon-dt-4">dashboard</span>

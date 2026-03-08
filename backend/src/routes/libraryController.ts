@@ -43,9 +43,9 @@ const libraryUpload = multer({
 
 libraryRouter.post("/new", libraryUpload.array("files"), async (req, resp) => {
     try {
-        const { title, artist, type, voices, voiceCount } = req.body;
+        const { scoreId, title, artist, type, voices, voiceCount } = req.body;
 
-        if (!title || !artist || !type || !voices || !voiceCount) {
+        if (!scoreId || !title || !artist || !type || !voices || !voiceCount) {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
@@ -65,12 +65,13 @@ libraryRouter.post("/new", libraryUpload.array("files"), async (req, resp) => {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
-        const exists = await dbService.find("library", { selector: { title: title, artist: artist }, limit: 1 });
+        const exists = await dbService.find("library", { selector: { scoreId: scoreId, title: title, artist: artist }, limit: 1 });
         if (exists.length > 0) return resp.status(409).json({ errorMessage: "AlreadyExists" });
 
         const files = await storeFiles(req.files ?? []);
 
         await dbService.create("library", {
+            scoreId: scoreId,
             title: title,
             artist: artist,
             type: type,

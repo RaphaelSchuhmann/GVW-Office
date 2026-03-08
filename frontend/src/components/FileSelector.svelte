@@ -1,6 +1,7 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
     import { addToast } from "../stores/toasts.svelte";
+    import { viewport } from "../stores/viewport.svelte";
 
     let {
         title = "",
@@ -33,7 +34,7 @@
             } else {
                 addToast({
                     title: "Datei wird schon verwendet",
-                    subTitle: "Die von ihnen ausgewählte Datei ist bereits im Anhang.",
+                    subTitle: !viewport.isMobile ? "Die von ihnen ausgewählte Datei ist bereits im Anhang." : "",
                     type: "warning"
                 });
             }

@@ -1,4 +1,4 @@
-import { getSettings } from "../api/apiAppSettings.svelte";
+import { apiGetSettings } from "../api/apiAppSettings.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
@@ -48,7 +48,7 @@ export async function loadAppSettings() {
     if (isFetching) return;
     isFetching = true;
     try {
-        const { resp, body } = await getSettings();
+        const { resp, body } = await apiGetSettings();
     
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
