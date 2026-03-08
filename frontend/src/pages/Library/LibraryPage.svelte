@@ -4,6 +4,7 @@
     import { init } from "../../services/filterService.svelte";
 
     import LibraryDesktop from "./LibraryDesktop.svelte";
+    import LibraryMobile from "./LibraryMobile.svelte";
 
     $effect(() => {
         (async () => {
@@ -13,8 +14,8 @@
     });
 </script>
 
-{#if viewport.isMobile}
-    <LibraryDesktop />
+{#if viewport.width < 800}
+    <LibraryMobile />
 {:else}
     <LibraryDesktop />
 {/if}
