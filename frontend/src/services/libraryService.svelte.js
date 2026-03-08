@@ -1,6 +1,6 @@
 import { appSettings } from "../stores/appSettings.svelte";
 import { libraryStore } from "../stores/library.svelte";
-import { apiDeleteScore, apiDownloadScoreFiles } from "../api/apiLibrary.svelte";
+import { apiAddScore, apiDeleteScore, apiDownloadScoreFiles } from "../api/apiLibrary.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { addToast } from "../stores/toasts.svelte";
@@ -171,5 +171,63 @@ export async function downloadScoreFiles(id) {
         });
     } finally {
         isFetching.downloadScore = false;
+    }
+}
+
+export async function addScore(score) {
+    if (isFetching.newScore ) return;
+    isFetching.newScore = true;
+
+    console.log(score);
+
+    try {
+        const formData = new FormData();
+
+        formData.append("scoreId", score.scoreId);
+        formData.append("title", score.title);
+        formData.append("artist", score.artist);
+        formData.append("type", score.type);
+        formData.append("voices", JSON.stringify(score.voices));
+        formData.append("voiceCount", String(score.voiceCount));
+
+        for (const file of score.files) {
+            formData.append("files", file, file.name);
+        }
+
+        const { resp } = await apiAddScore(formData);
+
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "CONFLICT") {
+                addToast({
+                    title: "Eintrag bereits vorhanden",
+                    subTitle: !viewport.isMobile ? "Es existiert bereits ein Eintrag mit diesem Titel und Künstler in der Notenbibliothek." : "",
+                    type: "error"
+                });
+            } else if (normalizedResponse.errorType === "BADREQUEST") {
+                addToast({
+                    title: "Ungültige Daten",
+                    subTitle: !viewport.isMobile ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Fehler beim Speichern",
+                    subTitle: !viewport.isMobile ? "Beim Speichern des neuen Eintrags ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            }
+            return;
+        }
+
+        addToast({
+            title: "Eintrag hinzugefügt",
+            subTitle: !viewport.isMobile ? "Der neue Eintrag wurde erfolgreich zur Notenbibliothek hinzugefügt." : "",
+            type: "success"
+        });
+    } finally {
+        isFetching.newScore = false;
     }
 }

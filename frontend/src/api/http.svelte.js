@@ -60,15 +60,16 @@ export async function httpGet(url, customToken = "", doAuth = true) {
  * @param {any} body - The data to send as JSON in the request body.
  * @param {string} [customToken=""] - Optional token to override the authSvelte store token.
  * @param {boolean} [doAuth=true] - Whether to include the Authorization header.
+ * @param {boolean} [usingFormData=false] - Set to true if sending FormData instead of JSON.
  * @returns {Promise<Response | null>} The fetch response, or `null` if the request fails.
  *
  * @example
  * const resp = await httpPost("/api/update", { name: "Raphael" });
  * if (resp?.ok) console.log("Update successful");
  */
-export async function httpPost(url, body, customToken = "", doAuth = true) {
+export async function httpPost(url, body, customToken = "", doAuth = true, usingFormData = false) {
     const headers = new Headers();
-    headers.append("Content-Type", "application/json");
+    if (!usingFormData) headers.append("Content-Type", "application/json");
 
     const token = customToken ? customToken : auth.token;
     if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
@@ -77,7 +78,7 @@ export async function httpPost(url, body, customToken = "", doAuth = true) {
         return await fetch(url, {
             method: "POST",
             headers: headers,
-            body: JSON.stringify(body)
+            body: usingFormData ? body : JSON.stringify(body)
         });
     } catch {
         return null;
