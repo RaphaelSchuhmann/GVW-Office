@@ -98,6 +98,12 @@
         addScoreModal.hideModal();
     }
 
+    function toggleVoice(voice, isChecked) {
+        scoreInput.voices = isChecked
+            ? [...new Set([...scoreInput.voices, voice])]
+            : scoreInput.voices.filter((item) => item !== voice);
+    }
+
     let sidebarOpen = $state(false);
 
     /**
@@ -127,47 +133,23 @@
     <div class="w-full flex items-start justify-start mt-2 gap-8">
         {#if selectedChoirType === "Männerchor"}
             <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="1. Tenor"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("t1") : scoreInput.voices.filter(item => item !== "t1");
-                          }} />
-                <Checkbox title="2. Tenor"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("t2") : scoreInput.voices.filter(item => item !== "t2");
-                          }} />
+                <Checkbox title="1. Tenor" onChange={(isChecked) => {toggleVoice("t1", isChecked);}} />
+                <Checkbox title="2. Tenor" onChange={(isChecked) => {toggleVoice("t2", isChecked);}} />
             </div>
 
             <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="1. Bass"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("b1") : scoreInput.voices.filter(item => item !== "b1");
-                          }} />
-                <Checkbox title="2. Bass"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("b2") : scoreInput.voices.filter(item => item !== "b2");
-                          }} />
+                <Checkbox title="1. Bass" onChange={(isChecked) => {toggleVoice("b1", isChecked);}} />
+                <Checkbox title="2. Bass" onChange={(isChecked) => {toggleVoice("b2", isChecked);}} />
             </div>
         {:else}
             <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="Tenor"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("t") : scoreInput.voices.filter(item => item !== "t");
-                          }} />
-                <Checkbox title="Bass"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("b") : scoreInput.voices.filter(item => item !== "b");
-                          }} />
+                <Checkbox title="Tenor" onChange={(isChecked) => {toggleVoice("t", isChecked);}} />
+                <Checkbox title="Bass" onChange={(isChecked) => {toggleVoice("b", isChecked);}} />
             </div>
 
             <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="Sopran"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("s") : scoreInput.voices.filter(item => item !== "s");
-                          }} />
-                <Checkbox title="Alt"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("a") : scoreInput.voices.filter(item => item !== "a");
-                          }} />
+                <Checkbox title="Sopran" onChange={(isChecked) => {toggleVoice("s", isChecked);}} />
+                <Checkbox title="Alt" onChange={(isChecked) => {toggleVoice("a", isChecked);}} />
             </div>
         {/if}
     </div>

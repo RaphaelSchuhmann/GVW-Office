@@ -29,7 +29,7 @@
     }
 </script>
 
-<Modal title="Kategorien" subTitle="Vewaltung von Kategorien" bind:this={modal} isMobile={isMobile}>
+<Modal title="Kategorien" subTitle="Verwaltung von Kategorien" bind:this={modal} isMobile={isMobile}>
     <div class="flex flex-col items-center border-2 border-gv-border rounded-2 mt-5">
         <div class="max-h-90 overflow-y-auto w-full">
             {#each categories as category}

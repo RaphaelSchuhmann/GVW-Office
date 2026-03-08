@@ -14,7 +14,7 @@ export const voiceMap = {
     "b1": "1. Bass",
     "b2": "2. Bass",
     "s": "Sopran",
-    "a": "Alt",
+    "a": "Alt"
 };
 
 let isFetching = {
@@ -84,13 +84,13 @@ export async function deleteScore(id) {
             if (normalizedResponse.errorType === "NOTFOUND") {
                 addToast({
                     title: "Noten nicht gefunden",
-                    subTitle: !viewport.isMobile ?  "Die Noten die Sie löschen möchten wurden nicht gefunden." : "",
+                    subTitle: !viewport.isMobile ? "Die Noten die Sie löschen möchten wurden nicht gefunden." : "",
                     type: "error"
                 });
             } else if (normalizedResponse.errorType === "BADREQUEST") {
                 addToast({
                     title: "Ungültige Daten",
-                    subTitle: !viewport.isMobile ?  "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
+                    subTitle: !viewport.isMobile ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
                     type: "error"
                 });
             } else {
@@ -105,7 +105,7 @@ export async function deleteScore(id) {
 
         addToast({
             title: "Eintrag gelöscht",
-            subTitle: !viewport.isMobile ?  "Der Eintrag wurde erfolgreich gelöscht." : "",
+            subTitle: !viewport.isMobile ? "Der Eintrag wurde erfolgreich gelöscht." : "",
             type: "success"
         });
     } finally {
@@ -126,17 +126,17 @@ export async function downloadScoreFiles(id) {
 
         if (!normalizedResponse.ok) {
             if (normalizedResponse.errorType === "NOTFOUND") {
-                if (body.errorMessage === "ScoreNotFound") {
+                if (body?.errorMessage === "ScoreNotFound") {
                     addToast({
                         title: "Noten nicht gefunden",
                         subTitle: !viewport.isMobile ? "Die Noten wurden in der Notenbibliothek nicht gefunden." : "",
-                        type: "error",
+                        type: "error"
                     });
-                } else if (body.errorMessage === "NoFilesFound") {
+                } else if (body?.errorMessage === "NoFilesFound") {
                     addToast({
                         title: "Keine Dateien gefunden",
                         subTitle: !viewport.isMobile ? "Es sind keine Dateien für diese Noten hinterlegt." : "",
-                        type: "info",
+                        type: "info"
                     });
                 } else {
                     addToast({
@@ -160,14 +160,18 @@ export async function downloadScoreFiles(id) {
         const scoreName = libraryStore.raw.find(s => s.id === id)?.title ?? "Noten";
 
         const a = document.createElement("a");
-        a.href = url;
-        a.download = `${scoreName}.zip`;
-        a.click();
+        try {
+            a.href = url;
+            a.download = `${scoreName}.zip`;
+            a.click();
+        } finally {
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+        }
 
         addToast({
             title: "Download erfolgreich",
             subTitle: !viewport.isMobile ? "Die Noten wurden erfolgreich aus der Notenbibliothek heruntergeladen." : "",
-            type: "success",
+            type: "success"
         });
     } finally {
         isFetching.downloadScore = false;
@@ -175,7 +179,7 @@ export async function downloadScoreFiles(id) {
 }
 
 export async function addScore(score) {
-    if (isFetching.newScore ) return;
+    if (isFetching.newScore) return;
     isFetching.newScore = true;
 
     console.log(score);

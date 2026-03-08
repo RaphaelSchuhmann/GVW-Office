@@ -99,11 +99,17 @@
         };
     }
 
+    function toggleVoice(voice, isChecked) {
+        scoreInput.voices = isChecked
+            ? [...new Set([...scoreInput.voices, voice])]
+            : scoreInput.voices.filter((item) => item !== voice);
+    }
+
     async function submitScore() {
         const score = {
             ...scoreInput,
             voiceCount: scoreInput.voices.length
-        }
+        };
 
         await addScore($state.snapshot(score));
         await fetchAndSetRaw();
@@ -190,54 +196,30 @@
     <div class="w-full flex items-start justify-start mt-2 gap-8">
         {#if selectedChoirType === "Männerchor"}
             <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="1. Tenor"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("t1") : scoreInput.voices.filter(item => item !== "t1");
-                          }} />
-                <Checkbox title="2. Tenor"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("t2") : scoreInput.voices.filter(item => item !== "t2");
-                          }} />
+                <Checkbox title="1. Tenor" onChange={(isChecked) => {toggleVoice("t1", isChecked);}} />
+                <Checkbox title="2. Tenor" onChange={(isChecked) => {toggleVoice("t2", isChecked);}} />
             </div>
 
             <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="1. Bass"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("b1") : scoreInput.voices.filter(item => item !== "b1");
-                          }} />
-                <Checkbox title="2. Bass"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("b2") : scoreInput.voices.filter(item => item !== "b2");
-                          }} />
+                <Checkbox title="1. Bass" onChange={(isChecked) => {toggleVoice("b1", isChecked);}} />
+                <Checkbox title="2. Bass" onChange={(isChecked) => {toggleVoice("b2", isChecked);}} />
             </div>
         {:else}
             <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="Tenor"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("t") : scoreInput.voices.filter(item => item !== "t");
-                          }} />
-                <Checkbox title="Bass"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("b") : scoreInput.voices.filter(item => item !== "b");
-                          }} />
+                <Checkbox title="Tenor" onChange={(isChecked) => {toggleVoice("t", isChecked);}} />
+                <Checkbox title="Bass" onChange={(isChecked) => {toggleVoice("b", isChecked);}} />
             </div>
 
             <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="Sopran"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("s") : scoreInput.voices.filter(item => item !== "s");
-                          }} />
-                <Checkbox title="Alt"
-                          onChange={(isChecked) => {
-                              isChecked ? scoreInput.voices.push("a") : scoreInput.voices.filter(item => item !== "a");
-                          }} />
+                <Checkbox title="Sopran" onChange={(isChecked) => {toggleVoice("s", isChecked);}} />
+                <Checkbox title="Alt" onChange={(isChecked) => {toggleVoice("a", isChecked);}} />
             </div>
         {/if}
     </div>
 
     <FileSelector title="Noten" marginTop="5"
                   validTypes={["pdf", "gp", "gp5", "gp3", "gp4", "gpx", "cap", "capx"]} page="library"
-                  bind:files={scoreInput.files}/>
+                  bind:files={scoreInput.files} />
 
     <div class="w-full flex items-center gap-4 mt-5">
         <Button type="secondary" onclick={() => addScoreModal.hideModal()}>Abbrechen</Button>
@@ -248,7 +230,8 @@
 <main class="flex overflow-hidden">
     <DesktopSidebar onSettingsClick={settingsClick} currentPage="library"></DesktopSidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
-        <PageHeader title="Notenbibliothek" subTitle="Verwaltung des gesamten Notenmaterials" showSlot={viewport.width > 1300}>
+        <PageHeader title="Notenbibliothek" subTitle="Verwaltung des gesamten Notenmaterials"
+                    showSlot={viewport.width > 1300}>
             {#if (user.role === "vorstand" || user.role === "admin" || user.role === "Notenwart" || user.role === "chorleitung") && viewport.width > 1300}
                 <Button type="primary" onclick={() => categoryModal.openModal()}>
                     <span class="material-symbols-rounded text-icon-dt-4 mr-2">discover_tune</span>
@@ -264,7 +247,8 @@
         {#if (user.role === "vorstand" || user.role === "admin" || user.role === "Notenwart" || user.role === "chorleitung") && viewport.width < 1300}
             <div class="flex items-center w-full min-[1000px]:gap-4 gap-2 mt-5">
                 <Button type="primary" onclick={() => categoryModal.openModal()}>
-                    <span class="material-symbols-rounded min-[1000px]:text-icon-dt-4 text-icon-dt-5 mr-2">discover_tune</span>
+                    <span
+                        class="material-symbols-rounded min-[1000px]:text-icon-dt-4 text-icon-dt-5 mr-2">discover_tune</span>
                     <p class="min-[1000px]:text-dt-4 text-dt-5">Kategorien</p>
                 </Button>
                 <Button type="primary" onclick={() => addScoreModal.showModal()}>

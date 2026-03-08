@@ -76,7 +76,7 @@ export async function addScoreCategory(category) {
     const { resp } = await apiAddCategory(type, displayValue);
 
     const normalizedResponse = normalizeResponse(resp);
-    if (handleGlobalApiError(normalizedResponse)) return;
+    if (handleGlobalApiError(normalizedResponse)) return false;
 
     if (!normalizedResponse.ok) {
         if (normalizedResponse.errorType === "BADREQUEST") {
