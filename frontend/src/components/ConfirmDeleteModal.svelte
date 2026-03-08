@@ -4,10 +4,8 @@
     import Input from "./Input.svelte";
     import { removeMember } from "../services/membersService.svelte";
     import { deleteEvent } from "../services/eventsService.svelte";
-    import { deleteScore } from "../services/library";
+    import { deleteScore } from "../services/libraryService.svelte";
     import { addToast } from "../stores/toasts.svelte";
-    import { logout } from "../services/userService.svelte";
-    import { push } from "svelte-spa-router";
 
     const actionMap = {
         "deleteMember": removeMember,
@@ -50,9 +48,7 @@
     async function handleDelete() {
         confirmDeleteModal?.hideModal();
 
-        const DEV_refactoredRemoveServices = ["deleteMember", "deleteEvent"];
-
-        if (activeAction !== "none" && DEV_refactoredRemoveServices.includes(activeAction)) {
+        if (activeAction !== "none") {
             const apiFunction = actionMap[activeAction];
             if (!apiFunction) {
                 addToast({
@@ -65,49 +61,7 @@
             }
 
             await apiFunction(id);
-
-            onClose();
-            return;
         }
-
-        if (activeAction !== "none") {
-            const apiFunction = actionMap[activeAction];
-            const resp = await apiFunction(id);
-
-            if (resp.status === 200) {
-                addToast(toastMap.success);
-            } else if (resp.status === 401) {
-                addToast({
-                    title: "Ungültiges Token",
-                    subTitle: !isMobile ? "Ihr Authentifizierungstoken ist ungültig oder abgelaufen..." : "",
-                    type: "error"
-                });
-                logout();
-                await push("/?cpwErr=false");
-                return;
-            } else if (resp.status === 400) {
-                addToast({
-                    title: "Unvollständige Daten",
-                    subTitle: !isMobile ? "Es wurden unvollständige Daten übermittelt." : "",
-                    type: "error"
-                });
-            } else if (resp.status === 404) {
-                addToast(toastMap.notFound);
-            } else {
-                addToast({
-                    title: "Interner Serverfehler",
-                    subTitle: !isMobile ? "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten." : "",
-                    type: "error"
-                });
-            }
-        } else {
-            addToast({
-                title: "Unerwarteter Fehler",
-                subTitle: !isMobile ? "Aktion wird nicht unterstützt." : "",
-                type: "error"
-            });
-        }
-
         onClose();
     }
 </script>

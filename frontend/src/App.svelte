@@ -9,8 +9,7 @@
     import MemberDetails from "./pages/MemberDetails/MemberDetailsPage.svelte";
     import Events from "./pages/Events/EventsPage.svelte";
     import EventDetails from "./pages/EventDetails/EventDetailsPage.svelte";
-    import Library from "./pages/Library.svelte";
-    import LibraryEditor from "./pages/LibraryEditor.svelte";
+    import Library from "./pages/Library/LibraryPage.svelte";
 
     import { startSyncService, stopSyncService } from "./services/appSettingsSyncService.svelte";
 
@@ -23,7 +22,6 @@
         "/events": Events,
         "/events/details": EventDetails,
         "/library": Library,
-        "/library/edit": LibraryEditor,
     };
 
     $effect(() => {

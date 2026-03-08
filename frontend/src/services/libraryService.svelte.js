@@ -1,5 +1,10 @@
 import { appSettings } from "../stores/appSettings.svelte";
 import { libraryStore } from "../stores/library.svelte";
+import { apiDeleteScore } from "../api/apiLibrary.svelte";
+import { normalizeResponse } from "../api/http.svelte";
+import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { addToast } from "../stores/toasts.svelte";
+import { viewport } from "../stores/viewport.svelte";
 
 export const voiceMap = {
     "t": "Tenor",
@@ -12,7 +17,11 @@ export const voiceMap = {
     "a": "Alt",
 };
 
-
+let isFetching = {
+    newScore: false,
+    updateScore: false,
+    deleteScore: false
+};
 
 export function getLibraryCategories(includeAll) {
     const categories = appSettings.scoreCategories || {};
@@ -59,4 +68,47 @@ export function getCategoryCount(category) {
     }
 
     return count;
+}
+
+export async function deleteScore(id) {
+    if (isFetching.deleteScore) return;
+    isFetching.deleteScore = true;
+
+    try {
+        const { resp } = await apiDeleteScore(id);
+
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "NOTFOUND") {
+                addToast({
+                    title: "Noten nicht gefunden",
+                    subTitle: !viewport.isMobile ?  "Die Noten die Sie löschen möchten wurden nicht gefunden." : "",
+                    type: "error"
+                });
+            } else if (normalizedResponse.errorType === "BADREQUEST") {
+                addToast({
+                    title: "Ungültige Daten",
+                    subTitle: !viewport.isMobile ?  "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Fehler beim Löschen",
+                    subTitle: !viewport.isMobile ? "Beim Löschen des Eintrags ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            }
+            return;
+        }
+
+        addToast({
+            title: "Eintrag gelöscht",
+            subTitle: !viewport.isMobile ?  "Der Eintrag wurde erfolgreich gelöscht." : "",
+            type: "success"
+        });
+    } finally {
+        isFetching.deleteScore = false;
+    }
 }

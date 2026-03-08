@@ -4,7 +4,7 @@ import { libraryFilterState, libraryStore } from "../stores/library.svelte";
 import { statusMap, typeMap } from "../services/eventsService.svelte";
 import { apiGetMembers } from "../api/apiMembers.svelte";
 import { apiGetEvents } from "../api/apiEvents.svelte";
-import { getScores } from "../api/apiLibrary.svelte";
+import { apiGetScores } from "../api/apiLibrary.svelte";
 import { appSettings } from "../stores/appSettings.svelte";
 
 /**
@@ -42,7 +42,7 @@ export const filterRegistry = {
         }
     },
     library: {
-        fetch: getScores,
+        fetch: apiGetScores,
         store: libraryStore,
         filterState: libraryFilterState,
         get optionMap() { return appSettings.scoreCategories; },
