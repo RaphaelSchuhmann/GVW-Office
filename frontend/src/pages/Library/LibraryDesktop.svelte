@@ -1,5 +1,5 @@
 <script>
-    import { voiceMap, getLibraryCategories } from "../../services/libraryService.svelte";
+    import { voiceMap, getLibraryCategories, downloadScoreFiles } from "../../services/libraryService.svelte";
     import { user } from "../../stores/user.svelte.js";
     import { libraryStore } from "../../stores/library.svelte.js";
     import { appSettings } from "../../stores/appSettings.svelte.js";
@@ -114,7 +114,7 @@
                     onClose={async () => {menu.data.open = false; menu.data.activeId = null; await fetchAndSetRaw();}}
                     bind:this={confirmDeleteScoreModal}/>
 
-<!--TODO: Score Download, New Score-->
+<!--TODO: New Score-->
 
 <main class="flex overflow-hidden">
     <DesktopSidebar onSettingsClick={settingsClick} currentPage="library"></DesktopSidebar>
@@ -151,7 +151,8 @@
                             </div>
                             <div class="flex items-center justify-center ml-auto">
                                 <button
-                                    class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2">
+                                    class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2"
+                                    onclick={async () => await downloadScoreFiles(score.id)}>
                                     <span class="material-symbols-rounded text-icon-dt-5">download</span>
                                 </button>
                                 <button

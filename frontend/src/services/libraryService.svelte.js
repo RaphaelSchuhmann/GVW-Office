@@ -1,6 +1,6 @@
 import { appSettings } from "../stores/appSettings.svelte";
 import { libraryStore } from "../stores/library.svelte";
-import { apiDeleteScore } from "../api/apiLibrary.svelte";
+import { apiDeleteScore, apiDownloadScoreFiles } from "../api/apiLibrary.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { addToast } from "../stores/toasts.svelte";
@@ -20,7 +20,8 @@ export const voiceMap = {
 let isFetching = {
     newScore: false,
     updateScore: false,
-    deleteScore: false
+    deleteScore: false,
+    downloadScore: false
 };
 
 export function getLibraryCategories(includeAll) {
@@ -109,5 +110,66 @@ export async function deleteScore(id) {
         });
     } finally {
         isFetching.deleteScore = false;
+    }
+}
+
+export async function downloadScoreFiles(id) {
+    if (isFetching.downloadScore) return;
+    isFetching.downloadScore = true;
+
+    try {
+        // Note: The body can contain the error body or the file blob!
+        const { resp, body } = await apiDownloadScoreFiles(id);
+
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "NOTFOUND") {
+                if (body.errorMessage === "ScoreNotFound") {
+                    addToast({
+                        title: "Noten nicht gefunden",
+                        subTitle: !viewport.isMobile ? "Die Noten wurden in der Notenbibliothek nicht gefunden." : "",
+                        type: "error",
+                    });
+                } else if (body.errorMessage === "NoFilesFound") {
+                    addToast({
+                        title: "Keine Dateien gefunden",
+                        subTitle: !viewport.isMobile ? "Es sind keine Dateien für diese Noten hinterlegt." : "",
+                        type: "info",
+                    });
+                } else {
+                    addToast({
+                        title: "Unerwarteter Fehler",
+                        subTitle: !viewport.isMobile ? "Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                        type: "error"
+                    });
+                }
+            } else {
+                addToast({
+                    title: "Fehler beim Download",
+                    subTitle: !viewport.isMobile ? "Beim Download der Noten ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                    type: "error"
+                });
+            }
+            return;
+        }
+
+        const url = URL.createObjectURL(body);
+
+        const scoreName = libraryStore.raw.find(s => s.id === id)?.title ?? "Noten";
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${scoreName}.zip`;
+        a.click();
+
+        addToast({
+            title: "Download erfolgreich",
+            subTitle: !viewport.isMobile ? "Die Noten wurden erfolgreich aus der Notenbibliothek heruntergeladen." : "",
+            type: "success",
+        });
+    } finally {
+        isFetching.downloadScore = false;
     }
 }
