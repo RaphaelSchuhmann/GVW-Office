@@ -24,6 +24,26 @@ let isFetching = {
     downloadScore: false
 };
 
+/**
+ * Returns a list of display names for all available score categories.
+ *
+ * The function reads the category mapping from `appSettings.scoreCategories`.
+ * Categories are internally stored as bidirectional key-value pairs
+ * (e.g., `type -> displayName` and `displayName -> type`). This function
+ * detects those pairs and extracts a single user-facing display name.
+ *
+ * Selection logic:
+ * - Entries with empty keys, `"all"`, or already processed pairs are ignored.
+ * - If one of the pair contains underscores, the value without underscores
+ *   is used as the display name.
+ * - Otherwise, the entry containing at least one capital letter is used.
+ *
+ * Optionally prepends `"Alle Kategorien"` to the list.
+ *
+ * @param {boolean} includeAll - Whether the result should include the default
+ * `"Alle Kategorien"` entry at the beginning of the list.
+ * @returns {string[]} An array of category display names.
+ */
 export function getLibraryCategories(includeAll) {
     const categories = appSettings.scoreCategories || {};
     const displayNames = [];
@@ -57,6 +77,16 @@ export function getLibraryCategories(includeAll) {
     return includeAll ? ["Alle Kategorien", ...displayNames] : displayNames;
 }
 
+/**
+ * Counts how many library entries belong to a specific category.
+ *
+ * The function resolves the internal category type using
+ * `appSettings.scoreCategories` and iterates over all entries
+ * in `libraryStore.raw` to determine how many scores match it.
+ *
+ * @param {string} category - The display name of the category.
+ * @returns {number} The number of scores assigned to the category.
+ */
 export function getCategoryCount(category) {
     const categoriesMap = appSettings.scoreCategories || {};
     const categoryType = categoriesMap[category];
@@ -70,6 +100,23 @@ export function getCategoryCount(category) {
     return count;
 }
 
+/**
+ * Deletes a score from the library.
+ *
+ * Sends a delete request to the backend and handles the response.
+ * Depending on the returned error type, different user-facing
+ * notifications are displayed.
+ *
+ * Supported error cases:
+ * - `NOTFOUND` → The score no longer exists.
+ * - `BADREQUEST` → Invalid input data was provided.
+ * - Other errors → Generic deletion failure.
+ *
+ * A success toast is displayed when the score is deleted successfully.
+ *
+ * @param {number|string} id - The unique identifier of the score to delete.
+ * @returns {Promise<void>}
+ */
 export async function deleteScore(id) {
     if (isFetching.deleteScore) return;
     isFetching.deleteScore = true;
@@ -113,6 +160,24 @@ export async function deleteScore(id) {
     }
 }
 
+/**
+ * Downloads all files associated with a score from the library.
+ *
+ * Requests the score files from the backend and, on success,
+ * creates a temporary object URL for the returned ZIP blob.
+ * The browser download is then triggered programmatically.
+ *
+ * Error cases handled:
+ * - `ScoreNotFound` → The requested score does not exist.
+ * - `NoFilesFound` → The score exists but has no files attached.
+ * - Other API errors → Generic download failure.
+ *
+ * After the download is triggered, the object URL is revoked
+ * to release browser memory.
+ *
+ * @param {number|string} id - The unique identifier of the score.
+ * @returns {Promise<void>}
+ */
 export async function downloadScoreFiles(id) {
     if (isFetching.downloadScore) return;
     isFetching.downloadScore = true;
@@ -178,6 +243,30 @@ export async function downloadScoreFiles(id) {
     }
 }
 
+/**
+ * Adds a new score entry to the library.
+ *
+ * The function constructs a `FormData` payload containing all
+ * metadata fields and uploaded files. Files are appended under
+ * the `"files"` field so they can be processed by the backend.
+ *
+ * Error cases handled:
+ * - `CONFLICT` → A score with the same title and artist already exists.
+ * - `BADREQUEST` → The provided data failed validation.
+ * - Other errors → Generic save failure.
+ *
+ * Displays a success notification when the score is successfully added.
+ *
+ * @param {Object} score - The score data to create.
+ * @param {string} score.scoreId - External or internal identifier.
+ * @param {string} score.title - Title of the score.
+ * @param {string} score.artist - Artist or composer.
+ * @param {string} score.type - Internal category identifier.
+ * @param {string[]} score.voices - Voice parts associated with the score.
+ * @param {number} score.voiceCount - Number of voices in the score.
+ * @param {File[]} score.files - Files to upload for the score.
+ * @returns {Promise<void>}
+ */
 export async function addScore(score) {
     if (isFetching.newScore) return;
     isFetching.newScore = true;
@@ -234,6 +323,39 @@ export async function addScore(score) {
     }
 }
 
+/**
+ * Updates an existing score entry in the library.
+ *
+ * The function prepares a `FormData` payload that may contain:
+ * - Updated metadata fields
+ * - Newly uploaded files
+ * - A list of removed files
+ *
+ * Files are separated into:
+ * - `newFiles` → Files that are newly uploaded (`File` instances)
+ * - `existingFileNames` → Files already stored on the server
+ *
+ * The backend receives:
+ * - `removedFiles` → File names that should be deleted
+ * - `files` → Newly uploaded files
+ *
+ * Error cases handled:
+ * - `BADREQUEST` → Invalid modification data.
+ * - `NOTFOUND` → The score no longer exists.
+ * - Other errors → Generic save failure.
+ *
+ * @param {Object} scoreData - Updated score information.
+ * @param {number|string} scoreData.id - Unique identifier of the score.
+ * @param {string} scoreData.scoreId - External or internal identifier.
+ * @param {string} scoreData.title - Title of the score.
+ * @param {string} scoreData.artist - Artist or composer.
+ * @param {string} scoreData.type - Internal category identifier.
+ * @param {string[]} scoreData.voices - Voice parts associated with the score.
+ * @param {number} scoreData.voiceCount - Number of voices in the score.
+ * @param {(File|string)[]} scoreData.files - Updated file list (existing names or new files).
+ * @param {string[]} scoreData.originalFiles - Original file names used to detect removed files.
+ * @returns {Promise<boolean>} `true` if the update succeeded, otherwise `false`.
+ */
 export async function updateScore(scoreData) {
     if (isFetching.updateScore) return false;
     isFetching.updateScore = true;

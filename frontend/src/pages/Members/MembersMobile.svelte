@@ -146,7 +146,7 @@
     }
 </script>
 
-<SettingsModal bind:this={settingsModal} />
+<SettingsModal bind:this={settingsModal} isMobile={true} />
 <ToastStack isMobile={true} />
 
 <Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"

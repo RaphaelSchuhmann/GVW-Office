@@ -7,7 +7,6 @@
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
     import SettingsModal from "../../components/SettingsModal.svelte";
-    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import Button from "../../components/Button.svelte";
     import Input from "../../components/Input.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
@@ -219,19 +218,18 @@
     }
 </script>
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
-<ToastStack></ToastStack>
+<SettingsModal bind:this={settingsModal} isMobile={true}></SettingsModal>
+<ToastStack isMobile={true}></ToastStack>
 
 <ConfirmDeleteModal expectedInput={`${scoreData.title}`} id={scoreData.id}
                     title="Noten löschen" subTitle="Sind Sie sich sicher das Sie diese Noten löschen möchten?"
                     action="deleteLibEntry"
                     onClose={async () => {await push("/library")}}
-                    bind:this={confirmDeleteScoreModal}
+                    bind:this={confirmDeleteScoreModal} isMobile={true}
 />
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar onSettingsClick={settingsClick} currentPage="library"></DesktopSidebar>
-    <div class="flex flex-col min-h-0 w-full p-10 overflow-hidden">
+    <div class="flex flex-col min-h-0 w-full p-7 overflow-hidden">
         <PageHeader title="Veranstaltung" subTitle={`Details der Noten: "${scoreData?.title ?? ""}"`}>
             {#if viewport.width > 900}
                 {#if !isEditing}

@@ -62,11 +62,38 @@
     // ==========
     // CATEGORIES
     // ==========
+    /**
+     * Derived list of library categories including the default
+     * `"Alle Kategorien"` entry.
+     *
+     * The categories are generated from `appSettings.scoreCategories`
+     * via `getLibraryCategories(true)` and automatically update
+     * whenever the underlying settings change.
+     *
+     * @type {string[]}
+     */
     let categories = $derived(getLibraryCategories(true));
 
     // =========
     // ADD SCORE
     // =========
+    /**
+     * Reactive state object containing all form inputs used when
+     * creating a new score entry.
+     *
+     * `voiceCount` is not directly edited by the user and is derived
+     * from the number of selected voices when submitting the form.
+     *
+     * @type {{
+     *   scoreId: string,
+     *   title: string,
+     *   artist: string,
+     *   type: string,
+     *   voices: string[],
+     *   voiceCount: number,
+     *   files: File[]
+     * }}
+     */
     let scoreInput = $state({
         scoreId: "",
         title: "",
@@ -77,8 +104,26 @@
         files: []
     });
 
+    /**
+     * Reactive state representing the currently selected choir type.
+     * Used to control which voice options are available in the UI.
+     *
+     * @type {string}
+     */
     let selectedChoirType = $state("Männerchor");
 
+    /**
+     * Derived boolean indicating whether the save action should be disabled.
+     *
+     * The save button is disabled unless all required fields are filled:
+     * - scoreId
+     * - title
+     * - artist
+     * - type
+     * - at least one selected voice
+     *
+     * @type {boolean}
+     */
     const saveDisabled = $derived(!(
         scoreInput.scoreId &&
         scoreInput.title &&
@@ -87,6 +132,14 @@
         scoreInput.voices.length > 0
     ));
 
+    /**
+     * Resets all input fields in the "Add Score" form to their default values.
+     *
+     * This is typically called after successfully submitting a new score
+     * or when the form should be cleared before creating another entry.
+     *
+     * @returns {void}
+     */
     function resetAddInputs() {
         scoreInput = {
             scoreId: "",
@@ -99,12 +152,39 @@
         };
     }
 
+    /**
+     * Adds or removes a voice from the current score input depending
+     * on the checkbox state.
+     *
+     * When enabled, the voice is added to the `voices` array while
+     * ensuring that duplicates cannot occur. When disabled, the voice
+     * is removed from the array.
+     *
+     * @param {string} voice - The voice identifier to toggle.
+     * @param {boolean} isChecked - Whether the voice should be added (`true`)
+     * or removed (`false`).
+     * @returns {void}
+     */
     function toggleVoice(voice, isChecked) {
         scoreInput.voices = isChecked
             ? [...new Set([...scoreInput.voices, voice])]
             : scoreInput.voices.filter((item) => item !== voice);
     }
 
+    /**
+     * Submits the current score input to the backend to create a new score.
+     *
+     * The function:
+     * 1. Constructs a new score object including the calculated `voiceCount`.
+     * 2. Sends the data to the API via `addScore`.
+     * 3. Refreshes the library data (`fetchAndSetRaw`).
+     * 4. Closes the "Add Score" modal.
+     *
+     * `$state.snapshot()` is used to pass a plain object to the API
+     * instead of the reactive proxy.
+     *
+     * @returns {Promise<void>}
+     */
     async function submitScore() {
         const score = {
             ...scoreInput,
@@ -119,8 +199,26 @@
     // ============
     // DELETE SCORE
     // ============
+    /**
+     * Reactive state storing the title of the score currently selected
+     * for deletion. This is typically displayed in the confirmation modal.
+     *
+     * @type {string}
+     */
     let scoreTitle = $state("");
 
+    /**
+     * Initiates the score deletion workflow.
+     *
+     * The function closes the context menu, resolves the selected score
+     * from `libraryStore.raw` using the active menu entry ID, and stores
+     * the score title for display in the confirmation dialog.
+     *
+     * If the score cannot be found, an error toast is displayed.
+     * Otherwise, the delete confirmation modal is opened.
+     *
+     * @returns {Promise<void>}
+     */
     async function startDeleteScore() {
         menu.data.open = false;
         const score = libraryStore.raw.find(item => item.id === menu.data.activeId);

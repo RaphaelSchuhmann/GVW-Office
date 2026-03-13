@@ -182,8 +182,5 @@ export function getFileExtensionFromPath(path) {
  * @returns {boolean} True if string contains a number
  */
 export function determineChoirType(str) {
-    if (/\d/.test(str)) {
-        return true;
-    }
-    return false;
+    return /\d/.test(str);
 }

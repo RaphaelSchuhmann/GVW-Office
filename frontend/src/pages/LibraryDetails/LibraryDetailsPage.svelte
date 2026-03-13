@@ -4,6 +4,7 @@
     import { libraryStore } from "../../stores/library.svelte";
 
     import LibraryDetailsDesktop from "./LibraryDetailsDesktop.svelte";
+    import LibraryDetailsMobile from "./LibraryDetailsMobile.svelte";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -27,7 +28,7 @@
 
 {#if scoreData}
     {#if viewport.width < 800}
-        <LibraryDetailsDesktop {scoreData} bind:isEditing />
+        <LibraryDetailsMobile {scoreData} bind:isEditing />
     {:else}
         <LibraryDetailsDesktop {scoreData} bind:isEditing />
     {/if}

@@ -30,6 +30,7 @@
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import Textarea from "../../components/Textarea.svelte";
+    import SettingsModal from "../../components/SettingsModal.svelte";
 
     // ================
     // MODAL REFERENCES
@@ -158,6 +159,7 @@
     }
 </script>
 
+<SettingsModal bind:this={settingsModal} isMobile={true}></SettingsModal>
 <ToastStack isMobile={true}></ToastStack>
 
 <Modal bind:this={addEventModal} extraFunction={resetAddInputs} isMobile={true}
