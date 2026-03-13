@@ -114,10 +114,38 @@ export async function apiDownloadScoreFiles(id) {
  * }
  */
 export async function apiAddScore(formData) {
-    console.log("FormData apiAddScore: ", formData);
-
     const resp = await httpPost(`${apiUrl}/library/new`, formData, "", true, true);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
+}
+
+/**
+ * Updates a score in the library.
+ *
+ * Sends a POST request to `/library/update` with the provided form data.
+ *
+ * @param {FormData} formData - The form data containing the score details and files.
+ * @returns {Promise<{ resp: Response | null, body: any | null }>}
+ * An object containing the raw fetch Response (`resp`) and the parsed
+ * JSON response body (`body`). Returns `{ resp: null, body: null }`
+ * if the request fails before a response is received.
+ *
+ * The response body will be empty on success.
+ *
+ * @example
+ * const formData = new FormData();
+ * formData.append("title", "My Score");
+ * formData.append("file", fileInput.files[0]);
+ * const { resp, body } = await updateScore(formData);
+ *
+ * if (resp?.ok) {
+ *   console.log("Updated score");
+ * }
+ */
+export async function apiUpdateScore(formData) {
+    const resp = await httpPost(`${apiUrl}/library/update`, formData, "", true, true);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body};
 }

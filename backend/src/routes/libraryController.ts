@@ -24,7 +24,7 @@ libraryRouter.get("/all", async (_, resp) => {
             ({ _id, _rev, files, ...score }) => ({ 
                 id: _id, 
                 ...score,
-                paths: files?.map(
+                files: files?.map(
                     ({ originalName }: { originalName: string }) => `${originalName}`
                 ) ?? []
             })
@@ -215,9 +215,9 @@ libraryRouter.get("/:id/files", async (req, resp) => {
 
 libraryRouter.post("/update", libraryUpload.array("files"), async (req, resp) => {
     try {
-        const { id, title, artist, type, voices, voiceCount } = req.body;
+        const { id, scoreId, title, artist, type, voices, voiceCount } = req.body;
 
-        if (!id || !title || !artist || !type || !voices || !voiceCount) {
+        if (!id || !scoreId || !title || !artist || !type || !voices || !voiceCount) {
             return resp.status(400).json({ errorMessage: "InvalidInputs" });
         }
 
@@ -260,6 +260,7 @@ libraryRouter.post("/update", libraryUpload.array("files"), async (req, resp) =>
 
         const updatedScore = {
             ...score,
+            scoreId,
             title,
             artist,
             type,

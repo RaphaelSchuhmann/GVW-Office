@@ -9,12 +9,13 @@
         page = "library",
         validTypes = [],
         files = $bindable([]),
+        disabled = false,
         ...restProps
     } = $props();
 
     const activePage = $derived(["library"].includes(page) ? page : "library");
     const icon = $derived(activePage === "library" ? "audio_file" : "draft");
-    const acceptString = $derived(validTypes.map(t => `.${t}`).join(","));
+    const acceptString = $derived(validTypes.map((t) => `.${t}`).join(","));
 
     /**
      * Handles file selection via a dynamic input element
@@ -29,13 +30,20 @@
             const file = input.files?.[0];
             if (!file) return;
 
-            if (!files.some(p => p.name === file.name)) {
+            const duplicate = files.some((entry) => {
+                const existingName = typeof entry === "string" ? entry : entry.name;
+                return existingName === file.name;
+            })
+
+            if (!duplicate) {
                 files = [...files, file];
             } else {
                 addToast({
                     title: "Datei wird schon verwendet",
-                    subTitle: !viewport.isMobile ? "Die von ihnen ausgewählte Datei ist bereits im Anhang." : "",
-                    type: "warning"
+                    subTitle: !viewport.isMobile
+                        ? "Die von ihnen ausgewählte Datei ist bereits im Anhang."
+                        : "",
+                    type: "warning",
                 });
             }
         };
@@ -47,7 +55,7 @@
      * Removes a file from the list
      */
     function removeFile(file) {
-        files = files.filter(f => f !== file);
+        files = files.filter((f) => f !== file);
     }
 </script>
 
@@ -55,39 +63,54 @@
     <p class="text-dt-6 font-medium">{title}</p>
     <div class="flex-1 min-w-0 overflow-x-auto w-full">
         <div class="flex items-center justify-start gap-2 flex-nowrap">
-            <button
-                type="button"
-                class="shrink-0 flex items-center justify-center rounded-2 border-2 border-gv-border p-2 cursor-pointer hover:bg-gv-input-bg duration-200"
-                onclick={addFile}
-                aria-label="Datei hinzufügen"
-            >
-                <span class="material-symbols-rounded text-dt-6">attach_file_add</span>
-            </button>
-
-            {#each files as file}
+            {#if !disabled}
                 <button
                     type="button"
-                    class="group shrink-0 relative flex items-center justify-center rounded-2 border-2 border-gv-border p-2 cursor-pointer hover:bg-gv-input-bg duration-200"
-                    onclick={() => removeFile(file)}
+                    class="shrink-0 flex items-center justify-center rounded-2 border-2 border-gv-border p-2 cursor-pointer hover:bg-gv-input-bg duration-200"
+                    onclick={addFile}
+                    aria-label="Datei hinzufügen"
                 >
-                    <div
-                        class="flex items-center gap-2 whitespace-nowrap transition-opacity duration-200 group-hover:opacity-0">
-                        <span class="material-symbols-rounded text-icon-dt-6">
-                          {icon}
-                        </span>
+                    <span class="material-symbols-rounded text-dt-6">
+                        attach_file_add
+                    </span>
+                </button>
+            {/if}
+
+            {#if files.length > 0}
+                {#each files as file}
+                    <button
+                        type="button"
+                        {disabled}
+                        class={`group shrink-0 relative flex items-center justify-center rounded-2 border-2 border-gv-border p-2 ${!disabled ? "hover:bg-gv-input-bg cursor-pointer" : ""} duration-200`}
+                        onclick={() => removeFile(file)}
+                    >
+                        <div class={`flex items-center gap-2 whitespace-nowrap transition-opacity duration-200 ${!disabled ? "group-hover:opacity-0" : ""}`}>
+                            <span class="material-symbols-rounded text-icon-dt-6">
+                                {icon}
+                            </span>
+                            <p class="text-gv-dark-text text-dt-7">
+                                {file.name ? file.name : file}
+                            </p>
+                        </div>
+
+                        {#if !disabled}
+                            <div class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <span class="material-symbols-rounded text-red-600 text-icon-dt-6">
+                                    attach_file_off
+                                </span>
+                            </div>
+                        {/if}
+                    </button>
+                {/each}
+            {:else if disabled}
+                <div class={`group shrink-0 relative flex items-center justify-center rounded-2 border-2 border-gv-border p-2`}>
+                    <div class={`flex items-center gap-2 whitespace-nowrap`}>
                         <p class="text-gv-dark-text text-dt-7">
-                            {file.name ? file.name : file}
+                            Keine Dateien angehängt
                         </p>
                     </div>
-
-                    <div
-                        class="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <span class="material-symbols-rounded text-red-600 text-icon-dt-6">
-                          attach_file_off
-                        </span>
-                    </div>
-                </button>
-            {/each}
+                </div>
+            {/if}
         </div>
     </div>
 </div>
