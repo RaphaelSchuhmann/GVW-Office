@@ -1,6 +1,6 @@
 import { appSettings } from "../stores/appSettings.svelte";
 import { libraryStore } from "../stores/library.svelte";
-import { apiAddScore, apiDeleteScore, apiDownloadScoreFiles } from "../api/apiLibrary.svelte";
+import { apiAddScore, apiDeleteScore, apiDownloadScoreFiles, apiUpdateScore } from "../api/apiLibrary.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { addToast } from "../stores/toasts.svelte";
@@ -182,8 +182,6 @@ export async function addScore(score) {
     if (isFetching.newScore) return;
     isFetching.newScore = true;
 
-    console.log(score);
-
     try {
         const formData = new FormData();
 
@@ -233,5 +231,86 @@ export async function addScore(score) {
         });
     } finally {
         isFetching.newScore = false;
+    }
+}
+
+export async function updateScore(scoreData) {
+    if (isFetching.updateScore) return false;
+    isFetching.updateScore = true;
+
+    try {
+        const formData = new FormData();
+
+        formData.append("id", scoreData.id);
+        formData.append("scoreId", scoreData.scoreId);
+        formData.append("title", scoreData.title);
+        formData.append("artist", scoreData.artist);
+        formData.append("type", scoreData.type);
+        formData.append("voices", JSON.stringify(scoreData.voices));
+        formData.append("voiceCount", String(scoreData.voiceCount));
+        
+        const newFiles = [];
+        const existingFileNames = [];
+
+        for (const f of scoreData.files) {
+            if (f instanceof File) {
+                newFiles.push(f);
+            } else if (typeof f === "string") {
+                existingFileNames.push(f);
+            } else {
+                addToast({
+                    title: "Ungültige Datei",
+                    subTitle: !viewport.isMobile ? "Beim lesen einer Datei ist ein Fehler aufgetreten." : "",
+                    type: "error",
+                });
+            }
+        }
+
+        const removedFiles = scoreData.originalFiles.filter(f => !existingFileNames.includes(f));
+
+        formData.append("removedFiles", removedFiles);
+
+        for (const file of newFiles) {
+            formData.append("files", file, file.name);
+        }
+
+        const { resp } = await apiUpdateScore(formData);
+
+        const normalizedResponse = normalizeResponse(resp);
+        if (handleGlobalApiError(normalizeResponse)) return false;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "BADREQUEST") {
+                addToast({
+                    title: "Ungültige Eingabe",
+                    subTitle: !viewport.isMobile ? "Die Änderungen an den Noten ist keine gültige Änderung. Bitte versuchen Sie es erneut." : "",
+                    type: "error"
+                });
+            } else if (normalizedResponse.errorType === "NOTFOUND") {
+                addToast({
+                    title: "Noten nicht gefunden",
+                    subTitle: !viewport.isMobile ? "Die Noten wurden in der Notenbibliothek nicht gefunden." : "",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Fehler beim Speichern",
+                    subTitle: !viewport.isMobile ? "Beim speichern Ihrer Änderungen ist ein unerwarteter Fehler aufgetreten." : "",
+                    type: "error"
+                });
+            }
+
+            return false;
+        }
+
+        addToast({
+            title: "Änderungen gespeichert",
+            subTitle: !viewport.isMobile ? "Ihre Änderungen wurden erfolgreich gespeichert." : "" ,
+            type: "success"
+        });
+
+        return true;
+    } finally {
+        isFetching.updateScore = false;
     }
 }
