@@ -5,6 +5,7 @@
 
     import LibraryDetailsDesktop from "./LibraryDetailsDesktop.svelte";
     import LibraryDetailsMobile from "./LibraryDetailsMobile.svelte";
+    import { init } from "../../services/filterService.svelte";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -22,6 +23,8 @@
     $effect(() => {
         if (!scoreId || (libraryStore.raw.length > 0 && !scoreData)) {
             push("/library");
+        } else {
+            init("library");
         }
     });
 </script>

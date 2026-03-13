@@ -30,7 +30,12 @@
             const file = input.files?.[0];
             if (!file) return;
 
-            if (!files.some((p) => p.name === file.name)) {
+            const duplicate = files.some((entry) => {
+                const existingName = typeof entry === "string" ? entry : entry.name;
+                return existingName === file.name;
+            })
+
+            if (!duplicate) {
                 files = [...files, file];
             } else {
                 addToast({

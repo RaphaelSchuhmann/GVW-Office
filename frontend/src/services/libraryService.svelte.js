@@ -399,7 +399,7 @@ export async function updateScore(scoreData) {
         const { resp } = await apiUpdateScore(formData);
 
         const normalizedResponse = normalizeResponse(resp);
-        if (handleGlobalApiError(normalizeResponse)) return false;
+        if (handleGlobalApiError(normalizedResponse)) return false;
 
         if (!normalizedResponse.ok) {
             if (normalizedResponse.errorType === "BADREQUEST") {
