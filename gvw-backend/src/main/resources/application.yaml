@@ -4,5 +4,5 @@ spring:
 
 couchdb:
   url: http://localhost:5984
-  user: admin
-  password: admin
+  user: ${GVW_DB_USERNAME}
+  password: ${GVW_DB_PASSWORD}

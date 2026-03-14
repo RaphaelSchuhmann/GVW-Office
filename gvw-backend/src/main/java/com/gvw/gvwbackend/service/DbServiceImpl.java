@@ -5,12 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.support.BasicAuthenticationInterceptor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
@@ -29,12 +30,9 @@ public class DbServiceImpl implements DbService {
   private Map<String, Object> DEFAULT_SETTINGS = new HashMap<>();
 
   public DbServiceImpl(
-      @Value("${couchdb.url") String baseUrl,
-      @Value("${couchdb.user") String user,
-      @Value("${couchdb.password}") String password,
-      RestTemplate restTemplate) {
+      @Value("${couchdb.url}") String baseUrl,
+      @Qualifier("dbRestTemplate") RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
-    this.restTemplate.getInterceptors().add(new BasicAuthenticationInterceptor(user, password));
     this.baseUrl = baseUrl;
 
     // Default settings
@@ -131,36 +129,36 @@ public class DbServiceImpl implements DbService {
     for (String database : databases) {
       String url = String.format("%s/%s", baseUrl, database);
 
-      // Use exchange() to send a PUT and get the response
-      ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, null, Void.class);
-
-      // Get the status code
-      HttpStatusCode status = response.getStatusCode();
-
-      if (status.is2xxSuccessful()) continue;
-
-      if (status.value() == 412) {
-        System.out.println(
-            "Database " + database + " already exists"); // TODO: Replace with logger call
-      } else {
-        System.out.println(
-            "Error creating database "
-                + database
-                + ": "
-                + status); // TODO: Replace with logger call
+      try {
+        ResponseEntity<Void> response = restTemplate.exchange(url, HttpMethod.PUT, null, Void.class);
+        if (response.getStatusCode().is2xxSuccessful()) continue;
+      } catch (HttpClientErrorException e) {
+        if (e.getStatusCode() == HttpStatusCode.valueOf(412)) {
+          // TODO: Replace with logger call
+          System.out.println("Database " + database + " already exists");
+        } else {
+          // TODO: Replace with logger call
+          System.out.println("Error creating database " + database + ": " + e.getStatusCode());
+        }
+        continue;
       }
     }
 
     // Ensure default settings document exists in app_settings
     String url = String.format("%s/%s/general", baseUrl, appSettingsDb);
-    ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+    try {
+      ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
 
-    // Delete existing default settings document
-    if (response.getStatusCode().is2xxSuccessful()) {
-      Map<String, Object> existingDoc = response.getBody();
-      if (existingDoc != null) {
-        delete(appSettingsDb, (String) existingDoc.get("_id"), (String) existingDoc.get("_rev"));
+      // Delete existing default settings document
+      if (response.getStatusCode().is2xxSuccessful()) {
+        Map<String, Object> existingDoc = response.getBody();
+        if (existingDoc != null) {
+          delete(appSettingsDb, (String) existingDoc.get("_id"), (String) existingDoc.get("_rev"));
+        }
       }
+    } catch (HttpClientErrorException e) {
+      // TODO: Replace with logger call
+      System.out.println("Warn: No existing default settings document found (this is expected on first start)");
     }
 
     boolean successful = insert(appSettingsDb, DEFAULT_SETTINGS);

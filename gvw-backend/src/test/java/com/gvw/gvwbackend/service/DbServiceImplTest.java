@@ -23,13 +23,15 @@ public class DbServiceImplTest {
 
   @BeforeEach
   void setup() {
-    dbService = new DbServiceImpl("http://admin:admin@localhost:5984", "admin", "admin", restTemplate);
+    dbService = new DbServiceImpl("http://localhost:5984", restTemplate);
   }
 
   @Test
   void testInsertSuccess() {
     Map<String, Object> response = Map.of("ok", true);
-    lenient().when(restTemplate.postForObject(anyString(), any(), eq(Map.class))).thenReturn(response);
+    lenient()
+        .when(restTemplate.postForObject(anyString(), any(), eq(Map.class)))
+        .thenReturn(response);
 
     boolean result = dbService.insert("test_db", Map.of("name", "test"));
     assertTrue(result);
@@ -37,7 +39,9 @@ public class DbServiceImplTest {
 
   @Test
   void testInsertFailure() {
-    lenient().when(restTemplate.postForObject(anyString(), any(), eq(Map.class))).thenReturn(Map.of("ok", false));
+    lenient()
+        .when(restTemplate.postForObject(anyString(), any(), eq(Map.class)))
+        .thenReturn(Map.of("ok", false));
 
     boolean result = dbService.insert("test_db", Map.of("name", "John"));
     assertFalse(result);
@@ -46,7 +50,9 @@ public class DbServiceImplTest {
   @Test
   void testUpdateSuccess() {
     Map<String, Object> response = Map.of("ok", true);
-    lenient().when(restTemplate.postForObject(anyString(), any(), eq(Map.class))).thenReturn(response);
+    lenient()
+        .when(restTemplate.postForObject(anyString(), any(), eq(Map.class)))
+        .thenReturn(response);
 
     boolean result = dbService.update("test_db", Map.of("name", "newName"));
     assertTrue(result);
@@ -54,7 +60,9 @@ public class DbServiceImplTest {
 
   @Test
   void testUpdateFailure() {
-    lenient().when(restTemplate.postForObject(anyString(), any(), eq(Map.class))).thenReturn(Map.of("ok", false));
+    lenient()
+        .when(restTemplate.postForObject(anyString(), any(), eq(Map.class)))
+        .thenReturn(Map.of("ok", false));
 
     boolean result = dbService.update("test_db", Map.of("name", "John"));
     assertFalse(result);
@@ -64,7 +72,9 @@ public class DbServiceImplTest {
   void testDeleteSuccess() {
     Map<String, Object> response = Map.of("ok", true);
     lenient()
-        .when(restTemplate.exchange(anyString(), eq(org.springframework.http.HttpMethod.DELETE), any(), eq(Map.class)))
+        .when(
+            restTemplate.exchange(
+                anyString(), eq(org.springframework.http.HttpMethod.DELETE), any(), eq(Map.class)))
         .thenReturn(ResponseEntity.ok(response));
 
     boolean result = dbService.delete("test_db", "doc_id", "rev");
@@ -74,7 +84,9 @@ public class DbServiceImplTest {
   @Test
   void testDeleteFailure() {
     lenient()
-        .when(restTemplate.exchange(anyString(), eq(org.springframework.http.HttpMethod.DELETE), any(), eq(Map.class)))
+        .when(
+            restTemplate.exchange(
+                anyString(), eq(org.springframework.http.HttpMethod.DELETE), any(), eq(Map.class)))
         .thenReturn(ResponseEntity.ok(Map.of("ok", false)));
 
     boolean result = dbService.delete("test_db", "doc_id", "rev");
@@ -134,7 +146,8 @@ public class DbServiceImplTest {
 
   @Test
   void testFindByQueryReturnsMap() {
-    String json = """
+    String json =
+        """
             {
               "docs": [
                 {"_id": "1", "name": "John"},
