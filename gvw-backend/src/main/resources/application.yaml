@@ -1,3 +1,8 @@
 spring:
   application:
     name: gvw-backend
+
+couchdb:
+  url: http://localhost:5984
+  user: admin
+  password: admin
