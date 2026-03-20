@@ -157,7 +157,8 @@ public class DbServiceImplTest {
             }
             """;
 
-    when(restTemplate.postForObject(anyString(), any(), eq(String.class))).thenReturn(json);
+    when(restTemplate.postForObject(anyString(), any(Map.class), eq(String.class)))
+        .thenReturn(json);
 
     List<Map> results = dbService.findByQuery("test_db", Map.of("selector", Map.of()), Map.class);
 
