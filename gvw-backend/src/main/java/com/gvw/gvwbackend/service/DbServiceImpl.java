@@ -25,6 +25,9 @@ import tools.jackson.databind.ObjectMapper;
 
 @Service
 public class DbServiceImpl implements DbService {
+  private static final ObjectMapper objectMapper = new ObjectMapper();
+  private static final Logger log = LoggerFactory.getLogger(DbServiceImpl.class);
+
   private final RestTemplate restTemplate;
   private final String baseUrl;
 
@@ -33,8 +36,6 @@ public class DbServiceImpl implements DbService {
   };
   private final String appSettingsDb = "app_settings";
   private Map<String, Object> DEFAULT_SETTINGS = new HashMap<>();
-
-  private static final Logger log = LoggerFactory.getLogger(DbServiceImpl.class);
 
   public DbServiceImpl(
       @Value("${couchdb.url}") String baseUrl,
@@ -104,7 +105,7 @@ public class DbServiceImpl implements DbService {
     if (json == null || json.isEmpty()) return null;
 
     try {
-      return new ObjectMapper().readValue(json, clazz);
+      return objectMapper.readValue(json, clazz);
     } catch (Exception e) {
       log.error("Failed to map JSON to {}", clazz.getSimpleName(), e);
       throw new RuntimeException("Failed to map JSON to " + clazz.getSimpleName(), e);
@@ -144,24 +145,27 @@ public class DbServiceImpl implements DbService {
         ResponseEntity<Void> resp = restTemplate.exchange(url, HttpMethod.PUT, null, Void.class);
       } catch (ResourceAccessException e) {
         if (isConnectionRefused(e)) {
-          log.error("DB connection refused {}", kv("db", database), kv("error", "ECONNREFUSED"));
+          log.error("DB connection refused {} {}", kv("db", database), kv("error", "ECONNREFUSED"));
         } else {
           log.error(
-              "DB network error {}", kv("db", database), kv("error", e.getCause().getMessage()), e);
+              "DB network error {} {}",
+              kv("db", database),
+              kv("error", e.getCause().getMessage()),
+              e);
         }
       } catch (HttpStatusCodeException e) {
         if (e.getStatusCode() == HttpStatusCode.valueOf(412)) {
-          log.error("DB already exists {}", kv("db", database));
+          log.debug("DB already exists {}", kv("db", database));
           continue;
         }
 
         log.error(
-            "DB creation failed {}",
+            "DB creation failed {} {}",
             kv("db", database),
             kv("status", e.getStatusCode().value()),
             e);
       } catch (Exception e) {
-        log.error("Unexpected db error {}", kv("db", database), kv("error", e.getMessage()), e);
+        log.error("Unexpected db error {} {}", kv("db", database), kv("error", e.getMessage()), e);
       }
     }
 
@@ -184,9 +188,7 @@ public class DbServiceImpl implements DbService {
       return;
     }
 
-    log.info(
-        "Inserted default settings document (If you got a request failed it can be ignored)  {}",
-        kv("db", appSettingsDb));
+    log.info("Inserted default settings document {}", kv("db", appSettingsDb));
   }
 
   private <T> T safeExecute(Supplier<T> action, String db) {

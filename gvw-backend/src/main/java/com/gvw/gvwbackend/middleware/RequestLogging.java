@@ -31,7 +31,7 @@ public class RequestLogging extends OncePerRequestFilter {
       long duration = System.currentTimeMillis() - start;
 
       log.info(
-          "http request {} {} {}",
+          "http request {} {} {} {}",
           kv("method", request.getMethod()),
           kv("endpoint", request.getRequestURI()),
           kv("status", response.getStatus()),
