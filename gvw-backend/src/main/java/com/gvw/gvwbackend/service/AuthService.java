@@ -54,12 +54,13 @@ public class AuthService {
     }
 
     if (!passwordEncoder.matches(requestDTO.password(), user.getPassword())) {
-      if (user.getFailedLoginAttempts() > 4) {
+      int failedAttempts = Optional.ofNullable(user.getFailedLoginAttempts()).orElse(0);
+      if (failedAttempts > 4) {
         user.setLockUntil(Instant.now().plus(Duration.ofMinutes(15)));
         dbService.update("users", user);
         throw new TooManyRequestsException("AccountLocked", user.getLockUntil().toEpochMilli());
       } else {
-        user.setFailedLoginAttempts(user.getFailedLoginAttempts() + 1);
+        user.setFailedLoginAttempts(failedAttempts + 1);
         dbService.update("users", user);
         throw new InvalidCredentialsException("InvalidPassword");
       }
@@ -71,7 +72,7 @@ public class AuthService {
 
     String token = jwtService.generateToken(user.getUserId(), null);
 
-    return new LoginResponseDTO(token, user.getChangePassword(), user.getFirstLogin());
+    return new LoginResponseDTO(token, Boolean.TRUE.equals(user.getChangePassword()), Boolean.TRUE.equals(user.getFirstLogin()));
   }
 
   public void changePassword(ChangePwRequestDTO requestDTO) {
@@ -101,7 +102,7 @@ public class AuthService {
   }
 
   public static String generatePassword(int wordCount, int numberCount) {
-    Random random = new Random();
+    java.security.SecureRandom random = new java.security.SecureRandom();
 
     List<String> chosenWords = new ArrayList<>();
     for (int i = 0; i < wordCount; i++) {

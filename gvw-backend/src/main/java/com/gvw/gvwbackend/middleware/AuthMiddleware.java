@@ -18,7 +18,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-  private final List<String> EXCLUDED_PATHS = List.of("/auth/login", "/dev/**", "/auth/changePw");
+  private final List<String> EXCLUDED_PATHS = List.of("/auth/login", "/dev/**");
 
   public AuthMiddleware(JwtService jwtService) {
     this.jwtService = jwtService;
@@ -42,24 +42,21 @@ public class AuthMiddleware extends OncePerRequestFilter {
     String authHeader = request.getHeader("Authorization");
 
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      throw new InvalidCredentialsException("InvalidData");
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "InvalidToken");
+      return;
     }
 
     String token = authHeader.substring(7);
 
     try {
-      if (jwtService.isTokenExpired(token)) {
-        throw new InvalidCredentialsException("TokenExpired");
-      }
-
       String userId = jwtService.extractUserId(token);
 
-      // Append the userId to the request attributes
       request.setAttribute("userId", userId);
-
       filterChain.doFilter(request, response);
+    } catch (io.jsonwebtoken.ExpiredJwtException e) {
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "TokenExpired");
     } catch (Exception e) {
-      throw new RuntimeException(e);
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "InvalidToken");
     }
   }
 }

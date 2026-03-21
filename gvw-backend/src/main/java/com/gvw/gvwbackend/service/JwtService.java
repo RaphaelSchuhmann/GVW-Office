@@ -36,11 +36,11 @@ public class JwtService {
   }
 
   public Claims extractAllClaims(String token) {
-    return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
-  }
-
-  public boolean isTokenExpired(String token) {
-    return extractAllClaims(token).getExpiration().before(new Date());
+    return Jwts.parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
   }
 
   public String extractUserId(String token) {
