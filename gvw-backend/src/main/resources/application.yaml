@@ -3,7 +3,7 @@ spring:
     name: gvw-backend
 
 server:
-  port: 3500
+  port: ${GVW_PORT}
 
 couchdb:
   url: http://localhost:5984
