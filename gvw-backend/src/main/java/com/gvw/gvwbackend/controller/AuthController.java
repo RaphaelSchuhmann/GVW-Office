@@ -4,6 +4,7 @@ import com.gvw.gvwbackend.dto.request.ChangePwRequestDTO;
 import com.gvw.gvwbackend.dto.request.LoginRequestDTO;
 import com.gvw.gvwbackend.dto.response.LoginResponseDTO;
 import com.gvw.gvwbackend.service.AuthService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,14 +19,13 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public LoginResponseDTO login(@RequestBody LoginRequestDTO loginRequest) {
-    System.out.println("HERE");
+  public LoginResponseDTO login(@Valid @RequestBody LoginRequestDTO loginRequest) {
     return authService.login(loginRequest);
   }
 
   @PostMapping("/changePw")
   @ResponseStatus(HttpStatus.OK)
-  public void changePw(@RequestBody ChangePwRequestDTO changePwRequest) {
+  public void changePw(@Valid @RequestBody ChangePwRequestDTO changePwRequest) {
     authService.changePassword(changePwRequest);
   }
 }

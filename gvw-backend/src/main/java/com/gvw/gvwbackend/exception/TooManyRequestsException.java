@@ -8,6 +8,11 @@ public class TooManyRequestsException extends AppException {
 
   public TooManyRequestsException(String message, long retryAfterSeconds) {
     super(message);
+
+    if (retryAfterSeconds < 0) {
+      throw new IllegalArgumentException("retryAfterSeconds must be >= 0");
+    }
+
     this.retryAfterSeconds = retryAfterSeconds;
   }
 }
