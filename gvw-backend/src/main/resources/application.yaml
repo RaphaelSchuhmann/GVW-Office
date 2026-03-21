@@ -6,3 +6,7 @@ couchdb:
   url: http://localhost:5984
   user: ${GVW_DB_USERNAME}
   password: ${GVW_DB_PASSWORD}
+
+jwt:
+  secret: ${GVW_JWT_SECRET}
+  expiration-days: 7

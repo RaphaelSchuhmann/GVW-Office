@@ -15,15 +15,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 @ExtendWith(MockitoExtension.class)
-public class DbServiceImplTest {
+public class DbServiceTest {
 
   @Mock private RestTemplate restTemplate;
 
-  private DbServiceImpl dbService;
+  private DbService dbService;
 
   @BeforeEach
   void setup() {
-    dbService = new DbServiceImpl("http://localhost:5984", restTemplate);
+    dbService = new DbService("http://localhost:5984", restTemplate);
   }
 
   @Test

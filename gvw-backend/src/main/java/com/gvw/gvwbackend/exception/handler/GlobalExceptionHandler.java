@@ -1,8 +1,8 @@
 package com.gvw.gvwbackend.exception.handler;
 
-import com.gvw.gvwbackend.exception.DatabaseConnectionException;
-import com.gvw.gvwbackend.exception.DatabaseMappingException;
-import com.gvw.gvwbackend.exception.ErrorResponse;
+import com.gvw.gvwbackend.dto.response.ErrorResponseDTO;
+import com.gvw.gvwbackend.exception.*;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -12,19 +12,49 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
   @ExceptionHandler(DatabaseConnectionException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ErrorResponse handleDatabaseConnection(DatabaseConnectionException ex) {
-    return new ErrorResponse("Database connection failed");
+  public ErrorResponseDTO handleDatabaseConnection(DatabaseConnectionException ex) {
+    return new ErrorResponseDTO("Database connection failed", null);
   }
 
   @ExceptionHandler(DatabaseMappingException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ErrorResponse handleDatabaseMapping(DatabaseMappingException ex) {
-    return new ErrorResponse("Data could not be retrieved from database");
+  public ErrorResponseDTO handleDatabaseMapping(DatabaseMappingException ex) {
+    return new ErrorResponseDTO("Data could not be retrieved from database", null);
+  }
+
+  @ExceptionHandler(BadRequestException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponseDTO handleBadRequest(BadRequestException ex) {
+    return new ErrorResponseDTO(ex.getMessage(), null);
+  }
+
+  @ExceptionHandler(InvalidCredentialsException.class)
+  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  public ErrorResponseDTO handleInvalidCredentials(InvalidCredentialsException ex) {
+    return new ErrorResponseDTO(ex.getMessage(), null);
+  }
+
+  @ExceptionHandler(NotFoundException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public ErrorResponseDTO handleNotFound(NotFoundException ex) {
+    return new ErrorResponseDTO(ex.getMessage(), null);
+  }
+
+  @ExceptionHandler(ConflictException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ErrorResponseDTO handleConflict(ConflictException ex) {
+    return new ErrorResponseDTO(ex.getMessage(), null);
+  }
+
+  @ExceptionHandler(TooManyRequestsException.class)
+  @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+  public ErrorResponseDTO handleTooManyRequests(TooManyRequestsException ex) {
+    return new ErrorResponseDTO(ex.getMessage(), Map.of("retryAfter", ex.getRetryAfterSeconds()));
   }
 
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ErrorResponse handleGeneric(Exception ex) {
-    return new ErrorResponse("Internal Server Error");
+  public ErrorResponseDTO handleGeneric(Exception ex) {
+    return new ErrorResponseDTO("Internal Server Error", null);
   }
 }
