@@ -8,5 +8,5 @@ couchdb:
   password: ${GVW_DB_PASSWORD}
 
 jwt:
-  secret: ${GVW_JWT_SECRET}
+  secret: "${GVW_JWT_SECRET}"
   expiration-days: 7
