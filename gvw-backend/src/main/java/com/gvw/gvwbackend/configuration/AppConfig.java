@@ -25,13 +25,6 @@ public class AppConfig {
   }
 
   @Bean
-  public DbService dbService(
-      @Value("${couchdb.url}") String baseUrl,
-      @Qualifier("dbRestTemplate") RestTemplate restTemplate) {
-    return new DbService(baseUrl, restTemplate);
-  }
-
-  @Bean
   public PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();
   }
@@ -39,11 +32,5 @@ public class AppConfig {
   @Bean
   public JwtService jwtService() {
     return new JwtService();
-  }
-
-  @Bean
-  public AuthService authService(
-      DbService dbService, PasswordEncoder passwordEncoder, JwtService jwtService) {
-    return new AuthService(dbService, passwordEncoder, jwtService);
   }
 }
