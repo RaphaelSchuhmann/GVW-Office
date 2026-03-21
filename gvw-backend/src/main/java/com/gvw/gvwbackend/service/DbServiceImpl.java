@@ -2,6 +2,8 @@ package com.gvw.gvwbackend.service;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
 
+import com.gvw.gvwbackend.exception.DatabaseConnectionException;
+import com.gvw.gvwbackend.exception.DatabaseMappingException;
 import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -108,7 +110,7 @@ public class DbServiceImpl implements DbService {
       return objectMapper.readValue(json, clazz);
     } catch (Exception e) {
       log.error("Failed to map JSON to {}", clazz.getSimpleName(), e);
-      throw new RuntimeException("Failed to map JSON to " + clazz.getSimpleName(), e);
+      throw new DatabaseMappingException("Failed to map JSON to " + clazz.getSimpleName(), e);
     }
   }
 
@@ -132,7 +134,7 @@ public class DbServiceImpl implements DbService {
           .collect(Collectors.toList());
     } catch (Exception e) {
       log.error("Failed to map JSON to {}", clazz.getSimpleName(), e);
-      throw new RuntimeException("Failed to map JSON to " + clazz.getSimpleName(), e);
+      throw new DatabaseMappingException("Failed to map JSON to " + clazz.getSimpleName(), e);
     }
   }
 
@@ -153,6 +155,7 @@ public class DbServiceImpl implements DbService {
               kv("error", e.getCause().getMessage()),
               e);
         }
+        throw new DatabaseConnectionException("DB connection failed", e);
       } catch (HttpStatusCodeException e) {
         if (e.getStatusCode() == HttpStatusCode.valueOf(412)) {
           log.debug("DB already exists {}", kv("db", database));
@@ -164,8 +167,10 @@ public class DbServiceImpl implements DbService {
             kv("db", database),
             kv("status", e.getStatusCode().value()),
             e);
+        throw new DatabaseConnectionException("DB creation failed", e);
       } catch (Exception e) {
         log.error("Unexpected db error {} {}", kv("db", database), kv("error", e.getMessage()), e);
+        throw new DatabaseConnectionException("Unexpected DB error", e);
       }
     }
 
@@ -201,14 +206,14 @@ public class DbServiceImpl implements DbService {
         log.error(
             "DB network error {} {}", kv("db", db), kv("error", e.getCause().getMessage()), e);
       }
-      return null;
+      throw new DatabaseConnectionException("DB connection failed", e);
     } catch (HttpStatusCodeException e) {
       log.error(
           "DB request failed {} {}", kv("db", db), kv("status", e.getStatusCode().value()), e);
-      return null;
+      throw new DatabaseConnectionException("DB request failed", e);
     } catch (Exception e) {
       log.error("Unexpected db error {} {}", kv("db", db), kv("error", e.getMessage()), e);
-      return null;
+      throw new DatabaseConnectionException("Unexpected DB error", e);
     }
   }
 
