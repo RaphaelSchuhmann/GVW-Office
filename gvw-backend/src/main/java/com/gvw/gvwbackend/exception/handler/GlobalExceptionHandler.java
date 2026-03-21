@@ -4,11 +4,11 @@ import com.gvw.gvwbackend.exception.DatabaseConnectionException;
 import com.gvw.gvwbackend.exception.DatabaseMappingException;
 import com.gvw.gvwbackend.exception.ErrorResponse;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
   @ExceptionHandler(DatabaseConnectionException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

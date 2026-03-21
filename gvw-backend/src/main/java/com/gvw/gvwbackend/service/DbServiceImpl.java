@@ -177,8 +177,14 @@ public class DbServiceImpl implements DbService {
     // Ensure default settings document exists in app_settings
     // Delete existing default settings document
     String url = String.format("%s/%s/general", baseUrl, appSettingsDb);
-    ResponseEntity<Map> resp =
-        safeExecute(() -> restTemplate.getForEntity(url, Map.class), appSettingsDb);
+    ResponseEntity<Map> resp = null;
+    try {
+      resp = restTemplate.getForEntity(url, Map.class);
+    } catch (HttpStatusCodeException e) {
+      if (e.getStatusCode().value() != 404) {
+        throw new DatabaseConnectionException("DB request failed", e);
+      }
+    }
 
     if (resp != null && resp.getStatusCode().is2xxSuccessful()) {
       Map<String, Object> existingDoc = resp.getBody();
