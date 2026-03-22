@@ -25,7 +25,7 @@ public class AppSettingsController {
 
   @PatchMapping("/update/max-members")
   @ResponseStatus(HttpStatus.OK)
-  public void updateMaxMembers(@RequestBody UpdateMaxMembersRequestDTO requestDTO) {
+  public void updateMaxMembers(@Valid @RequestBody UpdateMaxMembersRequestDTO requestDTO) {
     appSettingsService.updateMaxMembers(requestDTO);
   }
 
@@ -35,7 +35,7 @@ public class AppSettingsController {
     appSettingsService.addCategory(requestDTO);
   }
 
-  @DeleteMapping("/remove/category")
+  @PostMapping("/remove/category")
   @ResponseStatus(HttpStatus.OK)
   public void removeCategory(@Valid @RequestBody RemoveCategoryRequestDTO requestDTO) {
     appSettingsService.removeCategory(requestDTO);

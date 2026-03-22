@@ -17,7 +17,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class AppSettingsService {
   private static final Logger log = LoggerFactory.getLogger(AppSettingsService.class);
-  private DbService dbService;
+  private final DbService dbService;
+  private static final Set<String> BLOCKED_KEYS = Set.of("__proto__", "constructor", "prototype");
 
   public AppSettingsService(DbService dbService) {
     this.dbService = dbService;
@@ -31,7 +32,7 @@ public class AppSettingsService {
 
   public void updateMaxMembers(UpdateMaxMembersRequestDTO requestDTO) {
     if (requestDTO.maxMembers() < 0) {
-      throw new BadRequestException("MaxMembersIsNegativ");
+      throw new BadRequestException("MaxMembersIsNegative");
     }
 
     AppSettings settings = appSettings();
@@ -41,15 +42,10 @@ public class AppSettingsService {
   }
 
   public void addCategory(AddCategoryRequestDTO requestDTO) {
-    Set<String> blocked = new HashSet<>();
-    blocked.add("__proto__");
-    blocked.add("constructor");
-    blocked.add("prototype");
-
     if (requestDTO.type() == null
         || requestDTO.displayName() == null
-        || blocked.contains(requestDTO.type())
-        || blocked.contains(requestDTO.displayName())) {
+        || BLOCKED_KEYS.contains(requestDTO.type())
+        || BLOCKED_KEYS.contains(requestDTO.displayName())) {
       throw new BadRequestException("InvalidCategory");
     }
 

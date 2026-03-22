@@ -1,5 +1,5 @@
 package com.gvw.gvwbackend.dto.request;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
 
-public record AddCategoryRequestDTO(@NotNull String type, @NotNull String displayName) {}
+public record AddCategoryRequestDTO(@NotBlank String type, @NotBlank String displayName) {}

@@ -79,7 +79,7 @@ public class AuthServiceTest {
     user.setFailedLoginAttempts(2);
     user.setLockUntil(null);
     user.setChangePassword(false);
-    user.setChangePassword(false);
+    user.setFirstLogin(false);
 
     when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of());
 
@@ -101,7 +101,7 @@ public class AuthServiceTest {
     user.setFailedLoginAttempts(5);
     user.setLockUntil(Instant.now().plus(Duration.ofMinutes(15)));
     user.setChangePassword(false);
-    user.setChangePassword(false);
+    user.setFirstLogin(false);
 
     when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
 

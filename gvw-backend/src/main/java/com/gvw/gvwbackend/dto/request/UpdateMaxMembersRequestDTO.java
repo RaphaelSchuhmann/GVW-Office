@@ -1,3 +1,5 @@
 package com.gvw.gvwbackend.dto.request;
 
-public record UpdateMaxMembersRequestDTO(int maxMembers) {}
+import jakarta.validation.constraints.Positive;
+
+public record UpdateMaxMembersRequestDTO(@Positive int maxMembers) {}
