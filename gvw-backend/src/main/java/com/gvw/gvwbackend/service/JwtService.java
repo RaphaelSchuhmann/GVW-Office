@@ -36,11 +36,7 @@ public class JwtService {
   }
 
   public Claims extractAllClaims(String token) {
-    return Jwts.parser()
-            .verifyWith(key)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
+    return Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
   }
 
   public String extractUserId(String token) {

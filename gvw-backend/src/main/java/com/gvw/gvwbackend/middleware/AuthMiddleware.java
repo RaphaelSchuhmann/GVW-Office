@@ -1,6 +1,5 @@
 package com.gvw.gvwbackend.middleware;
 
-import com.gvw.gvwbackend.exception.InvalidCredentialsException;
 import com.gvw.gvwbackend.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -28,8 +27,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
   protected boolean shouldNotFilter(HttpServletRequest request) {
     String path = request.getServletPath();
 
-    return EXCLUDED_PATHS.stream()
-            .anyMatch(pattern -> pathMatcher.match(pattern, path));
+    return EXCLUDED_PATHS.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
   }
 
   @Override
