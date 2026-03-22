@@ -2,7 +2,6 @@ package com.gvw.gvwbackend.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
-
 import lombok.*;
 
 @Data

@@ -1,7 +1,5 @@
 package com.gvw.gvwbackend.configuration;
 
-import com.gvw.gvwbackend.service.AuthService;
-import com.gvw.gvwbackend.service.DbService;
 import com.gvw.gvwbackend.service.JwtService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;

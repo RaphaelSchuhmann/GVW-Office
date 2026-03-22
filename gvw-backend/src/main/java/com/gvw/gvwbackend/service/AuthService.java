@@ -72,7 +72,10 @@ public class AuthService {
 
     String token = jwtService.generateToken(user.getUserId(), null);
 
-    return new LoginResponseDTO(token, Boolean.TRUE.equals(user.getChangePassword()), Boolean.TRUE.equals(user.getFirstLogin()));
+    return new LoginResponseDTO(
+        token,
+        Boolean.TRUE.equals(user.getChangePassword()),
+        Boolean.TRUE.equals(user.getFirstLogin()));
   }
 
   public void changePassword(ChangePwRequestDTO requestDTO) {
