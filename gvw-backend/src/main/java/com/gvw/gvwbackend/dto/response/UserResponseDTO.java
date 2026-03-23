@@ -1,5 +1,3 @@
 package com.gvw.gvwbackend.dto.response;
 
-import jakarta.validation.constraints.NotBlank;
-
-public record UserResponseDTO(@NotBlank String email, @NotBlank String role, @NotBlank String name, @NotBlank String address, @NotBlank String phone) {}
+public record UserResponseDTO(String email, String role, String name, String address, String phone) {}

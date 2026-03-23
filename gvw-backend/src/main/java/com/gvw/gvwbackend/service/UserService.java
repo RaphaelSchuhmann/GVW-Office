@@ -39,7 +39,10 @@ public class UserService {
             throw new InvalidCredentialsException("Unauthorized");
         }
 
-        if (requestDTO == null || requestDTO.email().isEmpty() || requestDTO.phone().isEmpty() || requestDTO.address().isEmpty()) {
+        if (requestDTO == null
+                || requestDTO.email() == null || requestDTO.email().isBlank()
+                || requestDTO.phone() == null || requestDTO.phone().isBlank()
+                || requestDTO.address() == null || requestDTO.address().isBlank()) {
             throw new BadRequestException("InvalidData");
         }
 
@@ -81,7 +84,7 @@ public class UserService {
             throw new InvalidCredentialsException("Unauthorized");
         }
 
-        User user = getUserByUserId(memberId);
+        User user = getUserByMemberId(memberId);
 
         String temporaryPassword = AuthService.generatePassword(3, 2);
 
