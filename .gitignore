@@ -192,3 +192,5 @@ package-lock.json
 
 *.mdv
 scripts/output.json
+
+db/
