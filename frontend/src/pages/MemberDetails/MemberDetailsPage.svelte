@@ -5,6 +5,7 @@
 
     import MemberDetailsDesktop from "./MemberDetailsDesktop.svelte";
     import MemberDetailsMobile from "./MemberDetailsMobile.svelte";
+    import { user } from "../../stores/user.svelte";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -13,6 +14,10 @@
     const memberId = params.get("id");
 
     let isEditing = $state(params.get("editing") === "true");
+
+    if (user.role !== "admin" && user.role !== "vorstand") {
+        push("/dashboard");
+    }
 
     const memberData = $derived.by(() => {
         if (!memberId) return null;
