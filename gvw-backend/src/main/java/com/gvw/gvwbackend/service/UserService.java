@@ -62,9 +62,19 @@ public class UserService {
     }
 
     // TODO: Note that this method cannot be properly tested yet as it is working with a mailer
-    public void resetPassword(String memberId) {
+    public void resetPassword(String requesterUserId, String memberId) {
+        if (requesterUserId == null || requesterUserId.isEmpty()) {
+            throw new InvalidCredentialsException("Unauthorized");
+        }
+
         if (memberId == null || memberId.isEmpty()) {
             throw new BadRequestException("InvalidData");
+        }
+
+        User requesterUser = getUserByUserId(requesterUserId);
+        String requesterUserRole = requesterUser.getRole();
+        if (!requesterUserRole.equals("admin") && !requesterUserRole.equals("vorstand")) {
+            throw new InvalidCredentialsException("Unauthorized");
         }
 
         User user = getUserByUserId(memberId);

@@ -29,7 +29,7 @@ public class UserController {
 
     @PostMapping("/reset/password/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void resetPassword(@PathVariable String id) {
-        userService.resetPassword(id);
+    public void resetPassword(@RequestAttribute("userId") String userId, @PathVariable String id) {
+        userService.resetPassword(userId, id);
     }
 }
