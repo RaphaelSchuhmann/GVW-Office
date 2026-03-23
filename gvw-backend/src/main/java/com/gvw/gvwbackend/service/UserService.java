@@ -45,6 +45,10 @@ public class UserService {
 
         User user = getUserByUserId(userId);
 
+        if (!userId.equals(user.getUserId())) {
+            throw new InvalidCredentialsException("Unauthorized");
+        }
+
         user.setEmail(requestDTO.email());
         user.setPhone(requestDTO.phone());
         user.setAddress(requestDTO.address());
