@@ -86,6 +86,65 @@ export async function httpPost(url, body, customToken = "", doAuth = true, using
 }
 
 /**
+ * Performs an HTTP PATCH request with JSON body and optional bearer token authorization.
+ *
+ * @param {string} url - The endpoint URL to patch to.
+ * @param {any} body - The data to send as JSON in the request body.
+ * @param {string} [customToken=""] - Optional token to override the auth store token.
+ * @param {boolean} [doAuth=true] - Whether to include the Authorization header.
+ * @returns {Promise<Response | null>} The fetch response, or `null` if the request fails.
+ *
+ * @example
+ * const resp = await httpPatch("/api/update", { name: "Raphael" });
+ * if (resp?.ok) console.log("Update successful");
+ */
+export async function httpPatch(url, body, customToken = "", doAuth = true) {
+    const headers = new Headers();
+    headers.append("Content-Type", "application/json");
+
+    const token = customToken ? customToken : auth.token;
+    if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
+
+    try {
+        return await fetch(url, {
+            method: "PATCH",
+            headers: headers,
+            body: JSON.stringify(body)
+        });
+    } catch {
+        return null;
+    }
+}
+
+/**
+ * Performs an HTTP DELETE request with JSON body and optional bearer token authorization.
+ *
+ * @param {string} url - The endpoint URL to delete to.
+ * @param {string} [customToken=""] - Optional token to override the auth store token.
+ * @param {boolean} [doAuth=true] - Whether to include the Authorization header.
+ * @returns {Promise<Response | null>} The fetch response, or `null` if the request fails.
+ *
+ * @example
+ * const resp = await httpDelete("/api/update", { name: "Raphael" });
+ * if (resp?.ok) console.log("Update successful");
+ */
+export async function httpDelete(url, customToken = "", doAuth = true) {
+    const headers = new Headers();
+    
+    const token = customToken ? customToken : auth.token;
+    if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
+
+    try {
+        return await fetch(url, {
+            method: "DELETE",
+            headers: headers
+        });
+    } catch {
+        return null;
+    }
+}
+
+/**
  * Safely parses the body of a fetch `Response` as JSON.
  *
  * If the body is empty or not valid JSON, returns `null`.
