@@ -1,7 +1,18 @@
 package com.gvw.gvwbackend.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.gvw.gvwbackend.dto.request.UserUpdateRequestDTO;
 import com.gvw.gvwbackend.exception.InvalidCredentialsException;
+import com.gvw.gvwbackend.model.Member;
 import com.gvw.gvwbackend.model.User;
+
+import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -10,56 +21,92 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
-    @Mock
-    private DbService dbService;
+  @Mock private DbService dbService;
 
-    @Mock private PasswordEncoder passwordEncoder;
+  @Mock private PasswordEncoder passwordEncoder;
 
-    @InjectMocks
-    private UserService userService;
+  @Mock private MemberService memberService;
 
-    @Test
-    void testResetPasswordShouldUpdateAndSetFlag() {
-        User user = new User();
-        user.setUserId("123");
-        user.setRole("vorstand");
+  @InjectMocks private UserService userService;
 
-        when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user)).thenReturn(List.of(user));
+  @Test
+  void testUpdateUserShouldUpdateUserData() {
+    User user = new User();
+    user.setUserId("123");
+    user.setMemberId("321");
+    user.setEmail("email");
+    user.setAddress("address");
+    user.setPhone("phone");
 
-        when(passwordEncoder.encode(any())).thenReturn("hashedPw");
+    Member member = new Member();
+    member.setId("321");
+    member.setEmail("original@mail.com");
+    member.setAddress("address");
+    member.setPhone("phone");
 
-        userService.resetPassword("123", "123");
+    when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
+    when(memberService.getMemberById("321")).thenReturn(member);
 
-        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+    UserUpdateRequestDTO request = new UserUpdateRequestDTO("new@mail.com", "newPhone", "newAddress");
 
-        verify(dbService).update(eq("users"), captor.capture());
+    userService.updateUser("123", request);
 
-        User updatedUser = captor.getValue();
+    ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+    ArgumentCaptor<Member> memberCaptor = ArgumentCaptor.forClass(Member.class);
 
-        assertEquals("hashedPw", updatedUser.getPassword());
-        assertTrue(updatedUser.getChangePassword());
-    }
+    verify(dbService).update(eq("users"), userCaptor.capture());
+    verify(dbService).update(eq("members"), memberCaptor.capture());
 
-    @Test
-    void testResetPasswordShouldInvalidCredentialsIfInvalidRole() {
-        User user = new User();
-        user.setUserId("123");
-        user.setRole("member");
+    User updatedUser = userCaptor.getValue();
+    Member updatedMember = memberCaptor.getValue();
 
-        when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
+    assertEquals("new@mail.com",  updatedUser.getEmail());
+    assertEquals("newPhone",  updatedMember.getPhone());
+    assertEquals("newAddress",  updatedMember.getAddress());
 
-        assertThrows(InvalidCredentialsException.class, () -> {
-            userService.resetPassword("123", "123");
+    assertEquals("new@mail.com", updatedMember.getEmail());
+    assertEquals("newPhone", updatedMember.getPhone());
+    assertEquals("newAddress", updatedMember.getAddress());
+  }
+
+  @Test
+  void testResetPasswordShouldUpdateAndSetFlag() {
+    User user = new User();
+    user.setUserId("123");
+    user.setRole("vorstand");
+
+    when(dbService.findByQuery(any(), any(), eq(User.class)))
+        .thenReturn(List.of(user))
+        .thenReturn(List.of(user));
+
+    when(passwordEncoder.encode(any())).thenReturn("hashedPw");
+
+    userService.resetPassword("123", "123");
+
+    ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
+
+    verify(dbService).update(eq("users"), captor.capture());
+
+    User updatedUser = captor.getValue();
+
+    assertEquals("hashedPw", updatedUser.getPassword());
+    assertTrue(updatedUser.getChangePassword());
+  }
+
+  @Test
+  void testResetPasswordShouldInvalidCredentialsIfInvalidRole() {
+    User user = new User();
+    user.setUserId("123");
+    user.setRole("member");
+
+    when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
+
+    assertThrows(
+        InvalidCredentialsException.class,
+        () -> {
+          userService.resetPassword("123", "123");
         });
-    }
+  }
 }
