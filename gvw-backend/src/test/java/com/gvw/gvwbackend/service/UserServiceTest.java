@@ -10,8 +10,6 @@ import com.gvw.gvwbackend.dto.request.UserUpdateRequestDTO;
 import com.gvw.gvwbackend.exception.InvalidCredentialsException;
 import com.gvw.gvwbackend.model.Member;
 import com.gvw.gvwbackend.model.User;
-
-import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,7 +47,8 @@ public class UserServiceTest {
     when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
     when(memberService.getMemberById("321")).thenReturn(member);
 
-    UserUpdateRequestDTO request = new UserUpdateRequestDTO("new@mail.com", "newPhone", "newAddress");
+    UserUpdateRequestDTO request =
+        new UserUpdateRequestDTO("new@mail.com", "newPhone", "newAddress");
 
     userService.updateUser("123", request);
 
@@ -62,13 +61,37 @@ public class UserServiceTest {
     User updatedUser = userCaptor.getValue();
     Member updatedMember = memberCaptor.getValue();
 
-    assertEquals("new@mail.com",  updatedUser.getEmail());
-    assertEquals("newPhone",  updatedMember.getPhone());
-    assertEquals("newAddress",  updatedMember.getAddress());
+    assertEquals("new@mail.com", updatedUser.getEmail());
+    assertEquals("newPhone", updatedMember.getPhone());
+    assertEquals("newAddress", updatedMember.getAddress());
 
     assertEquals("new@mail.com", updatedMember.getEmail());
     assertEquals("newPhone", updatedMember.getPhone());
     assertEquals("newAddress", updatedMember.getAddress());
+  }
+
+  @Test
+  void testUpdateUserShouldThrowInvalidCredentialsWhenDifferentUserId() {
+    User user = new User();
+    user.setUserId("123");
+    user.setMemberId("321");
+    user.setEmail("email");
+    user.setAddress("address");
+    user.setPhone("phone");
+
+    Member member = new Member();
+    member.setId("321");
+    member.setEmail("original@mail.com");
+    member.setAddress("address");
+    member.setPhone("phone");
+
+    when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
+    when(memberService.getMemberById("321")).thenReturn(member);
+
+    UserUpdateRequestDTO request =
+            new UserUpdateRequestDTO("new@mail.com", "newPhone", "newAddress");
+
+    assertThrows(InvalidCredentialsException.class, () -> userService.updateUser("421", request));
   }
 
   @Test
