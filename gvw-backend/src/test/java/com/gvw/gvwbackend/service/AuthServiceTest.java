@@ -151,9 +151,11 @@ public class AuthServiceTest {
 
     LoginRequestDTO request = new LoginRequestDTO("mail", "wrongPw");
 
-    assertThrows(InvalidCredentialsException.class, () -> {
-      authService.login(request);
-    });
+    assertThrows(
+        InvalidCredentialsException.class,
+        () -> {
+          authService.login(request);
+        });
 
     ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
@@ -211,9 +213,11 @@ public class AuthServiceTest {
 
     ChangePwRequestDTO request = new ChangePwRequestDTO("test2@mail.com", "oldPw", "newPw");
 
-    assertThrows(InvalidCredentialsException.class, () -> {
-      authService.changePassword(request);
-    });
+    assertThrows(
+        InvalidCredentialsException.class,
+        () -> {
+          authService.changePassword(request);
+        });
   }
 
   @Test
@@ -233,9 +237,11 @@ public class AuthServiceTest {
 
     ChangePwRequestDTO request = new ChangePwRequestDTO("test@mail.com", "oldPw", "oldPw");
 
-    assertThrows(ConflictException.class, () -> {
-        authService.changePassword(request);
-    });
+    assertThrows(
+        ConflictException.class,
+        () -> {
+          authService.changePassword(request);
+        });
   }
 
   @Test
@@ -255,22 +261,20 @@ public class AuthServiceTest {
 
     ChangePwRequestDTO request = new ChangePwRequestDTO("test@mail.com", "invalidOldPw", "newPw");
 
-    assertThrows(InvalidCredentialsException.class, () -> {
-      authService.changePassword(request);
-    });
+    assertThrows(
+        InvalidCredentialsException.class,
+        () -> {
+          authService.changePassword(request);
+        });
   }
 
   @Test
   void testGeneratePasswordShouldContainWordsAndDigits() {
     String result = AuthService.generatePassword(3, 2);
 
-    long digitCount = result.chars()
-            .filter(Character::isDigit)
-            .count();
+    long digitCount = result.chars().filter(Character::isDigit).count();
 
-    long upperCaseCount = result.chars()
-            .filter(Character::isUpperCase)
-            .count();
+    long upperCaseCount = result.chars().filter(Character::isUpperCase).count();
 
     assertEquals(2, digitCount);
     assertEquals(3, upperCaseCount);
@@ -287,9 +291,7 @@ public class AuthServiceTest {
   void testGeneratePasswordShouldContainOnlyWords() {
     String result = AuthService.generatePassword(3, 0);
 
-    long digitCount = result.chars()
-            .filter(Character::isDigit)
-            .count();
+    long digitCount = result.chars().filter(Character::isDigit).count();
 
     assertEquals(0, digitCount);
   }
@@ -298,9 +300,7 @@ public class AuthServiceTest {
   void testGeneratePasswordShouldContainOnlyDigits() {
     String result = AuthService.generatePassword(0, 5);
 
-    long digitCount = result.chars()
-            .filter(Character::isDigit)
-            .count();
+    long digitCount = result.chars().filter(Character::isDigit).count();
 
     assertEquals(5, digitCount);
   }
