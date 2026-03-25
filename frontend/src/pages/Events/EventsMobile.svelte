@@ -245,7 +245,7 @@
         <PageHeader title="Veranstaltungen" subTitle="Verwaltung von Events, Proben und Konzerten"
                     showSlot={viewport.width > 1200}>
             {#if viewport.width > 1200}
-                <Button type="primary" disabled={(user.role !== "admin" && user.role !== "vorstand")}
+                <Button type="primary" disabled={(user.role !== "admin" && user.role !== "board_member")}
                         onclick={() => addEventModal.showModal()}>
                     <span class="material-symbols-rounded min-[1900px]:text-icon-dt-4 text-icon-dt-5 mr-2">add</span>
                     <p class="min-[1900px]:text-dt-4 text-dt-5">Veranstaltung hinzufügen</p>
@@ -254,7 +254,7 @@
         </PageHeader>
 
         {#if viewport.width < 1200}
-            <Button type="primary" disabled={(user.role !== "admin" && user.role !== "vorstand")} marginTop="5"
+            <Button type="primary" disabled={(user.role !== "admin" && user.role !== "board_member")} marginTop="5"
                     onclick={() => addEventModal.showModal()}>
                 <span class="material-symbols-rounded min-[1900px]:text-icon-dt-4 text-icon-dt-5 mr-2">add</span>
                 <p class="min-[1900px]:text-dt-4 text-dt-5">Veranstaltung hinzufügen</p>

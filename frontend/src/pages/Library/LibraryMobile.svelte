@@ -255,7 +255,7 @@
         </div>
         <PageHeader title="Notenbibliothek" subTitle="Verwaltung des gesamten Notenmaterials" showSlot={false}></PageHeader>
 
-        {#if user.role === "vorstand" || user.role === "admin" || user.role === "Notenwart" || user.role === "chorleitung"}
+        {#if user.role === "board_member" || user.role === "admin" || user.role === "librarian" || user.role === "conductor"}
             <div class="flex flex-col items-center w-full gap-2 mt-5">
                 <Button type="primary" onclick={() => categoryModal.openModal()}>
                     <span class="material-symbols-rounded min-[1000px]:text-icon-dt-4 text-icon-dt-5 mr-2">discover_tune</span>

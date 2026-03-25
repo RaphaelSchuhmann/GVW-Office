@@ -8,7 +8,7 @@
     import { push } from "svelte-spa-router";
 
     $effect(() => {
-        if (user.role !== "admin" && user.role !== "vorstand") {
+        if (user.role !== "admin" && user.role !== "board_member") {
             push("/dashboard");
         }
 

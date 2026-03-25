@@ -12,16 +12,16 @@ import { viewport } from "../stores/viewport.svelte";
 
 export const roleMap = {
     "Mitglied": "member",
-    "Vorstand": "vorstand",
-    "Schriftführer": "schriftführer",
-    "Chorleitung": "chorleitung",
-    "Notenwart": "notenwart",
+    "Vorstand": "board_member",
+    "Schriftführer": "secretary",
+    "Chorleitung": "conductor",
+    "Notenwart": "librarian",
     "admin": "admin",
-    "schriftführer": "Schriftführer",
-    "vorstand": "Vorstand",
+    "secretary": "Schriftführer",
+    "board_member": "Vorstand",
     "member": "Mitglied",
-    "chorleitung": "Chorleitung",
-    "notenwart": "Notenwart"
+    "conductor": "Chorleitung",
+    "librarian": "Notenwart"
 };
 
 export const voiceMap = {

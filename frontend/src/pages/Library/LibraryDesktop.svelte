@@ -265,7 +265,7 @@
             onclick={async () =>  await push(`/library/details?id=${menu.data.activeId}&editing=false`)}>
         Details
     </Button>
-    {#if user.role === "vorstand" || user.role === "admin"}
+    {#if user.role === "board_member" || user.role === "admin"}
         <Button type="contextMenu"
                 onclick={async () =>  await push(`/library/details?id=${menu.data.activeId}&editing=true`)}>
             Bearbeiten
@@ -330,7 +330,7 @@
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Notenbibliothek" subTitle="Verwaltung des gesamten Notenmaterials"
                     showSlot={viewport.width > 1300}>
-            {#if (user.role === "vorstand" || user.role === "admin" || user.role === "Notenwart" || user.role === "chorleitung") && viewport.width > 1300}
+            {#if (user.role === "board_member" || user.role === "admin" || user.role === "librarian" || user.role === "conductor") && viewport.width > 1300}
                 <Button type="primary" onclick={() => categoryModal.openModal()}>
                     <span class="material-symbols-rounded text-icon-dt-4 mr-2">discover_tune</span>
                     <p class="text-dt-4">Kategorien</p>
@@ -342,7 +342,7 @@
             {/if}
         </PageHeader>
 
-        {#if (user.role === "vorstand" || user.role === "admin" || user.role === "Notenwart" || user.role === "chorleitung") && viewport.width < 1300}
+        {#if (user.role === "board_member" || user.role === "admin" || user.role === "librarian" || user.role === "conductor") && viewport.width < 1300}
             <div class="flex items-center w-full min-[1000px]:gap-4 gap-2 mt-5">
                 <Button type="primary" onclick={() => categoryModal.openModal()}>
                     <span

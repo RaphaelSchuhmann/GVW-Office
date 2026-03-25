@@ -11,8 +11,8 @@
         ...restProps
     } = $props();
     
-    const mitgliederAccess = ["admin", "vorstand"];
-    const reportsAccess = ["admin", "schriftführer"];
+    const mitgliederAccess = ["admin", "board_member"];
+    const reportsAccess = ["admin", "secretary"];
 
     let userOptionsVisible = $state(false);
     let userOptionsIcon = $state("expand_all");

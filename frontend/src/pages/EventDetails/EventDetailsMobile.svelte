@@ -34,7 +34,7 @@
 
     $effect(() => {
         console.log("EFFECT: ");
-        if (isEditing && (user.role !== "vorstand" && user.role !== "admin")) isEditing = false;
+        if (isEditing && (user.role !== "board_member" && user.role !== "admin")) isEditing = false;
         console.log("isEditing: ", isEditing);
     });
 
@@ -204,7 +204,7 @@
 
         <div class="flex-1 min-h-0 overflow-y-auto w-full">
             <div class="flex flex-col items-center gap-5 min-[1500px]:w-1/2 min-[1200px]:w-2/3 w-full mt-5">
-                {#if viewport.width < 900 && !isEditing && (user.role === "vorstand" || user.role === "admin")}
+                {#if viewport.width < 900 && !isEditing && (user.role === "board_member" || user.role === "admin")}
                     <div class="flex items-center gap-2 w-full">
                         <Button type="delete" onclick={() => confirmDeleteEventModal.startDelete()}>
                             <span class="material-symbols-rounded mr-2">delete</span>
