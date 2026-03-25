@@ -1,13 +1,17 @@
 package com.gvw.gvwbackend.middleware;
 
+import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.service.JwtService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import org.jspecify.annotations.NonNull;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -35,7 +39,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
       HttpServletRequest request,
       @NonNull HttpServletResponse response,
       @NonNull FilterChain filterChain)
-      throws ServletException, IOException {
+      throws IOException {
 
     String authHeader = request.getHeader("Authorization");
 
@@ -48,6 +52,22 @@ public class AuthMiddleware extends OncePerRequestFilter {
 
     try {
       String userId = jwtService.extractUserId(token);
+      Claims claims = jwtService.extractAllClaims(token);
+
+      String roleName = claims.get("role", String.class);
+
+      if (roleName == null) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "InvalidToken");
+      }
+
+      Role role = Role.fromString(roleName);
+
+      List<SimpleGrantedAuthority> authorities =
+          List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+
+      var authToken = new UsernamePasswordAuthenticationToken(userId, null, authorities);
+
+      SecurityContextHolder.getContext().setAuthentication(authToken);
 
       request.setAttribute("userId", userId);
       filterChain.doFilter(request, response);

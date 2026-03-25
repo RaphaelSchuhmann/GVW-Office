@@ -70,7 +70,8 @@ public class AuthService {
       dbService.update("users", user);
     }
 
-    String token = jwtService.generateToken(user.getUserId(), null);
+    String token =
+        jwtService.generateToken(user.getUserId(), Map.of("role", user.getRole().getValue()));
 
     return new LoginResponseDTO(
         token,

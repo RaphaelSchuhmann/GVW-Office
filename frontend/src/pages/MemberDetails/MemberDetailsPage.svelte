@@ -15,7 +15,7 @@
 
     let isEditing = $state(params.get("editing") === "true");
 
-    if (user.role !== "admin" && user.role !== "vorstand") {
+    if (user.role !== "admin" && user.role !== "board_member") {
         push("/dashboard");
     }
 

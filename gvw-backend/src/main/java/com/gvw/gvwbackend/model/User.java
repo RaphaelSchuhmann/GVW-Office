@@ -27,7 +27,7 @@ public class User {
   private Boolean firstLogin;
 
   private String userId;
-  private String role;
+  private Role role;
   private String memberId;
   private Integer failedLoginAttempts;
 
