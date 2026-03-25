@@ -12,6 +12,7 @@ import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.mapper.MemberMapper;
 import com.gvw.gvwbackend.model.Member;
+import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.model.User;
 import java.util.List;
 import java.util.UUID;
@@ -21,18 +22,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
   @Mock private DbService dbService;
 
-  private MemberMapper memberMapper;
+  @Mock private PasswordEncoder passwordEncoder;
+
   private MemberService memberService;
 
   @BeforeEach
   void setup() {
-    memberMapper = Mappers.getMapper(MemberMapper.class);
-    memberService = new MemberService(dbService, memberMapper);
+    MemberMapper memberMapper = Mappers.getMapper(MemberMapper.class);
+    memberService = new MemberService(dbService, memberMapper, passwordEncoder);
   }
 
   @Test
@@ -218,7 +221,7 @@ public class MemberServiceTest {
             "address",
             "t1",
             "active",
-            "role",
+            "member",
             "birthdate",
             "joined");
 
@@ -358,7 +361,7 @@ public class MemberServiceTest {
     member.setPhone("phoneNumber");
     member.setAddress("address");
     member.setVoice("t1");
-    member.setRole("member");
+    member.setRole(Role.MEMBER);
     member.setStatus("active");
     member.setBirthdate("birthdate");
     member.setJoined("joined");
@@ -375,7 +378,7 @@ public class MemberServiceTest {
     user.setChangePassword(true);
     user.setFirstLogin(true);
     user.setUserId(UUID.randomUUID().toString());
-    user.setRole("member");
+    user.setRole(Role.MEMBER);
     user.setFailedLoginAttempts(0);
     user.setLockUntil(null);
 

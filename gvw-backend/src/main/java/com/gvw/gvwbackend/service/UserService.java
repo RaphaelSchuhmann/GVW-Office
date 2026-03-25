@@ -33,7 +33,11 @@ public class UserService {
     User user = getUserByUserId(userId);
 
     return new UserResponseDTO(
-        user.getEmail(), user.getRole(), user.getName(), user.getAddress(), user.getPhone());
+        user.getEmail(),
+        user.getRole().getValue(),
+        user.getName(),
+        user.getAddress(),
+        user.getPhone());
   }
 
   public void updateUser(String userId, UserUpdateRequestDTO requestDTO) {
@@ -68,19 +72,9 @@ public class UserService {
   }
 
   // TODO: Note that this method cannot be properly tested yet as it is working with a mailer
-  public void resetPassword(String requesterUserId, String memberId) {
-    if (requesterUserId == null || requesterUserId.isEmpty()) {
-      throw new InvalidCredentialsException("Unauthorized");
-    }
-
+  public void resetPassword(String memberId) {
     if (memberId == null || memberId.isEmpty()) {
       throw new BadRequestException("InvalidData");
-    }
-
-    User requesterUser = getUserByUserId(requesterUserId);
-    String requesterUserRole = requesterUser.getRole();
-    if (!requesterUserRole.equals("admin") && !requesterUserRole.equals("vorstand")) {
-      throw new InvalidCredentialsException("Unauthorized");
     }
 
     User user = getUserByMemberId(memberId);

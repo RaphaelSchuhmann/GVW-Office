@@ -5,6 +5,7 @@ import com.gvw.gvwbackend.dto.response.UserResponseDTO;
 import com.gvw.gvwbackend.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,7 +32,8 @@ public class UserController {
 
   @PostMapping("/reset/password/{id}")
   @ResponseStatus(HttpStatus.OK)
-  public void resetPassword(@RequestAttribute("userId") String userId, @PathVariable String id) {
-    userService.resetPassword(userId, id);
+  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
+  public void resetPassword(@PathVariable String id) {
+    userService.resetPassword(id);
   }
 }

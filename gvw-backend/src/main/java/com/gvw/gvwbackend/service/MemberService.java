@@ -9,14 +9,14 @@ import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.mapper.MemberMapper;
 import com.gvw.gvwbackend.model.Member;
+import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.model.User;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -25,11 +25,14 @@ public class MemberService {
   private final DbService dbService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final MemberMapper memberMapper;
+  private final PasswordEncoder passwordEncoder;
   private static final Logger log = LoggerFactory.getLogger(MemberService.class);
 
-  public MemberService(DbService dbService, MemberMapper memberMapper) {
+  public MemberService(
+      DbService dbService, MemberMapper memberMapper, PasswordEncoder passwordEncoder) {
     this.dbService = dbService;
     this.memberMapper = memberMapper;
+    this.passwordEncoder = passwordEncoder;
   }
 
   public MembersResponseDTO getMembers() {
@@ -55,7 +58,7 @@ public class MemberService {
                         m.getAddress(),
                         m.getVoice(),
                         m.getStatus(),
-                        m.getRole(),
+                        m.getRole().getValue(),
                         m.getBirthdate(),
                         m.getJoined()))
             .toList();
@@ -81,8 +84,11 @@ public class MemberService {
         throw new NotFoundException("MemberNotFound");
       }
 
+      String temporaryPassword = AuthService.generatePassword(3, 2);
+
       Member savedMember = members.getFirst();
       user.setMemberId(savedMember.getId());
+      user.setPassword(passwordEncoder.encode(temporaryPassword));
 
       dbService.insert("users", user);
 
@@ -172,7 +178,7 @@ public class MemberService {
     user.setChangePassword(true);
     user.setFirstLogin(true);
     user.setUserId(UUID.randomUUID().toString());
-    user.setRole(request.role());
+    user.setRole(Role.fromString(request.role()));
     user.setFailedLoginAttempts(0);
     user.setLockUntil(null);
 
@@ -187,7 +193,7 @@ public class MemberService {
     member.setPhone(request.phone());
     member.setAddress(request.address());
     member.setVoice(request.voice());
-    member.setRole(request.role());
+    member.setRole(Role.fromString(request.role()));
     member.setStatus(request.status());
     member.setBirthdate(request.birthdate());
     member.setJoined(request.joined());

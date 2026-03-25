@@ -7,6 +7,7 @@ import com.gvw.gvwbackend.dto.response.AppSettingsResponseDTO;
 import com.gvw.gvwbackend.service.AppSettingsService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,18 +26,21 @@ public class AppSettingsController {
 
   @PatchMapping("/update/max-members")
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
   public void updateMaxMembers(@Valid @RequestBody UpdateMaxMembersRequestDTO requestDTO) {
     appSettingsService.updateMaxMembers(requestDTO);
   }
 
   @PostMapping("/add/category")
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN', 'CONDUCTOR')")
   public void addCategory(@Valid @RequestBody AddCategoryRequestDTO requestDTO) {
     appSettingsService.addCategory(requestDTO);
   }
 
   @PostMapping("/remove/category")
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN', 'CONDUCTOR')")
   public void removeCategory(@Valid @RequestBody RemoveCategoryRequestDTO requestDTO) {
     appSettingsService.removeCategory(requestDTO);
   }

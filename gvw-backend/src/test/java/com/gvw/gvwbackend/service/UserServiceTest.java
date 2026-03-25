@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.gvw.gvwbackend.dto.request.UserUpdateRequestDTO;
 import com.gvw.gvwbackend.exception.InvalidCredentialsException;
 import com.gvw.gvwbackend.model.Member;
+import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.model.User;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -98,7 +99,7 @@ public class UserServiceTest {
   void testResetPasswordShouldUpdateAndSetFlag() {
     User user = new User();
     user.setUserId("123");
-    user.setRole("vorstand");
+    user.setRole(Role.BOARD_MEMBER);
 
     when(dbService.findByQuery(any(), any(), eq(User.class)))
         .thenReturn(List.of(user))
@@ -106,7 +107,7 @@ public class UserServiceTest {
 
     when(passwordEncoder.encode(any())).thenReturn("hashedPw");
 
-    userService.resetPassword("123", "123");
+    userService.resetPassword("123");
 
     ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
@@ -122,14 +123,14 @@ public class UserServiceTest {
   void testResetPasswordShouldInvalidCredentialsIfInvalidRole() {
     User user = new User();
     user.setUserId("123");
-    user.setRole("member");
+    user.setRole(Role.MEMBER);
 
     when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
 
     assertThrows(
         InvalidCredentialsException.class,
         () -> {
-          userService.resetPassword("123", "123");
+          userService.resetPassword("123");
         });
   }
 }

@@ -25,7 +25,7 @@ public class Member {
 
   private String voice;
   private String status;
-  private String role;
+  private Role role;
 
   // Should be string as provided by the frontend
   private String birthdate;
