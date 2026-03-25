@@ -89,7 +89,7 @@ public class UserServiceTest {
     when(memberService.getMemberById("321")).thenReturn(member);
 
     UserUpdateRequestDTO request =
-            new UserUpdateRequestDTO("new@mail.com", "newPhone", "newAddress");
+        new UserUpdateRequestDTO("new@mail.com", "newPhone", "newAddress");
 
     assertThrows(InvalidCredentialsException.class, () -> userService.updateUser("421", request));
   }

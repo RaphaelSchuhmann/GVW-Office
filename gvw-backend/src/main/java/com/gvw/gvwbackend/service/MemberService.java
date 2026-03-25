@@ -9,13 +9,12 @@ import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.mapper.MemberMapper;
 import com.gvw.gvwbackend.model.Member;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
 import com.gvw.gvwbackend.model.User;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -89,20 +88,21 @@ public class MemberService {
 
       // TODO: Add mailer send mail
       /* Implementation in old api
-        const html = await loadTemplate("newUser", { tempPassword: tempPassword });
+       const html = await loadTemplate("newUser", { tempPassword: tempPassword });
 
-        await sendMail({
-            to: email,
-            subject: "Temporäres Passwort",
-            content: html
-        });
-       */
+       await sendMail({
+           to: email,
+           subject: "Temporäres Passwort",
+           content: html
+       });
+      */
     } catch (Exception e) {
       log.error("Sync error during member/user creations: {}", e.getMessage());
 
       // Rollback
       try {
-        Map<String, Object> rollbackQuery = Map.of("selector", Map.of("email", request.email()), "limit", 1);
+        Map<String, Object> rollbackQuery =
+            Map.of("selector", Map.of("email", request.email()), "limit", 1);
         List<Member> toDeleteList = dbService.findByQuery("members", rollbackQuery, Member.class);
 
         if (!toDeleteList.isEmpty()) {
@@ -112,7 +112,9 @@ public class MemberService {
           log.info("Rollback: Successfully deleted orphan member {}", orphan.getId());
         }
       } catch (Exception rollbackException) {
-        log.error("CRITICAL: Manual intervention required. Could not delete orphan member for email: {}", request.email());
+        log.error(
+            "CRITICAL: Manual intervention required. Could not delete orphan member for email: {}",
+            request.email());
       }
 
       throw new RuntimeException("RegistrationFailed", e);
