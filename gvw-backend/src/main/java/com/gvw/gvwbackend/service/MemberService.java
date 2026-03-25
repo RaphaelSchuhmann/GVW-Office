@@ -25,7 +25,7 @@ public class MemberService {
   private final DbService dbService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final MemberMapper memberMapper;
-  private static final Logger log = LoggerFactory.getLogger(DbService.class);
+  private static final Logger log = LoggerFactory.getLogger(MemberService.class);
 
   public MemberService(DbService dbService, MemberMapper memberMapper) {
     this.dbService = dbService;
@@ -145,24 +145,18 @@ public class MemberService {
   }
 
   public void updateMemberStatus(String id) {
-    if (id == null) {
+    if (id == null || id.isEmpty()) {
       throw new BadRequestException("InvalidData");
     }
 
     Member member = getMemberById(id);
 
-    if (member.getStatus() != null && member.getStatus().equals("active")) {
-      member.setStatus("inactive");
-    } else if (member.getStatus() != null && member.getStatus().equals("inactive")) {
-      member.setStatus("active");
-    } else {
-      member.setStatus("active");
-    }
+    member.setStatus("active".equals(member.getStatus()) ? "inactive" : "active");
 
     dbService.update("members", member);
   }
 
-  private boolean emailExists(@NotBlank @Email String email) {
+  private boolean emailExists(String email) {
     Map<String, Object> query = Map.of("selector", Map.of("email", email), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 

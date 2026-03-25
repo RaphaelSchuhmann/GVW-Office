@@ -117,7 +117,7 @@ export async function httpPatch(url, body, customToken = "", doAuth = true) {
 }
 
 /**
- * Performs an HTTP DELETE request with JSON body and optional bearer token authorization.
+  * Performs an HTTP DELETE request with optional bearer token authorization.
  *
  * @param {string} url - The endpoint URL to delete to.
  * @param {string} [customToken=""] - Optional token to override the auth store token.
@@ -125,8 +125,8 @@ export async function httpPatch(url, body, customToken = "", doAuth = true) {
  * @returns {Promise<Response | null>} The fetch response, or `null` if the request fails.
  *
  * @example
- * const resp = await httpDelete("/api/update", { name: "Raphael" });
- * if (resp?.ok) console.log("Update successful");
+ * const resp = await httpDelete("/api/delete/{memberId}");
+ * if (resp?.ok) console.log("Delete successful");
  */
 export async function httpDelete(url, customToken = "", doAuth = true) {
     const headers = new Headers();
