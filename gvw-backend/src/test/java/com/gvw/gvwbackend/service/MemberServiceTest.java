@@ -249,6 +249,9 @@ public class MemberServiceTest {
 
     assertEquals("user-id", existingUser.getId());
     assertEquals("rev-user", existingUser.getRev());
+
+    assertEquals(memberId, existingMember.getId());
+    assertEquals("rev-member", existingMember.getRev());
   }
 
   @Test

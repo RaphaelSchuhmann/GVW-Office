@@ -61,13 +61,13 @@ public class UserServiceTest {
     User updatedUser = userCaptor.getValue();
     Member updatedMember = memberCaptor.getValue();
 
-    assertEquals("new@mail.com", updatedUser.getEmail());
-    assertEquals("newPhone", updatedMember.getPhone());
-    assertEquals("newAddress", updatedMember.getAddress());
-
     assertEquals("new@mail.com", updatedMember.getEmail());
     assertEquals("newPhone", updatedMember.getPhone());
     assertEquals("newAddress", updatedMember.getAddress());
+
+    assertEquals("new@mail.com", updatedUser.getEmail());
+    assertEquals("newPhone", updatedUser.getPhone());
+    assertEquals("newAddress", updatedUser.getAddress());
   }
 
   @Test
