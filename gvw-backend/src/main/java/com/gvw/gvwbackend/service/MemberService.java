@@ -7,6 +7,7 @@ import com.gvw.gvwbackend.dto.response.MembersResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.NotFoundException;
+import com.gvw.gvwbackend.mapper.MemberMapper;
 import com.gvw.gvwbackend.model.Member;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +25,12 @@ import tools.jackson.databind.ObjectMapper;
 public class MemberService {
   private final DbService dbService;
   private final ObjectMapper mapper = new ObjectMapper();
+  private final MemberMapper memberMapper;
   private static final Logger log = LoggerFactory.getLogger(DbService.class);
 
-  public MemberService(DbService dbService) {
+  public MemberService(DbService dbService, MemberMapper memberMapper) {
     this.dbService = dbService;
+    this.memberMapper = memberMapper;
   }
 
   public MembersResponseDTO getMembers() {
@@ -117,7 +120,7 @@ public class MemberService {
   }
 
   public void deleteMember(String id) {
-    if (id == null) {
+    if (id == null || id.isEmpty()) {
       throw new BadRequestException("InvalidData");
     }
 
@@ -132,23 +135,8 @@ public class MemberService {
     Member member = getMemberById(request.id());
     User user = getUserByMemberId(request.id());
 
-    member.setName(request.name());
-    member.setSurname(request.surname());
-    member.setEmail(request.email());
-    member.setPhone(request.phone());
-    member.setAddress(request.address());
-    member.setVoice(request.voice());
-    member.setStatus(request.status());
-    member.setRole(request.role());
-    member.setBirthdate(request.birthdate());
-    member.setJoined(request.joined());
-
-    user.setName(request.name() + " " + request.surname());
-    user.setEmail(request.email());
-    user.setPhone(request.phone());
-    user.setAddress(request.address());
-    user.setRole(request.role());
-    user.setMemberId(request.id());
+    memberMapper.updateMemberFromDto(request, member);
+    memberMapper.updateUserFromDto(request, user);
 
     dbService.update("members", member);
     dbService.update("users", user);
