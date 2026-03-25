@@ -56,6 +56,10 @@ public class AuthMiddleware extends OncePerRequestFilter {
 
       String roleName = claims.get("role", String.class);
 
+      if (roleName == null) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "InvalidToken");
+      }
+
       Role role = Role.fromString(roleName);
 
       List<SimpleGrantedAuthority> authorities =

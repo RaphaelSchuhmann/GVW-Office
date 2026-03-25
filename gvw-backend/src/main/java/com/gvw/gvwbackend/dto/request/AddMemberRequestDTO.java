@@ -15,7 +15,7 @@ public record AddMemberRequestDTO(
     @NotBlank String role,
     @NotBlank
         @Pattern(
-            regexp = "\\d{2}-\\d{2}.\\d{4}",
+            regexp = "\\d{2}\\.\\d{2}\\.\\d{4}",
             message = "birthdate must be in DD.MM.YYYY format")
         String birthdate,
     @NotBlank @Pattern(regexp = "\\d{4}", message = "joined must be in YYYY format")
