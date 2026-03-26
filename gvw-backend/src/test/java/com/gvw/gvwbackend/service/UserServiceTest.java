@@ -1,8 +1,7 @@
 package com.gvw.gvwbackend.service;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -23,10 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
   @Mock private DbService dbService;
-
   @Mock private PasswordEncoder passwordEncoder;
-
   @Mock private MemberService memberService;
+  @Mock private MailService mailService;
 
   @InjectMocks private UserService userService;
 
@@ -98,6 +96,7 @@ public class UserServiceTest {
   @Test
   void testResetPasswordShouldUpdateAndSetFlag() {
     User user = new User();
+    user.setEmail("test@mail.com");
     user.setUserId("123");
     user.setRole(Role.BOARD_MEMBER);
 
@@ -117,6 +116,13 @@ public class UserServiceTest {
 
     assertEquals("hashedPw", updatedUser.getPassword());
     assertTrue(updatedUser.getChangePassword());
+
+    verify(mailService).sendMail(
+        eq("test@mail.com"),
+        contains("GVW-Office: Passwort zurückgesetzt"),
+        eq("resetPassword"),
+        argThat(vars -> vars.containsKey("tempPassword"))
+    );
   }
 
   @Test
