@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="de">
+<head>
+    <title>GVW Office - Neuer Benutzer</title>
+    <meta charset="UTF-8">
+    <style>
+        /* Basic reset for email clients */
+        body { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f6f6f6; }
+        .wrapper { width: 100%; table-layout: fixed; background-color: #f6f6f6; padding: 40px 0; }
+        .content { width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 8px; text-align: center; }
+        .title { font-size: 32px; font-weight: bold; color: #333333; margin: 20px 0 10px 0; }
+        .sub-title { font-size: 20px; color: #666666; margin-bottom: 30px; }
+        .text { font-size: 16px; color: #444444; line-height: 1.5; margin-bottom: 30px; }
+        .pw-box {
+            display: inline-block;
+            background-color: #00cfd1;
+            color: #ffffff;
+            padding: 15px 30px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 7px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="content">
+        <img src="cid:logo-image" width="100" style="border-radius: 50%; border: 2px solid #E5E5E5;" alt="GVW Logo">
+
+        <h1 class="title">GVW Office</h1>
+        <p class="sub-title">Ihr Benutzerkonto wurde erfolgreich erstellt.</p>
+
+        <p class="text">Bitte melden Sie sich mit dem untenstehenden temporären Passwort an. Aus Sicherheitsgründen müssen Sie dieses Passwort beim ersten Login sofort ändern.</p>
+
+        <div class="pw-box" th:text="${tempPassword}">TEMP-PW-123</div>
+
+        <p class="text" style="margin-top: 30px; font-size: 14px; color: #888888;">
+            Falls Sie diese Erstellung nicht erwarten oder Fragen dazu haben, wenden Sie sich bitte an den Vorstand.
+        </p>
+    </div>
+</div>
+</body>
+</html>

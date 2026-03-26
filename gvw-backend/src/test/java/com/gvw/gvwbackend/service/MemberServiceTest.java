@@ -1,7 +1,6 @@
 package com.gvw.gvwbackend.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -15,11 +14,13 @@ import com.gvw.gvwbackend.model.Member;
 import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.model.User;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,15 +28,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @ExtendWith(MockitoExtension.class)
 public class MemberServiceTest {
   @Mock private DbService dbService;
-
   @Mock private PasswordEncoder passwordEncoder;
+  @Mock private MailService mailService;
 
   private MemberService memberService;
 
   @BeforeEach
   void setup() {
     MemberMapper memberMapper = Mappers.getMapper(MemberMapper.class);
-    memberService = new MemberService(dbService, memberMapper, passwordEncoder);
+    memberService = new MemberService(dbService, memberMapper, passwordEncoder, mailService);
   }
 
   @Test
@@ -71,6 +72,13 @@ public class MemberServiceTest {
                 (User user) ->
                     user.getMemberId().equals("member-id")
                         && user.getEmail().equals("test@mail.com")));
+
+    verify(mailService).sendMail(
+            eq("test@mail.com"),
+            contains("GVW-Office: Temporäres Password"),
+            eq("newUser"),
+            argThat(vars -> vars.containsKey("tempPassword"))
+    );
   }
 
   @Test
@@ -132,6 +140,8 @@ public class MemberServiceTest {
     assertThrows(RuntimeException.class, () -> memberService.addMember(request));
 
     verify(dbService).delete("members", "member-id", "rev-1");
+
+    verify(mailService, never()).sendMail(anyString(), anyString(), anyString(), anyMap());
   }
 
   @Test
@@ -158,6 +168,40 @@ public class MemberServiceTest {
         () -> {
           memberService.addMember(request);
         });
+  }
+
+  @Test
+  void testAddMemberShouldSendCorrectPassword() {
+    AddMemberRequestDTO request =
+            new AddMemberRequestDTO(
+                    "Max",
+                    "Mustermann",
+                    "test@mail.com",
+                    "phoneNumber",
+                    "address",
+                    "t1",
+                    "member",
+                    "active",
+                    "birthdate",
+                    "joined");
+
+    Member savedMember = generateValidMember();
+    savedMember.setId("member-id");
+
+    when(dbService.findByQuery(eq("users"), any(), eq(User.class))).thenReturn(List.of());
+
+    when(dbService.findByQuery(eq("members"), any(), eq(Member.class)))
+            .thenReturn(List.of(savedMember));
+
+    memberService.addMember(request);
+
+    ArgumentCaptor<Map<String, Object>> mapCaptor = ArgumentCaptor.forClass(Map.class);
+    verify(mailService).sendMail(anyString(), anyString(), anyString(), mapCaptor.capture());
+
+    Map<String, Object> sentVariables = mapCaptor.getValue();
+    String password = (String) sentVariables.get("tempPassword");
+
+    assertNotNull(password);
   }
 
   @Test

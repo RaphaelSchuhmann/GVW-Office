@@ -17,12 +17,14 @@ public class UserService {
   private final DbService dbService;
   private final PasswordEncoder passwordEncoder;
   private final MemberService memberService;
+  private final MailService mailService;
 
   public UserService(
-      DbService dbService, PasswordEncoder passwordEncoder, MemberService memberService) {
+      DbService dbService, PasswordEncoder passwordEncoder, MemberService memberService, MailService mailService) {
     this.dbService = dbService;
     this.passwordEncoder = passwordEncoder;
     this.memberService = memberService;
+    this.mailService = mailService;
   }
 
   public UserResponseDTO getUser(String userId) {
@@ -71,7 +73,6 @@ public class UserService {
     dbService.update("members", member);
   }
 
-  // TODO: Note that this method cannot be properly tested yet as it is working with a mailer
   public void resetPassword(String memberId) {
     if (memberId == null || memberId.isEmpty()) {
       throw new BadRequestException("InvalidData");
@@ -85,16 +86,7 @@ public class UserService {
     user.setChangePassword(true);
     dbService.update("users", user);
 
-    // TODO: Add mailer send mail
-    /* Implementation in old api
-    const html = await loadTemplate("newUser", { tempPassword: temporaryPassword });
-
-    await sendMail({
-        to: user.email,
-        subject: "Passwort zurückgesetzt",
-        content: html
-    });
-     */
+    mailService.sendMail(user.getEmail(), "GVW-Office: Passwort zurückgesetzt", "resetPassword", Map.of("tempPassword", temporaryPassword));
   }
 
   private User getUserByMemberId(String memberId) {

@@ -1,6 +1,20 @@
 spring:
   application:
     name: gvw-backend
+  mail:
+    host: smtp.strato.de
+    port: 465
+    username: ${GVW_MAIL_USERNAME}
+    password: ${GVW_MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
 
 server:
   port: ${GVW_PORT}

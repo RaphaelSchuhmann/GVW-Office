@@ -26,13 +26,16 @@ public class MemberService {
   private final ObjectMapper mapper = new ObjectMapper();
   private final MemberMapper memberMapper;
   private final PasswordEncoder passwordEncoder;
+  private final MailService mailService;
+
   private static final Logger log = LoggerFactory.getLogger(MemberService.class);
 
   public MemberService(
-      DbService dbService, MemberMapper memberMapper, PasswordEncoder passwordEncoder) {
+      DbService dbService, MemberMapper memberMapper, PasswordEncoder passwordEncoder, MailService mailService) {
     this.dbService = dbService;
     this.memberMapper = memberMapper;
     this.passwordEncoder = passwordEncoder;
+    this.mailService = mailService;
   }
 
   public MembersResponseDTO getMembers() {
@@ -92,16 +95,7 @@ public class MemberService {
 
       dbService.insert("users", user);
 
-      // TODO: Add mailer send mail
-      /* Implementation in old api
-       const html = await loadTemplate("newUser", { tempPassword: tempPassword });
-
-       await sendMail({
-           to: email,
-           subject: "Temporäres Passwort",
-           content: html
-       });
-      */
+      mailService.sendMail(user.getEmail(), "GVW-Office: Temporäres Password", "newUser", Map.of("tempPassword", temporaryPassword));
     } catch (Exception e) {
       log.error("Sync error during member/user creations: {}", e.getMessage());
 
