@@ -49,7 +49,7 @@ public class MailService {
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             log.error("Error sending mail: {}", e.getMessage(), e);
-            throw new RuntimeException("Error sending email to " + to, e);
+            throw new RuntimeException("Error sending mail", e);
         }
     }
 }
