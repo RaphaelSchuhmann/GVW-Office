@@ -20,7 +20,10 @@ public class UserService {
   private final MailService mailService;
 
   public UserService(
-      DbService dbService, PasswordEncoder passwordEncoder, MemberService memberService, MailService mailService) {
+      DbService dbService,
+      PasswordEncoder passwordEncoder,
+      MemberService memberService,
+      MailService mailService) {
     this.dbService = dbService;
     this.passwordEncoder = passwordEncoder;
     this.memberService = memberService;
@@ -86,7 +89,11 @@ public class UserService {
     user.setChangePassword(true);
     dbService.update("users", user);
 
-    mailService.sendMail(user.getEmail(), "GVW-Office: Passwort zurückgesetzt", "resetPassword", Map.of("tempPassword", temporaryPassword));
+    mailService.sendMail(
+        user.getEmail(),
+        "GVW-Office: Passwort zurückgesetzt",
+        "resetPassword",
+        Map.of("tempPassword", temporaryPassword));
   }
 
   private User getUserByMemberId(String memberId) {

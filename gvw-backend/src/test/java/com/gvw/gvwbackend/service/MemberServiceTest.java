@@ -73,12 +73,12 @@ public class MemberServiceTest {
                     user.getMemberId().equals("member-id")
                         && user.getEmail().equals("test@mail.com")));
 
-    verify(mailService).sendMail(
+    verify(mailService)
+        .sendMail(
             eq("test@mail.com"),
             contains("GVW-Office: Temporäres Password"),
             eq("newUser"),
-            argThat(vars -> vars.containsKey("tempPassword"))
-    );
+            argThat(vars -> vars.containsKey("tempPassword")));
   }
 
   @Test
@@ -173,17 +173,17 @@ public class MemberServiceTest {
   @Test
   void testAddMemberShouldSendCorrectPassword() {
     AddMemberRequestDTO request =
-            new AddMemberRequestDTO(
-                    "Max",
-                    "Mustermann",
-                    "test@mail.com",
-                    "phoneNumber",
-                    "address",
-                    "t1",
-                    "member",
-                    "active",
-                    "birthdate",
-                    "joined");
+        new AddMemberRequestDTO(
+            "Max",
+            "Mustermann",
+            "test@mail.com",
+            "phoneNumber",
+            "address",
+            "t1",
+            "member",
+            "active",
+            "birthdate",
+            "joined");
 
     Member savedMember = generateValidMember();
     savedMember.setId("member-id");
@@ -191,7 +191,7 @@ public class MemberServiceTest {
     when(dbService.findByQuery(eq("users"), any(), eq(User.class))).thenReturn(List.of());
 
     when(dbService.findByQuery(eq("members"), any(), eq(Member.class)))
-            .thenReturn(List.of(savedMember));
+        .thenReturn(List.of(savedMember));
 
     memberService.addMember(request);
 
