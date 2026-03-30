@@ -24,10 +24,10 @@ public class EPWRService {
   private static final Logger log = LoggerFactory.getLogger(EPWRService.class);
 
   public EPWRService(
-      DbService dbService,
-      PasswordEncoder passwordEncoder,
-      MailService mailService,
-      HashUtil hashUtil) {
+          DbService dbService,
+          PasswordEncoder passwordEncoder,
+          MailService mailService,
+          HashUtil hashUtil) {
     this.dbService = dbService;
     this.passwordEncoder = passwordEncoder;
     this.mailService = mailService;
@@ -39,8 +39,8 @@ public class EPWRService {
     String hashedToken = hashUtil.createHash(token);
 
     List<EPWRToken> tokenList =
-        dbService.findByQuery(
-            "emergency_token", Map.of("selector", Map.of(), "limit", 1), EPWRToken.class);
+            dbService.findByQuery(
+                    "emergency_token", Map.of("selector", Map.of(), "limit", 1), EPWRToken.class);
 
     if (tokenList.isEmpty()) {
       EPWRToken epwrToken = new EPWRToken();
@@ -48,36 +48,43 @@ public class EPWRService {
       epwrToken.setCreatedAt(Instant.now());
       epwrToken.setExpiresAt(Instant.now().plus(Duration.ofDays(30)));
 
-      dbService.insert("emergency_token", epwrToken);
+      if (!dbService.insert("emergency_token", epwrToken)) {
+        throw new RuntimeException("Failed to insert emergency token");
+      }
     } else {
       EPWRToken savedToken = tokenList.getFirst();
       savedToken.setHashedToken(hashedToken);
       savedToken.setCreatedAt(Instant.now());
       savedToken.setExpiresAt(Instant.now().plus(Duration.ofDays(30)));
 
-      dbService.update("emergency_token", savedToken);
+      if (!dbService.update("emergency_token", savedToken)) {
+        throw new RuntimeException("Failed to update emergency token");
+      }
     }
 
     log.info("Emergency token manually regenerated");
-
     return new NewEmergencyTokenDTO(token);
   }
 
   public NewEmergencyTokenDTO useEmergencyToken(String token) {
     EPWRToken savedToken = fetchAndValidateEmergencyToken(token);
 
+    String newToken = TokenUtils.generateToken();
+    boolean updated = tryUpdateEmergencyToken(savedToken, newToken);
+
+    if (!updated) {
+      log.warn("Emergency token already used concurrently");
+      throw new InvalidCredentialsException("TokenAlreadyUsed");
+    }
+
     List<User> admins =
-        dbService.findByQuery("users", Map.of("selector", Map.of("role", Role.ADMIN)), User.class);
+            dbService.findByQuery("users", Map.of("selector", Map.of("role", Role.ADMIN)), User.class);
 
     if (admins.isEmpty()) {
       log.warn("No admins found during emergency access!");
     }
 
     processAdminPasswordResets(admins);
-
-    String newToken = TokenUtils.generateToken();
-    updateEmergencyToken(savedToken, newToken);
-
     notifyAdminsOfUsage(admins);
 
     return new NewEmergencyTokenDTO(newToken);
@@ -85,14 +92,14 @@ public class EPWRService {
 
   private EPWRToken fetchAndValidateEmergencyToken(String token) {
     List<EPWRToken> tokens =
-        dbService.findByQuery(
-            "emergency_token", Map.of("selector", Map.of(), "limit", 1), EPWRToken.class);
+            dbService.findByQuery(
+                    "emergency_token", Map.of("selector", Map.of(), "limit", 1), EPWRToken.class);
 
     if (tokens.isEmpty()) throw new NotFoundException("TokenNotFound");
 
     EPWRToken savedToken = tokens.getFirst();
 
-    if (savedToken.getExpiresAt() != null && savedToken.getExpiresAt().isBefore(Instant.now())) {
+    if (savedToken.getExpiresAt() != null && (savedToken.getExpiresAt().isBefore(Instant.now()) || savedToken.getExpiresAt() == Instant.now())) {
       throw new InvalidCredentialsException("TokenExpired");
     }
 
@@ -110,28 +117,33 @@ public class EPWRService {
       admin.setPassword(passwordEncoder.encode(tempPw));
       admin.setChangePassword(true);
 
-      dbService.update("users", admin);
+      if (!dbService.update("users", admin)) {
+        throw new RuntimeException("Failed to update admin password");
+      }
 
       mailService.sendMail(
-          admin.getEmail(),
-          "GVW-Office: Passwort zurückgesetzt",
-          "resetPassword",
-          Map.of("tempPassword", tempPw));
+              admin.getEmail(),
+              "GVW-Office: Passwort zurückgesetzt",
+              "resetPassword",
+              Map.of("tempPassword", tempPw));
     }
   }
 
-  private void updateEmergencyToken(EPWRToken savedToken, String newToken) {
+  private boolean tryUpdateEmergencyToken(EPWRToken savedToken, String newToken) {
     savedToken.setHashedToken(hashUtil.createHash(newToken));
     savedToken.setCreatedAt(Instant.now());
     savedToken.setExpiresAt(Instant.now().plus(Duration.ofDays(30)));
 
-    dbService.update("emergency_token", savedToken);
+    return dbService.update("emergency_token", savedToken);
   }
 
   private void notifyAdminsOfUsage(List<User> admins) {
     admins.forEach(
-        admin ->
-            mailService.sendMail(
-                admin.getEmail(), "Notfallzugang verwendet", "emergencyTokenUsed", Map.of()));
+            admin ->
+                    mailService.sendMail(
+                            admin.getEmail(),
+                            "Notfallzugang verwendet",
+                            "emergencyTokenUsed",
+                            Map.of()));
   }
 }

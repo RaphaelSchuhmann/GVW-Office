@@ -7,6 +7,10 @@ public class TokenUtils {
   private static final SecureRandom secureRandom = new SecureRandom();
 
   public static String generateToken(int byteLength) {
+    if (byteLength < 0) {
+      throw new IllegalArgumentException("Byte length cannot be negative");
+    }
+
     byte[] bytes = new byte[byteLength];
     secureRandom.nextBytes(bytes);
     return Base64.getEncoder().withoutPadding().encodeToString(bytes);

@@ -2,7 +2,6 @@ package com.gvw.gvwbackend.controller;
 
 import com.gvw.gvwbackend.dto.request.UseEmergencyTokenDTO;
 import com.gvw.gvwbackend.dto.response.NewEmergencyTokenDTO;
-import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.service.EPWRService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +15,7 @@ public class EPWRController {
     this.epwrService = epwrService;
   }
 
-  @GetMapping("/")
-  public void test() {
-    System.out.println(Role.ADMIN.getValue());
-  }
-
-  @GetMapping("/new")
+  @PostMapping("/new")
   public NewEmergencyTokenDTO getNewEmergencyToken() {
     return epwrService.getNewEmergencyToken();
   }

@@ -8,22 +8,17 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class HashUtil {
-  private final MessageDigest messageDigest;
-
-  public HashUtil() {
-    try {
-      this.messageDigest = MessageDigest.getInstance("SHA-256");
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException("JVW does not support SHA-256", e);
-    }
-  }
-
   public String createHash(String value) {
     if (value == null) return null;
 
-    byte[] encodedHash = messageDigest.digest(value.getBytes(StandardCharsets.UTF_8));
-
-    return HexFormat.of().formatHex(encodedHash);
+    try {
+      MessageDigest md = MessageDigest.getInstance("SHA-256");
+      byte[] encodedHash = md.digest(value.getBytes(StandardCharsets.UTF_8));
+      return HexFormat.of().formatHex(encodedHash);
+    } catch (NoSuchAlgorithmException e) {
+      // This should NEVER happen on a normal JVM
+      throw new IllegalStateException("JVM does not support SHA-256", e);
+    }
   }
 
   public boolean compare(String rawInput, String storedHash) {

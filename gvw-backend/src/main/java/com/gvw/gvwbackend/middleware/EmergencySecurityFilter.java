@@ -13,7 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 @Component
 public class EmergencySecurityFilter extends OncePerRequestFilter {
-  private final Set<String> LOCAL_IPS = Set.of("127.0.0.1", "0:0:0:0:0:0:0:1");
+  private final Set<String> LOCAL_IPS = Set.of("127.0.0.1", "0:0:0:0:0:0:0:1", "::1");
   private static final Logger log = LoggerFactory.getLogger(EmergencySecurityFilter.class);
 
   @Override
