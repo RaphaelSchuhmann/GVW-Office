@@ -31,7 +31,10 @@ public class MemberService {
   private static final Logger log = LoggerFactory.getLogger(MemberService.class);
 
   public MemberService(
-      DbService dbService, MemberMapper memberMapper, PasswordEncoder passwordEncoder, MailService mailService) {
+      DbService dbService,
+      MemberMapper memberMapper,
+      PasswordEncoder passwordEncoder,
+      MailService mailService) {
     this.dbService = dbService;
     this.memberMapper = memberMapper;
     this.passwordEncoder = passwordEncoder;
@@ -95,7 +98,11 @@ public class MemberService {
 
       dbService.insert("users", user);
 
-      mailService.sendMail(user.getEmail(), "GVW-Office: Temporäres Password", "newUser", Map.of("tempPassword", temporaryPassword));
+      mailService.sendMail(
+          user.getEmail(),
+          "GVW-Office: Temporäres Password",
+          "newUser",
+          Map.of("tempPassword", temporaryPassword));
     } catch (Exception e) {
       log.error("Sync error during member/user creations: {}", e.getMessage());
 

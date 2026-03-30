@@ -21,7 +21,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-  private final List<String> EXCLUDED_PATHS = List.of("/auth/login", "/dev/**");
+  private final List<String> EXCLUDED_PATHS = List.of("/auth/login", "/dev/**", "/emergency/**");
 
   public AuthMiddleware(JwtService jwtService) {
     this.jwtService = jwtService;

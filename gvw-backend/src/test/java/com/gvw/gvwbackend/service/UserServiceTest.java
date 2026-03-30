@@ -117,12 +117,12 @@ public class UserServiceTest {
     assertEquals("hashedPw", updatedUser.getPassword());
     assertTrue(updatedUser.getChangePassword());
 
-    verify(mailService).sendMail(
-        eq("test@mail.com"),
-        contains("GVW-Office: Passwort zurückgesetzt"),
-        eq("resetPassword"),
-        argThat(vars -> vars.containsKey("tempPassword"))
-    );
+    verify(mailService)
+        .sendMail(
+            eq("test@mail.com"),
+            contains("GVW-Office: Passwort zurückgesetzt"),
+            eq("resetPassword"),
+            argThat(vars -> vars.containsKey("tempPassword")));
   }
 
   @Test
