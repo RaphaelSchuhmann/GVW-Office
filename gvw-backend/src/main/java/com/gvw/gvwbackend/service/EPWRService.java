@@ -99,9 +99,7 @@ public class EPWRService {
 
     EPWRToken savedToken = tokens.getFirst();
 
-    if (savedToken.getExpiresAt() != null
-        && (savedToken.getExpiresAt().isBefore(Instant.now())
-            || savedToken.getExpiresAt() == Instant.now())) {
+    if (savedToken.getExpiresAt() != null && !savedToken.getExpiresAt().isAfter(Instant.now())) {
       throw new InvalidCredentialsException("TokenExpired");
     }
 

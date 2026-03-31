@@ -39,7 +39,16 @@ public class EventService {
     }
 
     for (Event event : events) {
-      Instant eventDate = parseDMYToInstant(event.getDate());
+      if (event.getDate() == null || event.getStatus() == null || event.getMode() == null) {
+        continue;
+      }
+
+      Instant eventDate;
+      try {
+        eventDate = parseDMYToInstant(event.getDate());
+      } catch (RuntimeException e) {
+        continue;
+      }
 
       if (eventDate.isBefore(Instant.now())
           && event.getStatus().equals("upcoming")
@@ -80,7 +89,7 @@ public class EventService {
   }
 
   public void deleteEvent(String id) {
-    if (id.isBlank()) {
+    if (id == null || id.isBlank()) {
       throw new BadRequestException("InvalidData");
     }
 
@@ -93,7 +102,7 @@ public class EventService {
   }
 
   public void updateEventStatus(String id) {
-    if (id.isBlank()) {
+    if (id == null || id.isBlank()) {
       throw new BadRequestException("InvalidData");
     }
 
@@ -132,16 +141,20 @@ public class EventService {
   }
 
   private boolean validateRecurrence(String mode, Event.Recurrence recurrence) {
-    if (mode.equals("single") || mode.equals("weekly")) return true;
+    if (mode.equalsIgnoreCase("single") || mode.equalsIgnoreCase("weekly")) return true;
 
     if (recurrence == null) return false;
 
-    if (mode.equals("monthly")
+    if (mode.equalsIgnoreCase("monthly")
         && recurrence.getMonthlyKind() != null
         && !recurrence.getMonthlyKind().isBlank()) {
       return switch (recurrence.getMonthlyKind()) {
-        case "weekday" -> !recurrence.getWeekDay().isBlank() && !recurrence.getOrdinal().isBlank();
-        case "date" -> !recurrence.getDayOfMonth().isBlank();
+        case "weekday" ->
+            recurrence.getWeekDay() != null
+                && !recurrence.getWeekDay().isBlank()
+                && recurrence.getOrdinal() != null
+                && !recurrence.getOrdinal().isBlank();
+        case "date" -> recurrence.getDayOfMonth() != null && !recurrence.getDayOfMonth().isBlank();
         default -> false;
       };
     }
