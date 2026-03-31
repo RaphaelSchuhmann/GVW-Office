@@ -111,7 +111,7 @@ public class EventService {
       throw new NotFoundException("NotFound");
     }
 
-    if (event.getStatus().equals("upcoming")) {
+    if ("upcoming".equals(event.getStatus())) {
       event.setStatus("finished");
     } else {
       event.setStatus("upcoming");
@@ -121,6 +121,10 @@ public class EventService {
   }
 
   public void updateEvent(UpdateEventRequestDTO request) {
+    if (request.id() == null || request.id().isBlank()) {
+      throw new BadRequestException("InvalidData");
+    }
+
     Event event = dbService.findById("events", request.id(), Event.class);
 
     if (event == null) {
