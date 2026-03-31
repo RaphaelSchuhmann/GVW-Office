@@ -7,8 +7,8 @@ import org.springframework.web.filter.ForwardedHeaderFilter;
 @Configuration
 public class WebConfig {
 
-    @Bean
-    public ForwardedHeaderFilter forwardedHeaderFilter() {
-        return new ForwardedHeaderFilter();
-    }
+  @Bean
+  public ForwardedHeaderFilter forwardedHeaderFilter() {
+    return new ForwardedHeaderFilter();
+  }
 }
