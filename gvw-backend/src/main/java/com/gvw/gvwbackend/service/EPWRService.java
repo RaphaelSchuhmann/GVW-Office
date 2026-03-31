@@ -24,10 +24,10 @@ public class EPWRService {
   private static final Logger log = LoggerFactory.getLogger(EPWRService.class);
 
   public EPWRService(
-          DbService dbService,
-          PasswordEncoder passwordEncoder,
-          MailService mailService,
-          HashUtil hashUtil) {
+      DbService dbService,
+      PasswordEncoder passwordEncoder,
+      MailService mailService,
+      HashUtil hashUtil) {
     this.dbService = dbService;
     this.passwordEncoder = passwordEncoder;
     this.mailService = mailService;
@@ -39,8 +39,8 @@ public class EPWRService {
     String hashedToken = hashUtil.createHash(token);
 
     List<EPWRToken> tokenList =
-            dbService.findByQuery(
-                    "emergency_token", Map.of("selector", Map.of(), "limit", 1), EPWRToken.class);
+        dbService.findByQuery(
+            "emergency_token", Map.of("selector", Map.of(), "limit", 1), EPWRToken.class);
 
     if (tokenList.isEmpty()) {
       EPWRToken epwrToken = new EPWRToken();
@@ -78,7 +78,7 @@ public class EPWRService {
     }
 
     List<User> admins =
-            dbService.findByQuery("users", Map.of("selector", Map.of("role", Role.ADMIN)), User.class);
+        dbService.findByQuery("users", Map.of("selector", Map.of("role", Role.ADMIN)), User.class);
 
     if (admins.isEmpty()) {
       log.warn("No admins found during emergency access!");
@@ -92,14 +92,16 @@ public class EPWRService {
 
   private EPWRToken fetchAndValidateEmergencyToken(String token) {
     List<EPWRToken> tokens =
-            dbService.findByQuery(
-                    "emergency_token", Map.of("selector", Map.of(), "limit", 1), EPWRToken.class);
+        dbService.findByQuery(
+            "emergency_token", Map.of("selector", Map.of(), "limit", 1), EPWRToken.class);
 
     if (tokens.isEmpty()) throw new NotFoundException("TokenNotFound");
 
     EPWRToken savedToken = tokens.getFirst();
 
-    if (savedToken.getExpiresAt() != null && (savedToken.getExpiresAt().isBefore(Instant.now()) || savedToken.getExpiresAt() == Instant.now())) {
+    if (savedToken.getExpiresAt() != null
+        && (savedToken.getExpiresAt().isBefore(Instant.now())
+            || savedToken.getExpiresAt() == Instant.now())) {
       throw new InvalidCredentialsException("TokenExpired");
     }
 
@@ -122,10 +124,10 @@ public class EPWRService {
       }
 
       mailService.sendMail(
-              admin.getEmail(),
-              "GVW-Office: Passwort zurückgesetzt",
-              "resetPassword",
-              Map.of("tempPassword", tempPw));
+          admin.getEmail(),
+          "GVW-Office: Passwort zurückgesetzt",
+          "resetPassword",
+          Map.of("tempPassword", tempPw));
     }
   }
 
@@ -139,11 +141,8 @@ public class EPWRService {
 
   private void notifyAdminsOfUsage(List<User> admins) {
     admins.forEach(
-            admin ->
-                    mailService.sendMail(
-                            admin.getEmail(),
-                            "Notfallzugang verwendet",
-                            "emergencyTokenUsed",
-                            Map.of()));
+        admin ->
+            mailService.sendMail(
+                admin.getEmail(), "Notfallzugang verwendet", "emergencyTokenUsed", Map.of()));
   }
 }
