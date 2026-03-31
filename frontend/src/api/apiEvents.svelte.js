@@ -65,7 +65,7 @@ export async function apiAddEvent(event) {
  *
  * Sends a POST request to `/events/delete` endpoint with an Authorization header.
  *
- * @param {number} id - The id of the event to delete
+ * @param {string} id - The id of the event to delete
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
  * An object containing the raw fetch Response (`resp`) and the parsed
  * JSON response body (`body`). Returns `{ resp: null, body: null }`
@@ -90,7 +90,7 @@ export async function apiDeleteEvent(id) {
  *
  * Sends a POST request to `/events/update/status` endpoint with an Authorization header.
  *
- * @param {number} id - The id of the event to update
+ * @param {string} id - The id of the event to update
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
  * An object containing the raw fetch Response (`resp`) and the parsed
  * JSON response body (`body`). Returns `{ resp: null, body: null }`
