@@ -34,7 +34,7 @@ public class Score {
     private String id;
     private String originalName;
     private String mimeType;
-    private int size;
+    private long size;
     private String extension;
   }
 

@@ -6,9 +6,11 @@ import com.gvw.gvwbackend.dto.response.ScoresResponseDTO;
 import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.model.Score;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -62,7 +64,60 @@ public class LibraryService {
           throw new ConflictException("ScoreAlreadyExists");
       }
 
+      List<Score.File> storedFiles = storeFiles(files);
 
+      Score score = Score.builder()
+              .scoreId(request.scoreId())
+              .title(request.title())
+              .artist(request.artist())
+              .type(request.type())
+              .voices(request.voices())
+              .voiceCount(Integer.parseInt(request.voiceCount()))
+              .files(storedFiles)
+              .build();
+
+      dbService.insert("library", score);
+  }
+
+  private List<Score.File> storeFiles(List<MultipartFile> files) {
+      List<Score.File> storedFiles = new ArrayList<>();
+      Path root = Paths.get(scoresDir);
+
+      try {
+          Files.createDirectories(root);
+
+          for (MultipartFile file : files) {
+              String id = UUID.randomUUID().toString();
+              String originalName = file.getOriginalFilename();
+
+              if (originalName == null) continue;
+              String extension = originalName.substring(originalName.lastIndexOf("."));
+
+              String storedName = id + extension;
+              Files.copy(file.getInputStream(), root.resolve(storedName));
+
+              storedFiles.add(new Score.File(
+                      id,
+                      originalName,
+                      file.getContentType(),
+                      file.getSize(),
+                      extension.replace(".", "")
+              ));
+          }
+      } catch (IOException e) {
+          throw new RuntimeException("FileSystemError", e);
+      }
+      return storedFiles;
+  }
+
+  private void deleteFile(String fileName) {
+      Path filePath = Paths.get(scoresDir, fileName);
+
+      try {
+          Files.deleteIfExists(filePath);
+      } catch (IOException e) {
+          throw new RuntimeException("FileSystemError", e);
+      }
   }
 
   private boolean existsInLibrary(String scoreId, String title, String artist) {

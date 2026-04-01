@@ -1,6 +1,10 @@
 spring:
   application:
     name: gvw-backend
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   mail:
     host: smtp.strato.de
     port: 465
