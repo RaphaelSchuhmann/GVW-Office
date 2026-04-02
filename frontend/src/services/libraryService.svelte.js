@@ -400,7 +400,7 @@ export async function updateScore(score) {
             }
         }
 
-        const removedFiles = scoreData.originalFiles.filter(f => !existingFileNames.includes(f));
+        const removedFiles = score.originalFiles.filter(f => !existingFileNames.includes(f));
 
         formData.append("removedFiles", removedFiles);
 

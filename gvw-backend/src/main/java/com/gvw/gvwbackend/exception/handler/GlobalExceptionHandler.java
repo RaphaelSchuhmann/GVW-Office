@@ -4,6 +4,7 @@ import com.gvw.gvwbackend.dto.response.ErrorResponseDTO;
 import com.gvw.gvwbackend.exception.*;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -25,6 +26,12 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(BadRequestException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ErrorResponseDTO handleBadRequest(BadRequestException ex) {
+    return new ErrorResponseDTO(ex.getMessage(), null);
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponseDTO handleBadRequestFromValidation(MethodArgumentNotValidException ex) {
     return new ErrorResponseDTO(ex.getMessage(), null);
   }
 

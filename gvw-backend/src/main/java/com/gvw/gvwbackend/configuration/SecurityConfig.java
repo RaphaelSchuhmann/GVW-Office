@@ -42,7 +42,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(org.springframework.web.cors.CorsUtils::isPreFlightRequest).permitAll()
-                    .requestMatchers("/auth/login", "/settings/get").permitAll()
+                    .requestMatchers("/auth/login", "/auth/changePw", "/settings/get").permitAll()
                     .anyRequest().authenticated()
             )
             .addFilterBefore(emergencySecurityFilter, UsernamePasswordAuthenticationFilter.class)
@@ -55,8 +55,9 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowedOrigins(List.of("http://localhost:5173"));
-    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-    config.setAllowedHeaders(List.of("Authorization", "Content-Type", "Cache-Control"));
+    config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+    config.setAllowedHeaders(List.of("*"));
+    config.setExposedHeaders(List.of("Content-Disposition"));
     config.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

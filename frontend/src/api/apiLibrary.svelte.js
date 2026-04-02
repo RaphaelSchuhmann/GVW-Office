@@ -1,4 +1,4 @@
-import { httpGet, httpPost, parseBodySafe } from "./http.svelte";
+import { httpDelete, httpGet, httpPatch, httpPost, parseBodySafe } from "./http.svelte";
 
 const apiUrl = __API_URL__;
 
@@ -31,7 +31,7 @@ export async function apiGetScores() {
 /**
  * Deletes a score with the given ID
  *
- * Sends a POST request to `/library/delete` endpoint with an Authorization header
+ * Sends a POST request to `/library/delete/{id}` endpoint with an Authorization header
  * and a JSON body containing the score ID.
  *
  * @param {string} id - The ID of the score to delete
@@ -50,7 +50,7 @@ export async function apiGetScores() {
  * }
  */
 export async function apiDeleteScore(id) {
-    const resp = await httpPost(`${apiUrl}/library/delete`, { id });
+    const resp = await httpDelete(`${apiUrl}/library/delete/${id}`);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -144,7 +144,7 @@ export async function apiAddScore(formData) {
  * }
  */
 export async function apiUpdateScore(formData) {
-    const resp = await httpPost(`${apiUrl}/library/update`, formData, "", true, true);
+    const resp = await httpPatch(`${apiUrl}/library/update`, formData, "", true, true);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body};

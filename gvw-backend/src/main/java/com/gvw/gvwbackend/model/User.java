@@ -1,5 +1,6 @@
 package com.gvw.gvwbackend.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 import lombok.*;
@@ -10,6 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @ToString(exclude = "password")
 @EqualsAndHashCode(exclude = "password")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class User {
   @JsonProperty("_id")
   private String id;

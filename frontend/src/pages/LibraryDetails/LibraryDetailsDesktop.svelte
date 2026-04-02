@@ -225,7 +225,7 @@
 <ConfirmDeleteModal expectedInput={`${scoreData.title}`} id={scoreData.id}
                     title="Noten löschen" subTitle="Sind Sie sich sicher das Sie diese Noten löschen möchten?"
                     action="deleteLibEntry"
-                    onClose={async () => {await push("/library")}}
+                    onClose={async () => {await fetchAndSetRaw(); await push("/library")}}
                     bind:this={confirmDeleteScoreModal}
 />
 

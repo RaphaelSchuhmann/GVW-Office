@@ -19,6 +19,6 @@ import { changePw } from "../api/apiAuth.svelte";
  * }
  */
 export async function changePassword(email, oldPw, newPw) {
-    const { resp, body } = await changePw({ email: email, oldPw: oldPw, newPw: newPw });
+    const { resp, body } = await changePw({ email: email, oldPassword: oldPw, newPassword: newPw });
     return { resp, body };
 }

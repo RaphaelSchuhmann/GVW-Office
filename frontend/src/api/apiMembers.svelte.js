@@ -1,4 +1,4 @@
-import { httpGet, httpPost, parseBodySafe } from "./http.svelte";
+import { httpDelete, httpGet, httpPatch, httpPost, parseBodySafe } from "./http.svelte";
 
 const apiUrl = __API_URL__;
 
@@ -67,9 +67,9 @@ export async function apiAddMember(member) {
 /**
  * Deletes a member
  *
- * Sends a POST request to `/members/delete` endpoint with an Authorization header.
+ * Sends a POST request to `/members/delete/{id}` endpoint with an Authorization header.
  *
- * @param {number} id - The id of the member to delete
+ * @param {string} id - The id of the member to delete
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
  * An object containing the raw fetch Response (`resp`) and the parsed
  * JSON response body (`body`). Returns `{ resp: null, body: null }`
@@ -83,7 +83,7 @@ export async function apiAddMember(member) {
  * }
  */
 export async function apiDeleteMember(id) {
-    const resp = await httpPost(`${apiUrl}/members/delete`, { id: id });
+    const resp = await httpDelete(`${apiUrl}/members/delete/${id}`);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -92,7 +92,7 @@ export async function apiDeleteMember(id) {
 /**
  * Switches a member's status
  *
- * Sends a POST request to `/members/update/status` endpoint with an Authorization header.
+ * Sends a POST request to `/members/update/status/{id}` endpoint with an Authorization header.
  *
  * @param {number} id - The id of the member to update
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
@@ -108,7 +108,7 @@ export async function apiDeleteMember(id) {
  * }
  */
 export async function apiUpdateMemberStatus(id) {
-    const resp = await httpPost(`${apiUrl}/members/update/status`, { id: id });
+    const resp = await httpPatch(`${apiUrl}/members/update/status/${id}`, {});
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -117,7 +117,7 @@ export async function apiUpdateMemberStatus(id) {
 /**
  * Resets a member's password
  *
- * Sends a POST request to `/user/reset/password` endpoint with an Authorization header.
+ * Sends a POST request to `/user/reset/password/{id}` endpoint with an Authorization header.
  *
  * @param {number} id - The id of the member whose password to reset
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
@@ -133,7 +133,7 @@ export async function apiUpdateMemberStatus(id) {
  * }
  */
 export async function apiResetMembersPassword(id) {
-    const resp = await httpPost(`${apiUrl}/user/reset/password`, { memberId: id });
+    const resp = await httpPost(`${apiUrl}/user/reset/password/${id}`, {});
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -170,7 +170,7 @@ export async function apiResetMembersPassword(id) {
  * }
  */
 export async function apiUpdateMember(member) {
-    const resp = await httpPost(`${apiUrl}/members/update`, member);
+    const resp = await httpPatch(`${apiUrl}/members/update`, member);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };

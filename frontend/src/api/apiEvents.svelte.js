@@ -1,4 +1,4 @@
-import { httpGet, httpPost, parseBodySafe } from "./http.svelte";
+import { httpDelete, httpGet, httpPatch, httpPost, parseBodySafe } from "./http.svelte";
 
 const apiUrl = __API_URL__;
 
@@ -54,7 +54,17 @@ export async function apiGetEvents() {
  * }
  */
 export async function apiAddEvent(event) {
-    const resp = await httpPost(`${apiUrl}/events/add`, { event: event });
+    const resp = await httpPost(`${apiUrl}/events/add`, {
+        title: event.title,
+        type: event.type,
+        date: event.date,
+        time: event.time,
+        location: event.location,
+        description: event.description,
+        status: event.status,
+        mode: event.mode,
+        recurrence: event.recurrence
+    });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -63,7 +73,7 @@ export async function apiAddEvent(event) {
 /**
  * Deletes an event
  *
- * Sends a POST request to `/events/delete` endpoint with an Authorization header.
+ * Sends a POST request to `/events/delete/{id}` endpoint with an Authorization header.
  *
  * @param {string} id - The id of the event to delete
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
@@ -79,7 +89,7 @@ export async function apiAddEvent(event) {
  * }
  */
 export async function apiDeleteEvent(id) {
-    const resp = await httpPost(`${apiUrl}/events/delete`, { id: id });
+    const resp = await httpDelete(`${apiUrl}/events/delete/${id}`);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -88,7 +98,7 @@ export async function apiDeleteEvent(id) {
 /**
  * Switches an event's status
  *
- * Sends a POST request to `/events/update/status` endpoint with an Authorization header.
+ * Sends a POST request to `/events/update/status/{id}` endpoint with an Authorization header.
  *
  * @param {string} id - The id of the event to update
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
@@ -104,7 +114,7 @@ export async function apiDeleteEvent(id) {
  * }
  */
 export async function apiUpdateEventStatus(id) {
-    const resp = await httpPost(`${apiUrl}/events/update/status`, { id: id });
+    const resp = await httpPatch(`${apiUrl}/events/update/status/${id}`, {});
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -137,7 +147,18 @@ export async function apiUpdateEventStatus(id) {
  * }
  */
 export async function apiUpdateEvent(event) {
-    const resp = await httpPost(`${apiUrl}/events/update`, { event: event });
+    const resp = await httpPatch(`${apiUrl}/events/update`, {
+        id: event.id,
+        title: event.title,
+        type: event.type,
+        date: event.date,
+        time: event.time,
+        location: event.location,
+        description: event.description,
+        status: event.status,
+        mode: event.mode,
+        recurrence: event.recurrence
+    });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };

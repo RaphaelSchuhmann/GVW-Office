@@ -81,6 +81,7 @@ public class MemberService {
     User user = createUserFromRequest(request);
 
     try {
+      System.out.println(member);
       dbService.insert("members", member);
 
       Map<String, Object> query = Map.of("selector", Map.of("email", request.email()), "limit", 1);
