@@ -1,6 +1,6 @@
 package com.gvw.gvwbackend.controller;
 
-import com.gvw.gvwbackend.dto.request.UserUpdateRequestDTO;
+import com.gvw.gvwbackend.dto.request.UpdateUserRequestDTO;
 import com.gvw.gvwbackend.dto.response.UserResponseDTO;
 import com.gvw.gvwbackend.service.UserService;
 import jakarta.validation.Valid;
@@ -26,7 +26,7 @@ public class UserController {
   @ResponseStatus(HttpStatus.OK)
   public void updateUser(
       @RequestAttribute("userId") String userId,
-      @Valid @RequestBody UserUpdateRequestDTO requestDTO) {
+      @Valid @RequestBody UpdateUserRequestDTO requestDTO) {
     userService.updateUser(userId, requestDTO);
   }
 
