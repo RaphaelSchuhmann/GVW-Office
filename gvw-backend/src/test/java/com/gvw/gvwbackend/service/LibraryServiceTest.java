@@ -80,9 +80,9 @@ public class LibraryServiceTest {
   }
 
   @Test
-  void testCreateSoreThrowsConflictWhenExists() {
+  void testCreateScoreThrowsConflictWhenExists() {
     AddScoreRequestDTO request =
-        new AddScoreRequestDTO("S1", "Title", "Artist", "PDF", List.of(), 0);
+        new AddScoreRequestDTO("S1", "Title", "Artist", "PDF", List.of("t1"), 1);
 
     when(dbService.findByQuery(any(), any(), eq(Score.class))).thenReturn(List.of(new Score()));
 
@@ -120,7 +120,7 @@ public class LibraryServiceTest {
     when(dbService.findById("library", "1", Score.class)).thenReturn(existing);
 
     UpdateScoreRequestDTO request =
-        new UpdateScoreRequestDTO("1", "S1", "NewTitle", "Artist", "PDF", List.of(), 0);
+        new UpdateScoreRequestDTO("1", "S1", "NewTitle", "Artist", "PDF", List.of("t1"), 1);
 
     libraryService.updateScore(request, List.of(), List.of());
 

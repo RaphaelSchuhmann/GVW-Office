@@ -4,7 +4,7 @@ spring:
   servlet:
     multipart:
       max-file-size: 8MB
-      max-request-size: 50MB
+      max-request-size: 70MB
   mail:
     host: smtp.strato.de
     port: 465

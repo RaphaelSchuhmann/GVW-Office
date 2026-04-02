@@ -28,6 +28,7 @@ public class LibraryService {
   private final DbService dbService;
   private final ObjectMapper mapper = new ObjectMapper();
   private static final Logger log = LoggerFactory.getLogger(LibraryService.class);
+  private static final long MAX_FILE_SIZE = 8 * 1024 * 1024;
 
   @Value("${scores.directory:./data/scores}")
   private String scoresDir;
@@ -124,7 +125,11 @@ public class LibraryService {
         Path filePath = root.resolve(file.getId() + "." + file.getExtension());
 
         if (Files.exists(filePath)) {
-          String entryName = file.getOriginalName().replaceAll("[\r\n]", "_");
+          String entryName = file.getOriginalName()
+              .replaceAll("[\r\n]", "_")
+              .replaceAll("\\.\\./", "")
+              .replaceAll("\\.\\.\\\\", "");
+          entryName = Paths.get(entryName).getFileName().toString();
 
           ZipEntry entry = new ZipEntry(entryName);
           zip.putNextEntry(entry);
@@ -210,6 +215,10 @@ public class LibraryService {
       Files.createDirectories(root);
 
       for (MultipartFile file : files) {
+        if (file.getSize() > MAX_FILE_SIZE) {
+          throw new BadRequestException("FileSizeTooLarge");
+        }
+
         String originalName = file.getOriginalFilename();
         if (originalName == null || originalName.isBlank()) continue;
 
@@ -229,7 +238,11 @@ public class LibraryService {
     } catch (Exception e) {
       log.error("Internal file storage failed. Cleaning up partial uploads...", e);
       for (Path path : physicalPaths) {
-        Files.deleteIfExists(path);
+        try {
+          Files.deleteIfExists(path);
+        } catch (IOException cleanupEx) {
+          log.warn("Failed to clean up partial upload: {}", path, cleanupEx);
+        }
       }
 
       throw new RuntimeException("FileSystemError", e);
