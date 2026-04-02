@@ -1,6 +1,6 @@
 package com.gvw.gvwbackend.service;
 
-import com.gvw.gvwbackend.dto.request.UserUpdateRequestDTO;
+import com.gvw.gvwbackend.dto.request.UpdateUserRequestDTO;
 import com.gvw.gvwbackend.dto.response.UserResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.InvalidCredentialsException;
@@ -45,7 +45,7 @@ public class UserService {
         user.getPhone());
   }
 
-  public void updateUser(String userId, UserUpdateRequestDTO requestDTO) {
+  public void updateUser(String userId, UpdateUserRequestDTO requestDTO) {
     if (userId == null || userId.isEmpty()) {
       throw new InvalidCredentialsException("Unauthorized");
     }

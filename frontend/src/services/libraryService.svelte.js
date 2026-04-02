@@ -274,12 +274,18 @@ export async function addScore(score) {
     try {
         const formData = new FormData();
 
-        formData.append("scoreId", score.scoreId);
-        formData.append("title", score.title);
-        formData.append("artist", score.artist);
-        formData.append("type", score.type);
-        formData.append("voices", JSON.stringify(score.voices));
-        formData.append("voiceCount", String(score.voiceCount));
+        const scoreData = {
+            scoreId: score.scoreId,
+            title: score.title,
+            artist: score.artist,
+            type: score.type,
+            voices: score.voices,
+            voiceCount: score.voiceCount,
+        }
+
+        formData.append("scoreData", new Blob([JSON.stringify(scoreData)], {
+            type: "application/json"
+        }));
 
         for (const file of score.files) {
             formData.append("files", file, file.name);
@@ -344,37 +350,43 @@ export async function addScore(score) {
  * - `NOTFOUND` → The score no longer exists.
  * - Other errors → Generic save failure.
  *
- * @param {Object} scoreData - Updated score information.
- * @param {number|string} scoreData.id - Unique identifier of the score.
- * @param {string} scoreData.scoreId - External or internal identifier.
- * @param {string} scoreData.title - Title of the score.
- * @param {string} scoreData.artist - Artist or composer.
- * @param {string} scoreData.type - Internal category identifier.
- * @param {string[]} scoreData.voices - Voice parts associated with the score.
- * @param {number} scoreData.voiceCount - Number of voices in the score.
- * @param {(File|string)[]} scoreData.files - Updated file list (existing names or new files).
- * @param {string[]} scoreData.originalFiles - Original file names used to detect removed files.
+ * @param {Object} score - Updated score information.
+ * @param {string} score.id - Unique identifier of the score.
+ * @param {string} score.scoreId - External or internal identifier.
+ * @param {string} score.title - Title of the score.
+ * @param {string} score.artist - Artist or composer.
+ * @param {string} score.type - Internal category identifier.
+ * @param {string[]} score.voices - Voice parts associated with the score.
+ * @param {number} score.voiceCount - Number of voices in the score.
+ * @param {(File|string)[]} score.files - Updated file list (existing names or new files).
+ * @param {string[]} score.originalFiles - Original file names used to detect removed files.
  * @returns {Promise<boolean>} `true` if the update succeeded, otherwise `false`.
  */
-export async function updateScore(scoreData) {
+export async function updateScore(score) {
     if (isFetching.updateScore) return false;
     isFetching.updateScore = true;
 
     try {
         const formData = new FormData();
 
-        formData.append("id", scoreData.id);
-        formData.append("scoreId", scoreData.scoreId);
-        formData.append("title", scoreData.title);
-        formData.append("artist", scoreData.artist);
-        formData.append("type", scoreData.type);
-        formData.append("voices", JSON.stringify(scoreData.voices));
-        formData.append("voiceCount", String(scoreData.voiceCount));
-        
+        const scoreData = {
+            id: score.id,
+            scoreId: score.scoreId,
+            title: score.title,
+            artist: score.artist,
+            type: score.type,
+            voices: score.voices,
+            voiceCount: score.voiceCount,
+        }
+
+        formData.append("scoreData", new Blob([JSON.stringify(scoreData)], {
+            type: "application/json"
+        }));
+
         const newFiles = [];
         const existingFileNames = [];
 
-        for (const f of scoreData.files) {
+        for (const f of score.files) {
             if (f instanceof File) {
                 newFiles.push(f);
             } else if (typeof f === "string") {

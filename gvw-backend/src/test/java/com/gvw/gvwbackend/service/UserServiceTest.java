@@ -5,7 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.gvw.gvwbackend.dto.request.UserUpdateRequestDTO;
+import com.gvw.gvwbackend.dto.request.UpdateUserRequestDTO;
 import com.gvw.gvwbackend.exception.InvalidCredentialsException;
 import com.gvw.gvwbackend.model.Member;
 import com.gvw.gvwbackend.model.Role;
@@ -46,8 +46,8 @@ public class UserServiceTest {
     when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
     when(memberService.getMemberById("321")).thenReturn(member);
 
-    UserUpdateRequestDTO request =
-        new UserUpdateRequestDTO("new@mail.com", "newPhone", "newAddress");
+    UpdateUserRequestDTO request =
+        new UpdateUserRequestDTO("new@mail.com", "newPhone", "newAddress");
 
     userService.updateUser("123", request);
 
@@ -87,8 +87,8 @@ public class UserServiceTest {
     when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
     when(memberService.getMemberById("321")).thenReturn(member);
 
-    UserUpdateRequestDTO request =
-        new UserUpdateRequestDTO("new@mail.com", "newPhone", "newAddress");
+    UpdateUserRequestDTO request =
+        new UpdateUserRequestDTO("new@mail.com", "newPhone", "newAddress");
 
     assertThrows(InvalidCredentialsException.class, () -> userService.updateUser("421", request));
   }
