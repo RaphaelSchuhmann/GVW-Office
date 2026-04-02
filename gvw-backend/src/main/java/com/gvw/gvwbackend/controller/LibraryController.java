@@ -43,9 +43,11 @@ public class LibraryController {
   public void createScore(
       @RequestPart("scoreData") @Valid AddScoreRequestDTO request,
       @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-    for (MultipartFile file : files) {
-      if (!fileValidator.isSafe(file)) {
-        throw new BadRequestException("InvalidFileExtension");
+    if (files != null) {
+      for (MultipartFile file : files) {
+        if (!fileValidator.isSafe(file)) {
+          throw new BadRequestException("InvalidFileExtension");
+        }
       }
     }
 
@@ -70,8 +72,7 @@ public class LibraryController {
 
     return ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_TYPE, "application/zip")
-        .header(
-            HttpHeaders.CONTENT_DISPOSITION, "attachment; filename\"" + sanitizedTitle + ".zip\"")
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + sanitizedTitle + ".zip\"")
         .body(out -> libraryService.streamFilesAsZip(score.getFiles(), out));
   }
 
@@ -81,6 +82,13 @@ public class LibraryController {
       @RequestPart("scoreData") @Valid UpdateScoreRequestDTO request,
       @RequestPart(value = "files", required = false) List<MultipartFile> newFiles,
       @RequestParam(value = "removedFiles", required = false) List<String> removedFiles) {
+    if (newFiles != null) {
+      for (MultipartFile file : newFiles) {
+        if (!fileValidator.isSafe(file)) {
+          throw new BadRequestException("InvalidFileExtension");
+        }
+      }
+    }
     libraryService.updateScore(request, newFiles, removedFiles);
   }
 }
