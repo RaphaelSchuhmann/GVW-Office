@@ -2,6 +2,7 @@ package com.gvw.gvwbackend.controller;
 
 import com.gvw.gvwbackend.dto.request.ChangePwRequestDTO;
 import com.gvw.gvwbackend.dto.request.LoginRequestDTO;
+import com.gvw.gvwbackend.dto.response.AutoLoginResponseDTO;
 import com.gvw.gvwbackend.dto.response.LoginResponseDTO;
 import com.gvw.gvwbackend.service.AuthService;
 import jakarta.validation.Valid;
@@ -27,5 +28,10 @@ public class AuthController {
   @ResponseStatus(HttpStatus.OK)
   public void changePw(@Valid @RequestBody ChangePwRequestDTO changePwRequest) {
     authService.changePassword(changePwRequest);
+  }
+
+  @GetMapping("/auto")
+  public AutoLoginResponseDTO autoLogin(@RequestAttribute("userId") String userId) {
+    return authService.autoLogin(userId);
   }
 }
