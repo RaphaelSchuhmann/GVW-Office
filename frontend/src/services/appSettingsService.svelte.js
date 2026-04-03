@@ -30,9 +30,9 @@ export async function tryUpdateMaxMembers(value) {
 
     addToast({
         title: "Erfolgreich gespeichert",
-        subTitle: !viewport.isMobile
-            ? "Die maximale Anzahl and Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert."
-            : "",
+        subTitle: viewport.isMobile
+            ? ""
+            : "Die maximale Anzahl and Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert.",
         type: "success"
     });
 }
@@ -67,7 +67,7 @@ export async function addScoreCategory(category) {
     if (type === displayValue || displayValue.includes("_")) {
         addToast({
             title: "Ungültige Eingabe",
-            subTitle: !viewport.isMobile ? "Der Name muss mindestens einen Großbuchstaben oder ein Leerzeichen enthalten und darf keine Unterstriche verwenden." : "",
+            subTitle: viewport.isMobile ? "" : "Der Name muss mindestens einen Großbuchstaben oder ein Leerzeichen enthalten und darf keine Unterstriche verwenden.",
             type: "warning"
         });
         return false;
@@ -82,13 +82,13 @@ export async function addScoreCategory(category) {
         if (normalizedResponse.errorType === "BADREQUEST") {
             addToast({
                 title: "Ungültige Eingabe",
-                subTitle: !viewport.isMobile ? "Der von Ihnen eingegebene Name ist kein gültiger Name!" : "",
+                subTitle: viewport.isMobile ? "" : "Der von Ihnen eingegebene Name ist kein gültiger Name!",
                 type: "error"
             });
         } else {
             addToast({
                 title: "Kategorie konnte nicht hinzugefügt werden",
-                subTitle: !viewport.isMobile ? "Beim Hinzufügen der Kategorie ist ein unerwarteter Fehler aufgetreten." : "",
+                subTitle: viewport.isMobile ? "" : "Beim Hinzufügen der Kategorie ist ein unerwarteter Fehler aufgetreten.",
                 type: "error"
             });
         }
@@ -97,7 +97,7 @@ export async function addScoreCategory(category) {
 
     addToast({
         title: "Kategorie hinzugefügt",
-        subTitle: !viewport.isMobile ? `Die Kategorie "${displayValue}" wurde erfolgreich zur Liste hinzugefügt.` : "",
+        subTitle: viewport.isMobile ? "" : `Die Kategorie "${displayValue}" wurde erfolgreich zur Liste hinzugefügt.`,
         type: "success"
     });
 
@@ -132,7 +132,7 @@ export async function deleteScoreCategory(category) {
     if (count > 0) {
         addToast({
             title: "Kategorie kann nicht gelöscht werden",
-            subTitle: "Diese Kategorie enthält noch mindestens ein Lied. Bitte entfernen oder verschieben Sie die Lieder zuerst.",
+            subTitle: viewport.isMobile ? "" : "Diese Kategorie enthält noch mindestens ein Lied. Bitte entfernen oder verschieben Sie die Lieder zuerst.",
             type: "error"
         });
         return;
@@ -147,7 +147,7 @@ export async function deleteScoreCategory(category) {
         if (!normalizedResponse.ok) {
             addToast({
                 title: "Kategorie konnte nicht gelöscht werden",
-                subTitle: !viewport.isMobile ? "Beim Löschen der Kategorie ist ein unerwarteter Fehler aufgetreten." : "",
+                subTitle: viewport.isMobile ? "" : "Beim Löschen der Kategorie ist ein unerwarteter Fehler aufgetreten.",
                 type: "error"
             });
             return;
@@ -155,7 +155,7 @@ export async function deleteScoreCategory(category) {
 
         addToast({
             title: "Kategorie gelöscht",
-            subTitle: !viewport.isMobile ? `Die Kategorie "${category}" wurde erfolgreich aus der Liste entfernt.` : "",
+            subTitle: !viewport.isMobile ? "" : `Die Kategorie "${category}" wurde erfolgreich aus der Liste entfernt.`,
             type: "success"
         });
 

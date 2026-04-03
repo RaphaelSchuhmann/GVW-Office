@@ -81,10 +81,10 @@ export async function apiDownloadScoreFiles(id) {
     if (!resp) return { resp: null, body: null };
 
     let body;
-    if (!resp.ok) {
-        body = await parseBodySafe(resp);
-    } else {
+    if (resp.ok) {
         body = await resp.blob();
+    } else {
+        body = await parseBodySafe(resp);
     }
 
     return { resp, body };
