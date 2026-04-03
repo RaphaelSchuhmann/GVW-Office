@@ -5,8 +5,11 @@
 
     import EventsDesktop from "./EventsDesktop.svelte";
     import EventsMobile from "./EventsMobile.svelte";
+    import { getValue } from "../../services/store";
 
     $effect(() => {
+        if (!getValue("authToken")) return;
+
         (async () => {
             await ensureUserData();
             await init("events");

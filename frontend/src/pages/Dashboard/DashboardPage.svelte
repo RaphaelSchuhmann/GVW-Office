@@ -3,8 +3,16 @@
     import DashboardDesktop from "./DashboardDesktop.svelte";
     import DashboardMobile from "./DashboardMobile.svelte";
     import { ensureUserData } from "../../services/userService.svelte";
+    import { getValue } from "../../services/store";
 
-    ensureUserData();
+    $effect(() => {
+        if (!getValue("authToken")) return;
+
+        (async () => {
+            await ensureUserData();
+            // Insert dashboard data api call here
+        })
+    })
 </script>
 
 {#if viewport.isMobile}
