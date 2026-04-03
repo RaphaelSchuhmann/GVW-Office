@@ -51,34 +51,60 @@ const isFetching = {
 };
 
 /**
+ * Centralized handler for member-related API errors.
+ *
+ * @param {string} errorType - Backend error type (e.g., BADREQUEST, NOTFOUND, CONFLICT)
+ * @param {string} context - Operation context ("ADD", "UPDATE", "DELETE", "RESET", "STATUS")
+ */
+function handleMemberError(errorType, context) {
+    const errorConfigs = {
+        ADD: {
+            CONFLICT: { title: "E-Mail-Adresse bereits verwendet", sub: "Die E-Mail-Adresse ist bereits einem anderen Mitglied zugeordnet." },
+            BADREQUEST: { title: "Ungültige Daten", sub: "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte." },
+            DEFAULT: { title: "Fehler beim Hinzufügen", sub: "Beim Hinzufügen des neuen Mitglieds ist ein Fehler aufgetreten." }
+        },
+        UPDATE: {
+            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
+            NOTFOUND: { title: "Mitglied nicht gefunden", sub: "Das gewählte Mitglied wurde im System nicht gefunden." },
+            DEFAULT: { title: "Fehler beim Bearbeiten", sub: "Beim Bearbeiten der Mitgliedsdaten ist ein Fehler aufgetreten." }
+        },
+        DELETE: {
+            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
+            NOTFOUND: { title: "Mitglied nicht gefunden", sub: "Das gewählte Mitglied wurde im System nicht gefunden." },
+            DEFAULT: { title: "Fehler beim Entfernen", sub: "Beim Entfernen des Mitglieds ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
+        },
+        RESET: {
+            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
+            NOTFOUND: { title: "Mitglied nicht gefunden", sub: "Das gewählte Mitglied wurde im System nicht gefunden." },
+            DEFAULT: { title: "Fehler beim Zurücksetzen", sub: "Beim Zurücksetzen des Passworts ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
+        },
+        STATUS: {
+            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
+            NOTFOUND: { title: "Mitglied nicht gefunden", sub: "Das gewählte Mitglied wurde im System nicht gefunden." },
+            DEFAULT: { title: "Fehler beim Aktualisieren", sub: "Beim Aktualisieren des Mitglieds ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
+        }
+    };
+
+    const key = context === "ADD" && errorType === 409 ? "CONFLICT" : errorType;
+    const config = (errorConfigs[context] && errorConfigs[context][key]) || errorConfigs[context].DEFAULT;
+
+    addToast({
+        title: config.title,
+        subTitle: viewport.isMobile ? "" : config.sub,
+        type: "error"
+    });
+}
+
+/**
  * Creates a new member in the system.
  *
- * Handles:
- * - Duplicate request prevention via internal `isFetching` guard.
- * - API call to create the member.
- * - Global API error delegation.
- * - Context-aware toast notifications (mobile vs. desktop).
+ * Features:
+ * - Prevents duplicate requests using `isFetching.newMember`
+ * - Handles global API errors
+ * - Handles domain-specific validation/conflict errors
+ * - Displays success/error toasts
  *
- * Error cases handled explicitly:
- * - 409 (email already exists)
- * - BADREQUEST (invalid payload)
- * - Generic fallback error
- *
- * On success, a success toast is displayed.
- *
- * @async
- * @function newMember
- * @param {*&{voice: *, status: *, role: *}} member - Member payload to persist.
- * @param {string} member.name - First name.
- * @param {string} member.surname - Last name.
- * @param {string} member.email - Unique email address.
- * @param {string} member.phone - Phone number.
- * @param {string} member.address - Address.
- * @param {string} member.voice - Voice identifier (mapped enum value).
- * @param {string} member.status - Status identifier (mapped enum value).
- * @param {string} member.role - Role identifier (mapped enum value).
- * @param {string|Date} member.birthday - Birthdate.
- * @param {string|Date} member.joined - Join date.
+ * @param {Object} member - Member data to create
  * @returns {Promise<void>}
  */
 export async function newMember(member) {
@@ -87,36 +113,18 @@ export async function newMember(member) {
 
     try {
         const { resp } = await apiAddMember(member);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!resp.ok) {
-            if (normalizedResponse.status === 409)  {
-                addToast({
-                    title: "E-Mail-Adresse bereits verwendet",
-                    subTitle: !viewport.isMobile ? "Die von Ihnen eingegebene E-Mail-Adresse ist bereits einem anderen Mitglied zugeordnet. Bitte wählen Sie eine andere E-Mail-Adresse aus." : "",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Ungültige Daten",
-                    subTitle: !viewport.isMobile ? "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte." : "",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Hinzufügen des Mitglieds",
-                    subTitle: !viewport.isMobile ? "Beim Hinzufügen des neuen Mitglieds ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." : "",
-                    type: "error"
-                });
-            }
+            handleMemberError(normalizedResponse.errorType, "ADD");
             return;
         }
 
         addToast({
             title: "Mitglied hinzugefügt",
-            subTitle: !viewport.isMobile ? "Das neue Mitglied wurde erfolgreich im System hinzugefügt." : "",
+            subTitle: viewport.isMobile ? "" : "Das neue Mitglied wurde erfolgreich im System hinzugefügt.",
             type: "success"
         });
     } finally {
@@ -124,64 +132,37 @@ export async function newMember(member) {
     }
 }
 
+
 /**
- * Deletes a member from the system.
+ * Deletes a member by ID.
  *
- * Handles:
- * - Duplicate request prevention via `isFetching`.
- * - API deletion request.
- * - Global error delegation.
- * - Detailed error-specific toast messaging.
+ * Features:
+ * - Prevents duplicate requests using `isFetching.deleteMember`
+ * - Handles global API errors
+ * - Handles domain-specific deletion errors
+ * - Displays success/error toasts
  *
- * Error cases handled explicitly:
- * - BADREQUEST (invalid or incomplete data)
- * - NOTFOUND (member does not exist)
- * - Generic fallback error
- *
- * On success, a confirmation toast is displayed.
- *
- * @async
- * @function removeMember
- * @param {string} id - Unique identifier of the member to delete.
+ * @param {string} id - ID of the member to delete
  * @returns {Promise<void>}
  */
-export async function removeMember(id){
+export async function removeMember(id) {
     if (isFetching.deleteMember) return;
     isFetching.deleteMember = true;
 
     try {
         const { resp } = await apiDeleteMember(id);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Unvollständige Daten",
-                    subTitle: !viewport.isMobile ? "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." : "",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({
-                    title: "Mitglied nicht gefunden",
-                    subTitle: !viewport.isMobile ? "Das gewählte Mitglied wurde im System nicht gefunden." : "",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim entfernen des Mitglieds",
-                    subTitle: !viewport.isMobile ? "Beim entfernen des neuen Mitglieds ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." : "",
-                    type: "error"
-                });
-            }
-
+            handleMemberError(normalizedResponse.errorType, "DELETE");
             return;
         }
 
         addToast({
             title: "Mitglied gelöscht",
-            subTitle: !viewport.isMobile ? "Das gewählte Mitglied wurde erfolgreich aus dem System gelöscht." : "",
+            subTitle: viewport.isMobile ? "" : "Das gewählte Mitglied wurde erfolgreich aus dem System gelöscht.",
             type: "success"
         });
     } finally {
@@ -190,24 +171,15 @@ export async function removeMember(id){
 }
 
 /**
- * Toggles the status of a member (e.g., active ↔ inactive).
+ * Toggles or updates the status of a member (e.g. active/inactive).
  *
- * Handles:
- * - Duplicate request prevention.
- * - API call to update the member's status.
- * - Global API error delegation.
- * - Context-aware toast notifications.
+ * Features:
+ * - Prevents duplicate requests using `isFetching.updateStatus`
+ * - Handles global API errors
+ * - Handles domain-specific errors
+ * - Displays success/error toasts
  *
- * Error cases handled explicitly:
- * - BADREQUEST
- * - NOTFOUND
- * - Generic fallback error
- *
- * On success, a confirmation toast is displayed.
- *
- * @async
- * @function switchMemberStatus
- * @param {string} id - Unique identifier of the member.
+ * @param {string} id - ID of the member whose status should be updated
  * @returns {Promise<void>}
  */
 export async function switchMemberStatus(id) {
@@ -216,37 +188,18 @@ export async function switchMemberStatus(id) {
 
     try {
         const { resp } = await apiUpdateMemberStatus(id);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Unvollständige Daten",
-                    subTitle: !viewport.isMobile ? "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." : "",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({
-                    title: "Mitglied nicht gefunden",
-                    subTitle: !viewport.isMobile ? "Das gewählte Mitglied wurde im System nicht gefunden." : "",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Aktualisieren des Mitglieds",
-                    subTitle: !viewport.isMobile ? "Beim Aktualisieren des Mitglieds ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." : "",
-                    type: "error"
-                });
-            }
-
+            handleMemberError(normalizedResponse.errorType, "STATUS");
             return;
         }
 
         addToast({
             title: "Mitgliedsstatus aktualisiert",
-            subTitle: !viewport.isMobile ? "Der Status des Mitglieds wurde erfolgreich im System geändert." : "",
+            subTitle: viewport.isMobile ? "" : "Der Status des Mitglieds wurde erfolgreich im System geändert.",
             type: "success"
         });
     } finally {
@@ -255,26 +208,15 @@ export async function switchMemberStatus(id) {
 }
 
 /**
- * Resets the password of a specific member.
+ * Resets a member's password to a temporary value.
  *
- * The backend generates and assigns a temporary password.
+ * Features:
+ * - Prevents duplicate requests using `isFetching.resetPassword`
+ * - Handles global API errors
+ * - Handles domain-specific errors
+ * - Displays success/error toasts
  *
- * Handles:
- * - Duplicate request prevention.
- * - API password reset call.
- * - Global API error delegation.
- * - Error-specific and success toast feedback.
- *
- * Error cases handled explicitly:
- * - BADREQUEST
- * - NOTFOUND
- * - Generic fallback error
- *
- * On success, a confirmation toast is displayed.
- *
- * @async
- * @function resetMemberPassword
- * @param {string} id - Unique identifier of the member.
+ * @param {string} id - ID of the member
  * @returns {Promise<void>}
  */
 export async function resetMemberPassword(id) {
@@ -283,37 +225,18 @@ export async function resetMemberPassword(id) {
 
     try {
         const { resp } = await apiResetMembersPassword(id);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Unvollständige Daten",
-                    subTitle: !viewport.isMobile ? "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." : "",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({
-                    title: "Mitglied nicht gefunden",
-                    subTitle: !viewport.isMobile ? "Das gewählte Mitglied wurde im System nicht gefunden." : "",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Zurücksetzen des Passworts",
-                    subTitle: !viewport.isMobile ? "Beim Zurücksetzen des Passworts ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." : "",
-                    type: "error"
-                });
-            }
-
+            handleMemberError(normalizedResponse.errorType, "RESET");
             return;
         }
 
         addToast({
             title: "Passwort zurückgesetzt",
-            subTitle: !viewport.isMobile ? "Das Passwort des Mitglieds wurde erfolgreich auf ein temporären Passwort zurückgesetzt." : "",
+            subTitle: viewport.isMobile ? "" : "Das Passwort wurde erfolgreich auf ein temporäres Passwort zurückgesetzt.",
             type: "success"
         });
     } finally {
@@ -322,24 +245,15 @@ export async function resetMemberPassword(id) {
 }
 
 /**
- * Updates the data of an existing member.
+ * Updates an existing member's data.
  *
- * Handles:
- * - Duplicate request prevention.
- * - API update request with full member payload.
- * - Global API error delegation.
- * - Context-aware toast notifications.
+ * Features:
+ * - Prevents duplicate requests using `isFetching.updateMember`
+ * - Handles global API errors
+ * - Handles domain-specific validation errors
+ * - Displays success/error toasts
  *
- * Error cases handled explicitly:
- * - BADREQUEST (invalid payload)
- * - NOTFOUND (member does not exist)
- * - Generic fallback error
- *
- * On success, a confirmation toast is displayed.
- *
- * @async
- * @function updateMember
- * @param {Object} member - Complete member object containing updated values.
+ * @param {Object} member - Updated member data
  * @returns {Promise<void>}
  */
 export async function updateMember(member) {
@@ -348,37 +262,18 @@ export async function updateMember(member) {
 
     try {
         const { resp } = await apiUpdateMember(member);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Unvollständige Daten",
-                    subTitle: !viewport.isMobile ? "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." : "",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({
-                    title: "Mitglied nicht gefunden",
-                    subTitle: !viewport.isMobile ? "Das gewählte Mitglied wurde im System nicht gefunden." : "",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim bearbeiten der Mitgliedsdaten",
-                    subTitle: !viewport.isMobile ? "Beim bearbeiten der Mitgliedsdaten ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." : "",
-                    type: "error"
-                });
-            }
-
+            handleMemberError(normalizedResponse.errorType, "UPDATE");
             return;
         }
 
         addToast({
             title: "Mitgliedsdaten aktualisiert",
-            subTitle: !viewport.isMobile ? "Die Daten des Mitglieds wurden erfolgreich im System geändert." : "",
+            subTitle: viewport.isMobile ? "" : "Die Daten des Mitglieds wurden erfolgreich im System geändert.",
             type: "success"
         });
     } finally {
