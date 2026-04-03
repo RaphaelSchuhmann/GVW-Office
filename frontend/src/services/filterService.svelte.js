@@ -26,6 +26,10 @@ export async function init(pageKey) {
 
     // Reset periodic fetching
     if (fetchIntervalId) clearInterval(fetchIntervalId);
+    if (cleanupEffect) {
+        cleanupEffect();
+        cleanupEffect = null;
+    }
 
     currentPageKey = pageKey;
     entry = filterRegistry[pageKey];
@@ -58,6 +62,10 @@ export async function init(pageKey) {
 export function clearDebounce() {
     clearInterval(fetchIntervalId);
     fetchIntervalId = null;
+    if (cleanupEffect) {
+        cleanupEffect();
+        cleanupEffect = null;
+    }
 }
 
 /**
