@@ -155,7 +155,7 @@ export async function deleteScoreCategory(category) {
 
         addToast({
             title: "Kategorie gelöscht",
-            subTitle: !viewport.isMobile ? "" : `Die Kategorie "${category}" wurde erfolgreich aus der Liste entfernt.`,
+            subTitle: viewport.isMobile ? "" : `Die Kategorie "${category}" wurde erfolgreich aus der Liste entfernt.`,
             type: "success"
         });
 

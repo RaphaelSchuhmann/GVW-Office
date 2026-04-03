@@ -77,6 +77,8 @@ export function getEventOccurrence(eventId) {
     if (!event) return "Unbekannt";
     if (event.mode === "weekly") return getWeeklyOccurrence(event);
     if (event.mode === "monthly" && event.recurrence) return getMonthlyOccurrence(event);
+
+    return "Unbekannt";
 }
 
 /**
@@ -88,7 +90,9 @@ export function getEventOccurrence(eventId) {
  */
 function getWeeklyOccurrence(event) {
     const date = parseDMYToDate(event.date);
-    return `Jede Woche am ${weekDayMap[date.getDay()]}`;
+    const dayIndex = date.getDay();
+    const weekDayKey = dayIndex === 0 ? "7" : String(dayIndex);
+    return `Jede Woche am ${weekDayMap[weekDayKey]}`;
 }
 
 /**
@@ -112,6 +116,8 @@ function getMonthlyOccurrence(event) {
     if (recurrence.monthlyKind === "date") {
         return calculateMonthlyDateOccurrence(recurrence.dayOfMonth);
     }
+
+    return "Unbekannt";
 }
 
 /**
@@ -379,7 +385,7 @@ export async function updateEvent(data) {
 }
 
 /**
- * Maps API error types to user-facing toast messages for event deletion.
+ * Maps API error types to user-facing toast messages for event updates.
  *
  * Supported error types:
  * - NOTFOUND → event does not exist
