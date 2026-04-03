@@ -4,7 +4,7 @@ import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
 import { eventsStore } from "../stores/events.svelte";
-import { getLastDayOfCurrentMonth, makeDateFromMonthAndDay, parseDMYToDate } from "./utils";
+import { getLastDayOfCurrentMonth, parseDMYToDate } from "./utils";
 
 export const typeMap = {
     "all": "Alle Typen",
@@ -69,7 +69,7 @@ const isFetching = {
  * - monthly events (by weekday or date)
  *
  * @param {string} eventId - ID of the event to resolve
- * @returns {string|undefined} Localized description of the occurrence or "Unbekannt" if event not found
+ * @returns {string} Localized description of the occurrence or "Unbekannt" if event not found
  */
 export function getEventOccurrence(eventId) {
     const event = eventsStore.raw.find(item => item.id === eventId);
@@ -129,7 +129,7 @@ function getMonthlyOccurrence(event) {
  * - If the day already passed this month → shift to next month
  *
  * @param {number} dayOfMonth - Desired day of month (1–31)
- * @returns {string} Formatted date string (via makeDateFromMonthAndDay)
+ * @returns {string} Formatted date string in dd.mm.yyyy format
  */
 function calculateMonthlyDateOccurrence(dayOfMonth) {
     const today = new Date();
