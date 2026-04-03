@@ -7,16 +7,17 @@
 
     import MembersDesktop from "./MembersDesktop.svelte";
     import MembersMobile from "./MembersMobile.svelte";
-    import { getValue } from "../../services/store";
+    import { auth } from "../../stores/auth.svelte";
 
     $effect(() => {
         if (!user.loaded) return;
 
         if (user.role !== "admin" && user.role !== "board_member") {
             push("/dashboard");
+            return;
         }
 
-        if (!getValue("authToken")) return;
+        if (!auth.token) return;
 
         (async () => {
             await ensureUserData();
