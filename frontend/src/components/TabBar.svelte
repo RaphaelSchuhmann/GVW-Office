@@ -49,7 +49,8 @@
 </script>
 
 <div
-    class={`relative flex w-full items-stretch p-1 rounded-full bg-gv-input-bg ${marginMap[marginTop]} gap-2 overflow-x-auto overflow-y-hidden`}
+    class={`relative flex w-full items-stretch p-1.5 rounded-full bg-gv-input-bg ${marginMap[marginTop]} gap-2 overflow-x-auto`}
+    style="min-height: 2.75rem;"
     {...restProps}
 >
     <div

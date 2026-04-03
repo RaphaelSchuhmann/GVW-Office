@@ -54,7 +54,7 @@
                {isMobile ? 'fixed items-end' : 'fixed items-center justify-center'}"
     >
         <div
-            class="bg-white flex flex-col p-5 overflow-hidden
+            class="bg-white flex flex-col p-5 overflow-hidden max-h-[90vh]
                    {isMobile ? 'w-full h-8/9 rounded-t-1' : `${widthMap[width]} ${heightMap[height]} rounded-1`}"
         >
             <ModalHeader {title} {subTitle} onclick={hideModal} />
