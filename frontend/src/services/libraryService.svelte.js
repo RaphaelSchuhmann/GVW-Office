@@ -128,31 +128,13 @@ export async function deleteScore(id) {
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({
-                    title: "Noten nicht gefunden",
-                    subTitle: !viewport.isMobile ? "Die Noten die Sie löschen möchten wurden nicht gefunden." : "",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Ungültige Daten",
-                    subTitle: !viewport.isMobile ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Löschen",
-                    subTitle: !viewport.isMobile ? "Beim Löschen des Eintrags ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
-                    type: "error"
-                });
-            }
+            handleDeleteError(normalizedResponse.errorType);
             return;
         }
 
         addToast({
             title: "Eintrag gelöscht",
-            subTitle: !viewport.isMobile ? "Der Eintrag wurde erfolgreich gelöscht." : "",
+            subTitle: viewport.isMobile ? "" : "Der Eintrag wurde erfolgreich gelöscht.",
             type: "success"
         });
     } finally {
@@ -161,21 +143,54 @@ export async function deleteScore(id) {
 }
 
 /**
- * Downloads all files associated with a score from the library.
+ * Maps API error types to user-facing toast messages for event deletion.
  *
- * Requests the score files from the backend and, on success,
- * creates a temporary object URL for the returned ZIP blob.
- * The browser download is then triggered programmatically.
+ * Supported error types:
+ * - NOTFOUND → event does not exist
+ * - BADREQUEST → invalid event ID or malformed request
+ * - DEFAULT → fallback for unknown errors
  *
- * Error cases handled:
- * - `ScoreNotFound` → The requested score does not exist.
- * - `NoFilesFound` → The score exists but has no files attached.
- * - Other API errors → Generic download failure.
+ * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
  *
- * After the download is triggered, the object URL is revoked
- * to release browser memory.
+ * @param {string} errorType - Error identifier returned from API
+ * @returns {void}
+ */
+function handleDeleteError(errorType) {
+    const errorConfigs = {
+        NOTFOUND: {
+            title: "Noten nicht gefunden",
+            subTitle: "Die Noten die Sie löschen möchten wurden nicht gefunden."
+        },
+        BADREQUEST: {
+            title: "Ungültige Daten",
+            subTitle: "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben."
+        },
+        DEFAULT: {
+            title: "Fehler beim Löschen",
+            subTitle: "Beim Löschen des Eintrags ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
+        }
+    };
+
+    const config = errorConfigs[errorType] || errorConfigs.DEFAULT;
+
+    addToast({
+        title: config.title,
+        subTitle: viewport.isMobile ? "" : config.subTitle,
+        type: "error"
+    });
+}
+
+/**
+ * Downloads all score files for a given library entry as a ZIP archive.
  *
- * @param {number|string} id - The unique identifier of the score.
+ * Features:
+ * - Prevents duplicate requests using `isFetching.downloadScore`
+ * - Handles global API errors centrally
+ * - Handles domain-specific download errors
+ * - Triggers a browser download on success
+ * - Displays success/error toasts
+ *
+ * @param {string} id - ID of the score/library entry to download
  * @returns {Promise<void>}
  */
 export async function downloadScoreFiles(id) {
@@ -183,59 +198,21 @@ export async function downloadScoreFiles(id) {
     isFetching.downloadScore = true;
 
     try {
-        // Note: The body can contain the error body or the file blob!
         const { resp, body } = await apiDownloadScoreFiles(id);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "NOTFOUND") {
-                if (body?.errorMessage === "ScoreNotFound") {
-                    addToast({
-                        title: "Noten nicht gefunden",
-                        subTitle: !viewport.isMobile ? "Die Noten wurden in der Notenbibliothek nicht gefunden." : "",
-                        type: "error"
-                    });
-                } else if (body?.errorMessage === "NoFilesFound") {
-                    addToast({
-                        title: "Keine Dateien gefunden",
-                        subTitle: !viewport.isMobile ? "Es sind keine Dateien für diese Noten hinterlegt." : "",
-                        type: "info"
-                    });
-                } else {
-                    addToast({
-                        title: "Unerwarteter Fehler",
-                        subTitle: !viewport.isMobile ? "Es ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
-                        type: "error"
-                    });
-                }
-            } else {
-                addToast({
-                    title: "Fehler beim Download",
-                    subTitle: !viewport.isMobile ? "Beim Download der Noten ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
-                    type: "error"
-                });
-            }
+            handleDownloadError(normalizedResponse, body);
             return;
         }
 
-        const url = URL.createObjectURL(body);
-
-        const scoreName = libraryStore.raw.find(s => s.id === id)?.title ?? "Noten";
-
-        const a = document.createElement("a");
-        try {
-            a.href = url;
-            a.download = `${scoreName}.zip`;
-            a.click();
-        } finally {
-            setTimeout(() => URL.revokeObjectURL(url), 0);
-        }
+        triggerFileDownload(body, id);
 
         addToast({
             title: "Download erfolgreich",
-            subTitle: !viewport.isMobile ? "Die Noten wurden erfolgreich aus der Notenbibliothek heruntergeladen." : "",
+            subTitle: viewport.isMobile ? "" : "Die Noten wurden erfolgreich heruntergeladen.",
             type: "success"
         });
     } finally {
@@ -244,27 +221,102 @@ export async function downloadScoreFiles(id) {
 }
 
 /**
- * Adds a new score entry to the library.
+ * Triggers a browser download for a given Blob by creating a temporary object URL.
  *
- * The function constructs a `FormData` payload containing all
- * metadata fields and uploaded files. Files are appended under
- * the `"files"` field so they can be processed by the backend.
+ * The downloaded file name is derived from the library entry title.
+ * Falls back to "Noten.zip" if no title is found.
  *
- * Error cases handled:
- * - `CONFLICT` → A score with the same title and artist already exists.
- * - `BADREQUEST` → The provided data failed validation.
- * - Other errors → Generic save failure.
+ * Automatically revokes the object URL to prevent memory leaks.
  *
- * Displays a success notification when the score is successfully added.
+ * @param {Blob} blob - File data to download (ZIP archive)
+ * @param {string} id - ID used to resolve the score name
+ * @returns {void}
+ */
+function triggerFileDownload(blob, id) {
+    const url = URL.createObjectURL(blob);
+    const scoreName = libraryStore.raw.find(s => s.id === id)?.title ?? "Noten";
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${scoreName}.zip`;
+    a.click();
+
+    // Cleanup URL reference in the next event loop tick
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+/**
+ * Handles API error responses specific to score file downloads.
  *
- * @param {Object} score - The score data to create.
- * @param {string} score.scoreId - External or internal identifier.
- * @param {string} score.title - Title of the score.
- * @param {string} score.artist - Artist or composer.
- * @param {string} score.type - Internal category identifier.
- * @param {string[]} score.voices - Voice parts associated with the score.
- * @param {number} score.voiceCount - Number of voices in the score.
- * @param {File[]} score.files - Files to upload for the score.
+ * Distinguishes between:
+ * - NOTFOUND errors with detailed backend messages (e.g. missing score or files)
+ * - Generic failures for all other error types
+ *
+ * Error mapping:
+ * - ScoreNotFound → score entry does not exist
+ * - NoFilesFound → no files attached to the score
+ * - DEFAULT_NOT_FOUND → fallback for unknown NOTFOUND cases
+ * - GENERIC_FAILURE → fallback for all other errors
+ *
+ * Displays a toast message adjusted for viewport (mobile vs desktop).
+ *
+ * @param {Object} response - Normalized API response
+ * @param {string} response.errorType - High-level error type (e.g. NOTFOUND)
+ * @param {Object} [body] - Optional response body containing detailed error info
+ * @param {string} [body.errorMessage] - Specific backend error identifier
+ *
+ * @returns {void}
+ */
+function handleDownloadError(response, body) {
+    const errorMap = {
+        ScoreNotFound: {
+            title: "Noten nicht gefunden",
+            subTitle: "Die Noten wurden in der Notenbibliothek nicht gefunden.",
+            type: "error"
+        },
+        NoFilesFound: {
+            title: "Keine Dateien gefunden",
+            subTitle: "Es sind keine Dateien für diese Noten hinterlegt.",
+            type: "info"
+        },
+        DEFAULT_NOT_FOUND: {
+            title: "Unerwarteter Fehler",
+            subTitle: "Es ist ein unerwarteter Fehler aufgetreten.",
+            type: "error"
+        },
+        GENERIC_FAILURE: {
+            title: "Fehler beim Download",
+            subTitle: "Beim Download der Noten ist ein Fehler aufgetreten.",
+            type: "error"
+        }
+    };
+
+    let config;
+    if (response.errorType === "NOTFOUND") {
+        config = errorMap[body?.errorMessage] || errorMap.DEFAULT_NOT_FOUND;
+    } else {
+        config = errorMap.GENERIC_FAILURE;
+    }
+
+    addToast({
+        title: config.title,
+        subTitle: viewport.isMobile ? "" : config.subTitle,
+        type: config.type
+    });
+}
+
+/**
+ * Creates a new score entry in the library, including file uploads.
+ *
+ * Features:
+ * - Prevents duplicate requests using `isFetching.newScore`
+ * - Prepares multipart FormData (JSON + files)
+ * - Handles global API errors
+ * - Handles domain-specific validation errors
+ * - Displays success/error toasts
+ *
+ * @param {Object} score - Score data including metadata and files
+ * @param {File[]} score.files - Files to upload
  * @returns {Promise<void>}
  */
 export async function addScore(score) {
@@ -272,56 +324,22 @@ export async function addScore(score) {
     isFetching.newScore = true;
 
     try {
-        const formData = new FormData();
-
-        const scoreData = {
-            scoreId: score.scoreId,
-            title: score.title,
-            artist: score.artist,
-            type: score.type,
-            voices: score.voices,
-            voiceCount: score.voiceCount,
-        }
-
-        formData.append("scoreData", new Blob([JSON.stringify(scoreData)], {
-            type: "application/json"
-        }));
-
-        for (const file of score.files) {
-            formData.append("files", file, file.name);
-        }
+        const formData = prepareScoreFormData(score);
+        score.files.forEach(file => formData.append("files", file, file.name));
 
         const { resp } = await apiAddScore(formData);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "CONFLICT") {
-                addToast({
-                    title: "Eintrag bereits vorhanden",
-                    subTitle: !viewport.isMobile ? "Es existiert bereits ein Eintrag mit diesem Titel und Künstler in der Notenbibliothek." : "",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Ungültige Daten",
-                    subTitle: !viewport.isMobile ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Speichern",
-                    subTitle: !viewport.isMobile ? "Beim Speichern des neuen Eintrags ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
-                    type: "error"
-                });
-            }
+            showScoreErrorToast(normalizedResponse.errorType, "ADD");
             return;
         }
 
         addToast({
             title: "Eintrag hinzugefügt",
-            subTitle: !viewport.isMobile ? "Der neue Eintrag wurde erfolgreich zur Notenbibliothek hinzugefügt." : "",
+            subTitle: viewport.isMobile ? "" : "Der neue Eintrag wurde erfolgreich zur Notenbibliothek hinzugefügt.",
             type: "success"
         });
     } finally {
@@ -330,116 +348,53 @@ export async function addScore(score) {
 }
 
 /**
- * Updates an existing score entry in the library.
+ * Updates an existing score entry, including file changes.
  *
- * The function prepares a `FormData` payload that may contain:
- * - Updated metadata fields
- * - Newly uploaded files
- * - A list of removed files
+ * Handles:
+ * - New file uploads
+ * - Retaining existing files
+ * - Detecting and sending removed files
  *
- * Files are separated into:
- * - `newFiles` → Files that are newly uploaded (`File` instances)
- * - `existingFileNames` → Files already stored on the server
+ * Features:
+ * - Prevents duplicate requests using `isFetching.updateScore`
+ * - Prepares multipart FormData (JSON + file diffs)
+ * - Handles global API errors
+ * - Handles domain-specific validation errors
+ * - Displays success/error toasts
  *
- * The backend receives:
- * - `removedFiles` → File names that should be deleted
- * - `files` → Newly uploaded files
+ * @param {Object} score - Score data including metadata and file state
+ * @param {(File|string)[]} score.files - Mixed array of new files (File) and existing file names (string)
+ * @param {string[]} score.originalFiles - Original file names before modification
  *
- * Error cases handled:
- * - `BADREQUEST` → Invalid modification data.
- * - `NOTFOUND` → The score no longer exists.
- * - Other errors → Generic save failure.
- *
- * @param {Object} score - Updated score information.
- * @param {string} score.id - Unique identifier of the score.
- * @param {string} score.scoreId - External or internal identifier.
- * @param {string} score.title - Title of the score.
- * @param {string} score.artist - Artist or composer.
- * @param {string} score.type - Internal category identifier.
- * @param {string[]} score.voices - Voice parts associated with the score.
- * @param {number} score.voiceCount - Number of voices in the score.
- * @param {(File|string)[]} score.files - Updated file list (existing names or new files).
- * @param {string[]} score.originalFiles - Original file names used to detect removed files.
- * @returns {Promise<boolean>} `true` if the update succeeded, otherwise `false`.
+ * @returns {Promise<boolean>} `true` if update succeeded, otherwise `false`
  */
 export async function updateScore(score) {
     if (isFetching.updateScore) return false;
     isFetching.updateScore = true;
 
     try {
-        const formData = new FormData();
+        const formData = prepareScoreFormData(score);
 
-        const scoreData = {
-            id: score.id,
-            scoreId: score.scoreId,
-            title: score.title,
-            artist: score.artist,
-            type: score.type,
-            voices: score.voices,
-            voiceCount: score.voiceCount,
-        }
-
-        formData.append("scoreData", new Blob([JSON.stringify(scoreData)], {
-            type: "application/json"
-        }));
-
-        const newFiles = [];
-        const existingFileNames = [];
-
-        for (const f of score.files) {
-            if (f instanceof File) {
-                newFiles.push(f);
-            } else if (typeof f === "string") {
-                existingFileNames.push(f);
-            } else {
-                addToast({
-                    title: "Ungültige Datei",
-                    subTitle: !viewport.isMobile ? "Beim lesen einer Datei ist ein Fehler aufgetreten." : "",
-                    type: "error",
-                });
-            }
-        }
-
-        const removedFiles = score.originalFiles.filter(f => !existingFileNames.includes(f));
+        const newFiles = score.files.filter(f => f instanceof File);
+        const existingNames = score.files.filter(f => typeof f === "string");
+        const removedFiles = score.originalFiles.filter(f => !existingNames.includes(f));
 
         formData.append("removedFiles", removedFiles);
-
-        for (const file of newFiles) {
-            formData.append("files", file, file.name);
-        }
+        newFiles.forEach(f => formData.append("files", f, f.name));
 
         const { resp } = await apiUpdateScore(formData);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return false;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Ungültige Eingabe",
-                    subTitle: !viewport.isMobile ? "Die Änderungen an den Noten ist keine gültige Änderung. Bitte versuchen Sie es erneut." : "",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({
-                    title: "Noten nicht gefunden",
-                    subTitle: !viewport.isMobile ? "Die Noten wurden in der Notenbibliothek nicht gefunden." : "",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Speichern",
-                    subTitle: !viewport.isMobile ? "Beim speichern Ihrer Änderungen ist ein unerwarteter Fehler aufgetreten." : "",
-                    type: "error"
-                });
-            }
-
+            showScoreErrorToast(normalizedResponse.errorType, "UPDATE");
             return false;
         }
 
         addToast({
             title: "Änderungen gespeichert",
-            subTitle: !viewport.isMobile ? "Ihre Änderungen wurden erfolgreich gespeichert." : "" ,
+            subTitle: "Ihre Änderungen wurden erfolgreich gespeichert.",
             type: "success"
         });
 
@@ -447,4 +402,72 @@ export async function updateScore(score) {
     } finally {
         isFetching.updateScore = false;
     }
+}
+
+/**
+ * Prepares a FormData object containing the core score metadata as JSON.
+ *
+ * The metadata is serialized into a Blob and appended under "scoreData",
+ * allowing it to be sent alongside file uploads in a multipart request.
+ *
+ * Note:
+ * - `id` may be undefined for new scores (valid for create operations)
+ *
+ * @param {Object} score - Score metadata
+ * @returns {FormData} FormData object containing serialized score data
+ */
+function prepareScoreFormData(score) {
+    const formData = new FormData();
+    const scoreData = {
+        id: score.id, // Will be undefined for new scores, which is fine
+        scoreId: score.scoreId,
+        title: score.title,
+        artist: score.artist,
+        type: score.type,
+        voices: score.voices,
+        voiceCount: score.voiceCount,
+    };
+
+    formData.append("scoreData", new Blob([JSON.stringify(scoreData)], {
+        type: "application/json"
+    }));
+
+    return formData;
+}
+
+/**
+ * Displays error toasts for score-related operations (add/update).
+ *
+ * Error handling:
+ * - CONFLICT → duplicate score entry
+ * - BADREQUEST → invalid or malformed input
+ * - NOTFOUND → score not found (update case)
+ * - DEFAULT → fallback for unknown errors
+ *
+ * The displayed message may vary slightly depending on the context (ADD vs UPDATE).
+ * Subtitle visibility is adjusted based on viewport (mobile vs desktop).
+ *
+ * @param {string} errorType - Error identifier from API
+ * @param {"ADD"|"UPDATE"} context - Operation context
+ *
+ * @returns {void}
+ */
+function showScoreErrorToast(errorType, context) {
+    const configs = {
+        CONFLICT: { title: "Eintrag bereits vorhanden", sub: "Ein Eintrag mit diesem Titel und Künstler existiert bereits." },
+        BADREQUEST: {
+            title: context === "ADD" ? "Ungültige Daten" : "Ungültige Eingabe",
+            sub: "Die übergebenen Daten sind ungültig. Bitte prüfen Sie Ihre Eingaben."
+        },
+        NOTFOUND: { title: "Noten nicht gefunden", sub: "Die Noten wurden in der Notenbibliothek nicht gefunden." },
+        DEFAULT: { title: "Fehler beim Speichern", sub: "Beim Speichern ist ein unerwarteter Fehler aufgetreten." }
+    };
+
+    const config = configs[errorType] || configs.DEFAULT;
+
+    addToast({
+        title: config.title,
+        subTitle: viewport.isMobile ? "" : config.sub,
+        type: "error"
+    });
 }

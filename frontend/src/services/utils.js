@@ -1,13 +1,4 @@
 /**
- * Creates a promise that resolves after the specified delay
- * @param {number} ms - Milliseconds to delay
- * @returns {Promise} Promise that resolves after delay
- */
-export function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
  * Capitalizes the first letter of each word in a string
  * @param {string} str - String to capitalize
  * @returns {string} String with each word capitalized
@@ -15,7 +6,7 @@ export function delay(ms) {
 export function capitalizeWords(str) {
     return str
         .toLowerCase()
-        .replace(/(^|[\s-_])\w/g, match => match.toUpperCase());
+        .replaceAll(/(^|[\s-_])\w/g, match => match.toUpperCase());
 }
 
 export const currentYear = new Date().getFullYear();
@@ -159,21 +150,9 @@ export function getWeekDayFromDMYMondayFirst(dateStr) {
  * @returns {number} Ordinal week number (1-4)
  */
 export function getOrdinalFromDMY(dateStr) {
-    const [day, month, year] = dateStr.split(".").map(Number);
+    const [day] = dateStr.split(".").map(Number);
 
     return Math.ceil(day / 7);
-}
-
-/**
- * Extracts file extension from file path
- * @param {string} path - File path
- * @returns {string} File extension
- */
-export function getFileExtensionFromPath(path) {
-    const pathParts = path.split(/[/\\]/);
-    const pathEnding = pathParts[pathParts.length - 1];
-    const splitEnd = pathEnding.split(".");
-    return splitEnd[splitEnd.length - 1];
 }
 
 /**

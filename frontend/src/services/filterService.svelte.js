@@ -26,18 +26,20 @@ export async function init(pageKey) {
 
     // Reset periodic fetching
     if (fetchIntervalId) clearInterval(fetchIntervalId);
+    if (cleanupEffect) {
+        cleanupEffect();
+        cleanupEffect = null;
+    }
 
     currentPageKey = pageKey;
     entry = filterRegistry[pageKey];
 
     cleanupEffect = $effect.root(() => {
         $effect(() => {
-            const _ = [
-                entry?.store.raw,
-                entry?.filterState.search,
-                entry?.filterState.dropdown,
-                entry?.filterState.tab
-            ];
+            void entry?.store.raw;
+            void entry?.filterState.search;
+            void entry?.filterState.dropdown;
+            void entry?.filterState.tab;
 
             processFilters();
         });
@@ -60,6 +62,12 @@ export async function init(pageKey) {
 export function clearDebounce() {
     clearInterval(fetchIntervalId);
     fetchIntervalId = null;
+    if (cleanupEffect) {
+        cleanupEffect();
+        cleanupEffect = null;
+    }
+    currentPageKey = "";
+    entry = null;
 }
 
 /**

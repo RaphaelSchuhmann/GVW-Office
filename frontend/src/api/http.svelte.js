@@ -40,7 +40,7 @@ export function normalizeResponse(response) {
  */
 export async function httpGet(url, customToken = "", doAuth = true) {
     const headers = new Headers();
-    const token = customToken ? customToken : auth.token;
+    const token = customToken || auth.token;
     if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
 
     try {
@@ -71,7 +71,7 @@ export async function httpPost(url, body, customToken = "", doAuth = true, using
     const headers = new Headers();
     if (!usingFormData) headers.append("Content-Type", "application/json");
 
-    const token = customToken ? customToken : auth.token;
+    const token = customToken || auth.token;
     if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
 
     try {
@@ -103,7 +103,7 @@ export async function httpPatch(url, body, customToken = "", doAuth = true, usin
     const headers = new Headers();
     if (!usingFormData) headers.append("Content-Type", "application/json");
 
-    const token = customToken ? customToken : auth.token;
+    const token = customToken || auth.token;
     if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
 
     try {
@@ -131,8 +131,8 @@ export async function httpPatch(url, body, customToken = "", doAuth = true, usin
  */
 export async function httpDelete(url, customToken = "", doAuth = true) {
     const headers = new Headers();
-    
-    const token = customToken ? customToken : auth.token;
+
+    const token = customToken || auth.token;
     if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
 
     try {
