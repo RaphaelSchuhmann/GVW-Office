@@ -66,6 +66,8 @@ export function clearDebounce() {
         cleanupEffect();
         cleanupEffect = null;
     }
+    currentPageKey = "";
+    entry = null;
 }
 
 /**

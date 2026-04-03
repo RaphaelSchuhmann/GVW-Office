@@ -72,7 +72,7 @@ const isFetching = {
  * @returns {string|undefined} Localized description of the occurrence or "Unbekannt" if event not found
  */
 export function getEventOccurrence(eventId) {
-    const event = eventsStore.display.find(item => item.id === eventId);
+    const event = eventsStore.raw.find(item => item.id === eventId);
 
     if (!event) return "Unbekannt";
     if (event.mode === "weekly") return getWeeklyOccurrence(event);
@@ -90,6 +90,7 @@ export function getEventOccurrence(eventId) {
  */
 function getWeeklyOccurrence(event) {
     const date = parseDMYToDate(event.date);
+    if (Number.isNaN(date.getTime())) return "Unbekannt";
     const dayIndex = date.getDay();
     const weekDayKey = dayIndex === 0 ? "7" : String(dayIndex);
     return `Jede Woche am ${weekDayMap[weekDayKey]}`;
@@ -132,17 +133,24 @@ function getMonthlyOccurrence(event) {
  */
 function calculateMonthlyDateOccurrence(dayOfMonth) {
     const today = new Date();
-    const lastDate = getLastDayOfCurrentMonth();
-    let dateVal = dayOfMonth > lastDate ? lastDate : dayOfMonth;
+    const targetDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    const currentMonthDay = Math.min(dayOfMonth, getLastDayOfCurrentMonth());
 
-    const isPastThisMonth = dateVal < today.getDate();
-    let targetMonth = today.getMonth();
-
-    if (isPastThisMonth) {
-        targetMonth = (today.getMonth() === 11 ? 0 : today.getMonth() + 1);
+    if (currentMonthDay < today.getDate()) {
+        targetDate.setMonth(targetDate.getMonth() + 1);
     }
 
-    return makeDateFromMonthAndDay(dateVal, targetMonth);
+    const lastDayOfTargetMonth = new Date(
+        targetDate.getFullYear(),
+        targetDate.getMonth() + 1,
+        0
+    ).getDate();
+    targetDate.setDate(Math.min(dayOfMonth, lastDayOfTargetMonth));
+
+    const dd = String(targetDate.getDate()).padStart(2, "0");
+    const mm = String(targetDate.getMonth() + 1).padStart(2, "0");
+    const yyyy = targetDate.getFullYear();
+    return `${dd}.${mm}.${yyyy}`;
 }
 
 /**
@@ -401,15 +409,15 @@ function handleUpdateError(errorType) {
     const errorConfigs = {
         NOTFOUND: {
             title: "Veranstaltung nicht gefunden",
-            subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+            subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
         },
         BADREQUEST: {
             title: "Ungültige Daten",
-            subTitle: "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben.",
+            subTitle: "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben."
         },
         DEFAULT: {
             title: "Fehler beim Aktualisieren",
-            subTitle: "Beim Aktualisieren der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+            subTitle: "Beim Aktualisieren der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
         }
     };
 

@@ -32,7 +32,7 @@ export async function tryUpdateMaxMembers(value) {
         title: "Erfolgreich gespeichert",
         subTitle: viewport.isMobile
             ? ""
-            : "Die maximale Anzahl and Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert.",
+            : "Die maximale Anzahl an Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert.",
         type: "success"
     });
 }
