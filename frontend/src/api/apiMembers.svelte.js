@@ -67,7 +67,7 @@ export async function apiAddMember(member) {
 /**
  * Deletes a member
  *
- * Sends a POST request to `/members/delete/{id}` endpoint with an Authorization header.
+ * Sends a DELETE request to `/members/delete/{id}` endpoint with an Authorization header.
  *
  * @param {string} id - The id of the member to delete
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
@@ -92,7 +92,7 @@ export async function apiDeleteMember(id) {
 /**
  * Switches a member's status
  *
- * Sends a POST request to `/members/update/status/{id}` endpoint with an Authorization header.
+ * Sends a PATCH request to `/members/update/status/{id}` endpoint with an Authorization header.
  *
  * @param {number} id - The id of the member to update
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
@@ -142,7 +142,7 @@ export async function apiResetMembersPassword(id) {
 /**
  * Updates a member
  *
- * Sends a POST request to `/members/update` endpoint with an Authorization header.
+ * Sends a PATCH request to `/members/update` endpoint with an Authorization header.
  *
  * @param {Object} member - The member object to update
  * @returns {Promise<{ resp: Response | null, body: any | null }>}

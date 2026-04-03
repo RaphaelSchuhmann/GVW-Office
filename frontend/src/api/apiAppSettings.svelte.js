@@ -32,7 +32,7 @@ export async function apiGetSettings() {
 /**
  * Attempts to update the maximum members in the app settings
  * 
- * Sends a POST request to `/settings/update/max-members` endpoint with and Authorization header.
+ * Sends a PATCH request to `/settings/update/max-members` endpoint with and Authorization header.
  * 
  * @param {number} maxMembers - The maximum amount of members per voice.
  * @returns {Promise<{ resp: Response | null, body: any | null }>}

@@ -1,4 +1,4 @@
-import { httpGet, httpPost, parseBodySafe } from "./http.svelte";
+import { httpGet, parseBodySafe } from "./http.svelte";
 
 const apiUrl = __API_URL__;
 

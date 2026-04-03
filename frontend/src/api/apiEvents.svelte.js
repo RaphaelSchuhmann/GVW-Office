@@ -73,7 +73,7 @@ export async function apiAddEvent(event) {
 /**
  * Deletes an event
  *
- * Sends a POST request to `/events/delete/{id}` endpoint with an Authorization header.
+ * Sends a DELETE request to `/events/delete/{id}` endpoint with an Authorization header.
  *
  * @param {string} id - The id of the event to delete
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
@@ -98,7 +98,7 @@ export async function apiDeleteEvent(id) {
 /**
  * Switches an event's status
  *
- * Sends a POST request to `/events/update/status/{id}` endpoint with an Authorization header.
+ * Sends a PATCH request to `/events/update/status/{id}` endpoint with an Authorization header.
  *
  * @param {string} id - The id of the event to update
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
@@ -123,7 +123,7 @@ export async function apiUpdateEventStatus(id) {
 /**
  * Updates an event
  *
- * Sends a POST request to `/events/update` endpoint with an Authorization header.
+ * Sends a PATCH request to `/events/update` endpoint with an Authorization header.
  *
  * @param {Object} event - The event to update
  * @returns {Promise<{ resp: Response | null, body: any | null }>}

@@ -31,7 +31,7 @@ export async function apiGetScores() {
 /**
  * Deletes a score with the given ID
  *
- * Sends a POST request to `/library/delete/{id}` endpoint with an Authorization header
+ * Sends a DELETE request to `/library/delete/{id}` endpoint with an Authorization header
  * and a JSON body containing the score ID.
  *
  * @param {string} id - The ID of the score to delete
@@ -123,7 +123,7 @@ export async function apiAddScore(formData) {
 /**
  * Updates a score in the library.
  *
- * Sends a POST request to `/library/update` with the provided form data.
+ * Sends a PATCH request to `/library/update` with the provided form data.
  *
  * @param {FormData} formData - The form data containing the score details and files.
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
