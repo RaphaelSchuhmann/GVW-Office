@@ -31,7 +31,7 @@ export async function ensureUserData() {
             if (normalizedResponse.status === 404) {
                 addToast({
                     title: "Benutzer nicht gefunden",
-                    subTitle: !viewport.isMobile ? "Es wurde kein Benutzer unter den angegebenen Daten gefunden." : "",
+                    subTitle: viewport.isMobile ? "" : "Es wurde kein Benutzer unter den angegebenen Daten gefunden.",
                     type: "error"
                 });
                 logout();
@@ -79,7 +79,7 @@ export async function tryUpdateUserData(data) {
     if (normalizedResponse.errorType === "NOTFOUND") {
         addToast({
             title: "Konto nicht gefunden",
-            subTitle: !viewport.isMobile ? "Ihr Konto konnte nicht gefunden werden. Bitte melden Sie sich erneut an, um fortzufahren." : "",
+            subTitle: viewport.isMobile ? "" : "Ihr Konto konnte nicht gefunden werden. Bitte melden Sie sich erneut an, um fortzufahren.",
             type: "error"
         });
         logout();
@@ -90,7 +90,7 @@ export async function tryUpdateUserData(data) {
     Object.assign(user, { email: data.email, phone: data.phone, address: data.address });
     addToast({
         title: "Erfolgreich gespeichert",
-        subTitle: !viewport.isMobile ? "Ihre persönlichen Daten wurden erfolgreich aktualisiert und sind nun in Ihrem Benutzerkonto gespeichert." : "",
+        subTitle: viewport.isMobile ? "" : "Ihre persönlichen Daten wurden erfolgreich aktualisiert und sind nun in Ihrem Benutzerkonto gespeichert.",
         type: "success"
     });
 }
