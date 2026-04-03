@@ -41,12 +41,20 @@ export async function apiGetEvents() {
  *
  * @example
  * const { resp } = await addEvent({
- *     name: "Test Event",
- *     description: "This is a test event",
- *     date: "2026-01-01",
- *     time: "12:00",
- *     location: "Test Location",
- *     maxParticipants: 10,
+ *     title: "Event",
+ *     type: "type",
+ *     date: "01.01.2000",
+ *     time: "15:30",
+ *     location: "Location XY",
+ *     description: "Description",
+ *     status: "status",
+ *     mode: "single",
+ *     recurrence: {
+ *         monthlyKind: null,
+ *         dayOfMonth: null,
+ *         weekDay: null,
+ *         ordinal: null
+ *     }
  * });
  *
  * if (resp?.ok) {
@@ -134,12 +142,20 @@ export async function apiUpdateEventStatus(id) {
  * @example
  * const { resp } = await updateEvent({
  *     id: 1,
- *     name: "Test Event",
- *     description: "This is a test event",
- *     date: "2026-01-01",
- *     time: "12:00",
- *     location: "Test Location",
- *     maxParticipants: 10,
+ *     title: "Event",
+ *     type: "type",
+ *     date: "01.01.2000",
+ *     time: "15:30",
+ *     location: "Location XY",
+ *     description: "Description",
+ *     status: "status",
+ *     mode: "single",
+ *     recurrence: {
+ *         monthlyKind: null,
+ *         dayOfMonth: null,
+ *         weekDay: null,
+ *         ordinal: null
+ *     }
  * });
  *
  * if (resp?.ok) {

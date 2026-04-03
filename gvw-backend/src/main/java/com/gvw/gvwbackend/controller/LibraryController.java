@@ -75,7 +75,8 @@ public class LibraryController {
 
     return ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_TYPE, "application/zip")
-        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + sanitizedTitle + ".zip\"")
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + sanitizedTitle + ".zip\"")
         .body(out -> libraryService.streamFilesAsZip(score.getFiles(), out));
   }
 
