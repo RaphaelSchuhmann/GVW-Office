@@ -1,9 +1,9 @@
 // We use a private $state variable for the raw width
-let _width = $state(typeof globalThis.window === "undefined" ? 1024 : window.innerWidth);
+let _width = $state(globalThis.window === undefined ? 1024 : window.innerWidth);
 
 // Create a manual listener that updates our state
 // This bypasses the Svelte binding logic and talks to the browser directly
-if (typeof globalThis.window !== "undefined") {
+if (globalThis.window !== undefined) {
     window.addEventListener('resize', () => {
         _width = window.innerWidth;
     });

@@ -61,7 +61,7 @@ function handleMemberError(errorType, context) {
         ADD: {
             CONFLICT: { title: "E-Mail-Adresse bereits verwendet", sub: "Die E-Mail-Adresse ist bereits einem anderen Mitglied zugeordnet." },
             BADREQUEST: { title: "Ungültige Daten", sub: "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte." },
-            DEFAULT: { title: "Fehler beim Hinzufügen", sub: "Beim Hinzufügen des neuen Mitglieds ist ein Fehler aufgetreten." }
+            DEFAULT: { title: "Fehler beim Hinzufügen", sub: "Beim Hinzufügen des neuen Mitglieds ist ein Fehler aufgetreten." },
         },
         UPDATE: {
             BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
@@ -85,8 +85,9 @@ function handleMemberError(errorType, context) {
         }
     };
 
-    const key = context === "ADD" && errorType === 409 ? "CONFLICT" : errorType;
-    const config = (errorConfigs[context] && errorConfigs[context][key]) || errorConfigs[context].DEFAULT;
+    const config = errorConfigs[context]?.[errorType] ?? errorConfigs[context]?.DEFAULT;
+
+    if (!config) return;
 
     addToast({
         title: config.title,

@@ -130,9 +130,11 @@ function calculateMonthlyDateOccurrence(dayOfMonth) {
     let dateVal = dayOfMonth > lastDate ? lastDate : dayOfMonth;
 
     const isPastThisMonth = dateVal < today.getDate();
-    const targetMonth = isPastThisMonth
-        ? (today.getMonth() === 11 ? 0 : today.getMonth() + 1)
-        : today.getMonth();
+    let targetMonth = today.getMonth();
+
+    if (isPastThisMonth) {
+        targetMonth = (today.getMonth() === 11 ? 0 : today.getMonth() + 1);
+    }
 
     return makeDateFromMonthAndDay(dateVal, targetMonth);
 }
@@ -223,7 +225,7 @@ export async function deleteEvent(id) {
 
         addToast({
             title: "Veranstaltung gelöscht",
-            subTitle: !viewport.isMobile ? "Die Veranstaltung wurde erfolgreich gelöscht." : "",
+            subTitle: viewport.isMobile ? "" : "Die Veranstaltung wurde erfolgreich gelöscht.",
             type: "success"
         });
     } finally {
@@ -264,7 +266,7 @@ function handleDeleteError(errorType) {
 
     addToast({
         title: config.title,
-        subTitle: !viewport.isMobile ? config.subTitle : "",
+        subTitle: viewport.isMobile ? "" : config.subTitle,
         type: "error"
     });
 }
