@@ -11,7 +11,7 @@
 
     <!-- File appender with daily rolling -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/gvw-backend.log</file>
+        <file>api-logs/gvw-backend.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>api-logs/gvw-backend-%d{yyyy-MM-dd}.log</fileNamePattern>
             <!-- Keep 15 days of logs -->
