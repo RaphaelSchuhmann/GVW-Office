@@ -5,8 +5,11 @@
 
     import LibraryDesktop from "./LibraryDesktop.svelte";
     import LibraryMobile from "./LibraryMobile.svelte";
+    import { auth } from "../../stores/auth.svelte";
 
     $effect(() => {
+        if (!auth.token) return;
+
         (async () => {
             await ensureUserData();
             await init("library");

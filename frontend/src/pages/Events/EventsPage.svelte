@@ -5,8 +5,11 @@
 
     import EventsDesktop from "./EventsDesktop.svelte";
     import EventsMobile from "./EventsMobile.svelte";
+    import { auth } from "../../stores/auth.svelte";
 
     $effect(() => {
+        if (!auth.token) return;
+
         (async () => {
             await ensureUserData();
             await init("events");
