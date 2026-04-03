@@ -117,7 +117,7 @@ public class AuthService {
       throw new NotFoundException("UserNotFound");
     }
 
-    return new AutoLoginResponseDTO(user.getEmail(), user.getChangePassword());
+    return new AutoLoginResponseDTO(user.getEmail(), user.getChangePassword(), user.getFirstLogin());
   }
 
   public static String generatePassword(int wordCount, int numberCount) {

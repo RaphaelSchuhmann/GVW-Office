@@ -92,7 +92,7 @@ export async function httpPost(url, body, customToken = "", doAuth = true, using
  * @param {any} body - The data to send as JSON in the request body.
  * @param {string} [customToken=""] - Optional token to override the auth store token.
  * @param {boolean} [doAuth=true] - Whether to include the Authorization header.
- * @param {boolean} [usingFormData=true] - Set to true if sending FormData instead of JSON.
+ * @param {boolean} [usingFormData=false] - Set to true if sending FormData instead of JSON.
  * @returns {Promise<Response | null>} The fetch response, or `null` if the request fails.
  *
  * @example
