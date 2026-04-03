@@ -2,10 +2,11 @@
     import { viewport } from "../../stores/viewport.svelte";
     import { membersStore } from "../../stores/members.svelte";
     import { push } from "svelte-spa-router";
+    import { init } from "../../services/filterService.svelte";
+    import { user } from "../../stores/user.svelte";
 
     import MemberDetailsDesktop from "./MemberDetailsDesktop.svelte";
     import MemberDetailsMobile from "./MemberDetailsMobile.svelte";
-    import { user } from "../../stores/user.svelte";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -15,18 +16,24 @@
 
     let isEditing = $state(params.get("editing") === "true");
 
-    if (user.role !== "admin" && user.role !== "board_member") {
-        push("/dashboard");
-    }
-
     const memberData = $derived.by(() => {
         if (!memberId) return null;
         return membersStore.raw.find(item => item.id === memberId) || null;
     });
 
     $effect(() => {
-        if (!memberId || !memberData) {
+        if (!user.loaded) return;
+
+        if (user.role !== "admin" && user.role !== "board_member") {
+            push("/dashboard");
+        }
+
+        if (!memberId) {
             push("/members");
+        } else if (membersStore.raw.length === 0) {
+            init("members");
+        } else if (!memberData) {
+            push("/members")
         }
     });
 </script>

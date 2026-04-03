@@ -32,12 +32,6 @@
         ...restProps
     } = $props();
 
-    $effect(() => {
-        console.log("EFFECT: ");
-        if (isEditing && (user.role !== "board_member" && user.role !== "admin")) isEditing = false;
-        console.log("isEditing: ", isEditing);
-    });
-
     let draft = $state(null);
 
     const currentDate = $derived(isEditing ? draft?.date : eventData?.date);

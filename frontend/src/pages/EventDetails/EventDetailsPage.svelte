@@ -2,6 +2,8 @@
     import { viewport } from "../../stores/viewport.svelte";
     import { push } from "svelte-spa-router";
     import { eventsStore } from "../../stores/events.svelte";
+    import { init } from "../../services/filterService.svelte";
+    import { user } from "../../stores/user.svelte";
 
     import EventDetailsDesktop from "./EventDetailsDesktop.svelte";
     import EventDetailsMobile from "./EventDetailsMobile.svelte";
@@ -20,7 +22,15 @@
     });
 
     $effect(() => {
-        if (!eventId || (eventsStore.raw.length > 0 && !eventData)) {
+        if (!user.loaded) return;
+
+        if (isEditing && (user.role !== "board_member" && user.role !== "admin")) isEditing = false;
+
+        if (!eventId) {
+            push("/events");
+        } else if (eventsStore.raw.length === 0) {
+            init("events");
+        } else if (!eventData) {
             push("/events");
         }
     });

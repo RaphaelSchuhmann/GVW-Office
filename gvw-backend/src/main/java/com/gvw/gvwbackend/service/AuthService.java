@@ -112,10 +112,13 @@ public class AuthService {
       throw new InvalidCredentialsException("Unauthorized");
     }
 
-    User user = dbService.findById("users", id, User.class);
-    if (user == null) {
+    Map<String, Object> query = Map.of("selector", Map.of("userId", id), "limit", 1);
+    List<User> users = dbService.findByQuery("users", query, User.class);
+    if (users == null || users.isEmpty()) {
       throw new NotFoundException("UserNotFound");
     }
+
+    User user = users.getFirst();
 
     return new AutoLoginResponseDTO(
         user.getEmail(),
