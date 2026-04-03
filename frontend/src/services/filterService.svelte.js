@@ -32,12 +32,10 @@ export async function init(pageKey) {
 
     cleanupEffect = $effect.root(() => {
         $effect(() => {
-            const _ = [
-                entry?.store.raw,
-                entry?.filterState.search,
-                entry?.filterState.dropdown,
-                entry?.filterState.tab
-            ];
+            void entry?.store.raw;
+            void entry?.filterState.search;
+            void entry?.filterState.dropdown;
+            void entry?.filterState.tab;
 
             processFilters();
         });

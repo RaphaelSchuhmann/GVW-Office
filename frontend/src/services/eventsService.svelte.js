@@ -62,54 +62,79 @@ const isFetching = {
 };
 
 /**
- * Returns a human-readable description or next occurrence for a given event.
+ * Returns a human-readable description of how often an event occurs.
  *
- * The function looks up the event in `eventsStore.display` by its ID and
- * determines how the event repeats based on its `mode` and `recurrence` data.
+ * Supports:
+ * - weekly events → "Jede Woche am <Wochentag>"
+ * - monthly events (by weekday or date)
  *
- * Behavior:
- * - **Weekly events** → Returns a string like `"Jede Woche am Montag"`.
- * - **Monthly weekday recurrence** → Returns a string like `"Jeden Monat am 2. Dienstag"`.
- * - **Monthly date recurrence** → Calculates the next occurrence date in the current
- *   or next month depending on whether the day has already passed.
- *   If the configured day exceeds the last day of the current month, the last
- *   valid day of that month is used instead.
- * - **Non-recurring events** → Returns the stored event date.
- * - **Missing event** → Returns `"Unbekannt"`.
- *
- * @param {number|string} eventId - The unique identifier of the event to evaluate.
- * @returns {string} A formatted occurrence description or date string.
+ * @param {string} eventId - ID of the event to resolve
+ * @returns {string|undefined} Localized description of the occurrence or "Unbekannt" if event not found
  */
 export function getEventOccurrence(eventId) {
-    const event = eventsStore.display.filter(item => item.id === eventId)[0];
+    const event = eventsStore.display.find(item => item.id === eventId);
 
     if (!event) return "Unbekannt";
+    if (event.mode === "weekly") return getWeeklyOccurrence(event);
+    if (event.mode === "monthly" && event.recurrence) return getMonthlyOccurrence(event);
+}
 
-    if (event.mode === "weekly") {
-        const date = parseDMYToDate(event.date);
-        return `Jede Woche am ${weekDayMap[date.getDay()]}`;
+/**
+ * Generates a weekly recurrence string based on the event's base date.
+ *
+ * @param {Object} event
+ * @param {string} event.date - Date string in DMY format (dd.mm.yyyy)
+ * @returns {string} e.g. "Jede Woche am Montag"
+ */
+function getWeeklyOccurrence(event) {
+    const date = parseDMYToDate(event.date);
+    return `Jede Woche am ${weekDayMap[date.getDay()]}`;
+}
+
+/**
+ * Generates a monthly recurrence description.
+ *
+ * Supports two types:
+ * - "weekday": e.g. "Jeden Monat am 2. Dienstag"
+ * - "date": calculates next valid occurrence date
+ *
+ * @param {Object} event
+ * @param {Object} event.recurrence - Recurrence configuration
+ * @returns {string}
+ */
+function getMonthlyOccurrence(event) {
+    const { recurrence } = event;
+
+    if (recurrence.monthlyKind === "weekday") {
+        return `Jeden Monat am ${ordinalMap[recurrence.ordinal]} ${weekDayMap[recurrence.weekDay]}`;
     }
 
-    if (event.recurrence) {
-        if (event.mode === "monthly" && event.recurrence.monthlyKind === "weekday") {
-            return `Jeden Monat am ${ordinalMap[event.recurrence.ordinal]} ${weekDayMap[event.recurrence.weekDay]}`;
-        } else if (event.mode === "monthly" && event.recurrence.monthlyKind === "date") {
-            let dateVal = event.recurrence.dayOfMonth;
-            const lastDate = getLastDayOfCurrentMonth();
-
-            if (dateVal > lastDate) dateVal = lastDate;
-
-            const today = new Date();
-            if (dateVal < today.getDate()) {
-                const month = (today.getMonth() + 1) > 11 ? 0 : today.getMonth() + 1;
-                return makeDateFromMonthAndDay(dateVal, month);
-            } else {
-                return makeDateFromMonthAndDay(dateVal, today.getMonth());
-            }
-        }
+    if (recurrence.monthlyKind === "date") {
+        return calculateMonthlyDateOccurrence(recurrence.dayOfMonth);
     }
+}
 
-    return event.date;
+/**
+ * Calculates the next valid occurrence date for a fixed day-of-month recurrence.
+ *
+ * Handles:
+ * - Months with fewer days (e.g. Feb → fallback to last day)
+ * - If the day already passed this month → shift to next month
+ *
+ * @param {number} dayOfMonth - Desired day of month (1–31)
+ * @returns {string} Formatted date string (via makeDateFromMonthAndDay)
+ */
+function calculateMonthlyDateOccurrence(dayOfMonth) {
+    const today = new Date();
+    const lastDate = getLastDayOfCurrentMonth();
+    let dateVal = dayOfMonth > lastDate ? lastDate : dayOfMonth;
+
+    const isPastThisMonth = dateVal < today.getDate();
+    const targetMonth = isPastThisMonth
+        ? (today.getMonth() === 11 ? 0 : today.getMonth() + 1)
+        : today.getMonth();
+
+    return makeDateFromMonthAndDay(dateVal, targetMonth);
 }
 
 /**
@@ -147,13 +172,13 @@ export async function addEvent(event) {
             if (normalizedResponse.errorType === "BADREQUEST") {
                 addToast({
                     title: "Ungültige Daten",
-                    subTitle: !viewport.isMobile ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
+                    subTitle: viewport.isMobile ? "" : "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben.",
                     type: "error"
                 });
             } else {
                 addToast({
                     title: "Fehler beim Erstellen",
-                    subTitle: !viewport.isMobile ? "Beim Erstellen der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
+                    subTitle: viewport.isMobile ? "" : "Beim Erstellen der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
                     type: "error"
                 });
             }
@@ -162,7 +187,7 @@ export async function addEvent(event) {
 
         addToast({
             title: "Veranstaltung erstellt",
-            subTitle: !viewport.isMobile ? "Die Veranstaltung wurde erfolgreich erstellt." : "",
+            subTitle: viewport.isMobile ? "" : "Die Veranstaltung wurde erfolgreich erstellt.",
             type: "success"
         });
     } finally {
@@ -171,24 +196,14 @@ export async function addEvent(event) {
 }
 
 /**
- * Deletes an event by its ID.
+ * Deletes an event by its ID via API call and handles all related UI feedback.
  *
- * Handles:
- * - Duplicate request prevention.
- * - API call to delete the event.
- * - Global API error delegation.
- * - Error-specific and success toast feedback.
+ * Features:
+ * - Prevents duplicate requests using `isFetching.deleteEvent`
+ * - Handles global API errors centrally
+ * - Displays success or error toasts based on response
  *
- * Error cases handled explicitly:
- * - NOTFOUND
- * - BADREQUEST
- * - Generic fallback error
- *
- * On success, a confirmation toast is displayed.
- *
- * @async
- * @function deleteEvent
- * @param {string} id - Event UUID to delete.
+ * @param {string} id - ID of the event to delete
  * @returns {Promise<void>}
  */
 export async function deleteEvent(id) {
@@ -197,30 +212,12 @@ export async function deleteEvent(id) {
 
     try {
         const { resp } = await apiDeleteEvent(id);
-
         const normalizedResponse = normalizeResponse(resp);
+
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({
-                    title: "Veranstaltung nicht gefunden",
-                    subTitle: !viewport.isMobile ? "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut." : "",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Ungültige Veranstaltung",
-                    subTitle: !viewport.isMobile ? "Die angegebene Veranstaltung ist ungültig. Bitte versuchen Sie es später erneut." : "",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Löschen",
-                    subTitle: !viewport.isMobile ? "Beim Löschen der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
-                    type: "error"
-                });
-            }
+            handleDeleteError(normalizedResponse.errorType);
             return;
         }
 
@@ -232,6 +229,44 @@ export async function deleteEvent(id) {
     } finally {
         isFetching.deleteEvent = false;
     }
+}
+
+/**
+ * Maps API error types to user-facing toast messages for event deletion.
+ *
+ * Supported error types:
+ * - NOTFOUND → event does not exist
+ * - BADREQUEST → invalid event ID or malformed request
+ * - DEFAULT → fallback for unknown errors
+ *
+ * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
+ *
+ * @param {string} errorType - Error identifier returned from API
+ * @returns {void}
+ */
+function handleDeleteError(errorType) {
+    const errorConfigs = {
+        NOTFOUND: {
+            title: "Veranstaltung nicht gefunden",
+            subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
+        },
+        BADREQUEST: {
+            title: "Ungültige Veranstaltung",
+            subTitle: "Die angegebene Veranstaltung ist ungültig. Bitte versuchen Sie es später erneut."
+        },
+        DEFAULT: {
+            title: "Fehler beim Löschen",
+            subTitle: "Beim Löschen der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
+        }
+    };
+
+    const config = errorConfigs[errorType] || errorConfigs.DEFAULT;
+
+    addToast({
+        title: config.title,
+        subTitle: !viewport.isMobile ? config.subTitle : "",
+        type: "error"
+    });
 }
 
 /**
@@ -269,13 +304,13 @@ export async function updateStatus(id) {
             if (normalizedResponse.errorType === "NOTFOUND") {
                 addToast({
                     title: "Veranstaltung nicht gefunden",
-                    subTitle: !viewport.isMobile ? "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut." : "",
+                    subTitle: viewport.isMobile ? "" : "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
                     type: "error"
                 });
             } else if (normalizedResponse.errorType === "BADREQUEST") {
                 addToast({
                     title: "Ungültige Veranstaltung",
-                    subTitle: !viewport.isMobile ? "Die angegebene Veranstaltung ist ungültig. Bitte versuchen Sie es später erneut." : "",
+                    subTitle: viewport.isMobile ? "" : "Die angegebene Veranstaltung ist ungültig. Bitte versuchen Sie es später erneut.",
                     type: "error"
                 });
             }
@@ -285,7 +320,7 @@ export async function updateStatus(id) {
 
         addToast({
             title: "Veranstaltungsstatus aktualisiert",
-            subTitle: !viewport.isMobile ? "Der Status der Veranstaltung wurde erfolgreich aktualisiert." : "",
+            subTitle: viewport.isMobile ? "" : "Der Status der Veranstaltung wurde erfolgreich aktualisiert.",
             type: "success"
         });
     } finally {
@@ -326,35 +361,55 @@ export async function updateEvent(data) {
         if (handleGlobalApiError(normalizedResponse)) return false;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Ungültige Daten",
-                    subTitle: !viewport.isMobile ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben." : "",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({
-                    title: "Veranstaltung nicht gefunden",
-                    subTitle: !viewport.isMobile ? "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut." : "",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Aktualisieren",
-                    subTitle: !viewport.isMobile ? "Beim Aktualisieren der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut." : "",
-                    type: "error"
-                });
-            }
+            handleUpdateError(normalizedResponse.errorType);
             return false;
         }
 
         addToast({
             title: "Veranstaltung aktualisiert",
-            subTitle: !viewport.isMobile ? "Die Veranstaltung wurde erfolgreich aktualisiert." : "",
+            subTitle: viewport.isMobile ? "" : "Die Veranstaltung wurde erfolgreich aktualisiert.",
             type: "success"
         });
         return true;
     } finally {
         isFetching.updateEvent = false;
     }
+}
+
+/**
+ * Maps API error types to user-facing toast messages for event deletion.
+ *
+ * Supported error types:
+ * - NOTFOUND → event does not exist
+ * - BADREQUEST → malformed request
+ * - DEFAULT → fallback for unknown errors
+ *
+ * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
+ *
+ * @param {string} errorType - Error identifier returned from API
+ * @returns {void}
+ */
+function handleUpdateError(errorType) {
+    const errorConfigs = {
+        NOTFOUND: {
+            title: "Veranstaltung nicht gefunden",
+            subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+        },
+        BADREQUEST: {
+            title: "Ungültige Daten",
+            subTitle: "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben.",
+        },
+        DEFAULT: {
+            title: "Fehler beim Aktualisieren",
+            subTitle: "Beim Aktualisieren der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+        }
+    };
+
+    const config = errorConfigs[errorType] || errorConfigs.DEFAULT;
+
+    addToast({
+        title: config.title,
+        subTitle: viewport.isMobile ? "" : config.subTitle,
+        type: "error"
+    });
 }
