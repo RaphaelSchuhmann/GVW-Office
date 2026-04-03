@@ -1,4 +1,4 @@
-import { httpGet, httpPost, parseBodySafe } from "./http.svelte";
+import { httpGet, httpPatch, httpPost, parseBodySafe } from "./http.svelte";
 
 // @ts-ignore
 const apiUrl = __API_URL__;
@@ -32,7 +32,7 @@ export async function apiGetSettings() {
 /**
  * Attempts to update the maximum members in the app settings
  * 
- * Sends a POST request to `/settings/update/max-members` endpoint with and Authorization header.
+ * Sends a PATCH request to `/settings/update/max-members` endpoint with and Authorization header.
  * 
  * @param {number} maxMembers - The maximum amount of members per voice.
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
@@ -49,7 +49,7 @@ export async function apiGetSettings() {
  * }
  */
 export async function apiUpdateMaxMembers(maxMembers) {
-    const resp = await httpPost(`${apiUrl}/settings/update/max-members`, { maxMembers: maxMembers });
+    const resp = await httpPatch(`${apiUrl}/settings/update/max-members`, { maxMembers: maxMembers });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -76,7 +76,7 @@ export async function apiUpdateMaxMembers(maxMembers) {
  * }
  */
 export async function apiAddCategory(type, displayValue) {
-    const resp = await httpPost(`${apiUrl}/settings/update/categories/add`, { type: type, displayName: displayValue });
+    const resp = await httpPost(`${apiUrl}/settings/add/category`, { type: type, displayName: displayValue });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -102,7 +102,7 @@ export async function apiAddCategory(type, displayValue) {
  * }
  */
 export async function apiRemoveCategory(type) {
-    const resp = await httpPost(`${apiUrl}/settings/update/categories/remove`, { type: type });
+    const resp = await httpPost(`${apiUrl}/settings/remove/category`, { type: type });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };

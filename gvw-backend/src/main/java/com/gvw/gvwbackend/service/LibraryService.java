@@ -30,7 +30,7 @@ public class LibraryService {
   private static final Logger log = LoggerFactory.getLogger(LibraryService.class);
   private static final long MAX_FILE_SIZE = 8 * 1024 * 1024;
 
-  @Value("${scores.directory:./data/scores}")
+  @Value("${scores.directory:./api-data/scores}")
   private String scoresDir;
 
   public LibraryService(DbService dbService) {
@@ -125,10 +125,11 @@ public class LibraryService {
         Path filePath = root.resolve(file.getId() + "." + file.getExtension());
 
         if (Files.exists(filePath)) {
-          String entryName = file.getOriginalName()
-              .replaceAll("[\r\n]", "_")
-              .replaceAll("\\.\\./", "")
-              .replaceAll("\\.\\.\\\\", "");
+          String entryName =
+              file.getOriginalName()
+                  .replaceAll("[\r\n]", "_")
+                  .replaceAll("\\.\\./", "")
+                  .replaceAll("\\.\\.\\\\", "");
           entryName = Paths.get(entryName).getFileName().toString();
 
           ZipEntry entry = new ZipEntry(entryName);

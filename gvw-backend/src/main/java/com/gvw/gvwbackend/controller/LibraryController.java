@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -40,6 +41,7 @@ public class LibraryController {
 
   @PostMapping(value = "/new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN')")
   public void createScore(
       @RequestPart("scoreData") @Valid AddScoreRequestDTO request,
       @RequestPart(value = "files", required = false) List<MultipartFile> files) {
@@ -56,6 +58,7 @@ public class LibraryController {
 
   @DeleteMapping("/delete/{id}")
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN')")
   public void deleteScore(@PathVariable String id) {
     libraryService.deleteScore(id);
   }
@@ -72,12 +75,14 @@ public class LibraryController {
 
     return ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_TYPE, "application/zip")
-        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + sanitizedTitle + ".zip\"")
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + sanitizedTitle + ".zip\"")
         .body(out -> libraryService.streamFilesAsZip(score.getFiles(), out));
   }
 
   @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN')")
   public void updateScore(
       @RequestPart("scoreData") @Valid UpdateScoreRequestDTO request,
       @RequestPart(value = "files", required = false) List<MultipartFile> newFiles,

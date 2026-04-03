@@ -183,19 +183,6 @@
         draft = null;
     }
 
-    /**
-     * Navigates back to the library overview page.
-     *
-     * - Refreshes the raw library list
-     * - Performs route navigation to `/library`
-     *
-     * Ensures the overview reflects the latest persisted state.
-     */
-    async function routeToLibrary() {
-        await fetchAndSetRaw();
-        await push("/library");
-    }
-
     // ==================
     // MODAL REFERENCES
     // ==================
@@ -213,8 +200,20 @@
      */
     let confirmDeleteScoreModal = $state();
 
-    function settingsClick() {
-        settingsModal.showModal();
+    /**
+     * Navigates back to the library overview page.
+     *
+     * - Refreshes the raw library list
+     * - Performs route navigation to `/library`
+     *
+     * Ensures the overview reflects the latest persisted state.
+     */
+    async function routeToLibrary() {
+        try {
+            await fetchAndSetRaw();
+        } finally {
+            await push("/library");
+        }
     }
 </script>
 
@@ -224,7 +223,7 @@
 <ConfirmDeleteModal expectedInput={`${scoreData.title}`} id={scoreData.id}
                     title="Noten löschen" subTitle="Sind Sie sich sicher das Sie diese Noten löschen möchten?"
                     action="deleteLibEntry"
-                    onClose={async () => {await push("/library")}}
+                    onClose={async () => {await routeToLibrary()}}
                     bind:this={confirmDeleteScoreModal} isMobile={true}
 />
 

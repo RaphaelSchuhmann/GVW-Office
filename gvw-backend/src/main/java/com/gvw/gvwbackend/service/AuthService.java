@@ -2,9 +2,11 @@ package com.gvw.gvwbackend.service;
 
 import com.gvw.gvwbackend.dto.request.ChangePwRequestDTO;
 import com.gvw.gvwbackend.dto.request.LoginRequestDTO;
+import com.gvw.gvwbackend.dto.response.AutoLoginResponseDTO;
 import com.gvw.gvwbackend.dto.response.LoginResponseDTO;
 import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.InvalidCredentialsException;
+import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.exception.TooManyRequestsException;
 import com.gvw.gvwbackend.model.User;
 import java.time.Duration;
@@ -103,6 +105,22 @@ public class AuthService {
     user.setFirstLogin(false);
 
     dbService.update("users", user);
+  }
+
+  public AutoLoginResponseDTO autoLogin(String id) {
+    if (id == null || id.isBlank()) {
+      throw new InvalidCredentialsException("Unauthorized");
+    }
+
+    User user = dbService.findById("users", id, User.class);
+    if (user == null) {
+      throw new NotFoundException("UserNotFound");
+    }
+
+    return new AutoLoginResponseDTO(
+        user.getEmail(),
+        Boolean.TRUE.equals(user.getChangePassword()),
+        Boolean.TRUE.equals(user.getFirstLogin()));
   }
 
   public static String generatePassword(int wordCount, int numberCount) {

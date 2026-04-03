@@ -1,4 +1,4 @@
-import { httpGet, httpPost, parseBodySafe } from "./http.svelte";
+import { httpGet, httpPatch, parseBodySafe } from "./http.svelte";
 
 // @ts-ignore
 const apiUrl = __API_URL__;
@@ -34,7 +34,7 @@ export async function getUserData() {
 /**
  * Attempts to update the user data and its associated member data.
  * 
- * Sends a POST request to `/user/update` endpoint with an Authorization header.
+ * Sends a PATCH request to `/user/update` endpoint with an Authorization header.
  * The server identifies the user from the auth token.
  * 
  * @param {Object} data - the updated user data.
@@ -56,7 +56,7 @@ export async function getUserData() {
  * }
  */
 export async function updateUserData(data) {
-    const resp = await httpPost(`${apiUrl}/user/update`, data);
+    const resp = await httpPatch(`${apiUrl}/user/update`, data);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };

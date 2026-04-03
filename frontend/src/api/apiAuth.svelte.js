@@ -40,8 +40,8 @@ export async function login(email, password) {
  *
  * @param {Object} data - Password change payload.
  * @param {string} data.email - The user's email address.
- * @param {string} data.oldPw - The user's current password.
- * @param {string} data.newPw - The user's new password.
+ * @param {string} data.oldPassword - The user's current password.
+ * @param {string} data.newPassword - The user's new password.
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
  * An object containing the raw fetch Response (`resp`) and the parsed
  * JSON response body (`body`). Returns `{ resp: null, body: null }`
@@ -50,8 +50,8 @@ export async function login(email, password) {
  * @example
  * const { resp } = await changePw({
  *   email: "user@example.com",
- *   oldPw: "password123",
- *   newPw: "NewPassword"
+ *   oldPassword: "password123",
+ *   newPassword: "NewPassword"
  * });
  *
  * if (resp?.ok) {

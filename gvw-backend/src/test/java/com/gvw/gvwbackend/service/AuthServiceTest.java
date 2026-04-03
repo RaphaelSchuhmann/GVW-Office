@@ -55,7 +55,7 @@ public class AuthServiceTest {
 
     LoginResponseDTO response = authService.login(request);
 
-    assertEquals("mocked-jwt", response.token());
+    assertEquals("mocked-jwt", response.authToken());
     assertFalse(response.changePassword());
     assertFalse(response.firstLogin());
 

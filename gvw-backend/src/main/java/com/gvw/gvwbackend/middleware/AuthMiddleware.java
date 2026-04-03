@@ -4,6 +4,7 @@ import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.service.JwtService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -21,7 +22,8 @@ public class AuthMiddleware extends OncePerRequestFilter {
   private final JwtService jwtService;
   private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
-  private final List<String> EXCLUDED_PATHS = List.of("/auth/login", "/dev/**", "/emergency/**");
+  private final List<String> EXCLUDED_PATHS =
+      List.of("/auth/login", "/dev/**", "/emergency/**", "/settings/get", "/auth/changePw");
 
   public AuthMiddleware(JwtService jwtService) {
     this.jwtService = jwtService;
@@ -39,7 +41,12 @@ public class AuthMiddleware extends OncePerRequestFilter {
       HttpServletRequest request,
       @NonNull HttpServletResponse response,
       @NonNull FilterChain filterChain)
-      throws IOException {
+      throws IOException, ServletException {
+
+    if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+      filterChain.doFilter(request, response);
+      return;
+    }
 
     String authHeader = request.getHeader("Authorization");
 
