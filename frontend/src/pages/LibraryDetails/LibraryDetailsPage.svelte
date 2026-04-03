@@ -6,6 +6,7 @@
     import LibraryDetailsDesktop from "./LibraryDetailsDesktop.svelte";
     import LibraryDetailsMobile from "./LibraryDetailsMobile.svelte";
     import { init } from "../../services/filterService.svelte";
+    import { user } from "../../stores/user.svelte";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -21,10 +22,16 @@
     });
 
     $effect(() => {
-        if (!scoreId || (libraryStore.raw.length > 0 && !scoreData)) {
+        if (!user.loaded) return;
+
+        if (isEditing && (user.role !== "board_member" && user.role !== "admin" && user.role !== "librarian" && user.role !== "conductor")) isEditing = false;
+
+        if (!scoreId) {
             push("/library");
-        } else {
+        } else if (libraryStore.raw.length === 0) {
             init("library");
+        } else if (!scoreData) {
+            push("/library");
         }
     });
 </script>

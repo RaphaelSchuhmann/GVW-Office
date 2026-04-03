@@ -13,6 +13,9 @@
     import LibraryDetails from "./pages/LibraryDetails/LibraryDetailsPage.svelte";
 
     import { startSyncService, stopSyncService } from "./services/appSettingsSyncService.svelte";
+    import { user } from "./stores/user.svelte";
+    import { getValue } from "./services/store";
+    import { ensureUserData } from "./services/userService.svelte";
 
     const routes = {
         "/": Login,
@@ -28,6 +31,10 @@
 
     $effect(() => {
         startSyncService();
+
+        if (!user.loaded && getValue("authToken")) {
+            ensureUserData();
+        }
 
         return () => {
             stopSyncService();

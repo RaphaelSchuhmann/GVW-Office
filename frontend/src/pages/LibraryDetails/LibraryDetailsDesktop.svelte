@@ -25,10 +25,6 @@
         ...restProps
     } = $props();
 
-    $effect(() => {
-        if (isEditing && (user.role !== "board_member" && user.role !== "admin" && user.role !== "librarian" && user.role !== "conductor")) isEditing = false;
-    });
-
     let draft = $state(null);
 
     let originalSelectedChoirType =  $derived(determineChoirType(scoreData.voices[0]) ? "Männerchor" : "Gemischterchor");
