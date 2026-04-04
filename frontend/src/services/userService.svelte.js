@@ -7,7 +7,8 @@ import { user } from "../stores/user.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { getUserData, updateUserData } from "../api/apiUser.svelte";
 import { normalizeResponse } from "../api/http.svelte";
-import { clearDebounce } from "./filterService.svelte";
+import { resetPageState } from "./filterService.svelte";
+import { teardownEventSource } from "./sse-handler.js";
 
 const USER_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
@@ -99,7 +100,9 @@ export async function tryUpdateUserData(data) {
  * Logs out the current user by clearing all user-related data and authentication state.
  * 
  * - Resets the `user` store to its initial empty state.
- * - Clears teh authSvelte token from the `authSvelte` store.
+ * - Resets the filterService page state.
+ * - Does a teardown of the EventSource.
+ * - Clears the authSvelte token from the `authSvelte` store.
  * - Removes the persisted authSvelte token from local storage.
  * 
  * This effectively de-authenticates teh user and should be called whenever
@@ -118,7 +121,8 @@ export function logout() {
         lastFetched: 0,
     });
 
-    clearDebounce();
+    resetPageState();
+    teardownEventSource();
 
     Object.assign(auth, { token: "" });
     clearValue("authToken");

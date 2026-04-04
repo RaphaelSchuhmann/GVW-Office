@@ -12,10 +12,11 @@
     import Library from "./pages/Library/LibraryPage.svelte";
     import LibraryDetails from "./pages/LibraryDetails/LibraryDetailsPage.svelte";
 
-    import { startSyncService, stopSyncService } from "./services/appSettingsSyncService.svelte";
+    import { initSSE } from "./services/sse-handler.js";
     import { user } from "./stores/user.svelte";
     import { getValue } from "./services/store";
     import { ensureUserData } from "./services/userService.svelte";
+    import { initSettingsSync } from "./services/appSettingsSyncService.svelte.js";
 
     const routes = {
         "/": Login,
@@ -30,15 +31,12 @@
     };
 
     $effect(() => {
-        startSyncService();
+        initSSE();
+        initSettingsSync();
 
         if (!user.loaded && getValue("authToken")) {
             ensureUserData();
         }
-
-        return () => {
-            stopSyncService();
-        };
     });
 </script>
 

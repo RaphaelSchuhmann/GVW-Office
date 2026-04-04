@@ -1,13 +1,17 @@
 <script>
     import { viewport } from "../../stores/viewport.svelte";
     import { ensureUserData } from "../../services/userService.svelte";
-    import { init } from "../../services/filterService.svelte";
+    import { fetchAndSetRaw, init } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
     import { push } from "svelte-spa-router";
 
     import MembersDesktop from "./MembersDesktop.svelte";
     import MembersMobile from "./MembersMobile.svelte";
     import { auth } from "../../stores/auth.svelte";
+    import { lastRefresh } from "../../stores/sseStore.svelte.js";
+    import { untrack } from "svelte";
+
+    let ready = false;
 
     $effect(() => {
         if (!user.loaded) return;
@@ -22,8 +26,19 @@
         (async () => {
             await ensureUserData();
             await init("members");
+            ready = true;
         })();
     });
+
+    $effect(() => {
+        if (!ready) return;
+
+        const trigger = lastRefresh.MEMBERS;
+
+        untrack(() => {
+            fetchAndSetRaw();
+        });
+    })
 </script>
 
 {#if viewport.isMobile}

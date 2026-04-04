@@ -27,6 +27,7 @@ public class MemberService {
   private final MemberMapper memberMapper;
   private final PasswordEncoder passwordEncoder;
   private final MailService mailService;
+  private final SseService sseService;
 
   private static final Logger log = LoggerFactory.getLogger(MemberService.class);
 
@@ -34,11 +35,13 @@ public class MemberService {
       DbService dbService,
       MemberMapper memberMapper,
       PasswordEncoder passwordEncoder,
-      MailService mailService) {
+      MailService mailService,
+      SseService sseService) {
     this.dbService = dbService;
     this.memberMapper = memberMapper;
     this.passwordEncoder = passwordEncoder;
     this.mailService = mailService;
+    this.sseService = sseService;
   }
 
   public MembersResponseDTO getMembers() {
@@ -103,6 +106,8 @@ public class MemberService {
           "GVW-Office: Temporäres Password",
           "newUser",
           Map.of("tempPassword", temporaryPassword));
+
+      sseService.broadcastRefresh("MEMBERS");
     } catch (Exception e) {
       log.error("Sync error during member/user creations: {}", e.getMessage());
 
@@ -138,6 +143,8 @@ public class MemberService {
 
     dbService.delete("members", member.getId(), member.getRev());
     dbService.delete("users", user.getId(), user.getRev());
+
+    sseService.broadcastRefresh("MEMBERS");
   }
 
   public void updateMember(UpdateMemberRequestDTO request) {
@@ -149,6 +156,8 @@ public class MemberService {
 
     dbService.update("members", member);
     dbService.update("users", user);
+
+    sseService.broadcastRefresh("MEMBERS");
   }
 
   public void updateMemberStatus(String id) {
@@ -161,6 +170,8 @@ public class MemberService {
     member.setStatus("active".equals(member.getStatus()) ? "inactive" : "active");
 
     dbService.update("members", member);
+
+    sseService.broadcastRefresh("MEMBERS");
   }
 
   private boolean emailExists(String email) {

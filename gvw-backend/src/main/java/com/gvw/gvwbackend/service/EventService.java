@@ -22,14 +22,17 @@ public class EventService {
   private final ObjectMapper mapper = new ObjectMapper();
   private final DbService dbService;
   private final EventMapper eventMapper;
+  private final SseService sseService;
 
-  public EventService(DbService dbService, EventMapper eventMapper) {
+  public EventService(DbService dbService, EventMapper eventMapper, SseService sseService) {
     this.dbService = dbService;
     this.eventMapper = eventMapper;
+    this.sseService = sseService;
   }
 
   public EventsResponseDTO allEvents() {
     List<Map<String, Object>> eventsRaw = dbService.findAll("events");
+    boolean changed = false;
 
     List<Event> events =
         eventsRaw.stream().map(map -> mapper.convertValue(map, Event.class)).toList();
@@ -55,7 +58,12 @@ public class EventService {
           && event.getMode().equalsIgnoreCase("single")) {
         event.setStatus("finished");
         dbService.update("events", event);
+        changed = true;
       }
+    }
+
+    if (changed) {
+      sseService.broadcastRefresh("EVENTS");
     }
 
     List<EventResponseDTO> responseEvents =
@@ -86,6 +94,8 @@ public class EventService {
     Event event = createEventFromRequest(request);
 
     dbService.insert("events", event);
+
+    sseService.broadcastRefresh("EVENTS");
   }
 
   public void deleteEvent(String id) {
@@ -99,6 +109,8 @@ public class EventService {
     }
 
     dbService.delete("events", event.getId(), event.getRev());
+
+    sseService.broadcastRefresh("EVENTS");
   }
 
   public void updateEventStatus(String id) {
@@ -118,6 +130,8 @@ public class EventService {
     }
 
     dbService.update("events", event);
+
+    sseService.broadcastRefresh("EVENTS");
   }
 
   public void updateEvent(UpdateEventRequestDTO request) {
@@ -134,6 +148,8 @@ public class EventService {
     eventMapper.updateEventFromDto(request, event);
 
     dbService.update("events", event);
+
+    sseService.broadcastRefresh("EVENTS");
   }
 
   private Instant parseDMYToInstant(String dateStr) {

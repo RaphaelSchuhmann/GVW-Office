@@ -30,13 +30,15 @@ public class MemberServiceTest {
   @Mock private DbService dbService;
   @Mock private PasswordEncoder passwordEncoder;
   @Mock private MailService mailService;
+  @Mock private SseService sseService;
 
   private MemberService memberService;
 
   @BeforeEach
   void setup() {
     MemberMapper memberMapper = Mappers.getMapper(MemberMapper.class);
-    memberService = new MemberService(dbService, memberMapper, passwordEncoder, mailService);
+    memberService =
+        new MemberService(dbService, memberMapper, passwordEncoder, mailService, sseService);
   }
 
   @Test

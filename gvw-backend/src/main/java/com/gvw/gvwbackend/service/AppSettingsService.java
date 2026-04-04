@@ -18,10 +18,12 @@ import org.springframework.stereotype.Service;
 public class AppSettingsService {
   private static final Logger log = LoggerFactory.getLogger(AppSettingsService.class);
   private final DbService dbService;
+  private final SseService sseService;
   private static final Set<String> BLOCKED_KEYS = Set.of("__proto__", "constructor", "prototype");
 
-  public AppSettingsService(DbService dbService) {
+  public AppSettingsService(DbService dbService, SseService sseService) {
     this.dbService = dbService;
+    this.sseService = sseService;
   }
 
   public AppSettingsResponseDTO getAppSettings() {
@@ -39,6 +41,8 @@ public class AppSettingsService {
     settings.setMaxMembers(requestDTO.maxMembers());
 
     dbService.update("app_settings", settings);
+
+    sseService.broadcastRefresh("SETTINGS");
   }
 
   public void addCategory(AddCategoryRequestDTO requestDTO) {
@@ -63,6 +67,8 @@ public class AppSettingsService {
     settings.setScoreCategories(categories);
 
     dbService.update("app_settings", settings);
+
+    sseService.broadcastRefresh("SETTINGS");
   }
 
   public void removeCategory(RemoveCategoryRequestDTO requestDTO) {
@@ -81,6 +87,8 @@ public class AppSettingsService {
 
     settings.setScoreCategories(categories);
     dbService.update("app_settings", settings);
+
+    sseService.broadcastRefresh("SETTINGS");
   }
 
   private AppSettings appSettings() {

@@ -4,29 +4,39 @@ import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
 import { appSettings } from "../stores/appSettings.svelte.js";
+import { lastRefresh } from "../stores/sseStore.svelte.js";
+import { untrack } from "svelte";
 
-let isRunning = false;
-let intervalId;
 let isFetching = false;
+let isRunning = false;
 
 /**
- * Starts the periodic synchronization of global application settings.
- * 
- * If the sync service is already running, this function is a no-op.
- * When started, it immediately fetches the current app settings and
- * then refreshes them at a fixed interval (every 40 seconds).
- * 
- * Intended to be called from a view lifecycle (e.g. onMount).
+ * Initializes reactive synchronization of application settings.
  *
- * @async
- * @returns {Promise<void>}
+ * Responsibilities:
+ * - Subscribes to `lastRefresh.SETTINGS` changes (e.g. via SSE updates)
+ * - Triggers a settings reload whenever a refresh event occurs
+ *
+ * Notes:
+ * - Uses Svelte reactivity (`$effect`) instead of polling
+ * - Safe to call multiple times, but should typically be initialized once per view
+ *
+ * Intended to be called during a view lifecycle (e.g. onMount).
+ *
+ * @function initSettingsSync
+ * @returns {void}
  */
-export async function startSyncService() {
+export async function initSettingsSync() {
     if (isRunning) return;
-
     isRunning = true;
-    await loadAppSettings(); // Immediate fetch when starting
-    intervalId = setInterval(loadAppSettings, 40000)
+
+    $effect(() => {
+        const trigger = lastRefresh.SETTINGS;
+
+        untrack(() => {
+            loadAppSettings();
+        });
+    });
 }
 
 /**
@@ -49,15 +59,15 @@ export async function loadAppSettings() {
     isFetching = true;
     try {
         const { resp, body } = await apiGetSettings();
-    
+
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
-    
+
         if (!resp.ok) {
             addToast({
                 title: "App Einstellungen nicht verfügbar",
                 subTitle: viewport.isMobile ? "" : "Beim Laden der globalen App Einstellungen ist ein unerwarteter Fehler aufgetreten.",
-                type: "error",
+                type: "error"
             });
             console.error("Unable to load app settings");
             return;
@@ -69,22 +79,4 @@ export async function loadAppSettings() {
     } finally {
         isFetching = false;
     }
-}
-
-/**
- * Stops the periodic synchronization of global application settings.
- * 
- * Clears the active refresh interval and resets the internal running state.
- * If the sync service is not running, this function is a no-op.
- * 
- * Intended to be called from a view cleanup phase (e.g. onDestroy)
- * 
- * @returns {void}
- */
-export function stopSyncService() {
-    if (!isRunning) return;
-
-    clearInterval(intervalId);
-    intervalId = null;
-    isRunning = false;
 }
