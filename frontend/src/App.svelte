@@ -16,7 +16,7 @@
     import { user } from "./stores/user.svelte";
     import { getValue } from "./services/store";
     import { ensureUserData } from "./services/userService.svelte";
-    import { startSyncService } from "./services/appSettingsSyncService.svelte.js";
+    import { initSettingsSync } from "./services/appSettingsSyncService.svelte.js";
 
     const routes = {
         "/": Login,
@@ -32,7 +32,7 @@
 
     $effect(() => {
         initSSE();
-        startSyncService();
+        initSettingsSync();
 
         if (!user.loaded && getValue("authToken")) {
             ensureUserData();

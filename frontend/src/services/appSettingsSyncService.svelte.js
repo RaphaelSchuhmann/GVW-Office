@@ -6,25 +6,28 @@ import { viewport } from "../stores/viewport.svelte";
 import { appSettings } from "../stores/appSettings.svelte.js";
 import { lastRefresh } from "../stores/sseStore.svelte.js";
 import { untrack } from "svelte";
-import { fetchAndSetRaw } from "./filterService.svelte.js";
 
 let isRunning = false;
 let intervalId;
 let isFetching = false;
 
 /**
- * Starts the periodic synchronization of global application settings.
+ * Initializes reactive synchronization of application settings.
  *
- * If the sync service is already running, this function is a no-op.
- * When started, it immediately fetches the current app settings and
- * then refreshes them at a fixed interval (every 40 seconds).
+ * Responsibilities:
+ * - Subscribes to `lastRefresh.SETTINGS` changes (e.g. via SSE updates)
+ * - Triggers a settings reload whenever a refresh event occurs
  *
- * Intended to be called from a view lifecycle (e.g. onMount).
+ * Notes:
+ * - Uses Svelte reactivity (`$effect`) instead of polling
+ * - Safe to call multiple times, but should typically be initialized once per view
  *
- * @async
- * @returns {Promise<void>}
+ * Intended to be called during a view lifecycle (e.g. onMount).
+ *
+ * @function initSettingsSync
+ * @returns {void}
  */
-export async function startSyncService() {
+export async function initSettingsSync() {
     $effect(() => {
         const trigger = lastRefresh.SETTINGS;
 
@@ -74,22 +77,4 @@ export async function loadAppSettings() {
     } finally {
         isFetching = false;
     }
-}
-
-/**
- * Stops the periodic synchronization of global application settings.
- *
- * Clears the active refresh interval and resets the internal running state.
- * If the sync service is not running, this function is a no-op.
- *
- * Intended to be called from a view cleanup phase (e.g. onDestroy)
- *
- * @returns {void}
- */
-export function stopSyncService() {
-    if (!isRunning) return;
-
-    clearInterval(intervalId);
-    intervalId = null;
-    isRunning = false;
 }

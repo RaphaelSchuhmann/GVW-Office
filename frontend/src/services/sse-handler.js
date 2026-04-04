@@ -9,7 +9,6 @@ let eventSource = null;
 export function initSSE() {
     if (eventSource) return;
 
-    // eventSource = new EventSource(`${apiUrl}/api/sync/stream`);
     eventSource = new EventSourcePolyfill(`${apiUrl}/api/sync/stream`, {
         headers: {
             "Authorization": `Bearer ${auth.token}`

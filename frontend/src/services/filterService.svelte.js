@@ -43,7 +43,6 @@ export async function init(pageKey) {
     });
 
     // Initial fetch
-    // console.log("Initial fetch for page: ", pageKey);
     await fetchAndSetRaw();
 }
 
@@ -123,8 +122,6 @@ export function processFilters() {
 export async function fetchAndSetRaw() {
     if (isFetching || !entry) return;
     isFetching = true;
-
-    // console.log("Fetching for entry: ", entry);
 
     try {
         const { resp, body } = await entry.fetch();
