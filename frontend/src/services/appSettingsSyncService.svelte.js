@@ -7,9 +7,8 @@ import { appSettings } from "../stores/appSettings.svelte.js";
 import { lastRefresh } from "../stores/sseStore.svelte.js";
 import { untrack } from "svelte";
 
-let isRunning = false;
-let intervalId;
 let isFetching = false;
+let isRunning = false;
 
 /**
  * Initializes reactive synchronization of application settings.
@@ -28,6 +27,9 @@ let isFetching = false;
  * @returns {void}
  */
 export async function initSettingsSync() {
+    if (isRunning) return;
+    isRunning = true;
+
     $effect(() => {
         const trigger = lastRefresh.SETTINGS;
 
