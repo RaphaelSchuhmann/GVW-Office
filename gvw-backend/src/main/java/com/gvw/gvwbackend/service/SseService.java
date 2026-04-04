@@ -12,7 +12,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @Service
 public class SseService {
   private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
-  private static final Logger log = LoggerFactory.getLogger(DbService.class);
+  private static final Logger log = LoggerFactory.getLogger(SseService.class);
 
   public SseEmitter createEmitter() {
     SseEmitter emitter = new SseEmitter(3600_000L);
