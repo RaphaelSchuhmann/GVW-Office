@@ -37,7 +37,8 @@ public class MemberServiceTest {
   @BeforeEach
   void setup() {
     MemberMapper memberMapper = Mappers.getMapper(MemberMapper.class);
-    memberService = new MemberService(dbService, memberMapper, passwordEncoder, mailService, sseService);
+    memberService =
+        new MemberService(dbService, memberMapper, passwordEncoder, mailService, sseService);
   }
 
   @Test

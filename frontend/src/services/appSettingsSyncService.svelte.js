@@ -34,7 +34,7 @@ export async function initSettingsSync() {
         const trigger = lastRefresh.SETTINGS;
 
         untrack(() => {
-            loadAppSettings().then();
+            loadAppSettings();
         });
     });
 }

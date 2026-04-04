@@ -32,6 +32,7 @@ public class EventService {
 
   public EventsResponseDTO allEvents() {
     List<Map<String, Object>> eventsRaw = dbService.findAll("events");
+    boolean changed = false;
 
     List<Event> events =
         eventsRaw.stream().map(map -> mapper.convertValue(map, Event.class)).toList();
@@ -57,7 +58,12 @@ public class EventService {
           && event.getMode().equalsIgnoreCase("single")) {
         event.setStatus("finished");
         dbService.update("events", event);
+        changed = true;
       }
+    }
+
+    if (changed) {
+      sseService.broadcastRefresh("EVENTS");
     }
 
     List<EventResponseDTO> responseEvents =

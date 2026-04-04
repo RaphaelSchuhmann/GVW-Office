@@ -21,4 +21,19 @@ export function initSSE() {
            lastRefresh[type] = Date.now();
        }
     });
+
+    eventSource.onerror = (err) => {
+        if (err.status === 401 || err.status === 403) {
+            console.error("[SSE] Auth failed, tearing down...");
+            teardownEventSource();
+        }
+    }
+}
+
+export function teardownEventSource() {
+    if (eventSource) {
+        eventSource.close();
+
+        eventSource = null;
+    }
 }

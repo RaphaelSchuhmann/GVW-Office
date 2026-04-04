@@ -1,14 +1,13 @@
 package com.gvw.gvwbackend.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class SseService {
@@ -36,13 +35,14 @@ public class SseService {
   public void broadcastRefresh(String entityType) {
     List<SseEmitter> deadEmitters = new ArrayList<>();
 
-    emitters.forEach(emitter -> {
-      try {
-        emitter.send(SseEmitter.event().name("refresh").data(entityType));
-      } catch (Exception ex) {
-        deadEmitters.add(emitter);
-      }
-    });
+    emitters.forEach(
+        emitter -> {
+          try {
+            emitter.send(SseEmitter.event().name("refresh").data(entityType));
+          } catch (Exception ex) {
+            deadEmitters.add(emitter);
+          }
+        });
 
     emitters.removeAll(deadEmitters);
   }
@@ -53,12 +53,13 @@ public class SseService {
 
     log.debug("Sending heartbeat to {} active clients", emitters.size());
 
-    emitters.forEach(emitter -> {
-      try {
-        emitter.send(SseEmitter.event().comment("heartbeat"));
-      } catch (Exception ex) {
-        emitters.remove(emitter);
-      }
-    });
+    emitters.forEach(
+        emitter -> {
+          try {
+            emitter.send(SseEmitter.event().comment("heartbeat"));
+          } catch (Exception ex) {
+            emitters.remove(emitter);
+          }
+        });
   }
 }
