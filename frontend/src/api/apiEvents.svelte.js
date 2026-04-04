@@ -109,20 +109,21 @@ export async function apiDeleteEvent(id) {
  * Sends a PATCH request to `/events/update/status/{id}` endpoint with an Authorization header.
  *
  * @param {string} id - The id of the event to update
+ * @param {string} rev - The revision of the event to update
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
  * An object containing the raw fetch Response (`resp`) and the parsed
  * JSON response body (`body`). Returns `{ resp: null, body: null }`
  * if the request fails before a response is received.
  *
  * @example
- * const { resp } = await switchEventStatus(1);
+ * const { resp, body } = await switchEventStatus(1, 1);
  *
  * if (resp?.ok) {
- *   console.log("Event status updated");
+ *   console.log("Event status updated: ", body.rev);
  * }
  */
-export async function apiUpdateEventStatus(id) {
-    const resp = await httpPatch(`${apiUrl}/events/update/status/${id}`, {});
+export async function apiUpdateEventStatus(id, rev) {
+    const resp = await httpPatch(`${apiUrl}/events/update/status/${id}`, {rev: rev});
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -140,7 +141,7 @@ export async function apiUpdateEventStatus(id) {
  * if the request fails before a response is received.
  *
  * @example
- * const { resp } = await updateEvent({
+ * const { resp, body } = await updateEvent({
  *     id: 1,
  *     title: "Event",
  *     type: "type",
@@ -155,11 +156,12 @@ export async function apiUpdateEventStatus(id) {
  *         dayOfMonth: null,
  *         weekDay: null,
  *         ordinal: null
- *     }
+ *     },
+ *     rev: 1
  * });
  *
  * if (resp?.ok) {
- *   console.log("Event updated");
+ *   console.log("Event updated: ", body.rev);
  * }
  */
 export async function apiUpdateEvent(event) {
@@ -173,7 +175,8 @@ export async function apiUpdateEvent(event) {
         description: event.description,
         status: event.status,
         mode: event.mode,
-        recurrence: event.recurrence
+        recurrence: event.recurrence,
+        rev: event.rev
     });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);

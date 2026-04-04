@@ -14,8 +14,6 @@
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
-    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import Button from "../../components/Button.svelte";
     import Input from "../../components/Input.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
@@ -132,9 +130,7 @@
      * Assumes validation has already been handled externally.
      */
     async function updateEventData() {
-        const successful = await updateEvent($state.snapshot(draft));
-
-        if (successful) eventData = { ...draft };
+        await updateEvent($state.snapshot(draft));
 
         isEditing = false;
         draft = null;
@@ -157,13 +153,6 @@
     // MODAL REFERENCES
     // ==================
     /**
-     * Reference to the global settings modal.
-     * Used to programmatically open the application settings dialog.
-     * @type {import("../../components/SettingsModal.svelte").default}
-     */
-    let settingsModal = $state();
-
-    /**
      * Reference to the delete confirmation modal.
      * Used to initiate and confirm event deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
@@ -171,7 +160,6 @@
     let confirmDeleteEventModal = $state();
 </script>
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack isMobile={true}></ToastStack>
 
 <ConfirmDeleteModal expectedInput={`${eventData.title}`} id={eventData.id} isMobile={true}

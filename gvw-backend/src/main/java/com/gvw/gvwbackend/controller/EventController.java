@@ -2,9 +2,11 @@ package com.gvw.gvwbackend.controller;
 
 import com.gvw.gvwbackend.dto.request.AddEventRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateEventRequestDTO;
+import com.gvw.gvwbackend.dto.request.UpdateEventStatusRequestDTO;
 import com.gvw.gvwbackend.dto.response.EventsResponseDTO;
 import com.gvw.gvwbackend.service.EventService;
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -40,14 +42,17 @@ public class EventController {
   @PatchMapping("/update/status/{id}")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  public void updateEventStatus(@PathVariable String id) {
-    eventService.updateEventStatus(id);
+  public Map<String, Object> updateEventStatus(
+      @PathVariable String id, @RequestBody UpdateEventStatusRequestDTO request) {
+    String rev = eventService.updateEventStatus(id, request.rev());
+    return Map.of("rev", rev);
   }
 
   @PatchMapping("/update")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  public void updateEvent(@Valid @RequestBody UpdateEventRequestDTO request) {
-    eventService.updateEvent(request);
+  public Map<String, Object> updateEvent(@Valid @RequestBody UpdateEventRequestDTO request) {
+    String rev = eventService.updateEvent(request);
+    return Map.of("rev", rev);
   }
 }

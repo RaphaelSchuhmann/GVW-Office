@@ -30,18 +30,10 @@
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import Textarea from "../../components/Textarea.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
 
     // ================
     // MODAL REFERENCES
     // ================
-    /**
-     * Reference to the global settings modal.
-     * Used to programmatically open the application settings dialog.
-     * @type {import("../../components/SettingsModal.svelte").default}
-     */
-    let settingsModal = $state();
-
     /**
      * Reference to the "Add Event" modal.
      * Controls visibility and lifecycle of the member creation dialog.
@@ -150,16 +142,8 @@
     }
 
     let sidebarOpen = $state(false);
-
-    /**
-     * Opens the global settings modal.
-     */
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 </script>
 
-<SettingsModal bind:this={settingsModal} isMobile={true}></SettingsModal>
 <ToastStack isMobile={true}></ToastStack>
 
 <Modal bind:this={addEventModal} extraFunction={resetAddInputs} isMobile={true}
@@ -233,7 +217,7 @@
     </div>
 </Modal>
 
-<MobileSidebar onSettingsClick={settingsClick} currentPage="events" bind:isOpen={sidebarOpen} />
+<MobileSidebar currentPage="events" bind:isOpen={sidebarOpen} />
 
 <main class="flex h-screen overflow-hidden">
     <div class="flex flex-col w-full overflow-hidden p-7 min-h-0">
