@@ -28,13 +28,15 @@ public class LibraryService {
   private final DbService dbService;
   private final ObjectMapper mapper = new ObjectMapper();
   private static final Logger log = LoggerFactory.getLogger(LibraryService.class);
+  private final SseService sseService;
   private static final long MAX_FILE_SIZE = 8 * 1024 * 1024;
 
   @Value("${scores.directory:./api-data/scores}")
   private String scoresDir;
 
-  public LibraryService(DbService dbService) {
+  public LibraryService(DbService dbService, SseService sseService) {
     this.dbService = dbService;
+    this.sseService = sseService;
   }
 
   public ScoresResponseDTO getAllScores() {
@@ -88,6 +90,8 @@ public class LibraryService {
               .build();
 
       dbService.insert("library", score);
+
+      sseService.broadcastRefresh("SCORES");
     } catch (Exception e) {
       for (Score.File orphan : metaList) {
         deleteFile(orphan.getId() + "." + orphan.getExtension());
@@ -115,6 +119,8 @@ public class LibraryService {
     }
 
     dbService.delete("library", score.getId(), score.getRev());
+
+    sseService.broadcastRefresh("SCORES");
   }
 
   public void streamFilesAsZip(List<Score.File> files, OutputStream out) {
@@ -194,6 +200,8 @@ public class LibraryService {
       for (Score.File oldFile : filesToPhysicallyDelete) {
         deleteFile(oldFile.getId() + "." + oldFile.getExtension());
       }
+
+      sseService.broadcastRefresh("SCORES");
     } catch (Exception e) {
       log.error("Update failed. Rolling back new uploads.", e);
       for (Score.File newFile : newlyStoredFiles) {

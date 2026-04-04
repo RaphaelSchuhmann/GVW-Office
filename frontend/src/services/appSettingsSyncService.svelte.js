@@ -4,6 +4,9 @@ import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
 import { appSettings } from "../stores/appSettings.svelte.js";
+import { lastRefresh } from "../stores/sseStore.svelte.js";
+import { untrack } from "svelte";
+import { fetchAndSetRaw } from "./filterService.svelte.js";
 
 let isRunning = false;
 let intervalId;
@@ -11,22 +14,24 @@ let isFetching = false;
 
 /**
  * Starts the periodic synchronization of global application settings.
- * 
+ *
  * If the sync service is already running, this function is a no-op.
  * When started, it immediately fetches the current app settings and
  * then refreshes them at a fixed interval (every 40 seconds).
- * 
+ *
  * Intended to be called from a view lifecycle (e.g. onMount).
  *
  * @async
  * @returns {Promise<void>}
  */
 export async function startSyncService() {
-    if (isRunning) return;
+    $effect(() => {
+        const trigger = lastRefresh.SETTINGS;
 
-    isRunning = true;
-    await loadAppSettings(); // Immediate fetch when starting
-    intervalId = setInterval(loadAppSettings, 40000)
+        untrack(() => {
+            loadAppSettings().then();
+        });
+    });
 }
 
 /**
@@ -49,15 +54,15 @@ export async function loadAppSettings() {
     isFetching = true;
     try {
         const { resp, body } = await apiGetSettings();
-    
+
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
-    
+
         if (!resp.ok) {
             addToast({
                 title: "App Einstellungen nicht verfügbar",
                 subTitle: viewport.isMobile ? "" : "Beim Laden der globalen App Einstellungen ist ein unerwarteter Fehler aufgetreten.",
-                type: "error",
+                type: "error"
             });
             console.error("Unable to load app settings");
             return;
@@ -73,12 +78,12 @@ export async function loadAppSettings() {
 
 /**
  * Stops the periodic synchronization of global application settings.
- * 
+ *
  * Clears the active refresh interval and resets the internal running state.
  * If the sync service is not running, this function is a no-op.
- * 
+ *
  * Intended to be called from a view cleanup phase (e.g. onDestroy)
- * 
+ *
  * @returns {void}
  */
 export function stopSyncService() {

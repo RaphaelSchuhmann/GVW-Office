@@ -7,7 +7,6 @@ let isFetching = $state(false);
 let currentPageKey = $state("");
 let entry = $state(null);
 
-let fetchIntervalId = null;
 let cleanupEffect = null;
 
 /**
@@ -25,7 +24,6 @@ export async function init(pageKey) {
     if (currentPageKey === pageKey) return;
 
     // Reset periodic fetching
-    if (fetchIntervalId) clearInterval(fetchIntervalId);
     if (cleanupEffect) {
         cleanupEffect();
         cleanupEffect = null;
@@ -47,12 +45,9 @@ export async function init(pageKey) {
 
     // Initial fetch
     await fetchAndSetRaw();
-
-    fetchIntervalId = setInterval(() => {
-        fetchAndSetRaw();
-    }, 20000);
 }
 
+// TODO: Refactor:
 /**
  * Clears the active periodic fetch interval.
  *
@@ -60,8 +55,6 @@ export async function init(pageKey) {
  * @global
  */
 export function clearDebounce() {
-    clearInterval(fetchIntervalId);
-    fetchIntervalId = null;
     if (cleanupEffect) {
         cleanupEffect();
         cleanupEffect = null;
