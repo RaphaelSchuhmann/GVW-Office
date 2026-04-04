@@ -12,7 +12,6 @@
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import SearchBar from "../../components/SearchBar.svelte";
     import Filter from "../../components/Filter.svelte";
     import Button from "../../components/Button.svelte";
@@ -31,13 +30,6 @@
     // ==================
     // MODAL REFERENCES
     // ==================
-    /**
-     * Reference to the global settings modal.
-     * Used to programmatically open the application settings dialog.
-     * @type {import("../../components/SettingsModal.svelte").default}
-     */
-    let settingsModal = $state();
-
     /**
      * Reference to the category modal.
      * Used to programmatically open the category dialog.
@@ -244,18 +236,9 @@
      * Stores open state, position, and currently active member ID.
      */
     let menu = createContextMenu();
-
-    /**
-     * Opens the global settings modal.
-     */
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 </script>
 
 <svelte:window oncontextmenu={() => (menu.data.open = false)} />
-
-<SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 
 <CategoryModal bind:this={categoryModal} />
@@ -326,7 +309,7 @@
 </Modal>
 
 <main class="flex overflow-hidden">
-    <DesktopSidebar onSettingsClick={settingsClick} currentPage="library"></DesktopSidebar>
+    <DesktopSidebar currentPage="library"></DesktopSidebar>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Notenbibliothek" subTitle="Verwaltung des gesamten Notenmaterials"
                     showSlot={viewport.width > 1300}>

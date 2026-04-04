@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
+import com.gvw.gvwbackend.exception.ConflictException;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,7 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,23 +54,37 @@ public class DbServiceTest {
 
   @Test
   void testUpdateSuccess() {
-    Map<String, Object> response = Map.of("ok", true);
-    lenient()
-        .when(restTemplate.postForObject(anyString(), any(), eq(Map.class)))
-        .thenReturn(response);
+    Map<String, Object> couchResponse = Map.of("ok", true, "rev", "2-newrev");
+    ResponseEntity<Map> responseEntity = new ResponseEntity<>(couchResponse, HttpStatus.OK);
 
-    boolean result = dbService.update("test_db", Map.of("name", "newName"));
-    assertTrue(result);
+    lenient()
+        .when(
+            restTemplate.exchange(
+                anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Map.class)))
+        .thenReturn(responseEntity);
+
+    Map<String, Object> result = dbService.update("test_db", "test-id", Map.of("name", "newName"));
+
+    // 4. Assertions
+    assertNotNull(result);
+    assertEquals("2-newrev", result.get("rev"));
+    assertTrue((Boolean) result.get("ok"));
   }
 
   @Test
-  void testUpdateFailure() {
+  void testUpdateConflict() {
     lenient()
-        .when(restTemplate.postForObject(anyString(), any(), eq(Map.class)))
-        .thenReturn(Map.of("ok", false));
+        .when(
+            restTemplate.exchange(
+                anyString(), eq(HttpMethod.PUT), any(HttpEntity.class), eq(Map.class)))
+        .thenThrow(
+            HttpClientErrorException.create(HttpStatus.CONFLICT, "Conflict", null, null, null));
 
-    boolean result = dbService.update("test_db", Map.of("name", "John"));
-    assertFalse(result);
+    assertThrows(
+        ConflictException.class,
+        () -> {
+          dbService.update("test_db", "test-id", Map.of("name", "John"));
+        });
   }
 
   @Test

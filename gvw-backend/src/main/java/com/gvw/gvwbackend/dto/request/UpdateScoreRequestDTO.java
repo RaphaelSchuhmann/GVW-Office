@@ -13,4 +13,5 @@ public record UpdateScoreRequestDTO(
     @NotBlank String artist,
     @NotBlank String type,
     @NotEmpty List<String> voices,
-    @NotNull @Positive Integer voiceCount) {}
+    @NotNull @Positive Integer voiceCount,
+    @NotBlank String rev) {}

@@ -22,9 +22,9 @@
     });
 
     $effect(() => {
-        if (!ready) return;
+        const _trigger = lastRefresh.SCORES;
 
-        const trigger = lastRefresh.SCORES;
+        if (!ready) return;
 
         untrack(() => {
             fetchAndSetRaw();

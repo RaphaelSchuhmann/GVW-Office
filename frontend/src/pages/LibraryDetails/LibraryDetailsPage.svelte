@@ -37,11 +37,13 @@
 </script>
 
 {#if scoreData}
-    {#if viewport.width < 800}
-        <LibraryDetailsMobile {scoreData} bind:isEditing />
-    {:else}
-        <LibraryDetailsDesktop {scoreData} bind:isEditing />
-    {/if}
+    {#key scoreData.rev}
+        {#if viewport.width < 800}
+            <LibraryDetailsMobile {scoreData} bind:isEditing />
+        {:else}
+            <LibraryDetailsDesktop {scoreData} bind:isEditing />
+        {/if}
+    {/key}
 {:else}
     <p>Lade...</p>
 {/if}

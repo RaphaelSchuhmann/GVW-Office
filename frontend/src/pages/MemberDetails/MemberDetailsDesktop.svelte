@@ -88,7 +88,6 @@
      * Persists the current draft to the backend.
      *
      * - Sends a snapshot of the draft to the update API
-     * - Updates local `memberData` with the saved draft
      * - Exits edit mode and clears the draft
      *
      * Assumes validation has already been handled externally.

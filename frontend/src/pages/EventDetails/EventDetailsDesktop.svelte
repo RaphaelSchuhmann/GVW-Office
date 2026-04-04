@@ -125,15 +125,12 @@
      * Persists the current draft to the backend.
      *
      * - Sends a snapshot of the draft to the update API
-     * - Updates local `eventData` with the saved draft
      * - Exits edit mode and clears the draft
      *
      * Assumes validation has already been handled externally.
      */
     async function updateEventData() {
-        const successful = await updateEvent($state.snapshot(draft));
-
-        if (successful) eventData = { ...draft };
+        await updateEvent($state.snapshot(draft));
 
         isEditing = false;
         draft = null;

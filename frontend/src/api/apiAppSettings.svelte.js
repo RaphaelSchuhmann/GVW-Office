@@ -35,6 +35,7 @@ export async function apiGetSettings() {
  * Sends a PATCH request to `/settings/update/max-members` endpoint with and Authorization header.
  * 
  * @param {number} maxMembers - The maximum amount of members per voice.
+ * @param {string} rev - The revision of the max members state.
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
  * An object containing the raw fetch Response (`resp`) and the parsed
  * JSON response body (`body`). Returns `{ resp: null, body: null }`
@@ -43,13 +44,13 @@ export async function apiGetSettings() {
  * The response body may include an ok flag which can be discarded.
  * 
  * @example
- * const { resp } = await updateMaxMembers(10);
+ * const { resp, body } = await updateMaxMembers(10);
  * if (resp?.ok) {
- *   console.log("Max members updated");
+ *   console.log("Max members updated: ", body.rev);
  * }
  */
-export async function apiUpdateMaxMembers(maxMembers) {
-    const resp = await httpPatch(`${apiUrl}/settings/update/max-members`, { maxMembers: maxMembers });
+export async function apiUpdateMaxMembers(maxMembers, rev) {
+    const resp = await httpPatch(`${apiUrl}/settings/update/max-members`, { maxMembers: maxMembers, rev: rev });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };

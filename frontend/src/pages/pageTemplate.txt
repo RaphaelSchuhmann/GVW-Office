@@ -1,17 +1,8 @@
 <script>
     import ToastStack from "../components/ToastStack.svelte";
     import PageHeader from "../components/PageHeader.svelte";
-    import SettingsModal from "../components/SettingsModal.svelte";
-
-    /** @type {import("../components/SettingsModal.svelte").default} */
-    let settingsModal;
-
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 </script>
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 
 <!--Mobile Sidebar Here-->

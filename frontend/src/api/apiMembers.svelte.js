@@ -94,21 +94,22 @@ export async function apiDeleteMember(id) {
  *
  * Sends a PATCH request to `/members/update/status/{id}` endpoint with an Authorization header.
  *
- * @param {number} id - The id of the member to update
+ * @param {string} id - The id of the member to update
+ * @param {string} rev - The revision of the member to update
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
  * An object containing the raw fetch Response (`resp`) and the parsed
  * JSON response body (`body`). Returns `{ resp: null, body: null }`
  * if the request fails before a response is received.
  *
  * @example
- * const { resp } = await switchMemberStatus(1);
+ * const { resp, body } = await switchMemberStatus(1);
  *
  * if (resp?.ok) {
- *   console.log("Member status updated");
+ *   console.log("Member status updated: ", body.rev);
  * }
  */
-export async function apiUpdateMemberStatus(id) {
-    const resp = await httpPatch(`${apiUrl}/members/update/status/${id}`, {});
+export async function apiUpdateMemberStatus(id, rev) {
+    const resp = await httpPatch(`${apiUrl}/members/update/status/${id}`, {rev: rev});
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -151,8 +152,9 @@ export async function apiResetMembersPassword(id) {
  * if the request fails before a response is received.
  *
  * @example
- * const { resp } = await updateMember({
+ * const { resp, body } = await updateMember({
  *     id: 1,
+ *     rev: 1,
  *     name: "John",
  *     surname: "Doe",
  *     email: "john.doe@example.com",
@@ -166,11 +168,24 @@ export async function apiResetMembersPassword(id) {
  * });
  *
  * if (resp?.ok) {
- *   console.log("Member updated");
+ *   console.log("Member updated: " + body.rev_member + " " + body.rev_user);
  * }
  */
 export async function apiUpdateMember(member) {
-    const resp = await httpPatch(`${apiUrl}/members/update`, member);
+    const resp = await httpPatch(`${apiUrl}/members/update`, {
+        id: member.id,
+        name: member.name,
+        surname: member.surname,
+        email: member.email,
+        phone: member.phone,
+        address: member.address,
+        voice: member.voice,
+        status: member.status,
+        role: member.role,
+        birthdate: member.birthdate,
+        joined: member.joined,
+        rev: member.rev
+    });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };

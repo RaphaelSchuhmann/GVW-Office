@@ -4,6 +4,7 @@ import java.util.List;
 
 public record ScoreResponseDTO(
     String id,
+    String rev,
     String scoreId,
     String title,
     String artist,

@@ -42,10 +42,11 @@ public class UserService {
         user.getRole().getValue(),
         user.getName(),
         user.getAddress(),
-        user.getPhone());
+        user.getPhone(),
+        user.getRev());
   }
 
-  public void updateUser(String userId, UpdateUserRequestDTO requestDTO) {
+  public List<String> updateUser(String userId, UpdateUserRequestDTO requestDTO) {
     if (userId == null || userId.isEmpty()) {
       throw new InvalidCredentialsException("Unauthorized");
     }
@@ -67,16 +68,26 @@ public class UserService {
     user.setPhone(requestDTO.phone());
     user.setAddress(requestDTO.address());
 
-    dbService.update("users", user);
+    Map<String, Object> respUser = dbService.update("users", user.getId(), user);
+
+    if (respUser == null || !respUser.containsKey("rev")) {
+      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    }
 
     member.setEmail(requestDTO.email());
     member.setPhone(requestDTO.phone());
     member.setAddress(requestDTO.address());
 
-    dbService.update("members", member);
+    Map<String, Object> respMember = dbService.update("members", member.getId(), member);
+
+    if (respMember == null || !respMember.containsKey("rev")) {
+      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    }
+
+    return List.of((String) respMember.get("rev"), (String) respUser.get("rev"));
   }
 
-  public void resetPassword(String memberId) {
+  public String resetPassword(String memberId) {
     if (memberId == null || memberId.isEmpty()) {
       throw new BadRequestException("InvalidData");
     }
@@ -87,13 +98,19 @@ public class UserService {
 
     user.setPassword(passwordEncoder.encode(temporaryPassword));
     user.setChangePassword(true);
-    dbService.update("users", user);
+    Map<String, Object> resp = dbService.update("users", user.getId(), user);
 
     mailService.sendMail(
         user.getEmail(),
         "GVW-Office: Passwort zurückgesetzt",
         "resetPassword",
         Map.of("tempPassword", temporaryPassword));
+
+    if (resp != null && resp.containsKey("rev")) {
+      return (String) resp.get("rev");
+    }
+
+    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
   }
 
   private User getUserByMemberId(String memberId) {

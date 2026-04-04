@@ -5,7 +5,6 @@ import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
 import { eventsStore } from "../stores/events.svelte";
 import { getLastDayOfCurrentMonth, parseDMYToDate } from "./utils";
-import { membersStore } from "../stores/members.svelte.js";
 
 export const typeMap = {
     "all": "Alle Typen",
@@ -76,6 +75,7 @@ export function getEventOccurrence(eventId) {
     const event = eventsStore.raw.find(item => item.id === eventId);
 
     if (!event) return "Unbekannt";
+    if (event.mode === "single") return event.date;
     if (event.mode === "weekly") return getWeeklyOccurrence(event);
     if (event.mode === "monthly" && event.recurrence) return getMonthlyOccurrence(event);
 
@@ -426,7 +426,7 @@ function handleUpdateError(errorType, updateType) {
         },
         CONFLICT: {
             title: "Speicher-Konflikt",
-            sub: "Jemand anderes hat diese Veranstaltung bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen."
+            subTitle: "Jemand anderes hat diese Veranstaltung bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen."
         },
         DEFAULT: {
             title: "Fehler beim Aktualisieren",

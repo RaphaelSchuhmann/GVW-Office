@@ -55,6 +55,7 @@ public class LibraryService {
                 m ->
                     new ScoreResponseDTO(
                         m.getId(),
+                        m.getRev(),
                         m.getScoreId(),
                         m.getTitle(),
                         m.getArtist(),
@@ -155,7 +156,7 @@ public class LibraryService {
     }
   }
 
-  public void updateScore(
+  public String updateScore(
       UpdateScoreRequestDTO request,
       List<MultipartFile> newFiles,
       List<String> requestRemovedFiles) {
@@ -187,6 +188,7 @@ public class LibraryService {
         updatedFileList.addAll(newlyStoredFiles);
       }
 
+      score.setRev(request.rev());
       score.setFiles(updatedFileList);
       score.setScoreId(request.scoreId());
       score.setTitle(request.title());
@@ -195,13 +197,19 @@ public class LibraryService {
       score.setVoices(request.voices());
       score.setVoiceCount(request.voiceCount());
 
-      dbService.update("library", score);
+      Map<String, Object> resp = dbService.update("library", score.getId(), score);
+
+      if (resp == null || !resp.containsKey("rev")) {
+        throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+      }
 
       for (Score.File oldFile : filesToPhysicallyDelete) {
         deleteFile(oldFile.getId() + "." + oldFile.getExtension());
       }
 
       sseService.broadcastRefresh("SCORES");
+
+      return (String) resp.get("rev");
     } catch (Exception e) {
       log.error("Update failed. Rolling back new uploads.", e);
       for (Score.File newFile : newlyStoredFiles) {

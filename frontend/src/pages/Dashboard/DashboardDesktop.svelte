@@ -9,13 +9,9 @@
     import Card from "../../components/Card.svelte";
     import ComingEvent from "../../components/ComingEvent.svelte";
     import VoiceDistribution from "../../components/VoiceDistribution.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import Modal from "../../components/Modal.svelte";
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
-
-    /** @type {import("../../components/SettingsModal.svelte").default} */
-    let settingsModal = $state();
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal = $state();
@@ -97,13 +93,8 @@
 
         voiceDistributionSettingsModal.hideModal();
     }
-
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 </script>
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
 <Modal bind:this={voiceDistributionSettingsModal} title="Stimmenverteilung Einstellungen"
        subTitle="Einstellungen für die Stimmverteilung"
        extraFunctionOnClose={false} extraFunction={() => maxMembers = String(appSettings.maxMembers)}>
@@ -115,7 +106,7 @@
 </Modal>
 <ToastStack></ToastStack>
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar onSettingsClick={settingsClick} currentPage="dashboard"></DesktopSidebar>
+    <DesktopSidebar currentPage="dashboard"></DesktopSidebar>
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full flex-1 overflow-hidden p-10 min-h-0">
             <PageHeader title="Dashboard" subTitle="Willkommen in GVW Office - Übersicht Gesangverein Weppersdorf"

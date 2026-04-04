@@ -2,6 +2,7 @@ package com.gvw.gvwbackend.service;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
 
+import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.DatabaseConnectionException;
 import com.gvw.gvwbackend.exception.DatabaseMappingException;
 import java.net.ConnectException;
@@ -15,10 +16,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -65,8 +68,24 @@ public class DbService {
     return resp != null && Boolean.TRUE.equals(resp.get("ok"));
   }
 
-  public <T> boolean update(String db, T doc) {
-    return insert(db, doc);
+  public <T> Map<String, Object> update(String db, String id, T doc) {
+    String url = String.format("%s/%s/%s", baseUrl, db, id);
+
+    HttpEntity<T> requestEntity = new HttpEntity<>(doc);
+
+    return safeExecute(
+        () -> {
+          try {
+            ResponseEntity<Map> response =
+                restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Map.class);
+
+            return response.getBody();
+
+          } catch (HttpClientErrorException.Conflict e) {
+            throw new ConflictException("RevisionMismatch");
+          }
+        },
+        db);
   }
 
   public boolean delete(String db, String id, String rev) {
@@ -198,6 +217,8 @@ public class DbService {
   private <T> T safeExecute(Supplier<T> action, String db) {
     try {
       return action.get();
+    } catch (ConflictException e) {
+      throw e;
     } catch (ResourceAccessException e) {
       if (isConnectionRefused(e)) {
         log.error("DB connection refused {} {}", kv("db", db), kv("error", "ECONNREFUSED"));

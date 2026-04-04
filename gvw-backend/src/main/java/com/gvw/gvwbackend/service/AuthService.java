@@ -55,21 +55,40 @@ public class AuthService {
       throw new TooManyRequestsException("AccountLocked", user.getLockUntil().toEpochMilli());
     }
 
+    String rev;
+
     if (!passwordEncoder.matches(requestDTO.password(), user.getPassword())) {
       int failedAttempts = Optional.ofNullable(user.getFailedLoginAttempts()).orElse(0);
       if (failedAttempts > 4) {
         user.setLockUntil(Instant.now().plus(Duration.ofMinutes(15)));
-        dbService.update("users", user);
+        Map<String, Object> resp = dbService.update("users", user.getId(), user);
+
+        if (resp != null && resp.containsKey("rev")) {
+          rev = (String) resp.get("rev");
+        }
+
         throw new TooManyRequestsException("AccountLocked", user.getLockUntil().toEpochMilli());
       } else {
         user.setFailedLoginAttempts(failedAttempts + 1);
-        dbService.update("users", user);
+
+        Map<String, Object> resp = dbService.update("users", user.getId(), user);
+
+        if (resp != null && resp.containsKey("rev")) {
+          rev = (String) resp.get("rev");
+        }
+
         throw new InvalidCredentialsException("InvalidPassword");
       }
     } else {
       user.setFailedLoginAttempts(0);
       user.setLockUntil(null);
-      dbService.update("users", user);
+      Map<String, Object> resp = dbService.update("users", user.getId(), user);
+
+      if (resp != null && resp.containsKey("rev")) {
+        rev = (String) resp.get("rev");
+      } else {
+        throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+      }
     }
 
     String token =
@@ -78,10 +97,11 @@ public class AuthService {
     return new LoginResponseDTO(
         token,
         Boolean.TRUE.equals(user.getChangePassword()),
-        Boolean.TRUE.equals(user.getFirstLogin()));
+        Boolean.TRUE.equals(user.getFirstLogin()),
+        rev);
   }
 
-  public void changePassword(ChangePwRequestDTO requestDTO) {
+  public String changePassword(ChangePwRequestDTO requestDTO) {
     Map<String, Object> query = Map.of("selector", Map.of("email", requestDTO.email()), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
@@ -104,7 +124,13 @@ public class AuthService {
     user.setChangePassword(false);
     user.setFirstLogin(false);
 
-    dbService.update("users", user);
+    Map<String, Object> resp = dbService.update("users", user.getId(), user);
+
+    if (resp != null && resp.containsKey("rev")) {
+      return (String) resp.get("rev");
+    }
+
+    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
   }
 
   public AutoLoginResponseDTO autoLogin(String id) {

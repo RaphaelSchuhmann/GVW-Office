@@ -20,13 +20,36 @@ import { getCategoryCount } from "./libraryService.svelte";
  * @returns {Promise<void>}
  */
 export async function tryUpdateMaxMembers(value) {
-    const { resp } = await apiUpdateMaxMembers(value);
+    const { resp, body } = await apiUpdateMaxMembers(value, appSettings.rev);
 
-    // In this case the global api error should handle all possible api errors
     const normalizedResponse = normalizeResponse(resp);
     if (handleGlobalApiError(normalizedResponse)) return;
 
-    Object.assign(appSettings, { maxMembers: value });
+    if (!normalizedResponse.ok) {
+        if (normalizedResponse.errorType === "BADREQUEST") {
+            addToast({
+                title: "Ungültige Eingabe",
+                subTitle: viewport.isMobile ? "" : "Die von Ihnen angegebenen Daten sind nicht gültig.",
+                type: "error"
+            });
+        } else if (normalizedResponse.errorType === "CONFLICT") {
+            addToast({
+                title: "Speicher-Konflikt",
+                subTitle: viewport.isMobile ? "" : "Jemand anderes hat diese Veranstaltung bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen.",
+                type: "error"
+            });
+        } else {
+            addToast({
+                title: "Fehler beim Aktualisieren",
+                subTitle: viewport.isMobile ? "" : "Beim Aktualisieren der App Einstellungen ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+                type: "error"
+            });
+        }
+
+        return;
+    }
+
+    Object.assign(appSettings, { maxMembers: value, rev: body.rev });
 
     addToast({
         title: "Erfolgreich gespeichert",

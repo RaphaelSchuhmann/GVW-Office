@@ -6,7 +6,6 @@
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import Button from "../../components/Button.svelte";
     import Input from "../../components/Input.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
@@ -159,7 +158,6 @@
      * Persists the current draft to the backend.
      *
      * - Sends a snapshot of the draft to the update API
-     * - Updates local `scoreData` with the saved draft
      * - Exits edit mode and clears the draft
      *
      * Assumes validation has already been handled externally.
@@ -171,9 +169,7 @@
             voiceCount: draft.voices.length
         };
 
-        const successful = await updateScore(score);
-
-        if (successful) scoreData = { ...draft };
+        await updateScore(score);
 
         isEditing = false;
         draft = null;
@@ -182,13 +178,6 @@
     // ==================
     // MODAL REFERENCES
     // ==================
-    /**
-     * Reference to the global settings modal.
-     * Used to programmatically open the application settings dialog.
-     * @type {import("../../components/SettingsModal.svelte").default}
-     */
-    let settingsModal = $state();
-
     /**
      * Reference to the delete confirmation modal.
      * Used to initiate and confirm score deletion flow.
@@ -213,7 +202,6 @@
     }
 </script>
 
-<SettingsModal bind:this={settingsModal} isMobile={true}></SettingsModal>
 <ToastStack isMobile={true}></ToastStack>
 
 <ConfirmDeleteModal expectedInput={`${scoreData.title}`} id={scoreData.id}

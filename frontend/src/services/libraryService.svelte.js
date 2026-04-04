@@ -366,10 +366,10 @@ export async function addScore(score) {
  * @param {(File|string)[]} score.files - Mixed array of new files (File) and existing file names (string)
  * @param {string[]} score.originalFiles - Original file names before modification
  *
- * @returns {Promise<boolean>} `true` if update succeeded, otherwise `false`
+ * @returns {Promise<void>}
  */
 export async function updateScore(score) {
-    if (isFetching.updateScore) return false;
+    if (isFetching.updateScore) return;
     isFetching.updateScore = true;
 
     try {
@@ -382,14 +382,23 @@ export async function updateScore(score) {
         formData.append("removedFiles", removedFiles);
         newFiles.forEach(f => formData.append("files", f, f.name));
 
-        const { resp } = await apiUpdateScore(formData);
+        const { resp, body } = await apiUpdateScore(formData);
         const normalizedResponse = normalizeResponse(resp);
 
-        if (handleGlobalApiError(normalizedResponse)) return false;
+        if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            showScoreErrorToast(normalizedResponse.errorType, "UPDATE");
-            return false;
+            showScoreErrorToast(normalizedResponse.errorType, "UPDATE", body.message);
+            return;
+        }
+
+        const index = libraryStore.raw.findIndex(s => s.id === score.id);
+        if (index !== -1) {
+            libraryStore.raw[index] = {
+                ...libraryStore.raw[index],
+                ...score,
+                rev: body.rev
+            };
         }
 
         addToast({
@@ -397,8 +406,6 @@ export async function updateScore(score) {
             subTitle: "Ihre Änderungen wurden erfolgreich gespeichert.",
             type: "success"
         });
-
-        return true;
     } finally {
         isFetching.updateScore = false;
     }
@@ -418,6 +425,10 @@ export async function updateScore(score) {
  */
 function prepareScoreFormData(score) {
     const formData = new FormData();
+    let rev = null;
+
+    if (score.id) rev = libraryStore.raw.find(s => s.id === score.id).rev;
+
     const scoreData = {
         id: score.id, // Will be undefined for new scores, which is fine
         scoreId: score.scoreId,
@@ -426,6 +437,7 @@ function prepareScoreFormData(score) {
         type: score.type,
         voices: score.voices,
         voiceCount: score.voiceCount,
+        rev: rev
     };
 
     formData.append("scoreData", new Blob([JSON.stringify(scoreData)], {
@@ -449,12 +461,18 @@ function prepareScoreFormData(score) {
  *
  * @param {string} errorType - Error identifier from API
  * @param {"ADD"|"UPDATE"} context - Operation context
+ * @param {string} details - Error details
  *
  * @returns {void}
  */
-function showScoreErrorToast(errorType, context) {
+function showScoreErrorToast(errorType, context, details) {
     const configs = {
-        CONFLICT: { title: "Eintrag bereits vorhanden", sub: "Ein Eintrag mit diesem Titel und Künstler existiert bereits." },
+        CONFLICT: {
+            title: details === "RevisionMismatch" ? "Speicher-Konflikt" : "Eintrag bereits vorhanden",
+            sub: details === "RevisionMismatch"
+                ? "Jemand anderes hat diese Veranstaltung bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen."
+                : "Ein Eintrag mit diesem Titel und Künstler existiert bereits."
+        },
         BADREQUEST: {
             title: context === "ADD" ? "Ungültige Daten" : "Ungültige Eingabe",
             sub: "Die übergebenen Daten sind ungültig. Bitte prüfen Sie Ihre Eingaben."
