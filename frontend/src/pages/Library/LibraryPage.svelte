@@ -9,16 +9,21 @@
     import { lastRefresh } from "../../stores/sseStore.svelte.js";
     import { untrack } from "svelte";
 
+    let ready = false;
+
     $effect(() => {
         if (!auth.token) return;
 
         (async () => {
             await ensureUserData();
             await init("library");
+            ready = true;
         })();
     });
 
     $effect(() => {
+        if (!ready) return;
+
         const trigger = lastRefresh.SCORES;
 
         untrack(() => {

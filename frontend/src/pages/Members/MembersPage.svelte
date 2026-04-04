@@ -11,6 +11,8 @@
     import { lastRefresh } from "../../stores/sseStore.svelte.js";
     import { untrack } from "svelte";
 
+    let ready = false;
+
     $effect(() => {
         if (!user.loaded) return;
 
@@ -24,10 +26,13 @@
         (async () => {
             await ensureUserData();
             await init("members");
+            ready = true;
         })();
     });
 
     $effect(() => {
+        if (!ready) return;
+
         const trigger = lastRefresh.MEMBERS;
 
         untrack(() => {

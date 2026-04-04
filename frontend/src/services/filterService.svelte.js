@@ -16,9 +16,8 @@ let cleanupEffect = null;
  * - Prevents re-initialization if the same page is already active
  * - Clears any active periodic fetch interval
  * - Performs an initial data fetch
- * - Starts periodic background fetching (every 20 seconds)
  *
- * @param pageKey Unique identifier used to resolve the page entry from the filter registry
+ * @param {string} pageKey Unique identifier used to resolve the page entry from the filter registry
  */
 export async function init(pageKey) {
     if (currentPageKey === pageKey) return;
@@ -44,17 +43,25 @@ export async function init(pageKey) {
     });
 
     // Initial fetch
+    // console.log("Initial fetch for page: ", pageKey);
     await fetchAndSetRaw();
 }
 
-// TODO: Refactor:
 /**
- * Clears the active periodic fetch interval.
+ * Tears down the current page context and reactive bindings.
  *
- * @function clearDebounce
- * @global
+ * Responsibilities:
+ * - Disposes the active `$effect.root` to stop reactive filter processing
+ * - Clears the current page key
+ * - Resets the active registry entry
+ *
+ * This should be called when leaving a page to prevent stale
+ * subscriptions and unintended reactivity.
+ *
+ * @function teardownPage
+ * @returns {void}
  */
-export function clearDebounce() {
+export function resetPageState() {
     if (cleanupEffect) {
         cleanupEffect();
         cleanupEffect = null;
@@ -116,6 +123,8 @@ export function processFilters() {
 export async function fetchAndSetRaw() {
     if (isFetching || !entry) return;
     isFetching = true;
+
+    // console.log("Fetching for entry: ", entry);
 
     try {
         const { resp, body } = await entry.fetch();
