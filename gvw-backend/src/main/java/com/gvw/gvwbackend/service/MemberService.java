@@ -60,6 +60,7 @@ public class MemberService {
                 m ->
                     new MemberResponseDTO(
                         m.getId(),
+                        m.getRev(),
                         m.getName(),
                         m.getSurname(),
                         m.getEmail(),
@@ -147,31 +148,49 @@ public class MemberService {
     sseService.broadcastRefresh("MEMBERS");
   }
 
-  public void updateMember(UpdateMemberRequestDTO request) {
+  public List<String> updateMember(UpdateMemberRequestDTO request) {
     Member member = getMemberById(request.id());
     User user = getUserByMemberId(request.id());
 
     memberMapper.updateMemberFromDto(request, member);
     memberMapper.updateUserFromDto(request, user);
 
-    dbService.update("members", member);
-    dbService.update("users", user);
+    member.setRev(request.rev());
+
+    Map<String, Object> memberResult = dbService.update("members", member.getId(), member);
+    Map<String, Object> userResult = dbService.update("users", user.getId(), user);
 
     sseService.broadcastRefresh("MEMBERS");
+
+    if (memberResult != null
+        && memberResult.containsKey("rev")
+        && userResult != null
+        && userResult.containsKey("rev")) {
+      return List.of((String) memberResult.get("rev"), (String) userResult.get("rev"));
+    }
+
+    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
   }
 
-  public void updateMemberStatus(String id) {
+  public String updateMemberStatus(String id, String _rev) {
     if (id == null || id.isEmpty()) {
       throw new BadRequestException("InvalidData");
     }
 
     Member member = getMemberById(id);
 
+    member.setRev(_rev);
     member.setStatus("active".equals(member.getStatus()) ? "inactive" : "active");
 
-    dbService.update("members", member);
+    Map<String, Object> memberResult = dbService.update("members", member.getId(), member);
 
     sseService.broadcastRefresh("MEMBERS");
+
+    if (memberResult != null && memberResult.containsKey("rev")) {
+      return (String) memberResult.get("rev");
+    }
+
+    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
   }
 
   private boolean emailExists(String email) {

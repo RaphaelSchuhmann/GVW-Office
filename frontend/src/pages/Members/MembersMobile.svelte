@@ -8,7 +8,6 @@
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
     import Card from "../../components/Card.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import Button from "../../components/Button.svelte";
     import SearchBar from "../../components/SearchBar.svelte";
     import Chip from "../../components/Chip.svelte";
@@ -23,13 +22,6 @@
     // ==================
     // MODAL REFERENCES
     // ==================
-    /**
-     * Reference to the global settings modal.
-     * Used to programmatically open the application settings dialog.
-     * @type {import("../../components/SettingsModal.svelte").default}
-     */
-    let settingsModal = $state();
-
     /**
      * Reference to the "Add Member" modal.
      * Controls visibility and lifecycle of the member creation dialog.
@@ -137,16 +129,8 @@
     }
 
     let sidebarOpen = $state(false);
-
-    /**
-     * Opens the global settings modal.
-     */
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 </script>
 
-<SettingsModal bind:this={settingsModal} isMobile={true} />
 <ToastStack isMobile={true} />
 
 <Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
@@ -186,7 +170,7 @@
     </div>
 </Modal>
 
-<MobileSidebar onSettingsClick={settingsClick} currentPage="members" bind:isOpen={sidebarOpen} />
+<MobileSidebar currentPage="members" bind:isOpen={sidebarOpen} />
 
 <main class="flex overflow-hidden">
     <div class="flex flex-col flex-1 min-h-0 w-full p-7 overflow-y-auto overflow-x-hidden">

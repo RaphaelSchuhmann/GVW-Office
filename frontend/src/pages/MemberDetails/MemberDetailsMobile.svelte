@@ -95,8 +95,6 @@
     async function updateMemberData() {
         await updateMember($state.snapshot(draft));
 
-        memberData = { ...draft };
-
         isEditing = false;
         draft = null;
     }

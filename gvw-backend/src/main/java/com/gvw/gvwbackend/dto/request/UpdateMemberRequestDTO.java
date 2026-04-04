@@ -14,4 +14,5 @@ public record UpdateMemberRequestDTO(
     @NotBlank String status,
     @NotBlank String role,
     @NotBlank String birthdate,
-    @NotBlank String joined) {}
+    @NotBlank String joined,
+    @NotBlank String rev) {}

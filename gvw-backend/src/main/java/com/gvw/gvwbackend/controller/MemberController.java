@@ -2,9 +2,12 @@ package com.gvw.gvwbackend.controller;
 
 import com.gvw.gvwbackend.dto.request.AddMemberRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateMemberRequestDTO;
+import com.gvw.gvwbackend.dto.request.UpdateMemberStatusRequestDTO;
 import com.gvw.gvwbackend.dto.response.MembersResponseDTO;
 import com.gvw.gvwbackend.service.MemberService;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -41,14 +44,17 @@ public class MemberController {
   @PatchMapping("/update")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  public void updateMember(@Valid @RequestBody UpdateMemberRequestDTO requestDTO) {
-    memberService.updateMember(requestDTO);
+  public Map<String, Object> updateMember(@Valid @RequestBody UpdateMemberRequestDTO requestDTO) {
+    List<String> revisions = memberService.updateMember(requestDTO);
+    return Map.of("rev_member", revisions.get(0), "rev_user", revisions.get(1));
   }
 
   @PatchMapping("/update/status/{id}")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  public void updateMemberStatus(@PathVariable String id) {
-    memberService.updateMemberStatus(id);
+  public Map<String, Object> updateMemberStatus(
+      @PathVariable String id, @RequestBody UpdateMemberStatusRequestDTO request) {
+    String rev = memberService.updateMemberStatus(id, request.rev());
+    return Map.of("rev", rev);
   }
 }

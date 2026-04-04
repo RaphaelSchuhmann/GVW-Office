@@ -31,9 +31,9 @@
     });
 
     $effect(() => {
-        if (!ready) return;
+        const _trigger = lastRefresh.MEMBERS;
 
-        const trigger = lastRefresh.MEMBERS;
+        if (!ready) return;
 
         untrack(() => {
             fetchAndSetRaw();
