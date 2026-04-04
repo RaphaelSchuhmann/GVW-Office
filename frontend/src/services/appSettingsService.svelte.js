@@ -26,26 +26,7 @@ export async function tryUpdateMaxMembers(value) {
     if (handleGlobalApiError(normalizedResponse)) return;
 
     if (!normalizedResponse.ok) {
-        if (normalizedResponse.errorType === "BADREQUEST") {
-            addToast({
-                title: "Ungültige Eingabe",
-                subTitle: viewport.isMobile ? "" : "Die von Ihnen angegebenen Daten sind nicht gültig.",
-                type: "error"
-            });
-        } else if (normalizedResponse.errorType === "CONFLICT") {
-            addToast({
-                title: "Speicher-Konflikt",
-                subTitle: viewport.isMobile ? "" : "Jemand anderes hat diese Veranstaltung bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen.",
-                type: "error"
-            });
-        } else {
-            addToast({
-                title: "Fehler beim Aktualisieren",
-                subTitle: viewport.isMobile ? "" : "Beim Aktualisieren der App Einstellungen ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-                type: "error"
-            });
-        }
-
+        handleUpdateErrors(normalizedResponse.errorType);
         return;
     }
 
@@ -57,6 +38,44 @@ export async function tryUpdateMaxMembers(value) {
             ? ""
             : "Die maximale Anzahl an Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert.",
         type: "success"
+    });
+}
+
+/**
+ * Maps API error types to user-facing toast messages for event updates.
+ *
+ * Supported error types:
+ * - BADREQUEST -> malformed request
+ * - CONFLICT -> revision conflict
+ * - DEFAULT -> fallback for unknown errors
+ *
+ * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
+ *
+ * @param {string} errorType - Error identifier returned from API
+ * @returns {void}
+ */
+function handleUpdateErrors(errorType) {
+    const errorConfigs = {
+        BADREQUEST: {
+            title: "Ungültige Eingabe",
+            subTitle: "Die von Ihnen angegebenen Daten sind nicht gültig."
+        },
+        CONFLICT: {
+            title: "Speicher-Konflikt",
+            subTitle: "Jemand anderes hat diese Veranstaltung bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen.",
+        },
+        DEFAULT: {
+            title: "Fehler beim Aktualisieren",
+            subTitle: "Beim Aktualisieren der App Einstellungen ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
+        }
+    };
+
+    const config = errorConfigs[errorType] || errorConfigs.DEFAULT;
+
+    addToast({
+        title: config.title,
+        subTitle: viewport.isMobile ? "" : config.subTitle,
+        type: "error"
     });
 }
 
