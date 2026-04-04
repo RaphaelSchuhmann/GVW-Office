@@ -40,6 +40,7 @@ public class SseService {
           try {
             emitter.send(SseEmitter.event().name("refresh").data(entityType));
           } catch (Exception ex) {
+            log.debug("Failed to send refresh event to emitter: {}", ex.getMessage());
             deadEmitters.add(emitter);
           }
         });
@@ -50,6 +51,7 @@ public class SseService {
   @Scheduled(fixedRate = 25000)
   public void sendHeartbeat() {
     if (emitters.isEmpty()) return;
+    List<SseEmitter> deadEmitters = new ArrayList<>();
 
     log.debug("Sending heartbeat to {} active clients", emitters.size());
 
@@ -58,8 +60,10 @@ public class SseService {
           try {
             emitter.send(SseEmitter.event().comment("heartbeat"));
           } catch (Exception ex) {
-            emitters.remove(emitter);
+            deadEmitters.add(emitter);
           }
         });
+
+    emitters.removeAll(deadEmitters);
   }
 }
