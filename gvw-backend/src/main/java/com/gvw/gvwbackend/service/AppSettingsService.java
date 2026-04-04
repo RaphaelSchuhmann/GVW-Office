@@ -5,6 +5,7 @@ import com.gvw.gvwbackend.dto.request.RemoveCategoryRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateMaxMembersRequestDTO;
 import com.gvw.gvwbackend.dto.response.AppSettingsResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
+import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.AppSettings;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class AppSettingsService {
 
     if (categories.containsKey(requestDTO.type())
         || categories.containsKey(requestDTO.displayName())) {
-      throw new BadRequestException("CategoryAlreadyExists");
+      throw new ConflictException("CategoryAlreadyExists");
     }
 
     categories.put(requestDTO.type(), requestDTO.displayName());
