@@ -6,7 +6,6 @@
 
     let {
         currentPage = "",
-        onSettingsClick = () => {},
         minimized = false,
         ...restProps
     } = $props();
@@ -78,11 +77,6 @@
 
                 {#if userOptionsVisible}
                     <div class="absolute bottom-22 w-full bg-white border border-gv-border rounded-1 p-2 flex flex-col items-center">
-                        <button onclick={() => { toggleUserOptions(); onSettingsClick(); }}
-                                class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
-                            <span class="material-symbols-rounded text-icon-dt-5 mr-2">settings</span>
-                            Einstellungen
-                        </button>
                         <button onclick={handleLogout}
                                 class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
                             <span class="material-symbols-rounded text-icon-dt-5 mr-2">logout</span>
@@ -93,9 +87,6 @@
             </div>
         {:else}
             <div class="flex flex-col items-center">
-                <SidebarButton minimized={minimized} onclick={onSettingsClick}>
-                    <span class="material-symbols-rounded text-icon-dt-3">settings</span>
-                </SidebarButton>
                 <SidebarButton minimized={minimized} onclick={handleLogout}>
                     <span class="material-symbols-rounded text-icon-dt-3">logout</span>
                 </SidebarButton>

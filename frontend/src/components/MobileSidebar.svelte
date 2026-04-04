@@ -4,8 +4,6 @@
 
     let {
         currentPage = "",
-        onSettingsClick = () => {
-        },
         isOpen = $bindable(false),
         ...restProps
     } = $props();
@@ -42,6 +40,6 @@
             </button>
         </div>
 
-        <SidebarContent {currentPage} {onSettingsClick} minimized={false} />
+        <SidebarContent {currentPage} minimized={false} />
     </div>
 {/if}

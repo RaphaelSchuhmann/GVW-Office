@@ -4,7 +4,6 @@
     // 1. Define Props
     let {
         currentPage = "",
-        onSettingsClick = () => {}
     } = $props();
 
     // 2. Component State
@@ -41,5 +40,5 @@
         </button>
     </div>
 
-    <SidebarContent {currentPage} {onSettingsClick} {minimized} />
+    <SidebarContent {currentPage} {minimized} />
 </div>
