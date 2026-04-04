@@ -102,7 +102,7 @@ export async function apiDeleteMember(id) {
  * if the request fails before a response is received.
  *
  * @example
- * const { resp, body } = await switchMemberStatus(1);
+ * const { resp, body } = await apiUpdateMemberStatus("member-id", "1-rev");
  *
  * if (resp?.ok) {
  *   console.log("Member status updated: ", body.rev);

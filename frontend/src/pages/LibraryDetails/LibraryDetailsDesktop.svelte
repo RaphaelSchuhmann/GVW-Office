@@ -97,13 +97,7 @@
             }
         });
 
-        console.log("draft: ", normalizeScore(draft));
-        console.log("scoreData: ", normalizeScore(scoreData));
-
         const isDifferent = JSON.stringify(normalizeScore(draft)) !== JSON.stringify(normalizeScore(scoreData));
-
-        console.log(isDifferent);
-        console.log(allFieldsFilled);
 
         return isDifferent && allFieldsFilled;
     });

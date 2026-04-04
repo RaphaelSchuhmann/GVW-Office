@@ -44,7 +44,7 @@ export async function apiGetSettings() {
  * The response body may include an ok flag which can be discarded.
  * 
  * @example
- * const { resp, body } = await updateMaxMembers(10);
+ * const { resp, body } = await updateMaxMembers(10, "1-rev");
  * if (resp?.ok) {
  *   console.log("Max members updated: ", body.rev);
  * }

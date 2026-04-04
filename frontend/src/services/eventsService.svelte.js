@@ -312,9 +312,13 @@ export async function updateStatus(id) {
     isFetching.updateStatus = true;
 
     try {
-        const rev = eventsStore.raw.find(m => m.id === id).rev;
+        const currentEvent = eventsStore.raw.find(e => e.id === id);
+        if (!currentEvent) {
+            handleUpdateError("NOTFOUND", "STATUS");
+            return;
+        }
 
-        const { resp, body } = await apiUpdateEventStatus(id, rev);
+        const { resp, body } = await apiUpdateEventStatus(id, currentEvent.rev);
 
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
@@ -416,21 +420,21 @@ function handleUpdateError(errorType, updateType) {
     const errorConfigs = {
         NOTFOUND: {
             title: "Veranstaltung nicht gefunden",
-            subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
+            subTitle: "Der angegebene Noteneintrag konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
         },
         BADREQUEST: {
             title: "Ungültige Daten",
             subTitle: updateType === "FULL"
                 ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben."
-                : "Die angegebene Veranstaltung ist ungültig. Bitte versuchen Sie es später erneut."
+                : "Der angegebene Noteneintrag ist ungültig. Bitte versuchen Sie es später erneut."
         },
         CONFLICT: {
             title: "Speicher-Konflikt",
-            subTitle: "Jemand anderes hat diese Veranstaltung bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen."
+            subTitle: "Jemand anderes hat diesen Noteneintrag bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen."
         },
         DEFAULT: {
             title: "Fehler beim Aktualisieren",
-            subTitle: "Beim Aktualisieren der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
+            subTitle: "Beim Aktualisieren des Noteneintrags ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
         }
     };
 
