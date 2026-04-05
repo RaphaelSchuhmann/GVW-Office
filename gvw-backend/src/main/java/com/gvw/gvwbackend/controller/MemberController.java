@@ -53,7 +53,7 @@ public class MemberController {
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
   public Map<String, Object> updateMemberStatus(
-      @PathVariable String id, @RequestBody UpdateMemberStatusRequestDTO request) {
+      @PathVariable String id, @Valid @RequestBody UpdateMemberStatusRequestDTO request) {
     String rev = memberService.updateMemberStatus(id, request.rev());
     return Map.of("rev", rev);
   }

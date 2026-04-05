@@ -79,8 +79,11 @@ public class DbService {
             ResponseEntity<Map> response =
                 restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Map.class);
 
-            return response.getBody();
-
+            Map body = response.getBody();
+            if (body == null) {
+              throw new DatabaseConnectionException("UpdateReturnedEmptyResponse");
+            }
+            return body;
           } catch (HttpClientErrorException.Conflict e) {
             throw new ConflictException("RevisionMismatch");
           }

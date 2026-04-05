@@ -61,21 +61,12 @@ public class AuthService {
       int failedAttempts = Optional.ofNullable(user.getFailedLoginAttempts()).orElse(0);
       if (failedAttempts > 4) {
         user.setLockUntil(Instant.now().plus(Duration.ofMinutes(15)));
-        Map<String, Object> resp = dbService.update("users", user.getId(), user);
-
-        if (resp != null && resp.containsKey("rev")) {
-          rev = (String) resp.get("rev");
-        }
+        dbService.update("users", user.getId(), user);
 
         throw new TooManyRequestsException("AccountLocked", user.getLockUntil().toEpochMilli());
       } else {
         user.setFailedLoginAttempts(failedAttempts + 1);
-
-        Map<String, Object> resp = dbService.update("users", user.getId(), user);
-
-        if (resp != null && resp.containsKey("rev")) {
-          rev = (String) resp.get("rev");
-        }
+        dbService.update("users", user.getId(), user);
 
         throw new InvalidCredentialsException("InvalidPassword");
       }

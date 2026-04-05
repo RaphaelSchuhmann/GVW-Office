@@ -43,7 +43,7 @@ public class EventController {
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
   public Map<String, Object> updateEventStatus(
-      @PathVariable String id, @RequestBody UpdateEventStatusRequestDTO request) {
+      @PathVariable String id, @Valid @RequestBody UpdateEventStatusRequestDTO request) {
     String rev = eventService.updateEventStatus(id, request.rev());
     return Map.of("rev", rev);
   }

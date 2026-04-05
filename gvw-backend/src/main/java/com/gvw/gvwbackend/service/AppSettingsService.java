@@ -40,13 +40,14 @@ public class AppSettingsService {
 
     Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
 
-    sseService.broadcastRefresh("SETTINGS");
-
-    if (resp != null && resp.containsKey("rev")) {
-      return (String) resp.get("rev");
+    Object revObj = resp != null ? resp.get("rev") : null;
+    if (!(revObj instanceof String) || ((String) revObj).isBlank()) {
+      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
     }
 
-    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    String rev = (String) revObj;
+    sseService.broadcastRefresh("SETTINGS");
+    return rev;
   }
 
   public String addCategory(AddCategoryRequestDTO requestDTO) {

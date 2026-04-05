@@ -192,9 +192,13 @@ export async function switchMemberStatus(id) {
     isFetching.updateStatus = true;
 
     try {
-        const rev = membersStore.raw.find(m => m.id === id).rev;
+        const member = membersStore.raw.find(m => m.id === id);
+        if (!member) {
+            handleMemberError("NOTFOUND", "STATUS");
+            return;
+        }
 
-        const { resp, body } = await apiUpdateMemberStatus(id, rev);
+        const { resp, body } = await apiUpdateMemberStatus(id, member.rev);
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
