@@ -42,7 +42,7 @@ export async function apiGetEvents() {
  * The response body is expected to be empty.
  *
  * @example
- * const { resp } = await apiCheckEvent();
+ * const { resp } = await apiCheckEvent("event-id");
  *
  * if (resp?.ok) {
  *   console.log("event checked");

@@ -81,7 +81,10 @@ public class MemberService {
       throw new BadRequestException("InvalidData");
     }
 
-    dbService.findById("members", id, Member.class);
+    Member member = dbService.findById("members", id, Member.class);
+    if (member == null) {
+      throw new NotFoundException("MemberNotFound");
+    }
   }
 
   public void addMember(AddMemberRequestDTO request) {

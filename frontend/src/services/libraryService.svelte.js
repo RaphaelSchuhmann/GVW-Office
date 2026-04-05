@@ -160,7 +160,7 @@ export async function scoreExists(id) {
         } finally {
             pendingChecks.delete(id);
             if (pendingChecks.size === 0) {
-                isFetching.checkMember = false;
+                isFetching.checkScore = false;
             }
         }
     })();

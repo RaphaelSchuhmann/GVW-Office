@@ -5,6 +5,7 @@ import com.gvw.gvwbackend.exception.*;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -50,9 +51,10 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(HttpStatusCodeException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ErrorResponseDTO handleNotFoundFromDB(HttpStatusCodeException ex) {
-    return new ErrorResponseDTO(ex.getMessage(), null);
+  public ResponseEntity<ErrorResponseDTO> handleNotFoundFromDB(HttpStatusCodeException ex) {
+    return ResponseEntity
+            .status(ex.getStatusCode())
+            .body(new ErrorResponseDTO(ex.getMessage(), null));
   }
 
   @ExceptionHandler(ConflictException.class)

@@ -42,7 +42,7 @@ export async function apiGetMembers() {
  * The response body is expected to be empty.
  *
  * @example
- * const { resp } = await apiCheckMember();
+ * const { resp } = await apiCheckMember("member-id");
  *
  * if (resp?.ok) {
  *   console.log("member checked");

@@ -41,7 +41,7 @@ export async function apiGetScores() {
  * The response body is expected to be empty.
  *
  * @example
- * const { resp } = await apiCheckScore();
+ * const { resp } = await apiCheckScore("score-id");
  *
  * if (resp?.ok) {
  *   console.log("score checked");

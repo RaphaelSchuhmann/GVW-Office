@@ -100,7 +100,10 @@ public class EventService {
       throw new BadRequestException("InvalidData");
     }
 
-    dbService.findById("events", id, Event.class);
+    Event event = dbService.findById("events", id, Event.class);
+    if (event == null) {
+      throw new NotFoundException("EventNotFound");
+    }
   }
 
   public void addEvent(AddEventRequestDTO request) {
