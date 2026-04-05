@@ -5,8 +5,10 @@
 
     import LibraryDetailsDesktop from "./LibraryDetailsDesktop.svelte";
     import LibraryDetailsMobile from "./LibraryDetailsMobile.svelte";
-    import { init } from "../../services/filterService.svelte";
+    import { fetchAndSetRaw, init } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
+    import { lastRefresh } from "../../stores/sseStore.svelte.js";
+    import { scoreExists } from "../../services/libraryService.svelte.js";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -21,6 +23,8 @@
         return libraryStore.raw.find(item => item.id === scoreId) || null;
     });
 
+    let ready = false;
+
     $effect(() => {
         if (!user.loaded) return;
 
@@ -33,6 +37,22 @@
         } else if (!scoreData) {
             push("/library");
         }
+
+        ready = true;
+    });
+
+    $effect(() => {
+        const _trigger = lastRefresh.SCORES;
+
+        if (!ready) return;
+
+        (async () => {
+            const exists = await scoreExists(scoreId);
+            if (!exists) {
+                await fetchAndSetRaw();
+                await push("/library");
+            }
+        })();
     });
 </script>
 

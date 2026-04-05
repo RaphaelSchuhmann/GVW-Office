@@ -2,11 +2,13 @@
     import { viewport } from "../../stores/viewport.svelte";
     import { push } from "svelte-spa-router";
     import { eventsStore } from "../../stores/events.svelte";
-    import { init } from "../../services/filterService.svelte";
+    import { fetchAndSetRaw, init } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
 
     import EventDetailsDesktop from "./EventDetailsDesktop.svelte";
     import EventDetailsMobile from "./EventDetailsMobile.svelte";
+    import { lastRefresh } from "../../stores/sseStore.svelte.js";
+    import { eventExists } from "../../services/eventsService.svelte.js";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -21,6 +23,8 @@
         return eventsStore.raw.find(item => item.id === eventId) || null;
     });
 
+    let ready = false;
+
     $effect(() => {
         if (!user.loaded) return;
 
@@ -33,6 +37,22 @@
         } else if (!eventData) {
             push("/events");
         }
+
+        ready = true;
+    });
+
+    $effect(() => {
+        const _trigger = lastRefresh.EVENTS;
+
+        if (!ready) return;
+
+        (async () => {
+            const exists = await eventExists(eventId);
+            if (!exists) {
+                await fetchAndSetRaw();
+                await push("/events");
+            }
+        })();
     });
 </script>
 

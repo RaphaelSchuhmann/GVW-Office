@@ -1,5 +1,7 @@
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
+import { logout } from "../services/userService.svelte.js";
+import { push } from "svelte-spa-router";
 
 /**
  * Handles global API errors that should be treated uniformly across the application.
@@ -33,6 +35,10 @@ export function handleGlobalApiError(result) {
                 subTitle: viewport.isMobile ? "" : "Ihr Authentifizierungstoken ist ungültig oder abgelaufen. Bitte melden Sie sich erneut an, um Zugriff zu erhalten.",
                 type: "error"
             });
+            logout();
+            (async () => {
+                await push("/");
+            })();
             return true;
         case "SERVER":
             addToast({

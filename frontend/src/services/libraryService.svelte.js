@@ -1,10 +1,17 @@
 import { appSettings } from "../stores/appSettings.svelte";
 import { libraryStore } from "../stores/library.svelte";
-import { apiAddScore, apiDeleteScore, apiDownloadScoreFiles, apiUpdateScore } from "../api/apiLibrary.svelte";
+import {
+    apiAddScore,
+    apiCheckScore,
+    apiDeleteScore,
+    apiDownloadScoreFiles,
+    apiUpdateScore
+} from "../api/apiLibrary.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
+import { apiCheckEvent } from "../api/apiEvents.svelte.js";
 
 export const voiceMap = {
     "t": "Tenor",
@@ -18,6 +25,7 @@ export const voiceMap = {
 };
 
 let isFetching = {
+    checkScore: false,
     newScore: false,
     updateScore: false,
     deleteScore: false,
@@ -100,6 +108,65 @@ export function getCategoryCount(category) {
     return count;
 }
 
+let pendingCheck = null;
+
+/**
+ * Checks whether a score with the given ID exists in the system.
+ *
+ * Responsibilities:
+ * - Prevents duplicate API calls by reusing an in-flight request (`pendingCheck`)
+ * - Validates input (returns false if no ID is provided)
+ * - Performs API request to verify existence
+ * - Delegates global API errors to the global handler
+ *
+ * Behavior:
+ * - Returns `false` if:
+ *   - No ID is provided
+ *   - The API responds with HTTP 404 (score does not exist)
+ * - Returns `true` if:
+ *   - The score exists (any non-404 successful response)
+ *   - A global API error occurs (e.g. UNAUTHORIZED, NETWORK)
+ *   - An unexpected exception is thrown
+ *
+ * Notes:
+ * - Concurrent calls share the same promise via `pendingCheck`
+ *   to avoid redundant network requests.
+ * - Errors default to `true` to avoid blocking dependent flows
+ *   (e.g. route guards or navigation logic).
+ *
+ * @async
+ * @function scoreExists
+ * @param {string} id - ID of the score to check
+ * @returns {Promise<boolean>} Whether the score exists or should be treated as existing
+ */
+export async function scoreExists(id) {
+    if (!id) return false;
+
+    if (pendingCheck) return await pendingCheck;
+
+    isFetching.checkScore = true;
+
+    pendingCheck = (async () => {
+        try {
+            const { resp } = await apiCheckScore(id);
+            const normalized = normalizeResponse(resp);
+
+            if (normalized.status === 404) return false;
+
+            if (handleGlobalApiError(normalized)) return true;
+
+            return true;
+        } catch (e) {
+            return true;
+        } finally {
+            isFetching.checkScore = false;
+            pendingCheck = null;
+        }
+    })();
+
+    return await pendingCheck;
+}
+
 /**
  * Deletes a score from the library.
  *
@@ -143,11 +210,11 @@ export async function deleteScore(id) {
 }
 
 /**
- * Maps API error types to user-facing toast messages for event deletion.
+ * Maps API error types to user-facing toast messages for score deletion.
  *
  * Supported error types:
- * - NOTFOUND → event does not exist
- * - BADREQUEST → invalid event ID or malformed request
+ * - NOTFOUND → score does not exist
+ * - BADREQUEST → invalid score ID or malformed request
  * - DEFAULT → fallback for unknown errors
  *
  * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
