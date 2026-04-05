@@ -8,7 +8,6 @@
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import SearchBar from "../../components/SearchBar.svelte";
     import Filter from "../../components/Filter.svelte";
     import Button from "../../components/Button.svelte";
@@ -26,13 +25,6 @@
     // ==================
     // MODAL REFERENCES
     // ==================
-    /**
-     * Reference to the global settings modal.
-     * Used to programmatically open the application settings dialog.
-     * @type {import("../../components/SettingsModal.svelte").default}
-     */
-    let settingsModal = $state();
-
     /**
      * Reference to the category modal.
      * Used to programmatically open the category dialog.
@@ -185,16 +177,8 @@
     }
 
     let sidebarOpen = $state(false);
-
-    /**
-     * Opens the global settings modal.
-     */
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 </script>
 
-<SettingsModal bind:this={settingsModal} isMobile={true}></SettingsModal>
 <ToastStack isMobile={true}></ToastStack>
 
 <CategoryModal bind:this={categoryModal} isMobile={true} />
@@ -244,7 +228,7 @@
     </div>
 </Modal>
 
-<MobileSidebar onSettingsClick={settingsClick} currentPage="library" bind:isOpen={sidebarOpen} />
+<MobileSidebar currentPage="library" bind:isOpen={sidebarOpen} />
 
 <main class="flex overflow-hidden">
     <div class="flex flex-col w-full h-dvh overflow-hidden p-7 min-h-0">

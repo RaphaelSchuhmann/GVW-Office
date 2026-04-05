@@ -9,6 +9,8 @@ import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
+import { user } from "../stores/user.svelte.js";
+import { membersStore } from "../stores/members.svelte.js";
 
 export const roleMap = {
     "Mitglied": "member",
@@ -66,6 +68,7 @@ function handleMemberError(errorType, context) {
         UPDATE: {
             BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
             NOTFOUND: { title: "Mitglied nicht gefunden", sub: "Das gewählte Mitglied wurde im System nicht gefunden." },
+            CONFLICT: { title: "Speicher-Konflikt", sub: "Jemand anderes hat dieses Mitglied bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen." },
             DEFAULT: { title: "Fehler beim Bearbeiten", sub: "Beim Bearbeiten der Mitgliedsdaten ist ein Fehler aufgetreten." }
         },
         DELETE: {
@@ -81,6 +84,7 @@ function handleMemberError(errorType, context) {
         STATUS: {
             BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
             NOTFOUND: { title: "Mitglied nicht gefunden", sub: "Das gewählte Mitglied wurde im System nicht gefunden." },
+            CONFLICT: { title: "Speicher-Konflikt", sub: "Jemand anderes hat den Status des Mitglieds bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen." },
             DEFAULT: { title: "Fehler beim Aktualisieren", sub: "Beim Aktualisieren des Mitglieds ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
         }
     };
@@ -188,7 +192,13 @@ export async function switchMemberStatus(id) {
     isFetching.updateStatus = true;
 
     try {
-        const { resp } = await apiUpdateMemberStatus(id);
+        const member = membersStore.raw.find(m => m.id === id);
+        if (!member) {
+            handleMemberError("NOTFOUND", "STATUS");
+            return;
+        }
+
+        const { resp, body } = await apiUpdateMemberStatus(id, member.rev);
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
@@ -196,6 +206,14 @@ export async function switchMemberStatus(id) {
         if (!normalizedResponse.ok) {
             handleMemberError(normalizedResponse.errorType, "STATUS");
             return;
+        }
+
+        const index = membersStore.raw.findIndex(m => m.id === id);
+        if (index !== -1) {
+            membersStore.raw[index] = {
+                ...membersStore.raw[index],
+                rev: body.rev
+            };
         }
 
         addToast({
@@ -262,7 +280,7 @@ export async function updateMember(member) {
     isFetching.updateMember = true;
 
     try {
-        const { resp } = await apiUpdateMember(member);
+        const { resp, body } = await apiUpdateMember(member);
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
@@ -270,6 +288,17 @@ export async function updateMember(member) {
         if (!normalizedResponse.ok) {
             handleMemberError(normalizedResponse.errorType, "UPDATE");
             return;
+        }
+
+        Object.assign(user, { rev: body.rev_user });
+
+        const index = membersStore.raw.findIndex(m => m.id === member.id);
+        if (index !== -1) {
+            membersStore.raw[index] = {
+                ...membersStore.raw[index],
+                ...member,
+                rev: body.rev_member
+            };
         }
 
         addToast({

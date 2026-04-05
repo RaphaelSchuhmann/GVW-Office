@@ -30,11 +30,13 @@ export async function initSettingsSync() {
     if (isRunning) return;
     isRunning = true;
 
-    $effect(() => {
-        const trigger = lastRefresh.SETTINGS;
+    $effect.root(() => {
+        $effect(() => {
+            const _trigger = lastRefresh.SETTINGS;
 
-        untrack(() => {
-            loadAppSettings();
+            untrack(() => {
+                loadAppSettings();
+            });
         });
     });
 }
@@ -57,6 +59,7 @@ export async function initSettingsSync() {
 export async function loadAppSettings() {
     if (isFetching) return;
     isFetching = true;
+
     try {
         const { resp, body } = await apiGetSettings();
 

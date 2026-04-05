@@ -6,7 +6,6 @@
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import Button from "../../components/Button.svelte";
     import Input from "../../components/Input.svelte";
@@ -87,7 +86,7 @@
     const hasChanges = $derived.by(() => {
         if (!draft || !scoreData) return false;
 
-        const requiredFields = ["title", "artist", "type", "voices"];
+        const requiredFields = ["scoreId", "title", "artist", "type", "voices"];
         const allFieldsFilled = requiredFields.every(field => {
             const value = draft[field];
 
@@ -120,6 +119,7 @@
      * not be used as a full replacement for the original score object.
      *
      * @param {Object} score - The score object to normalize.
+     * @param {string} [score.scoreId]
      * @param {string} [score.title]
      * @param {string} [score.artist]
      * @param {string} [score.type]
@@ -132,6 +132,7 @@
         if (!score) return score;
 
         return {
+            scoreId: score.scoreId?.trim() ?? "",
             title: score.title?.trim() ?? "",
             artists: score.artist?.trim() ?? "",
             type: score.type ?? null,
@@ -160,7 +161,6 @@
      * Persists the current draft to the backend.
      *
      * - Sends a snapshot of the draft to the update API
-     * - Updates local `scoreData` with the saved draft
      * - Exits edit mode and clears the draft
      *
      * Assumes validation has already been handled externally.
@@ -172,9 +172,7 @@
             voiceCount: draft.voices.length
         };
 
-        const successful = await updateScore(score);
-
-        if (successful) scoreData = { ...draft };
+        await updateScore(score);
 
         isEditing = false;
         draft = null;
@@ -184,22 +182,11 @@
     // MODAL REFERENCES
     // ==================
     /**
-     * Reference to the global settings modal.
-     * Used to programmatically open the application settings dialog.
-     * @type {import("../../components/SettingsModal.svelte").default}
-     */
-    let settingsModal = $state();
-
-    /**
      * Reference to the delete confirmation modal.
      * Used to initiate and confirm score deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
     let confirmDeleteScoreModal = $state();
-
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 
     /**
      * Navigates back to the library overview page.
@@ -218,7 +205,6 @@
     }
 </script>
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 
 <ConfirmDeleteModal expectedInput={`${scoreData.title}`} id={scoreData.id}
@@ -229,7 +215,7 @@
 />
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar onSettingsClick={settingsClick} currentPage="library"></DesktopSidebar>
+    <DesktopSidebar currentPage="library"></DesktopSidebar>
     <div class="flex flex-col min-h-0 w-full p-10 overflow-hidden">
         <PageHeader title="Veranstaltung" subTitle={`Details der Noten: "${scoreData?.title ?? ""}"`}>
             {#if viewport.width > 900}

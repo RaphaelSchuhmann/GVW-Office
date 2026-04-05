@@ -13,4 +13,5 @@ public record UpdateEventRequestDTO(
     String description,
     @NotBlank String status,
     @NotBlank String mode,
-    Event.Recurrence recurrence) {}
+    Event.Recurrence recurrence,
+    @NotBlank String rev) {}

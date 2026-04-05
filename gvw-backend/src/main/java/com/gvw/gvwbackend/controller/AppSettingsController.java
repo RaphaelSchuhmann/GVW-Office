@@ -6,6 +6,7 @@ import com.gvw.gvwbackend.dto.request.UpdateMaxMembersRequestDTO;
 import com.gvw.gvwbackend.dto.response.AppSettingsResponseDTO;
 import com.gvw.gvwbackend.service.AppSettingsService;
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -27,21 +28,26 @@ public class AppSettingsController {
   @PatchMapping("/update/max-members")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  public void updateMaxMembers(@Valid @RequestBody UpdateMaxMembersRequestDTO requestDTO) {
-    appSettingsService.updateMaxMembers(requestDTO);
+  public Map<String, Object> updateMaxMembers(
+      @Valid @RequestBody UpdateMaxMembersRequestDTO requestDTO) {
+    String rev = appSettingsService.updateMaxMembers(requestDTO);
+    return Map.of("rev", rev);
   }
 
   @PostMapping("/add/category")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN', 'CONDUCTOR')")
-  public void addCategory(@Valid @RequestBody AddCategoryRequestDTO requestDTO) {
-    appSettingsService.addCategory(requestDTO);
+  public Map<String, Object> addCategory(@Valid @RequestBody AddCategoryRequestDTO requestDTO) {
+    String rev = appSettingsService.addCategory(requestDTO);
+    return Map.of("rev", rev);
   }
 
   @PostMapping("/remove/category")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN', 'CONDUCTOR')")
-  public void removeCategory(@Valid @RequestBody RemoveCategoryRequestDTO requestDTO) {
-    appSettingsService.removeCategory(requestDTO);
+  public Map<String, Object> removeCategory(
+      @Valid @RequestBody RemoveCategoryRequestDTO requestDTO) {
+    String rev = appSettingsService.removeCategory(requestDTO);
+    return Map.of("rev", rev);
   }
 }

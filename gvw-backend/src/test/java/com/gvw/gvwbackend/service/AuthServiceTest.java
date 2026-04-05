@@ -11,10 +11,12 @@ import com.gvw.gvwbackend.dto.response.LoginResponseDTO;
 import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.InvalidCredentialsException;
 import com.gvw.gvwbackend.exception.TooManyRequestsException;
+import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.model.User;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -38,8 +40,11 @@ public class AuthServiceTest {
   void testLoginShouldSucceedWhenValidCredentials() {
     User user = new User();
     user.setUserId("123");
+    user.setId("123");
+    user.setRev("1-rev");
     user.setEmail("test@mail.com");
     user.setPassword("hashedPw");
+    user.setRole(Role.MEMBER);
     user.setFailedLoginAttempts(2);
     user.setLockUntil(null);
     user.setChangePassword(false);
@@ -48,8 +53,10 @@ public class AuthServiceTest {
     when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
 
     when(passwordEncoder.matches("plainPw", "hashedPw")).thenReturn(true);
+    when(dbService.update(eq("users"), eq("123"), any(User.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
-    when(jwtService.generateToken("123", null)).thenReturn("mocked-jwt");
+    when(jwtService.generateToken(eq("123"), anyMap())).thenReturn("mocked-jwt");
 
     LoginRequestDTO request = new LoginRequestDTO("test@mail.com", "plainPw");
 
@@ -62,12 +69,13 @@ public class AuthServiceTest {
     verify(dbService)
         .update(
             eq("users"),
+            eq("123"),
             argThat(
                 (User updatedUser) ->
                     updatedUser.getFailedLoginAttempts() == 0
                         && updatedUser.getLockUntil() == null));
 
-    verify(jwtService).generateToken("123", null);
+    verify(jwtService).generateToken(eq("123"), anyMap());
   }
 
   @Test
@@ -117,6 +125,8 @@ public class AuthServiceTest {
   @Test
   void testLoginShouldLockAccountWhenTooManyFailedAttempts() {
     User user = new User();
+    user.setId("123");
+    user.setRev("1-rev");
     user.setUserId("123");
     user.setEmail("mail");
     user.setPassword("hashedPw");
@@ -124,6 +134,8 @@ public class AuthServiceTest {
     user.setLockUntil(null);
 
     when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
+    when(dbService.update(eq("users"), eq("123"), any(User.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
     when(passwordEncoder.matches(any(), any())).thenReturn(false);
 
@@ -133,19 +145,26 @@ public class AuthServiceTest {
         assertThrows(TooManyRequestsException.class, () -> authService.login(request));
 
     verify(dbService)
-        .update(eq("users"), argThat((User updatedUser) -> updatedUser.getLockUntil() != null));
+        .update(
+            eq("users"),
+            eq("123"),
+            argThat((User updatedUser) -> updatedUser.getLockUntil() != null));
   }
 
   @Test
   void testLoginShouldIncreaseFailedAttemptsWhenInvalidPw() {
     User user = new User();
     user.setUserId("123");
+    user.setId("123");
+    user.setRev("1-rev");
     user.setEmail("mail");
     user.setPassword("hashedPw");
     user.setFailedLoginAttempts(2);
     user.setLockUntil(null);
 
     when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
+    when(dbService.update(eq("users"), eq("123"), any(User.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
     when(passwordEncoder.matches(any(), any())).thenReturn(false);
 
@@ -159,7 +178,7 @@ public class AuthServiceTest {
 
     ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
-    verify(dbService).update(eq("users"), captor.capture());
+    verify(dbService).update(eq("users"), eq("123"), captor.capture());
 
     User updatedUser = captor.getValue();
 
@@ -170,6 +189,8 @@ public class AuthServiceTest {
   void testChangePasswordShouldChangeUserPassword() {
     User user = new User();
     user.setUserId("123");
+    user.setId("123");
+    user.setRev("1-rev");
     user.setEmail("test@mail.com");
     user.setPassword("hashedPw");
     user.setFailedLoginAttempts(0);
@@ -178,6 +199,8 @@ public class AuthServiceTest {
     user.setFirstLogin(true);
 
     when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
+    when(dbService.update(eq("users"), eq("123"), any(User.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
     when(passwordEncoder.matches(any(), any())).thenReturn(false).thenReturn(true);
 
@@ -189,7 +212,7 @@ public class AuthServiceTest {
 
     ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
 
-    verify(dbService).update(eq("users"), captor.capture());
+    verify(dbService).update(eq("users"), eq("123"), captor.capture());
 
     User updatedUser = captor.getValue();
 

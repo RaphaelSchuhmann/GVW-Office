@@ -23,8 +23,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 public class EventServiceTest {
   @Mock private DbService dbService;
-
   @Mock private EventMapper eventMapper;
+  @Mock private SseService sseService;
 
   @InjectMocks private EventService eventService;
 
@@ -34,7 +34,7 @@ public class EventServiceTest {
   void setUp() {
     validEvent = new Event();
     validEvent.setId("event-123");
-    validEvent.setRev("rev-1");
+    validEvent.setRev("1-rev");
     validEvent.setTitle("Practice");
     validEvent.setStatus("upcoming");
     validEvent.setMode("single");
@@ -48,7 +48,7 @@ public class EventServiceTest {
     EventsResponseDTO response = eventService.allEvents();
 
     assertTrue(response.data().isEmpty());
-    verify(dbService, never()).update(anyString(), any());
+    verify(dbService, never()).update(anyString(), any(), any());
   }
 
   @Test
@@ -131,22 +131,32 @@ public class EventServiceTest {
   @Test
   void testUpdateEventStatusShouldToggleFromUpcomingToFinished() {
     when(dbService.findById("events", "event-123", Event.class)).thenReturn(validEvent);
+    when(dbService.update(eq("events"), eq("event-123"), any(Event.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
-    eventService.updateEventStatus("event-123");
+    String rev = eventService.updateEventStatus("event-123", "1-rev");
+
+    assertNotNull(rev);
+    assertFalse(rev.isBlank());
 
     assertEquals("finished", validEvent.getStatus());
-    verify(dbService).update("events", validEvent);
+    verify(dbService).update("events", validEvent.getId(), validEvent);
   }
 
   @Test
   void testUpdateEventStatusShouldToggleFromFinishedToUpcoming() {
     validEvent.setStatus("finished");
     when(dbService.findById("events", "event-123", Event.class)).thenReturn(validEvent);
+    when(dbService.update(eq("events"), eq("event-123"), any(Event.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
-    eventService.updateEventStatus("event-123");
+    String rev = eventService.updateEventStatus("event-123", "1-rev");
+
+    assertNotNull(rev);
+    assertFalse(rev.isBlank());
 
     assertEquals("upcoming", validEvent.getStatus());
-    verify(dbService).update("events", validEvent);
+    verify(dbService).update("events", validEvent.getId(), validEvent);
   }
 
   @Test
@@ -162,14 +172,20 @@ public class EventServiceTest {
             "New Desc",
             "upcoming",
             "single",
-            null);
+            null,
+            "1-rev");
     when(dbService.findById("events", "event-123", Event.class)).thenReturn(validEvent);
+    when(dbService.update(eq("events"), eq("event-123"), any(Event.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
-    eventService.updateEvent(updateDto);
+    String rev = eventService.updateEvent(updateDto);
+
+    assertNotNull(rev);
+    assertFalse(rev.isBlank());
 
     verify(dbService).findById("events", "event-123", Event.class);
     verify(eventMapper).updateEventFromDto(updateDto, validEvent);
-    verify(dbService).update("events", validEvent);
+    verify(dbService).update("events", validEvent.getId(), validEvent);
   }
 
   @Test
@@ -185,12 +201,13 @@ public class EventServiceTest {
             "Desc",
             "upcoming",
             "single",
-            null);
+            null,
+            "1-rev");
     when(dbService.findById("events", "missing-id", Event.class)).thenReturn(null);
 
     assertThrows(NotFoundException.class, () -> eventService.updateEvent(updateDto));
 
     verify(eventMapper, never()).updateEventFromDto(any(), any());
-    verify(dbService, never()).update(anyString(), any());
+    verify(dbService, never()).update(anyString(), any(), any());
   }
 }

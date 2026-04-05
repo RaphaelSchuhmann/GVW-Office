@@ -11,6 +11,7 @@ import com.gvw.gvwbackend.service.FileValidator;
 import com.gvw.gvwbackend.service.LibraryService;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -83,7 +84,7 @@ public class LibraryController {
   @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN')")
-  public void updateScore(
+  public Map<String, Object> updateScore(
       @RequestPart("scoreData") @Valid UpdateScoreRequestDTO request,
       @RequestPart(value = "files", required = false) List<MultipartFile> newFiles,
       @RequestParam(value = "removedFiles", required = false) List<String> removedFiles) {
@@ -94,6 +95,7 @@ public class LibraryController {
         }
       }
     }
-    libraryService.updateScore(request, newFiles, removedFiles);
+    String rev = libraryService.updateScore(request, newFiles, removedFiles);
+    return Map.of("rev", rev);
   }
 }

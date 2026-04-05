@@ -17,7 +17,6 @@
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import Button from "../../components/Button.svelte";
     import Filter from "../../components/Filter.svelte";
     import FilterTabBar from "../../components/FilterTabBar.svelte";
@@ -40,13 +39,6 @@
     // ================
     // MODAL REFERENCES
     // ================
-    /**
-     * Reference to the global settings modal.
-     * Used to programmatically open the application settings dialog.
-     * @type {import("../../components/SettingsModal.svelte").default}
-     */
-    let settingsModal = $state();
-
     /**
      * Reference to the "Add Event" modal.
      * Controls visibility and lifecycle of the member creation dialog.
@@ -216,25 +208,16 @@
     async function handleSwitchStatus() {
         if (!menu.data.activeId) return;
 
+        menu.data.open = false;
         await updateStatus(menu.data.activeId);
 
-        menu.data.open = false;
         menu.data.activeId = null;
-
         await fetchAndSetRaw();
-    }
-
-    /**
-     * Opens the global settings modal.
-     */
-    function settingsClick() {
-        settingsModal.showModal();
     }
 </script>
 
 <svelte:window oncontextmenu={() => (menu.data.open = false)} />
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 
 <ContextMenu bind:open={menu.data.open} x={menu.data.x} y={menu.data.y}>
@@ -336,7 +319,7 @@
 
 <!--Switches to mobile page if width is less than 870px!-->
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar onSettingsClick={settingsClick} currentPage="events"></DesktopSidebar>
+    <DesktopSidebar currentPage="events"></DesktopSidebar>
 
     <div class="flex flex-col w-full overflow-hidden p-10 min-h-0">
         <PageHeader title="Veranstaltungen" subTitle="Verwaltung von Events, Proben und Konzerten"

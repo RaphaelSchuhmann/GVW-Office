@@ -14,7 +14,6 @@
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import Button from "../../components/Button.svelte";
     import Input from "../../components/Input.svelte";
@@ -126,15 +125,12 @@
      * Persists the current draft to the backend.
      *
      * - Sends a snapshot of the draft to the update API
-     * - Updates local `eventData` with the saved draft
      * - Exits edit mode and clears the draft
      *
      * Assumes validation has already been handled externally.
      */
     async function updateEventData() {
-        const successful = await updateEvent($state.snapshot(draft));
-
-        if (successful) eventData = { ...draft };
+        await updateEvent($state.snapshot(draft));
 
         isEditing = false;
         draft = null;
@@ -157,25 +153,13 @@
     // MODAL REFERENCES
     // ==================
     /**
-     * Reference to the global settings modal.
-     * Used to programmatically open the application settings dialog.
-     * @type {import("../../components/SettingsModal.svelte").default}
-     */
-    let settingsModal = $state();
-
-    /**
      * Reference to the delete confirmation modal.
      * Used to initiate and confirm event deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
     let confirmDeleteEventModal = $state();
-
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 </script>
 
-<SettingsModal bind:this={settingsModal}></SettingsModal>
 <ToastStack></ToastStack>
 
 <ConfirmDeleteModal expectedInput={`${eventData.title}`} id={eventData.id}
@@ -186,7 +170,7 @@
 />
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar onSettingsClick={settingsClick} currentPage="events"></DesktopSidebar>
+    <DesktopSidebar currentPage="events"></DesktopSidebar>
     <div class="flex flex-col min-h-0 w-full p-10 overflow-hidden">
         <PageHeader title="Veranstaltung" subTitle={`Details der Veranstaltung "${eventData?.title ?? ""}"`}>
             {#if viewport.width > 900}

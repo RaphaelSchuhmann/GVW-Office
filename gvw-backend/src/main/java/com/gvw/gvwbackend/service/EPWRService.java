@@ -57,7 +57,8 @@ public class EPWRService {
       savedToken.setCreatedAt(Instant.now());
       savedToken.setExpiresAt(Instant.now().plus(Duration.ofDays(30)));
 
-      if (!dbService.update("emergency_token", savedToken)) {
+      // Note that insert here is doing the update by replacing the already existing entry
+      if (!dbService.insert("emergency_token", savedToken)) {
         throw new RuntimeException("Failed to update emergency token");
       }
     }
@@ -117,7 +118,7 @@ public class EPWRService {
       admin.setPassword(passwordEncoder.encode(tempPw));
       admin.setChangePassword(true);
 
-      if (!dbService.update("users", admin)) {
+      if (!dbService.insert("users", admin)) {
         throw new RuntimeException("Failed to update admin password");
       }
 
@@ -134,7 +135,7 @@ public class EPWRService {
     savedToken.setCreatedAt(Instant.now());
     savedToken.setExpiresAt(Instant.now().plus(Duration.ofDays(30)));
 
-    return dbService.update("emergency_token", savedToken);
+    return dbService.insert("emergency_token", savedToken);
   }
 
   private void notifyAdminsOfUsage(List<User> admins) {

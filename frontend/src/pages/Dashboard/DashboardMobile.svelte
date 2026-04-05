@@ -7,15 +7,11 @@
     import Card from "../../components/Card.svelte";
     import ComingEvent from "../../components/ComingEvent.svelte";
     import VoiceDistribution from "../../components/VoiceDistribution.svelte";
-    import SettingsModal from "../../components/SettingsModal.svelte";
     import Modal from "../../components/Modal.svelte";
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import { tryUpdateMaxMembers } from "../../services/appSettingsService.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
-
-    /** @type {import("../../components/SettingsModal.svelte").default} */
-    let settingsModal = $state();
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal = $state();
@@ -103,13 +99,7 @@
     }
 
     let sidebarOpen = $state(false);
-
-    function settingsClick() {
-        settingsModal.showModal();
-    }
 </script>
-
-<SettingsModal bind:this={settingsModal} isMobile={true}></SettingsModal>
 
 <Modal bind:this={voiceDistributionSettingsModal} title="Stimmenverteilung Einstellungen" subTitle="Einstellungen für die Stimmverteilung"
        extraFunctionOnClose={false} extraFunction={() => maxMembers = String(appSettings.maxMembers)} isMobile={true}>
@@ -122,7 +112,7 @@
 
 <ToastStack></ToastStack>
 
-<MobileSidebar currentPage="dashboard" onSettingsClick={settingsClick} bind:isOpen={sidebarOpen}/>
+<MobileSidebar currentPage="dashboard" bind:isOpen={sidebarOpen}/>
 
 <main class="flex overflow-hidden">
     <div class="flex-1 min-h-0 overflow-y-auto">

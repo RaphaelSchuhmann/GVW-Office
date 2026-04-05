@@ -39,11 +39,13 @@
 </script>
 
 {#if memberData}
-    {#if viewport.isMobile}
-        <MemberDetailsMobile {memberData} bind:isEditing />
-    {:else}
-        <MemberDetailsDesktop {memberData} bind:isEditing />
-    {/if}
+    {#key memberData.rev}
+        {#if viewport.isMobile}
+            <MemberDetailsMobile {memberData} bind:isEditing />
+        {:else}
+            <MemberDetailsDesktop {memberData} bind:isEditing />
+        {/if}
+    {/key}
 {:else}
     <p>Lade...</p>
 {/if}

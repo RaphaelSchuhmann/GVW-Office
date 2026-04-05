@@ -29,23 +29,28 @@ public class AppSettingsService {
   public AppSettingsResponseDTO getAppSettings() {
     AppSettings settings = appSettings();
 
-    return new AppSettingsResponseDTO(settings.getMaxMembers(), settings.getScoreCategories());
+    return new AppSettingsResponseDTO(
+        settings.getMaxMembers(), settings.getScoreCategories(), appSettings().getRev());
   }
 
-  public void updateMaxMembers(UpdateMaxMembersRequestDTO requestDTO) {
-    if (requestDTO.maxMembers() < 0) {
-      throw new BadRequestException("MaxMembersIsNegative");
-    }
-
+  public String updateMaxMembers(UpdateMaxMembersRequestDTO requestDTO) {
     AppSettings settings = appSettings();
     settings.setMaxMembers(requestDTO.maxMembers());
+    settings.setRev(requestDTO.rev());
 
-    dbService.update("app_settings", settings);
+    Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
 
+    Object revObj = resp != null ? resp.get("rev") : null;
+    if (!(revObj instanceof String) || ((String) revObj).isBlank()) {
+      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    }
+
+    String rev = (String) revObj;
     sseService.broadcastRefresh("SETTINGS");
+    return rev;
   }
 
-  public void addCategory(AddCategoryRequestDTO requestDTO) {
+  public String addCategory(AddCategoryRequestDTO requestDTO) {
     if (requestDTO.type() == null
         || requestDTO.displayName() == null
         || BLOCKED_KEYS.contains(requestDTO.type())
@@ -66,12 +71,18 @@ public class AppSettingsService {
 
     settings.setScoreCategories(categories);
 
-    dbService.update("app_settings", settings);
+    Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
 
     sseService.broadcastRefresh("SETTINGS");
+
+    if (resp != null && resp.containsKey("rev")) {
+      return (String) resp.get("rev");
+    }
+
+    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
   }
 
-  public void removeCategory(RemoveCategoryRequestDTO requestDTO) {
+  public String removeCategory(RemoveCategoryRequestDTO requestDTO) {
     String type = requestDTO.type();
     if (type == null) {
       throw new BadRequestException("CategoryEmpty");
@@ -86,9 +97,15 @@ public class AppSettingsService {
     if (displayName != null) categories.remove(displayName);
 
     settings.setScoreCategories(categories);
-    dbService.update("app_settings", settings);
+    Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
 
     sseService.broadcastRefresh("SETTINGS");
+
+    if (resp != null && resp.containsKey("rev")) {
+      return (String) resp.get("rev");
+    }
+
+    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
   }
 
   private AppSettings appSettings() {

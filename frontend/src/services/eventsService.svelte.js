@@ -75,6 +75,7 @@ export function getEventOccurrence(eventId) {
     const event = eventsStore.raw.find(item => item.id === eventId);
 
     if (!event) return "Unbekannt";
+    if (event.mode === "single") return event.date;
     if (event.mode === "weekly") return getWeeklyOccurrence(event);
     if (event.mode === "monthly" && event.recurrence) return getMonthlyOccurrence(event);
 
@@ -311,27 +312,28 @@ export async function updateStatus(id) {
     isFetching.updateStatus = true;
 
     try {
-        const { resp } = await apiUpdateEventStatus(id);
+        const currentEvent = eventsStore.raw.find(e => e.id === id);
+        if (!currentEvent) {
+            handleUpdateError("NOTFOUND", "STATUS");
+            return;
+        }
+
+        const { resp, body } = await apiUpdateEventStatus(id, currentEvent.rev);
 
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({
-                    title: "Veranstaltung nicht gefunden",
-                    subTitle: viewport.isMobile ? "" : "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
-                    type: "error"
-                });
-            } else if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Ungültige Veranstaltung",
-                    subTitle: viewport.isMobile ? "" : "Die angegebene Veranstaltung ist ungültig. Bitte versuchen Sie es später erneut.",
-                    type: "error"
-                });
-            }
-
+            handleUpdateError(normalizedResponse.errorType, "STATUS");
             return;
+        }
+
+        const index = eventsStore.raw.findIndex(e => e.id === id);
+        if (index !== -1) {
+            eventsStore.raw[index] = {
+                ...eventsStore.raw[index],
+                rev: body.rev
+            };
         }
 
         addToast({
@@ -363,22 +365,31 @@ export async function updateStatus(id) {
  *
  * @async
  * @function updateEvent
- * @param {Object} data - The updated event data.
- * @returns {Promise<boolean>} successful - If update was successful
+ * @param {Object} event - The updated event data.
+ * @returns {Promise<void>}
  */
-export async function updateEvent(data) {
+export async function updateEvent(event) {
     if (isFetching.updateEvent) return;
     isFetching.updateEvent = true;
 
     try {
-        const { resp } = await apiUpdateEvent(data);
+        const { resp, body } = await apiUpdateEvent(event);
 
         const normalizedResponse = normalizeResponse(resp);
-        if (handleGlobalApiError(normalizedResponse)) return false;
+        if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            handleUpdateError(normalizedResponse.errorType);
-            return false;
+            handleUpdateError(normalizedResponse.errorType, "FULL");
+            return;
+        }
+
+        const index = eventsStore.raw.findIndex(e => e.id === event.id);
+        if (index !== -1) {
+            eventsStore.raw[index] = {
+                ...eventsStore.raw[index],
+                ...event,
+                rev: body.rev
+            };
         }
 
         addToast({
@@ -386,7 +397,6 @@ export async function updateEvent(data) {
             subTitle: viewport.isMobile ? "" : "Die Veranstaltung wurde erfolgreich aktualisiert.",
             type: "success"
         });
-        return true;
     } finally {
         isFetching.updateEvent = false;
     }
@@ -403,21 +413,28 @@ export async function updateEvent(data) {
  * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
  *
  * @param {string} errorType - Error identifier returned from API
+ * @param {string} updateType - The kind of update that was performed (`FULL` or `STATUS`)
  * @returns {void}
  */
-function handleUpdateError(errorType) {
+function handleUpdateError(errorType, updateType) {
     const errorConfigs = {
         NOTFOUND: {
             title: "Veranstaltung nicht gefunden",
-            subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
+            subTitle: "Der angegebene Noteneintrag konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
         },
         BADREQUEST: {
             title: "Ungültige Daten",
-            subTitle: "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben."
+            subTitle: updateType === "FULL"
+                ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben."
+                : "Der angegebene Noteneintrag ist ungültig. Bitte versuchen Sie es später erneut."
+        },
+        CONFLICT: {
+            title: "Speicher-Konflikt",
+            subTitle: "Jemand anderes hat diesen Noteneintrag bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen."
         },
         DEFAULT: {
             title: "Fehler beim Aktualisieren",
-            subTitle: "Beim Aktualisieren der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
+            subTitle: "Beim Aktualisieren des Noteneintrags ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
         }
     };
 

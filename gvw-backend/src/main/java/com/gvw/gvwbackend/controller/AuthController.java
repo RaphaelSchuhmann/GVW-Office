@@ -6,6 +6,7 @@ import com.gvw.gvwbackend.dto.response.AutoLoginResponseDTO;
 import com.gvw.gvwbackend.dto.response.LoginResponseDTO;
 import com.gvw.gvwbackend.service.AuthService;
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +27,9 @@ public class AuthController {
 
   @PostMapping("/changePw")
   @ResponseStatus(HttpStatus.OK)
-  public void changePw(@Valid @RequestBody ChangePwRequestDTO changePwRequest) {
-    authService.changePassword(changePwRequest);
+  public Map<String, Object> changePw(@Valid @RequestBody ChangePwRequestDTO changePwRequest) {
+    String rev = authService.changePassword(changePwRequest);
+    return Map.of("rev", rev);
   }
 
   @GetMapping("/auto")

@@ -22,14 +22,14 @@
     });
 
     $effect(() => {
-        if (!ready) return;
+        const _trigger = lastRefresh.EVENTS;
 
-        const trigger = lastRefresh.EVENTS;
+        if (!ready) return;
 
         untrack(() => {
             fetchAndSetRaw();
         });
-    })
+    });
 </script>
 
 {#if viewport.width < 870}

@@ -269,7 +269,8 @@ public class MemberServiceTest {
             "active",
             "member",
             "birthdate",
-            "joined");
+            "joined",
+            "1-rev");
 
     Member existingMember = generateValidMember();
     existingMember.setId(memberId);
@@ -284,10 +285,20 @@ public class MemberServiceTest {
     when(dbService.findByQuery(eq("users"), any(), eq(User.class)))
         .thenReturn(List.of(existingUser));
 
-    memberService.updateMember(request);
+    when(dbService.update(eq("members"), eq("member-id"), any(Member.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
+    when(dbService.update(eq("users"), eq("user-id"), any(User.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
-    verify(dbService).update("members", existingMember);
-    verify(dbService).update("users", existingUser);
+    List<String> resp = memberService.updateMember(request);
+
+    assertNotNull(resp);
+    assertFalse(resp.isEmpty());
+    assertFalse(resp.getFirst().isBlank());
+    assertFalse(resp.get(1).isBlank());
+
+    verify(dbService).update("members", existingMember.getId(), existingMember);
+    verify(dbService).update("users", existingUser.getId(), existingUser);
 
     assertEquals("Max", existingMember.getName());
     assertEquals("Mustermann", existingMember.getSurname());
@@ -321,7 +332,8 @@ public class MemberServiceTest {
             "active",
             "role",
             "birthdate",
-            "joined");
+            "joined",
+            "1-rev");
 
     assertThrows(
         NotFoundException.class,
@@ -346,7 +358,8 @@ public class MemberServiceTest {
             "active",
             "role",
             "birthdate",
-            "joined");
+            "joined",
+            "1-rev");
 
     assertThrows(
         NotFoundException.class,
@@ -359,12 +372,18 @@ public class MemberServiceTest {
   void testUpdateMemberStatusShouldUpdateMemberStatusFromActiveToInactive() {
     Member savedMemberActive = generateValidMember();
     savedMemberActive.setId("member-id");
+    savedMemberActive.setRev("1-rev");
 
     when(dbService.findById(eq("members"), any(), eq(Member.class))).thenReturn(savedMemberActive);
+    when(dbService.update(eq("members"), eq("member-id"), any(Member.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
-    memberService.updateMemberStatus("member-id");
+    String resp = memberService.updateMemberStatus("member-id", "1-rev");
 
-    verify(dbService).update("members", savedMemberActive);
+    assertNotNull(resp);
+    assertFalse(resp.isBlank());
+
+    verify(dbService).update("members", savedMemberActive.getId(), savedMemberActive);
 
     assertEquals("inactive", savedMemberActive.getStatus());
   }
@@ -374,12 +393,18 @@ public class MemberServiceTest {
     Member savedMemberActive = generateValidMember();
     savedMemberActive.setId("member-id");
     savedMemberActive.setStatus("inactive");
+    savedMemberActive.setRev("1-rev");
 
     when(dbService.findById(eq("members"), any(), eq(Member.class))).thenReturn(savedMemberActive);
+    when(dbService.update(eq("members"), eq("member-id"), any(Member.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
-    memberService.updateMemberStatus("member-id");
+    String resp = memberService.updateMemberStatus("member-id", "1-rev");
 
-    verify(dbService).update("members", savedMemberActive);
+    assertNotNull(resp);
+    assertFalse(resp.isBlank());
+
+    verify(dbService).update("members", savedMemberActive.getId(), savedMemberActive);
 
     assertEquals("active", savedMemberActive.getStatus());
   }
@@ -389,12 +414,18 @@ public class MemberServiceTest {
     Member savedMemberActive = generateValidMember();
     savedMemberActive.setId("member-id");
     savedMemberActive.setStatus(null);
+    savedMemberActive.setRev("1-rev");
 
     when(dbService.findById(eq("members"), any(), eq(Member.class))).thenReturn(savedMemberActive);
+    when(dbService.update(eq("members"), eq("member-id"), any(Member.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
-    memberService.updateMemberStatus("member-id");
+    String resp = memberService.updateMemberStatus("member-id", "1-rev");
 
-    verify(dbService).update("members", savedMemberActive);
+    assertNotNull(resp);
+    assertFalse(resp.isBlank());
+
+    verify(dbService).update("members", savedMemberActive.getId(), savedMemberActive);
 
     assertEquals("active", savedMemberActive.getStatus());
   }

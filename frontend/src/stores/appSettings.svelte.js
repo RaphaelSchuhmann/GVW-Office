@@ -8,4 +8,5 @@ export const appSettings = $state({
         "all": "Alle Kategorien",
         "Alle Kategorien": "all"
     }, // Library Page Categories
+    rev: null,
 });

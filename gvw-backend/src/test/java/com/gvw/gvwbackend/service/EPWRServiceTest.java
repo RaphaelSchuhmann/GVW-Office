@@ -37,6 +37,7 @@ public class EPWRServiceTest {
     when(hashUtil.createHash(any())).thenReturn("hashedToken");
 
     when(dbService.findByQuery(any(), any(), eq(EPWRToken.class))).thenReturn(List.of());
+    when(dbService.insert(eq("emergency_token"), any(EPWRToken.class))).thenReturn(true);
 
     NewEmergencyTokenDTO result = epwrService.getNewEmergencyToken();
 
@@ -55,12 +56,13 @@ public class EPWRServiceTest {
     when(hashUtil.createHash(any())).thenReturn("newHashedToken");
 
     when(dbService.findByQuery(any(), any(), eq(EPWRToken.class))).thenReturn(List.of(epwrToken));
+    when(dbService.insert(eq("emergency_token"), any(EPWRToken.class))).thenReturn(true);
 
     NewEmergencyTokenDTO result = epwrService.getNewEmergencyToken();
 
     assertNotNull(result.token());
 
-    verify(dbService).update(eq("emergency_token"), any(EPWRToken.class));
+    verify(dbService).insert(eq("emergency_token"), any(EPWRToken.class));
   }
 
   @Test
@@ -86,15 +88,18 @@ public class EPWRServiceTest {
     when(dbService.findByQuery(eq("users"), any(), eq(User.class))).thenReturn(admins);
 
     when(hashUtil.compare(rawToken, storedHash)).thenReturn(true);
+    when(dbService.insert(eq("emergency_token"), any(EPWRToken.class))).thenReturn(true);
 
     when(passwordEncoder.encode(any())).thenReturn("encoded-password");
+
+    when(dbService.insert(eq("users"), any(User.class))).thenReturn(true);
 
     NewEmergencyTokenDTO result = epwrService.useEmergencyToken(rawToken);
 
     assertNotNull(result);
     assertNotNull(result.token());
 
-    verify(dbService, times(2)).update(eq("users"), any(User.class));
+    verify(dbService, times(2)).insert(eq("users"), any(User.class));
 
     verify(passwordEncoder, times(2)).encode(any());
 
@@ -105,7 +110,7 @@ public class EPWRServiceTest {
     verify(mailService, times(2))
         .sendMail(anyString(), eq("Notfallzugang verwendet"), eq("emergencyTokenUsed"), any());
 
-    verify(dbService).update(eq("emergency_token"), eq(storedToken));
+    verify(dbService).insert(eq("emergency_token"), eq(storedToken));
   }
 
   @Test

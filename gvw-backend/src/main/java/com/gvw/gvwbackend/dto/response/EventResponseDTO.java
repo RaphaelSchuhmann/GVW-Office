@@ -4,6 +4,7 @@ import com.gvw.gvwbackend.model.Event;
 
 public record EventResponseDTO(
     String id,
+    String rev,
     String title,
     String type,
     String date,

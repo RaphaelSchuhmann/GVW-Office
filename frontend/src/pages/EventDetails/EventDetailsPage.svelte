@@ -37,11 +37,13 @@
 </script>
 
 {#if eventData}
-    {#if viewport.isMobile}
-        <EventDetailsMobile {eventData} bind:isEditing />
-    {:else}
-        <EventDetailsDesktop {eventData} bind:isEditing />
-    {/if}
+    {#key eventData.rev}
+        {#if viewport.isMobile}
+            <EventDetailsMobile {eventData} bind:isEditing />
+        {:else}
+            <EventDetailsDesktop {eventData} bind:isEditing />
+        {/if}
+    {/key}
 {:else}
     <p>Lade...</p>
 {/if}

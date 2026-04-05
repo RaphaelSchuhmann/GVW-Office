@@ -57,7 +57,14 @@ public class EventService {
           && event.getStatus().equals("upcoming")
           && event.getMode().equalsIgnoreCase("single")) {
         event.setStatus("finished");
-        dbService.update("events", event);
+        Map<String, Object> resp = dbService.update("events", event.getId(), event);
+
+        if (resp == null || !resp.containsKey("rev")) {
+          event.setStatus("upcoming");
+          continue;
+        }
+
+        event.setRev((String) resp.get("rev"));
         changed = true;
       }
     }
@@ -72,6 +79,7 @@ public class EventService {
                 m ->
                     new EventResponseDTO(
                         m.getId(),
+                        m.getRev(),
                         m.getTitle(),
                         m.getType(),
                         m.getDate(),
@@ -113,7 +121,7 @@ public class EventService {
     sseService.broadcastRefresh("EVENTS");
   }
 
-  public void updateEventStatus(String id) {
+  public String updateEventStatus(String id, String _rev) {
     if (id == null || id.isBlank()) {
       throw new BadRequestException("InvalidData");
     }
@@ -123,18 +131,26 @@ public class EventService {
       throw new NotFoundException("NotFound");
     }
 
+    event.setRev(_rev);
+
     if ("upcoming".equals(event.getStatus())) {
       event.setStatus("finished");
     } else {
       event.setStatus("upcoming");
     }
 
-    dbService.update("events", event);
+    Map<String, Object> resp = dbService.update("events", event.getId(), event);
 
     sseService.broadcastRefresh("EVENTS");
+
+    if (resp != null && resp.containsKey("rev")) {
+      return (String) resp.get("rev");
+    }
+
+    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
   }
 
-  public void updateEvent(UpdateEventRequestDTO request) {
+  public String updateEvent(UpdateEventRequestDTO request) {
     if (request.id() == null || request.id().isBlank()) {
       throw new BadRequestException("InvalidData");
     }
@@ -147,9 +163,17 @@ public class EventService {
 
     eventMapper.updateEventFromDto(request, event);
 
-    dbService.update("events", event);
+    event.setRev(request.rev());
+
+    Map<String, Object> resp = dbService.update("events", event.getId(), event);
 
     sseService.broadcastRefresh("EVENTS");
+
+    if (resp != null && resp.containsKey("rev")) {
+      return (String) resp.get("rev");
+    }
+
+    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
   }
 
   private Instant parseDMYToInstant(String dateStr) {

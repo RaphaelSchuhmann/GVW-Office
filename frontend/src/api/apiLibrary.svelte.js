@@ -140,12 +140,12 @@ export async function apiAddScore(formData) {
  * const { resp, body } = await updateScore(formData);
  *
  * if (resp?.ok) {
- *   console.log("Updated score");
+ *   console.log("Updated score: ", body.rev);
  * }
  */
 export async function apiUpdateScore(formData) {
     const resp = await httpPatch(`${apiUrl}/library/update`, formData, "", true, true);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
-    return { resp, body};
+    return { resp, body };
 }

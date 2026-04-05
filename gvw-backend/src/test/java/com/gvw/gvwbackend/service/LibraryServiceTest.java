@@ -32,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 @ExtendWith(MockitoExtension.class)
 public class LibraryServiceTest {
   @Mock private DbService dbService;
+  @Mock private SseService sseService;
 
   @InjectMocks private LibraryService libraryService;
 
@@ -118,13 +119,16 @@ public class LibraryServiceTest {
     existing.setFiles(new ArrayList<>());
 
     when(dbService.findById("library", "1", Score.class)).thenReturn(existing);
+    when(dbService.update(eq("library"), eq("1"), any(Score.class)))
+        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
 
     UpdateScoreRequestDTO request =
-        new UpdateScoreRequestDTO("1", "S1", "NewTitle", "Artist", "PDF", List.of("t1"), 1);
+        new UpdateScoreRequestDTO(
+            "1", "S1", "NewTitle", "Artist", "PDF", List.of("t1"), 1, "1-rev");
 
     libraryService.updateScore(request, List.of(), List.of());
 
-    verify(dbService).update(eq("library"), any(Score.class));
+    verify(dbService).update(eq("library"), eq("1"), any(Score.class));
   }
 
   @Test
