@@ -7,7 +7,6 @@ import com.gvw.gvwbackend.dto.response.ScoresResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.NotFoundException;
-import com.gvw.gvwbackend.model.Event;
 import com.gvw.gvwbackend.model.Score;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -21,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 

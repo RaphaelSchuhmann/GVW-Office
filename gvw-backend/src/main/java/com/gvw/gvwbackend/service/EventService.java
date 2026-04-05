@@ -15,9 +15,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
-import com.gvw.gvwbackend.model.Member;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpStatusCodeException;
 import tools.jackson.databind.ObjectMapper;
 
 @Service
