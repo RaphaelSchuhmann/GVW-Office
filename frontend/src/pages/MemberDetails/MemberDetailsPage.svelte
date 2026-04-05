@@ -2,11 +2,14 @@
     import { viewport } from "../../stores/viewport.svelte";
     import { membersStore } from "../../stores/members.svelte";
     import { push } from "svelte-spa-router";
-    import { init } from "../../services/filterService.svelte";
+    import { fetchAndSetRaw, init } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
 
     import MemberDetailsDesktop from "./MemberDetailsDesktop.svelte";
     import MemberDetailsMobile from "./MemberDetailsMobile.svelte";
+    import { lastRefresh } from "../../stores/sseStore.svelte.js";
+    import { memberExists } from "../../services/membersService.svelte.js";
+    import { addToast } from "../../stores/toasts.svelte.js";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -20,6 +23,8 @@
         if (!memberId) return null;
         return membersStore.raw.find(item => item.id === memberId) || null;
     });
+
+    let ready = false;
 
     $effect(() => {
         if (!user.loaded) return;
@@ -35,6 +40,28 @@
         } else if (!memberData) {
             push("/members")
         }
+
+        ready = true;
+    });
+
+    $effect(() => {
+        const _trigger = lastRefresh.MEMBERS;
+
+        if (!ready) return;
+
+        (async () => {
+            const exists = await memberExists(memberId);
+            if (!exists) {
+                addToast({
+                    title: "Mitglied wurde gelöscht",
+                    subTitle: "Dieses Mitglied wurde gelöscht und ist nicht mehr verfügbar.",
+                    type: "error"
+                });
+
+                await fetchAndSetRaw();
+                await push("/members");
+            }
+        })();
     });
 </script>
 

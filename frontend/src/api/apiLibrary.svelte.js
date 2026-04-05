@@ -29,6 +29,32 @@ export async function apiGetScores() {
 }
 
 /**
+ * Sends a check request to see whether a score still exists or not
+ *
+ * Sends a GET request to `/library/check/{id}` endpoint with an Authorization header.
+ * @param {string} id - The ID of the score to check
+ * @returns {Promise<{ resp: Response | null, body: any | null }>}
+ * An object containing the raw fetch Response (`resp`) and the parsed
+ * JSON response body (`body`). Returns `{ resp: null, body: null }`
+ * if the request fails before a response is received.
+ *
+ * The response body is expected to be empty.
+ *
+ * @example
+ * const { resp } = await apiCheckScore("score-id");
+ *
+ * if (resp?.ok) {
+ *   console.log("score checked");
+ * }
+ */
+export async function apiCheckScore(id) {
+    const resp = await httpGet(`${apiUrl}/library/check/${id}`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+/**
  * Deletes a score with the given ID
  *
  * Sends a DELETE request to `/library/delete/{id}` endpoint with an Authorization header

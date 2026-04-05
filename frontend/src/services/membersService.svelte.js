@@ -1,5 +1,5 @@
 import {
-    apiAddMember,
+    apiAddMember, apiCheckMember,
     apiDeleteMember,
     apiResetMembersPassword,
     apiUpdateMember,
@@ -45,6 +45,7 @@ export const statusMap = {
 };
 
 const isFetching = {
+    checkMember: false,
     newMember: false,
     updateMember: false,
     updateStatus: false,
@@ -86,6 +87,9 @@ function handleMemberError(errorType, context) {
             NOTFOUND: { title: "Mitglied nicht gefunden", sub: "Das gewählte Mitglied wurde im System nicht gefunden." },
             CONFLICT: { title: "Speicher-Konflikt", sub: "Jemand anderes hat den Status des Mitglieds bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen." },
             DEFAULT: { title: "Fehler beim Aktualisieren", sub: "Beim Aktualisieren des Mitglieds ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
+        },
+        CHECK: {
+            DEFAULT: { title: "Mitglied wurde gelöscht", sub: "Dieses Mitglied wurde gelöscht und ist nicht mehr verfügbar." },
         }
     };
 
@@ -98,6 +102,68 @@ function handleMemberError(errorType, context) {
         subTitle: viewport.isMobile ? "" : config.sub,
         type: "error"
     });
+}
+
+const pendingChecks = new Map();
+
+/**
+ * Checks whether a member with the given ID exists in the system.
+ *
+ * Responsibilities:
+ * - Prevents duplicate API calls by reusing an in-flight request (`pendingChecks`)
+ * - Validates input (returns false if no ID is provided)
+ * - Performs API request to verify existence
+ * - Delegates global API errors to the global handler
+ *
+ * Behavior:
+ * - Returns `false` if:
+ *   - No ID is provided
+ *   - The API responds with HTTP 404 (member does not exist)
+ * - Returns `true` if:
+ *   - The member exists (any non-404 successful response)
+ *   - A global API error occurs (e.g. UNAUTHORIZED, NETWORK)
+ *   - An unexpected exception is thrown
+ *
+ * Notes:
+ * - Concurrent calls share the same promise via `pendingChecks`
+ *   to avoid redundant network requests.
+ * - Errors default to `true` to avoid blocking dependent flows
+ *   (e.g. route guards or navigation logic).
+ *
+ * @async
+ * @function memberExists
+ * @param {string} id - ID of the member to check
+ * @returns {Promise<boolean>} Whether the member exists or should be treated as existing
+ */
+export async function memberExists(id) {
+    if (!id) return false;
+
+    if (pendingChecks.has(id)) return await pendingChecks.get(id);
+
+    isFetching.checkMember = true;
+
+    const request = (async () => {
+        try {
+            const { resp } = await apiCheckMember(id);
+            const normalized = normalizeResponse(resp);
+
+            if (normalized.status === 404) return false;
+
+            if (handleGlobalApiError(normalized)) return true;
+
+            return true;
+        } catch (e) {
+            return true;
+        } finally {
+            pendingChecks.delete(id);
+            if (pendingChecks.size === 0) {
+                isFetching.checkMember = false;
+            }
+        }
+    })();
+
+    pendingChecks.set(id, request);
+    return await request;
 }
 
 /**
@@ -136,7 +202,6 @@ export async function newMember(member) {
         isFetching.newMember = false;
     }
 }
-
 
 /**
  * Deletes a member by ID.

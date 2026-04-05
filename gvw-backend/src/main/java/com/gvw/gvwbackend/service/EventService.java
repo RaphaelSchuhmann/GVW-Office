@@ -14,6 +14,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -92,6 +93,17 @@ public class EventService {
             .toList();
 
     return new EventsResponseDTO(responseEvents);
+  }
+
+  public void checkEvent(String id) {
+    if (id == null || id.isBlank()) {
+      throw new BadRequestException("InvalidData");
+    }
+
+    Event event = dbService.findById("events", id, Event.class);
+    if (event == null) {
+      throw new NotFoundException("EventNotFound");
+    }
   }
 
   public void addEvent(AddEventRequestDTO request) {

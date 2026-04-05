@@ -1,4 +1,10 @@
-import { apiAddEvent, apiDeleteEvent, apiUpdateEvent, apiUpdateEventStatus } from "../api/apiEvents.svelte";
+import {
+    apiAddEvent,
+    apiCheckEvent,
+    apiDeleteEvent,
+    apiUpdateEvent,
+    apiUpdateEventStatus
+} from "../api/apiEvents.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
@@ -55,6 +61,7 @@ export const modeMap = {
 };
 
 const isFetching = {
+    checkEvent: false,
     newEvent: false,
     updateEvent: false,
     updateStatus: false,
@@ -152,6 +159,68 @@ function calculateMonthlyDateOccurrence(dayOfMonth) {
     const mm = String(targetDate.getMonth() + 1).padStart(2, "0");
     const yyyy = targetDate.getFullYear();
     return `${dd}.${mm}.${yyyy}`;
+}
+
+const pendingChecks = new Map();
+
+/**
+ * Checks whether an event with the given ID exists in the system.
+ *
+ * Responsibilities:
+ * - Prevents duplicate API calls by reusing an in-flight request (`pendingChecks`)
+ * - Validates input (returns false if no ID is provided)
+ * - Performs API request to verify existence
+ * - Delegates global API errors to the global handler
+ *
+ * Behavior:
+ * - Returns `false` if:
+ *   - No ID is provided
+ *   - The API responds with HTTP 404 (event does not exist)
+ * - Returns `true` if:
+ *   - The event exists (any non-404 successful response)
+ *   - A global API error occurs (e.g. UNAUTHORIZED, NETWORK)
+ *   - An unexpected exception is thrown
+ *
+ * Notes:
+ * - Concurrent calls share the same promise via `pendingChecks`
+ *   to avoid redundant network requests.
+ * - Errors default to `true` to avoid blocking dependent flows
+ *   (e.g. route guards or navigation logic).
+ *
+ * @async
+ * @function eventExists
+ * @param {string} id - ID of the event to check
+ * @returns {Promise<boolean>} Whether the event exists or should be treated as existing
+ */
+export async function eventExists(id) {
+    if (!id) return false;
+
+    if (pendingChecks.has(id)) return await pendingChecks.get(id);
+
+    isFetching.checkEvent = true;
+
+    const request = (async () => {
+        try {
+            const { resp } = await apiCheckEvent(id);
+            const normalized = normalizeResponse(resp);
+
+            if (normalized.status === 404) return false;
+
+            if (handleGlobalApiError(normalized)) return true;
+
+            return true;
+        } catch (e) {
+            return true;
+        } finally {
+            pendingChecks.delete(id);
+            if (pendingChecks.size === 0) {
+                isFetching.checkEvent = false;
+            }
+        }
+    })();
+
+    pendingChecks.set(id, request);
+    return await request;
 }
 
 /**

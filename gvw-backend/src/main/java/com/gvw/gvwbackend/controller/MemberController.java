@@ -27,6 +27,13 @@ public class MemberController {
     return memberService.getMembers();
   }
 
+  @GetMapping("/check/{id}")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
+  @ResponseStatus(HttpStatus.OK)
+  public void checkMember(@PathVariable String id) {
+    memberService.checkMember(id);
+  }
+
   @PostMapping("/add")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")

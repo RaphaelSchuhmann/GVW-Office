@@ -40,6 +40,12 @@ public class LibraryController {
     return libraryService.getAllScores();
   }
 
+  @GetMapping("/check/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  public void checkScore(@PathVariable String id) {
+    libraryService.checkScore(id);
+  }
+
   @PostMapping(value = "/new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN')")

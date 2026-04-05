@@ -70,6 +70,17 @@ public class LibraryService {
     return new ScoresResponseDTO(responseScores);
   }
 
+  public void checkScore(String id) {
+    if (id == null || id.isBlank()) {
+      throw new BadRequestException("InvalidData");
+    }
+
+    Score score = dbService.findById("library", id, Score.class);
+    if (score == null) {
+      throw new NotFoundException("ScoreNotFound");
+    }
+  }
+
   public void createScore(AddScoreRequestDTO request, List<MultipartFile> files) {
     if (existsInLibrary(request.scoreId(), request.title(), request.artist())) {
       throw new ConflictException("ScoreAlreadyExists");

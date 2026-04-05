@@ -76,6 +76,17 @@ public class MemberService {
     return new MembersResponseDTO(responseMembers);
   }
 
+  public void checkMember(String id) {
+    if (id == null || id.isBlank()) {
+      throw new BadRequestException("InvalidData");
+    }
+
+    Member member = dbService.findById("members", id, Member.class);
+    if (member == null) {
+      throw new NotFoundException("MemberNotFound");
+    }
+  }
+
   public void addMember(AddMemberRequestDTO request) {
     if (emailExists(request.email())) {
       throw new ConflictException("EmailAlreadyInUse");

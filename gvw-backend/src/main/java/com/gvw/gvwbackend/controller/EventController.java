@@ -32,6 +32,12 @@ public class EventController {
     eventService.addEvent(request);
   }
 
+  @GetMapping("/check/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  public void checkEvent(@PathVariable String id) {
+    eventService.checkEvent(id);
+  }
+
   @DeleteMapping("/delete/{id}")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")

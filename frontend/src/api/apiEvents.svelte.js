@@ -29,6 +29,33 @@ export async function apiGetEvents() {
 }
 
 /**
+ * Sends a check request to see whether an event still exists or not
+ *
+ * Sends a GET request to `/events/check/{id}` endpoint with an Authorization header.
+ *
+ * @param {string} id - The ID of the event to check
+ * @returns {Promise<{ resp: Response | null, body: any | null }>}
+ * An object containing the raw fetch Response (`resp`) and the parsed
+ * JSON response body (`body`). Returns `{ resp: null, body: null }`
+ * if the request fails before a response is received.
+ *
+ * The response body is expected to be empty.
+ *
+ * @example
+ * const { resp } = await apiCheckEvent("event-id");
+ *
+ * if (resp?.ok) {
+ *   console.log("event checked");
+ * }
+ */
+export async function apiCheckEvent(id) {
+    const resp = await httpGet(`${apiUrl}/events/check/${id}`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+/**
  * Adds an event
  *
  * Sends a POST request to `/events/add` endpoint with an Authorization header.

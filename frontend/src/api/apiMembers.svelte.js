@@ -15,7 +15,7 @@ const apiUrl = __API_URL__;
  * The response body may include complete member objects
  *
  * @example
- * const { resp, body } = await getMembers();
+ * const { resp, body } = await apiGetMembers();
  *
  * if (resp?.ok) {
  *   console.log("Members: ", body);
@@ -23,6 +23,33 @@ const apiUrl = __API_URL__;
  */
 export async function apiGetMembers() {
     const resp = await httpGet(`${apiUrl}/members/all`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+/**
+ * Sends a check request to see whether a member still exists or not
+ *
+ * Sends a GET request to `/members/check/{id}` endpoint with an Authorization header.
+ *
+ * @param {string} id - The ID of the member to check
+ * @returns {Promise<{ resp: Response | null, body: any | null }>}
+ * An object containing the raw fetch Response (`resp`) and the parsed
+ * JSON response body (`body`). Returns `{ resp: null, body: null }`
+ * if the request fails before a response is received.
+ *
+ * The response body is expected to be empty.
+ *
+ * @example
+ * const { resp } = await apiCheckMember("member-id");
+ *
+ * if (resp?.ok) {
+ *   console.log("member checked");
+ * }
+ */
+export async function apiCheckMember(id) {
+    const resp = await httpGet(`${apiUrl}/members/check/${id}`);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
@@ -40,7 +67,7 @@ export async function apiGetMembers() {
  * if the request fails before a response is received.
  *
  * @example
- * const { resp } = await addMember({
+ * const { resp } = await apiAddMember({
  *     name: "John",
  *     surname: "Doe",
  *     email: "john.doe@example.com",
@@ -76,7 +103,7 @@ export async function apiAddMember(member) {
  * if the request fails before a response is received.
  *
  * @example
- * const { resp } = await deleteMember(1);
+ * const { resp } = await apiDeleteMember(1);
  *
  * if (resp?.ok) {
  *   console.log("Member deleted");
@@ -152,7 +179,7 @@ export async function apiResetMembersPassword(id) {
  * if the request fails before a response is received.
  *
  * @example
- * const { resp, body } = await updateMember({
+ * const { resp, body } = await apiUpdateMember({
  *     id: 1,
  *     rev: 1,
  *     name: "John",
