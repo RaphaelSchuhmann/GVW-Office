@@ -104,13 +104,13 @@ function handleMemberError(errorType, context) {
     });
 }
 
-let pendingCheck = null;
+const pendingChecks = new Map();
 
 /**
  * Checks whether a member with the given ID exists in the system.
  *
  * Responsibilities:
- * - Prevents duplicate API calls by reusing an in-flight request (`pendingCheck`)
+ * - Prevents duplicate API calls by reusing an in-flight request (`pendingChecks`)
  * - Validates input (returns false if no ID is provided)
  * - Performs API request to verify existence
  * - Delegates global API errors to the global handler
@@ -125,7 +125,7 @@ let pendingCheck = null;
  *   - An unexpected exception is thrown
  *
  * Notes:
- * - Concurrent calls share the same promise via `pendingCheck`
+ * - Concurrent calls share the same promise via `pendingChecks`
  *   to avoid redundant network requests.
  * - Errors default to `true` to avoid blocking dependent flows
  *   (e.g. route guards or navigation logic).
@@ -138,11 +138,11 @@ let pendingCheck = null;
 export async function memberExists(id) {
     if (!id) return false;
 
-    if (pendingCheck) return await pendingCheck;
+    if (pendingChecks.has(id)) return await pendingChecks.get(id);
 
     isFetching.checkMember = true;
 
-    pendingCheck = (async () => {
+    const request = (async () => {
         try {
             const { resp } = await apiCheckMember(id);
             const normalized = normalizeResponse(resp);
@@ -155,12 +155,15 @@ export async function memberExists(id) {
         } catch (e) {
             return true;
         } finally {
-            isFetching.checkMember = false;
-            pendingCheck = null;
+            pendingChecks.delete(id);
+            if (pendingChecks.size === 0) {
+                isFetching.checkMember = false;
+            }
         }
     })();
 
-    return await pendingCheck;
+    pendingChecks.set(id, request);
+    return await request;
 }
 
 /**

@@ -161,13 +161,13 @@ function calculateMonthlyDateOccurrence(dayOfMonth) {
     return `${dd}.${mm}.${yyyy}`;
 }
 
-let pendingCheck = null;
+const pendingChecks = new Map();
 
 /**
  * Checks whether an event with the given ID exists in the system.
  *
  * Responsibilities:
- * - Prevents duplicate API calls by reusing an in-flight request (`pendingCheck`)
+ * - Prevents duplicate API calls by reusing an in-flight request (`pendingChecks`)
  * - Validates input (returns false if no ID is provided)
  * - Performs API request to verify existence
  * - Delegates global API errors to the global handler
@@ -182,7 +182,7 @@ let pendingCheck = null;
  *   - An unexpected exception is thrown
  *
  * Notes:
- * - Concurrent calls share the same promise via `pendingCheck`
+ * - Concurrent calls share the same promise via `pendingChecks`
  *   to avoid redundant network requests.
  * - Errors default to `true` to avoid blocking dependent flows
  *   (e.g. route guards or navigation logic).
@@ -195,11 +195,11 @@ let pendingCheck = null;
 export async function eventExists(id) {
     if (!id) return false;
 
-    if (pendingCheck) return await pendingCheck;
+    if (pendingChecks.has(id)) return await pendingChecks.get(id);
 
     isFetching.checkEvent = true;
 
-    pendingCheck = (async () => {
+    const request = (async () => {
         try {
             const { resp } = await apiCheckEvent(id);
             const normalized = normalizeResponse(resp);
@@ -212,12 +212,15 @@ export async function eventExists(id) {
         } catch (e) {
             return true;
         } finally {
-            isFetching.checkEvent = false;
-            pendingCheck = null;
+            pendingChecks.delete(id);
+            if (pendingChecks.size === 0) {
+                isFetching.checkEvent = false;
+            }
         }
     })();
 
-    return await pendingCheck;
+    pendingChecks.set(id, request);
+    return await request;
 }
 
 /**
