@@ -77,11 +77,7 @@ public class LibraryService {
       throw new BadRequestException("InvalidData");
     }
 
-    try {
-      dbService.findById("library", id, Score.class);
-    } catch (HttpStatusCodeException e) {
-      throw new NotFoundException("ScoreNotFound", e);
-    }
+    dbService.findById("library", id, Score.class);
   }
 
   public void createScore(AddScoreRequestDTO request, List<MultipartFile> files) {

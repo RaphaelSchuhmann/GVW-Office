@@ -102,11 +102,7 @@ public class EventService {
       throw new BadRequestException("InvalidData");
     }
 
-    try {
-      dbService.findById("events", id, Event.class);
-    } catch (HttpStatusCodeException e) {
-      throw new NotFoundException("EventNotFound", e);
-    }
+    dbService.findById("events", id, Event.class);
   }
 
   public void addEvent(AddEventRequestDTO request) {
