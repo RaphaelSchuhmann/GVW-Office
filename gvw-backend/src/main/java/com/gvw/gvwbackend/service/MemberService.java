@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import tools.jackson.databind.ObjectMapper;
 
 @Service
@@ -74,6 +75,18 @@ public class MemberService {
             .toList();
 
     return new MembersResponseDTO(responseMembers);
+  }
+
+  public void checkMember(String id) {
+    if (id == null || id.isBlank()) {
+      throw new BadRequestException("InvalidData");
+    }
+
+    try {
+      dbService.findById("members", id, Member.class);
+    } catch (HttpStatusCodeException e) {
+      throw new NotFoundException("MemberNotFound", e);
+    }
   }
 
   public void addMember(AddMemberRequestDTO request) {

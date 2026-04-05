@@ -7,6 +7,7 @@ import com.gvw.gvwbackend.dto.response.ScoresResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.NotFoundException;
+import com.gvw.gvwbackend.model.Event;
 import com.gvw.gvwbackend.model.Score;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
@@ -68,6 +70,18 @@ public class LibraryService {
             .toList();
 
     return new ScoresResponseDTO(responseScores);
+  }
+
+  public void checkScore(String id) {
+    if (id == null || id.isBlank()) {
+      throw new BadRequestException("InvalidData");
+    }
+
+    try {
+      dbService.findById("library", id, Score.class);
+    } catch (HttpStatusCodeException e) {
+      throw new NotFoundException("ScoreNotFound", e);
+    }
   }
 
   public void createScore(AddScoreRequestDTO request, List<MultipartFile> files) {

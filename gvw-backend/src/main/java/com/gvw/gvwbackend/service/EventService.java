@@ -14,7 +14,10 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+
+import com.gvw.gvwbackend.model.Member;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import tools.jackson.databind.ObjectMapper;
 
 @Service
@@ -92,6 +95,18 @@ public class EventService {
             .toList();
 
     return new EventsResponseDTO(responseEvents);
+  }
+
+  public void checkEvent(String id) {
+    if (id == null || id.isBlank()) {
+      throw new BadRequestException("InvalidData");
+    }
+
+    try {
+      dbService.findById("events", id, Event.class);
+    } catch (HttpStatusCodeException e) {
+      throw new NotFoundException("EventNotFound", e);
+    }
   }
 
   public void addEvent(AddEventRequestDTO request) {
