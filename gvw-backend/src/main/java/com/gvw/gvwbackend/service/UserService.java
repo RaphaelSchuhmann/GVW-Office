@@ -100,17 +100,17 @@ public class UserService {
     user.setChangePassword(true);
     Map<String, Object> resp = dbService.update("users", user.getId(), user);
 
+    if (resp == null || !resp.containsKey("rev")) {
+      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    }
+
     mailService.sendMail(
         user.getEmail(),
         "GVW-Office: Passwort zurückgesetzt",
         "resetPassword",
         Map.of("tempPassword", temporaryPassword));
 
-    if (resp != null && resp.containsKey("rev")) {
-      return (String) resp.get("rev");
-    }
-
-    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    return (String) resp.get("rev");
   }
 
   private User getUserByMemberId(String memberId) {

@@ -59,10 +59,12 @@ public class EventService {
         event.setStatus("finished");
         Map<String, Object> resp = dbService.update("events", event.getId(), event);
 
-        if (resp != null && resp.containsKey("rev")) {
-          event.setRev((String) resp.get("rev"));
+        if (resp == null || !resp.containsKey("rev")) {
+          event.setStatus("upcoming");
+          continue;
         }
 
+        event.setRev((String) resp.get("rev"));
         changed = true;
       }
     }

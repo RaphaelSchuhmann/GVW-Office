@@ -65,7 +65,6 @@ public class DbServiceTest {
 
     Map<String, Object> result = dbService.update("test_db", "test-id", Map.of("name", "newName"));
 
-    // 4. Assertions
     assertNotNull(result);
     assertEquals("2-newrev", result.get("rev"));
     assertTrue((Boolean) result.get("ok"));

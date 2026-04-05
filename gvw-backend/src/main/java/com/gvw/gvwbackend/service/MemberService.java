@@ -157,8 +157,8 @@ public class MemberService {
 
     member.setRev(request.rev());
 
-    Map<String, Object> memberResult = dbService.update("members", member.getId(), member);
     Map<String, Object> userResult = dbService.update("users", user.getId(), user);
+    Map<String, Object> memberResult = dbService.update("members", member.getId(), member);
 
     sseService.broadcastRefresh("MEMBERS");
 
