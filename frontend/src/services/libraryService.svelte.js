@@ -11,7 +11,6 @@ import { normalizeResponse } from "../api/http.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
-import { apiCheckEvent } from "../api/apiEvents.svelte.js";
 
 export const voiceMap = {
     "t": "Tenor",
