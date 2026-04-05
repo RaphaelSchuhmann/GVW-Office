@@ -36,9 +36,7 @@ export function handleGlobalApiError(result) {
                 type: "error"
             });
             logout();
-            (async () => {
-                await push("/");
-            })();
+            push("/");
             return true;
         case "SERVER":
             addToast({

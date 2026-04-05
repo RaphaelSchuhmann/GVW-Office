@@ -33,6 +33,7 @@ export async function apiGetMembers() {
  *
  * Sends a GET request to `/members/check/{id}` endpoint with an Authorization header.
  *
+ * @param {string} id - The ID of the member to check
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
  * An object containing the raw fetch Response (`resp`) and the parsed
  * JSON response body (`body`). Returns `{ resp: null, body: null }`

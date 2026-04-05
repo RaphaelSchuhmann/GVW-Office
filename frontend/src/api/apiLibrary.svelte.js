@@ -32,7 +32,7 @@ export async function apiGetScores() {
  * Sends a check request to see whether a score still exists or not
  *
  * Sends a GET request to `/library/check/{id}` endpoint with an Authorization header.
- *
+ * @param {string} id - The ID of the score to check
  * @returns {Promise<{ resp: Response | null, body: any | null }>}
  * An object containing the raw fetch Response (`resp`) and the parsed
  * JSON response body (`body`). Returns `{ resp: null, body: null }`
