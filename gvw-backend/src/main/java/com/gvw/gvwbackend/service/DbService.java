@@ -16,10 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -231,6 +228,12 @@ public class DbService {
       }
       throw new DatabaseConnectionException("DB connection failed", e);
     } catch (HttpStatusCodeException e) {
+      // Allow 404 returns to be actually thrown
+      if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+        log.debug("Document not found in DB {} {}", kv("db", db), kv("status", 404));
+        throw e;
+      }
+
       log.error(
           "DB request failed {} {}", kv("db", db), kv("status", e.getStatusCode().value()), e);
       throw new DatabaseConnectionException("DB request failed", e);
