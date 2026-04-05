@@ -9,6 +9,7 @@
     import EventDetailsMobile from "./EventDetailsMobile.svelte";
     import { lastRefresh } from "../../stores/sseStore.svelte.js";
     import { eventExists } from "../../services/eventsService.svelte.js";
+    import { addToast } from "../../stores/toasts.svelte.js";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -49,6 +50,12 @@
         (async () => {
             const exists = await eventExists(eventId);
             if (!exists) {
+                addToast({
+                    title: "Veranstaltung wurde gelöscht",
+                    subTitle: "Diese Veranstaltung wurde gelöscht und ist nicht mehr verfügbar.",
+                    type: "error"
+                });
+
                 await fetchAndSetRaw();
                 await push("/events");
             }

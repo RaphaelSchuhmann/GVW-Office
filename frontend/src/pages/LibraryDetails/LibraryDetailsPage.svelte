@@ -9,6 +9,7 @@
     import { user } from "../../stores/user.svelte";
     import { lastRefresh } from "../../stores/sseStore.svelte.js";
     import { scoreExists } from "../../services/libraryService.svelte.js";
+    import { addToast } from "../../stores/toasts.svelte.js";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -49,6 +50,12 @@
         (async () => {
             const exists = await scoreExists(scoreId);
             if (!exists) {
+                addToast({
+                    title: "Noteneintrag wurde gelöscht",
+                    subTitle: "Dieser Noteneintrag wurde gelöscht und ist nicht mehr verfügbar.",
+                    type: "error"
+                });
+
                 await fetchAndSetRaw();
                 await push("/library");
             }

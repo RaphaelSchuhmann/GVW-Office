@@ -9,6 +9,7 @@
     import MemberDetailsMobile from "./MemberDetailsMobile.svelte";
     import { lastRefresh } from "../../stores/sseStore.svelte.js";
     import { memberExists } from "../../services/membersService.svelte.js";
+    import { addToast } from "../../stores/toasts.svelte.js";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -51,6 +52,12 @@
         (async () => {
             const exists = await memberExists(memberId);
             if (!exists) {
+                addToast({
+                    title: "Mitglied wurde gelöscht",
+                    subTitle: "Dieses Mitglied wurde gelöscht und ist nicht mehr verfügbar.",
+                    type: "error"
+                });
+
                 await fetchAndSetRaw();
                 await push("/members");
             }
