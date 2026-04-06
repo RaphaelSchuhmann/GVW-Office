@@ -12,75 +12,17 @@
     import Modal from "../../components/Modal.svelte";
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
+    import { dashboardStore } from "../../stores/dashboard.svelte.js";
+    import { prepareEvents, getVoiceCounts } from "../../services/dashboardService.svelte.js";
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal = $state();
 
     let maxMembers = $state("");
-    let events = $state([]);
 
-    $effect(() => {
-        DEVPopulateEvents();
-    });
-
-    function DEVPopulateEvents() {
-        events[0] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Probe"
-        };
-        events[1] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Konzert"
-        };
-        events[2] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Meeting"
-        };
-
-        events[3] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Probe"
-        };
-        events[4] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Konzert"
-        };
-        events[5] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Meeting"
-        };
-
-        events[6] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Probe"
-        };
-        events[7] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Konzert"
-        };
-        events[8] = {
-            title: "Wöchentliche Chorprobe",
-            time: "07.11.2025 - 19:30",
-            location: "Eustachius-Kugler-Straße 1, 91350 Gremsdorf",
-            type: "Meeting"
-        };
-    }
+    let events = $derived(prepareEvents());
+    let activeMembers = $derived(dashboardStore.members.filter(m => m.status === "active").length);
+    let voiceCounts = $derived(getVoiceCounts());
 
     async function updateMaxMembersVoiceDistribution() {
         let updatedMaxMembers = Number(maxMembers);
@@ -121,8 +63,8 @@
                             class="material-symbols-rounded text-icon-dt-4 text-gv-secondary-text ml-auto">group</span>
                     </div>
                     <p class="text-dt-3 text-black w-full text-start">
-                        <span>7</span>
-                        <span class="text-dt-4 text-gv-light-text"> / 19</span>
+                        <span>{activeMembers}</span>
+                        <span class="text-dt-4 text-gv-light-text"> / {dashboardStore.members.length}</span>
                     </p>
                 </Card>
                 <Card padding="5" justify="justify-around">
@@ -132,8 +74,8 @@
                             class="material-symbols-rounded text-icon-dt-4 text-gv-secondary-text ml-auto">calendar_today</span>
                     </div>
                     <p class="text-dt-3 text-black w-full text-start">
-                        <span>4</span>
-                        <span class="text-dt-4 text-gv-light-text"> / 6</span>
+                        <span>{dashboardStore.upcomingEvents.length}</span>
+                        <span class="text-dt-4 text-gv-light-text"> / {dashboardStore.totalEvents}</span>
                     </p>
                 </Card>
                 <Card padding="5" justify="justify-around">
@@ -142,7 +84,7 @@
                         <span
                             class="material-symbols-rounded text-icon-dt-4 text-gv-secondary-text ml-auto">music_note</span>
                     </div>
-                    <p class="text-dt-3 text-black w-full text-start">8</p>
+                    <p class="text-dt-3 text-black w-full text-start">{dashboardStore.totalScores}</p>
                 </Card>
             </div>
 
@@ -173,10 +115,10 @@
                         </p>
                     </div>
                     <div class="w-full min-h-0 overflow-x-hidden overflow-y-auto flex flex-col items-center pr-2">
-                        <VoiceDistribution voice="1. Tenor" voiceMembers={4} totalMembers={appSettings.maxMembers} />
-                        <VoiceDistribution voice="2. Tenor" voiceMembers={5} totalMembers={appSettings.maxMembers} />
-                        <VoiceDistribution voice="1. Bass" voiceMembers={5} totalMembers={appSettings.maxMembers} />
-                        <VoiceDistribution voice="2. Bass" voiceMembers={4} totalMembers={appSettings.maxMembers} />
+                        <VoiceDistribution voice="1. Tenor" voiceMembers={voiceCounts.tenor1} totalMembers={appSettings.maxMembers} />
+                        <VoiceDistribution voice="2. Tenor" voiceMembers={voiceCounts.tenor2} totalMembers={appSettings.maxMembers} />
+                        <VoiceDistribution voice="1. Bass" voiceMembers={voiceCounts.bass1} totalMembers={appSettings.maxMembers} />
+                        <VoiceDistribution voice="2. Bass" voiceMembers={voiceCounts.bass2} totalMembers={appSettings.maxMembers} />
                     </div>
                     {#if user.role === "board_member" || user.role === "admin"}
                         <div class="w-full flex items-center justify-end pr-2 mt-5">

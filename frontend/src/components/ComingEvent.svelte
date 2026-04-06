@@ -1,27 +1,30 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { capitalizeWords } from "../services/utils";
     import Chip from "./Chip.svelte";
+    import { typeMap } from "../services/eventsService.svelte.js";
 
     let {
         title = "",
         time = "",
         location = "",
-        type = "konzert",
+        type = "other",
         margin = "",
         isMobile = false,
         ...restProps
     } = $props();
 
     const displayType = $derived.by(() => {
-        const normalized = typeof type === "string" ? type.trim().toLowerCase() : "";
-        const validTypes = ["probe", "konzert", "meeting"];
+        const raw = String(type ?? "").trim();
+        const canonical = ["all", "practice", "meeting", "concert", "other"].includes(raw)
+            ? raw
+            : (typeMap[raw] ?? "other");
 
-        if (!validTypes.includes(normalized)) {
-            console.warn(`Type ${String(type)} is not a valid type`);
-            return "Konzert";
+        if (!["all", "practice", "meeting", "concert", "other"].includes(canonical)) {
+            console.warn(`Type ${type} is not a valid type`);
+            return typeMap["other"];
         }
-        return capitalizeWords(normalized);
+
+        return typeMap[canonical];
     });
 </script>
 
@@ -35,6 +38,6 @@
         <p class="text-dt-6 text-gv-light-text">{location}</p>
     </div>
     <div class={`${isMobile ? "mt-2" : "ml-auto"}`}>
-        <Chip text={displayType}/>
+        <Chip text={displayType} />
     </div>
 </div>
