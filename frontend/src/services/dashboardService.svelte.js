@@ -43,6 +43,7 @@ export async function loadDashboardData() {
                 subTitle: viewport.isMobile ? "" : "Beim Laden der Dashboard Daten ist ein Fehler aufgetreten.",
                 type: "warning"
             });
+            return;
         }
 
         dashboardStore.members = body.members;

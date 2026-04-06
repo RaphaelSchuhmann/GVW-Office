@@ -18,7 +18,8 @@
 
         (async () => {
             await ensureUserData();
-            loadDashboardData();
+            if (!auth.token) return;
+            await loadDashboardData();
             ready = true;
         })();
     });
