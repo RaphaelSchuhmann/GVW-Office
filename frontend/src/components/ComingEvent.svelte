@@ -14,12 +14,17 @@
     } = $props();
 
     const displayType = $derived.by(() => {
-        if (typeMap[type] === undefined) {
+        const raw = String(type ?? "").trim();
+        const canonical = ["all", "practice", "meeting", "concert", "other"].includes(raw)
+            ? raw
+            : (typeMap[raw] ?? "other");
+
+        if (!["all", "practice", "meeting", "concert", "other"].includes(canonical)) {
             console.warn(`Type ${type} is not a valid type`);
             return typeMap["other"];
         }
 
-        return typeMap[type];
+        return typeMap[canonical];
     });
 </script>
 
@@ -33,6 +38,6 @@
         <p class="text-dt-6 text-gv-light-text">{location}</p>
     </div>
     <div class={`${isMobile ? "mt-2" : "ml-auto"}`}>
-        <Chip text={displayType}/>
+        <Chip text={displayType} />
     </div>
 </div>

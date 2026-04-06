@@ -13,6 +13,7 @@
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import { dashboardStore } from "../../stores/dashboard.svelte.js";
+    import { prepareEvents, getVoiceCounts } from "../../services/dashboardService.svelte.js";
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal = $state();
@@ -21,26 +22,7 @@
 
     let events = $derived(prepareEvents());
     let activeMembers = $derived(dashboardStore.members.filter(m => m.status === "active").length);
-    let voiceCounts = $derived(getVoiceCounts())
-
-    function prepareEvents() {
-        const events = [];
-
-        dashboardStore.upcomingEvents.forEach((event) => {
-            events.push({title: event.title, time: `${event.date} - ${event.time}`, location: event.location, type: event.type});
-        });
-
-        return events;
-    }
-
-    function getVoiceCounts() {
-        return {
-            tenor1: dashboardStore.members.filter(m => m.voice === "tenor1").length,
-            tenor2: dashboardStore.members.filter(m => m.voice === "tenor2").length,
-            bass1: dashboardStore.members.filter(m => m.voice === "bass1").length,
-            bass2: dashboardStore.members.filter(m => m.voice === "bass2").length,
-        };
-    }
+    let voiceCounts = $derived(getVoiceCounts());
 
     async function updateMaxMembersVoiceDistribution() {
         let updatedMaxMembers = Number(maxMembers);

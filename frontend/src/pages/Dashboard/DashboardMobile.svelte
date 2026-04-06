@@ -13,6 +13,7 @@
     import { tryUpdateMaxMembers } from "../../services/appSettingsService.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import { dashboardStore } from "../../stores/dashboard.svelte.js";
+    import { prepareEvents, getVoiceCounts } from "../../services/dashboardService.svelte.js";
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal = $state();
@@ -22,25 +23,6 @@
     let events = $derived(prepareEvents());
     let activeMembers = $derived(dashboardStore.members.filter(m => m.status === "active").length);
     let voiceCounts = $derived(getVoiceCounts())
-
-    function prepareEvents() {
-        const events = [];
-
-        dashboardStore.upcomingEvents.forEach((event) => {
-            events.push({title: event.title, time: `${event.date} - ${event.time}`, location: event.location, type: event.type});
-        });
-
-        return events;
-    }
-
-    function getVoiceCounts() {
-        return {
-            tenor1: dashboardStore.members.filter(m => m.voice === "tenor1").length,
-            tenor2: dashboardStore.members.filter(m => m.voice === "tenor2").length,
-            bass1: dashboardStore.members.filter(m => m.voice === "bass1").length,
-            bass2: dashboardStore.members.filter(m => m.voice === "bass2").length,
-        };
-    }
 
     /**
      * Updates the maximum members per voice setting
@@ -142,10 +124,10 @@
                         </p>
                     </div>
                     <div class="w-full min-h-0 overflow-x-hidden overflow-y-auto flex flex-col items-center pr-2">
-                        <VoiceDistribution voice="1. Tenor" voiceMembers={voiceCounts.tenor1} totalMembers={appSettings.maxMembers} />
-                        <VoiceDistribution voice="2. Tenor" voiceMembers={voiceCounts.tenor2} totalMembers={appSettings.maxMembers} />
-                        <VoiceDistribution voice="1. Bass" voiceMembers={voiceCounts.bass1} totalMembers={appSettings.maxMembers} />
-                        <VoiceDistribution voice="2. Bass" voiceMembers={voiceCounts.bass2} totalMembers={appSettings.maxMembers} />
+                        <VoiceDistribution isMobile={true} voice="1. Tenor" voiceMembers={voiceCounts.tenor1} totalMembers={appSettings.maxMembers} />
+                        <VoiceDistribution isMobile={true} voice="2. Tenor" voiceMembers={voiceCounts.tenor2} totalMembers={appSettings.maxMembers} />
+                        <VoiceDistribution isMobile={true} voice="1. Bass" voiceMembers={voiceCounts.bass1} totalMembers={appSettings.maxMembers} />
+                        <VoiceDistribution isMobile={true} voice="2. Bass" voiceMembers={voiceCounts.bass2} totalMembers={appSettings.maxMembers} />
                     </div>
                     {#if user.role === "board_member" || user.role === "admin"}
                         <div class="w-full flex items-center justify-end pr-2 mt-5">
