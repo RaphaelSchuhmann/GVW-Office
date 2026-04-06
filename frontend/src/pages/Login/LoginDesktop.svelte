@@ -15,6 +15,7 @@
 
     let email = $state("");
     let password = $state("");
+    let isFetching = $state(false);
 
     $effect(() => {
         const checkAuth = async () => {
@@ -65,48 +66,64 @@
             return;
         }
 
-        const { resp, body } = await loginUser($state.snapshot(email), $state.snapshot(password));
-        const normalizedResponse = normalizeResponse(resp);
+        if (isFetching) return;
+        isFetching = true;
 
-        if (handleGlobalApiError(normalizedResponse)) return;
+        try {
+            const { resp, body } = await loginUser($state.snapshot(email), $state.snapshot(password));
+            const normalizedResponse = normalizeResponse(resp);
 
-        if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "REQUESTTIMEOUT" && body?.retryAfter) {
-                const remainingMinutes = Math.ceil((new Date(body.retryAfter).getTime() - Date.now()) / 60000);
-                addToast({
-                    title: "Zu viele Anmeldeversuche",
-                    subTitle: `Konto gesperrt. Versuchen Sie es in ${remainingMinutes} Minute${remainingMinutes !== 1 ? "n" : ""} erneut.`,
-                    type: "warning",
-                });
-            } else if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({
-                    title: "Benutzer nicht gefunden",
-                    subTitle: "Es wurde kein Konto mit dieser E-Mail gefunden.",
-                    type: "error"
-                });
+
+            if (!normalizedResponse.ok) {
+                if (normalizedResponse.errorType === "REQUESTTIMEOUT" && body?.retryAfter) {
+                    const remainingMinutes = Math.ceil((new Date(body.retryAfter).getTime() - Date.now()) / 60000);
+                    addToast({
+                        title: "Zu viele Anmeldeversuche",
+                        subTitle: `Konto gesperrt. Versuchen Sie es in ${remainingMinutes} Minute${remainingMinutes !== 1 ? "n" : ""} erneut.`,
+                        type: "warning",
+                    });
+                } else if (normalizedResponse.errorType === "NOTFOUND") {
+                    addToast({
+                        title: "Benutzer nicht gefunden",
+                        subTitle: "Es wurde kein Konto mit dieser E-Mail gefunden.",
+                        type: "error"
+                    });
+                } else if (normalizedResponse.errorType === "UNAUTHORIZED") {
+                    addToast({
+                        title: "E-Mail oder Passwort falsch",
+                        subTitle: "Die E-Mail oder das Passwort ist falsch.",
+                        type: "error"
+                    });
+                    return;
+                }
+
+                if (handleGlobalApiError(normalizedResponse)) return;
+
+                return;
             }
-            return;
-        }
 
-        if (!body?.authToken) {
-            addToast({
-                title: "Anmeldung fehlgeschlagen",
-                subTitle: "Vom Server wurde keine gültige Sitzung zurückgegeben.",
-                type: "error",
-            });
-            return;
-        }
+            if (!body?.authToken) {
+                addToast({
+                    title: "Anmeldung fehlgeschlagen",
+                    subTitle: "Vom Server wurde keine gültige Sitzung zurückgegeben.",
+                    type: "error",
+                });
+                return;
+            }
 
-        // Sync Stores and Navigate
-        Object.assign(auth, { token: body.authToken });
-        Object.assign(user, { email: email });
+            // Sync Stores and Navigate
+            Object.assign(auth, { token: body.authToken });
+            Object.assign(user, { email: email });
 
-        if (body.changePassword) {
-            setValue("authToken_BCPW", body.authToken);
-            await push(`/changePassword?firstLogin=${body.firstLogin}`);
-        } else {
-            setValue("authToken", body.authToken);
-            await push("/dashboard");
+            if (body.changePassword) {
+                setValue("authToken_BCPW", body.authToken);
+                await push(`/changePassword?firstLogin=${body.firstLogin}`);
+            } else {
+                setValue("authToken", body.authToken);
+                await push("/dashboard");
+            }
+        } finally {
+            isFetching = false;
         }
     }
 </script>
@@ -147,6 +164,7 @@
                 marginTop="10"
                 onclick={btnLogin}
                 isSubmit={true}
+                disabled={isFetching}
             >
                 <span class="material-symbols-rounded">login</span>
                 <p class="ml-3">Anmelden</p>

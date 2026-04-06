@@ -15,6 +15,7 @@
     // 1. Reactive State
     let email = $state("");
     let password = $state("");
+    let isFetching = $state(false);
 
     // 2. Svelte 5 Auth Check on Mount
     $effect(() => {
@@ -64,43 +65,57 @@
             return;
         }
 
-        const { resp, body } = await loginUser(email, password);
-        const normalizedResponse = normalizeResponse(resp);
+        if (isFetching) return;
+        isFetching = true;
 
-        if (handleGlobalApiError(normalizedResponse)) return;
+        try {
+            const { resp, body } = await loginUser(email, password);
+            const normalizedResponse = normalizeResponse(resp);
 
-        if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "REQUESTTIMEOUT") {
-                addToast({
-                    title: "Zu viele Anmeldeversuche",
-                    type: "warning",
-                });
-            } else if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({
-                    title: "Benutzer nicht gefunden",
-                    type: "error"
-                });
+            if (!normalizedResponse.ok) {
+                if (normalizedResponse.errorType === "REQUESTTIMEOUT") {
+                    addToast({
+                        title: "Zu viele Anmeldeversuche",
+                        type: "warning",
+                    });
+                } else if (normalizedResponse.errorType === "NOTFOUND") {
+                    addToast({
+                        title: "Benutzer nicht gefunden",
+                        type: "error"
+                    });
+                }  else if (normalizedResponse.errorType === "UNAUTHORIZED") {
+                    addToast({
+                        title: "E-Mail oder Passwort falsch",
+                        type: "error"
+                    });
+                    return;
+                }
+
+                if (handleGlobalApiError(normalizedResponse)) return;
+
+                return;
             }
-            return;
-        }
 
-        if (!body?.authToken) {
-            addToast({
-                title: "Anmeldung fehlgeschlagen",
-                type: "error",
-            });
-            return;
-        }
+            if (!body?.authToken) {
+                addToast({
+                    title: "Anmeldung fehlgeschlagen",
+                    type: "error",
+                });
+                return;
+            }
 
-        Object.assign(auth, { token: body.authToken });
-        Object.assign(user, { email: email });
+            Object.assign(auth, { token: body.authToken });
+            Object.assign(user, { email: email });
 
-        if (body.changePassword) {
-            setValue("authToken_BCPW", body.authToken);
-            await push(`/changePassword?firstLogin=${body.firstLogin}`);
-        } else {
-            setValue("authToken", body.authToken);
-            await push("/dashboard");
+            if (body.changePassword) {
+                setValue("authToken_BCPW", body.authToken);
+                await push(`/changePassword?firstLogin=${body.firstLogin}`);
+            } else {
+                setValue("authToken", body.authToken);
+                await push("/dashboard");
+            }
+        } finally {
+            isFetching = false;
         }
     }
 </script>
@@ -140,6 +155,7 @@
             marginTop="10"
             onclick={btnLogin}
             isSubmit={true}
+            disabled={isFetching}
         >
             <span class="material-symbols-rounded">login</span>
             <p class="ml-3">Anmelden</p>
