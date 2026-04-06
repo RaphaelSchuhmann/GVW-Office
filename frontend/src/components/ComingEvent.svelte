@@ -1,6 +1,5 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { capitalizeWords } from "../services/utils";
     import Chip from "./Chip.svelte";
     import { typeMap } from "../services/eventsService.svelte.js";
 

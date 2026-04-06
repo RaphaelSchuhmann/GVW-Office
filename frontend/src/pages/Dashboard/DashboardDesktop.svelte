@@ -13,7 +13,6 @@
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import { dashboardStore } from "../../stores/dashboard.svelte.js";
-    import { typeMap } from "../../services/eventsService.svelte.js";
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal = $state();
