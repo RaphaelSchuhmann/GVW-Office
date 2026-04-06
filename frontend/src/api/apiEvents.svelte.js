@@ -15,7 +15,7 @@ const apiUrl = __API_URL__;
  * The response body may include complete event objects
  *
  * @example
- * const { resp, body } = await getEvents();
+ * const { resp, body } = await apiGetEvents();
  *
  * if (resp?.ok) {
  *   console.log("Events: ", body);

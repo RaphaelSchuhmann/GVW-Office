@@ -2,26 +2,25 @@
     import { marginMap } from "../lib/dynamicStyles";
     import { capitalizeWords } from "../services/utils";
     import Chip from "./Chip.svelte";
+    import { typeMap } from "../services/eventsService.svelte.js";
 
     let {
         title = "",
         time = "",
         location = "",
-        type = "konzert",
+        type = "other",
         margin = "",
         isMobile = false,
         ...restProps
     } = $props();
 
     const displayType = $derived.by(() => {
-        const normalized = typeof type === "string" ? type.trim().toLowerCase() : "";
-        const validTypes = ["probe", "konzert", "meeting"];
-
-        if (!validTypes.includes(normalized)) {
-            console.warn(`Type ${String(type)} is not a valid type`);
-            return "Konzert";
+        if (typeMap[type] === undefined) {
+            console.warn(`Type ${type} is not a valid type`);
+            return typeMap["other"];
         }
-        return capitalizeWords(normalized);
+
+        return typeMap[type];
     });
 </script>
 
