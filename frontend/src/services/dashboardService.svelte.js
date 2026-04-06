@@ -46,6 +46,20 @@ export async function loadDashboardData() {
             return;
         }
 
+        if (
+            !Array.isArray(body?.members) ||
+            !Number.isFinite(body?.totalEvents) ||
+            !Array.isArray(body?.upcomingEvents) ||
+            !Number.isFinite(body?.totalScores)
+        ) {
+            addToast({
+                title: "Fehler beim laden",
+                subTitle: viewport.isMobile ? "" : "Die Dashboard Daten sind unvollständig zurückgekommen.",
+                type: "warning"
+            });
+            return;
+        }
+
         dashboardStore.members = body.members;
         dashboardStore.totalEvents = body.totalEvents;
         dashboardStore.upcomingEvents = body.upcomingEvents;
@@ -71,12 +85,17 @@ export async function loadDashboardData() {
  * @returns {string} returns[].type - Event type
  */
 export function prepareEvents() {
-    return dashboardStore.upcomingEvents.map(event => ({
-        title: event.title || "Unbekannt",
-        time: `${event.date} - ${event.time}`,
-        location: event.location || "Unbekannt",
-        type: event.type || "other"
-    }));
+    return dashboardStore.upcomingEvents.map(event => {
+        const date = event?.date || "Unbekannt";
+        const time = event?.time || "";
+
+        return {
+            title: event?.title || "Unbekannt",
+            time: time ? `${date} - ${time}` : date,
+            location: event?.location || "Unbekannt",
+            type: event?.type || "other"
+        };
+    });
 }
 
 /**
