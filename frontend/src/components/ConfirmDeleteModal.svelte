@@ -6,6 +6,7 @@
     import { deleteEvent } from "../services/eventsService.svelte";
     import { deleteScore } from "../services/libraryService.svelte";
     import { addToast } from "../stores/toasts.svelte";
+    import Spinner from "./Spinner.svelte";
 
     const actionMap = {
         "deleteMember": removeMember,
@@ -20,7 +21,6 @@
         placeholder = "",
         expectedInput = "",
         id = "",
-        toastMap = {},
         onClose = () => {},
         isMobile = false,
         ...restProps
@@ -30,7 +30,9 @@
     /** @type {import("./Modal.svelte").default} */
     let confirmDeleteModal = $state();
 
-    const invalidConfirm = $derived(!(confirmInput === expectedInput && expectedInput));
+    let isDeleting = $state(false);
+
+    const disableDelete = $derived(!(confirmInput === expectedInput && expectedInput) || isDeleting);
 
     const validActions = Object.keys(actionMap);
     let activeAction = $derived(validActions.includes(action) ? action : "none");
@@ -46,6 +48,7 @@
      * Handles the delete operation after confirmation
      */
     async function handleDelete() {
+        isDeleting = true;
         confirmDeleteModal?.hideModal();
 
         if (activeAction !== "none") {
@@ -62,6 +65,7 @@
 
             await apiFunction(id);
         }
+        isDeleting = false;
         onClose();
     }
 </script>
@@ -91,9 +95,14 @@
         <Button
             type="delete"
             onclick={handleDelete}
-            disabled={invalidConfirm}
+            disabled={disableDelete}
         >
-            Löschen
+            {#if isDeleting}
+                <Spinner light={true} />
+                <p>Löschen...</p>
+            {:else}
+                Löschen
+            {/if}
         </Button>
     </div>
 </Modal>

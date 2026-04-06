@@ -18,6 +18,7 @@
     import YearDatepicker from "../../components/YearDatepicker.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import { addToast } from "../../stores/toasts.svelte";
+    import Spinner from "../../components/Spinner.svelte";
 
     // ==================
     // MODAL REFERENCES
@@ -52,6 +53,8 @@
         joined: ""
     });
 
+    let isSubmitting = $state(true);
+
     /**
      * Derived flag determining whether the "Add Member"
      * submit button should be disabled.
@@ -72,7 +75,7 @@
             memberInput.voice, memberInput.status, memberInput.role
         ].some(val => !val || val.toLowerCase() === "wählen");
 
-        return hasEmptyFields || hasUnselectedDropdowns;
+        return hasEmptyFields || hasUnselectedDropdowns || isSubmitting;
     });
 
     /**
@@ -107,6 +110,8 @@
      * @returns {Promise<void>}
      */
     async function submitMember() {
+        isSubmitting = true;
+
         const payload = {
             ...$state.snapshot(memberInput),
             voice: voiceMap[memberInput.voice],
@@ -126,6 +131,8 @@
         await newMember(payload);
         addMemberModal.hideModal();
         await fetchAndSetRaw();
+
+        isSubmitting = false;
     }
 
     let sidebarOpen = $state(false);
@@ -166,7 +173,14 @@
     </div>
     <div class="w-full flex items-center justify-end mt-5 gap-4">
         <Button type="secondary" onclick={() => addMemberModal.hideModal()}>Abbrechen</Button>
-        <Button type="primary" disabled={addDisabled} onclick={submitMember} isSubmit={true}>Hinzufügen</Button>
+        <Button type="primary" disabled={addDisabled} onclick={submitMember} isSubmit={true}>
+            {#if isSubmitting}
+                <Spinner light={true} />
+                <p>Speichern...</p>
+            {:else}
+                Hinzufügen
+            {/if}
+        </Button>
     </div>
 </Modal>
 

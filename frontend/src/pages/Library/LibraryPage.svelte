@@ -8,6 +8,10 @@
     import { auth } from "../../stores/auth.svelte";
     import { lastRefresh } from "../../stores/sseStore.svelte.js";
     import { untrack } from "svelte";
+    import Spinner from "../../components/Spinner.svelte";
+    import { user } from "../../stores/user.svelte.js";
+
+    let isGlobalLoading = $derived(user.name.length === 0);
 
     let ready = false;
 
@@ -32,8 +36,14 @@
     })
 </script>
 
-{#if viewport.width < 800}
-    <LibraryMobile />
+{#if isGlobalLoading}
+    <div class="w-full h-screen flex justify-center items-center">
+        <Spinner title="GVW Office" subTitle="Daten werden geladen..."/>
+    </div>
 {:else}
-    <LibraryDesktop />
+    {#if viewport.width < 800}
+        <LibraryMobile />
+    {:else}
+        <LibraryDesktop />
+    {/if}
 {/if}

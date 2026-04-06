@@ -21,6 +21,7 @@
     import Checkbox from "../../components/Checkbox.svelte";
     import FileSelector from "../../components/FileSelector.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
+    import Spinner from "../../components/Spinner.svelte";
 
     // ==================
     // MODAL REFERENCES
@@ -92,6 +93,8 @@
      */
     let selectedChoirType = $state("Männerchor");
 
+    let isSubmitting = $state(false);
+
     /**
      * Derived boolean indicating whether the save action should be disabled.
      *
@@ -110,7 +113,7 @@
         scoreInput.artist &&
         scoreInput.type &&
         scoreInput.voices.length > 0
-    ));
+    ) || isSubmitting);
 
     /**
      * Resets all input fields in the "Add Score" form to their default values.
@@ -166,6 +169,8 @@
      * @returns {Promise<void>}
      */
     async function submitScore() {
+        isSubmitting = true;
+
         const score = {
             ...scoreInput,
             voiceCount: scoreInput.voices.length
@@ -174,6 +179,8 @@
         await addScore($state.snapshot(score));
         await fetchAndSetRaw();
         addScoreModal.hideModal();
+
+        isSubmitting = false;
     }
 
     let sidebarOpen = $state(false);
@@ -224,7 +231,14 @@
 
     <div class="w-full flex items-center gap-4 mt-5">
         <Button type="secondary" onclick={() => addScoreModal.hideModal()}>Abbrechen</Button>
-        <Button type="primary" disabled={saveDisabled} onclick={async () => await submitScore()}>Speichern</Button>
+        <Button type="primary" disabled={saveDisabled} onclick={async () => await submitScore()}>
+            {#if isSubmitting}
+                <Spinner light={true} />
+                <p>Speichern...</p>
+            {:else}
+                Hinzufügen
+            {/if}
+        </Button>
     </div>
 </Modal>
 

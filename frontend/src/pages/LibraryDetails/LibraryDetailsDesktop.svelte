@@ -17,6 +17,7 @@
     import FileSelector from "../../components/FileSelector.svelte";
     import { appSettings } from "../../stores/appSettings.svelte";
     import { downloadScoreFiles, getLibraryCategories, updateScore } from "../../services/libraryService.svelte";
+    import Spinner from "../../components/Spinner.svelte";
 
     let {
         scoreData,
@@ -25,6 +26,7 @@
     } = $props();
 
     let draft = $state(null);
+    let isSubmitting = $state(false);
 
     let originalSelectedChoirType =  $derived(determineChoirType(scoreData.voices[0]) ? "Männerchor" : "Gemischterchor");
     let editedSelectedChoirType = $derived(originalSelectedChoirType);
@@ -99,7 +101,7 @@
 
         const isDifferent = JSON.stringify(normalizeScore(draft)) !== JSON.stringify(normalizeScore(scoreData));
 
-        return isDifferent && allFieldsFilled;
+        return !isSubmitting || (isDifferent && allFieldsFilled);
     });
 
     /**
@@ -166,6 +168,7 @@
      * Assumes validation has already been handled externally.
      */
     async function updateScoreData() {
+        isSubmitting = true;
         const score = {
             ...draft,
             originalFiles: scoreData.files,
@@ -174,6 +177,7 @@
 
         await updateScore(score);
 
+        isSubmitting = false;
         isEditing = false;
         draft = null;
     }
@@ -356,7 +360,12 @@
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
                         <Button type="primary" disabled={!hasChanges} onclick={async () => await updateScoreData()}>
-                            Speichern
+                            {#if isSubmitting}
+                                <Spinner light={true} />
+                                <p>Speichern...</p>
+                            {:else}
+                                Speichern
+                            {/if}
                         </Button>
                     </div>
                 {/if}

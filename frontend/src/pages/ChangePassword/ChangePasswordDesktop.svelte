@@ -11,8 +11,11 @@
     import { changePassword } from "../../services/changePasswordService.svelte";
     import { normalizeResponse } from "../../api/http.svelte";
     import { handleGlobalApiError } from "../../api/globalErrorHandler.svelte";
+    import Spinner from "../../components/Spinner.svelte";
 
     let { message = "" } = $props();
+
+    let isFetching = $state(false);
 
     let currentPw = $state("");
     let newPw = $state("");
@@ -84,44 +87,52 @@
             return;
         }
 
-        const { resp } = await changePassword(email, currentPw, newPw);
-        const normalizedResponse = normalizeResponse(resp);
+        if (isFetching) return;
+        isFetching = true;
 
-        if (handleGlobalApiError(normalizedResponse)) return;
+        try {
+            const { resp } = await changePassword(email, currentPw, newPw);
+            const normalizedResponse = normalizeResponse(resp);
 
-        if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "NOTFOUND") {
+            if (handleGlobalApiError(normalizedResponse)) return;
+
+            if (!normalizedResponse.ok) {
+                if (normalizedResponse.errorType === "NOTFOUND") {
+                    addToast({
+                        title: "Sitzung ungültig",
+                        subTitle: "Ihre E-Mail-Adresse konnte nicht zugeordnet werden.",
+                        type: "error"
+                    });
+                    await push("/");
+                }
+                if (normalizedResponse.errorType === "CONFLICT") {
+                    addToast({
+                        title: "Ungültiges Passwort",
+                        subTitle: "Das neue Passwort darf nicht mit dem aktuellen übereinstimmen.",
+                        type: "error"
+                    });
+                }
+                return;
+            }
+
+            let authToken = getValue("authToken_BCPW");
+            if (!authToken) {
                 addToast({
-                    title: "Sitzung ungültig",
-                    subTitle: "Ihre E-Mail-Adresse konnte nicht zugeordnet werden.",
+                    title: "Sitzungsfehler",
+                    subTitle: "Ihre Sitzung ist ungültig. Bitte melden Sie sich erneut an.",
                     type: "error"
                 });
                 await push("/");
+                return;
             }
-            if (normalizedResponse.errorType === "CONFLICT") {
-                addToast({
-                    title: "Ungültiges Passwort",
-                    subTitle: "Das neue Passwort darf nicht mit dem aktuellen übereinstimmen.",
-                    type: "error"
-                });
-            }
-            return;
+
+            clearValue("authToken_BCPW");
+            setValue("authToken", authToken);
+            await push("/dashboard");
+        } finally {
+            isFetching = false;
         }
 
-        let authToken = getValue("authToken_BCPW");
-        if (!authToken) {
-            addToast({
-                title: "Sitzungsfehler",
-                subTitle: "Ihre Sitzung ist ungültig. Bitte melden Sie sich erneut an.",
-                type: "error",
-            });
-            await push("/");
-            return;
-        }
-
-        clearValue("authToken_BCPW");
-        setValue("authToken", authToken);
-        await push("/dashboard");
     }
 </script>
 
@@ -171,6 +182,7 @@
             marginTop="10"
             onclick={updatePassword}
             isSubmit={true}
+            disabled={isFetching}
         >
             <span class="material-symbols-rounded">login</span>
             <p class="ml-3">Passwort ändern</p>

@@ -10,11 +10,12 @@
     import { changePassword } from "../../services/changePasswordService.svelte";
     import { normalizeResponse } from "../../api/http.svelte";
     import { handleGlobalApiError } from "../../api/globalErrorHandler.svelte";
+    import Spinner from "../../components/Spinner.svelte";
 
-    // 1. Props using $props()
     let { message = "" } = $props();
 
-    // 2. Reactive State using Runes
+    let isFetching = $state(false);
+
     let currentPw = $state("");
     let newPw = $state("");
     let confirmNewPw = $state("");
@@ -65,32 +66,39 @@
             return;
         }
 
-        const { resp } = await changePassword(email, currentPw, newPw);
-        const normalizedResponse = normalizeResponse(resp);
+        if (isFetching) return;
+        isFetching = true;
 
-        if (handleGlobalApiError(normalizedResponse)) return;
+        try {
+            const { resp } = await changePassword(email, currentPw, newPw);
+            const normalizedResponse = normalizeResponse(resp);
 
-        if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "NOTFOUND") {
-                addToast({ title: "Ungültige E-Mail verwendet", type: "error" });
+            if (handleGlobalApiError(normalizedResponse)) return;
+
+            if (!normalizedResponse.ok) {
+                if (normalizedResponse.errorType === "NOTFOUND") {
+                    addToast({ title: "Ungültige E-Mail verwendet", type: "error" });
+                    await push("/");
+                }
+                if (normalizedResponse.errorType === "CONFLICT") {
+                    addToast({ title: "Neues Passwort ist identisch", type: "error" });
+                }
+                return;
+            }
+
+            let authToken = getValue("authToken_BCPW");
+            if (!authToken) {
+                addToast({ title: "Sitzungsfehler", type: "error" });
                 await push("/");
+                return;
             }
-            if (normalizedResponse.errorType === "CONFLICT") {
-                addToast({ title: "Neues Passwort ist identisch", type: "error" });
-            }
-            return;
-        }
 
-        let authToken = getValue("authToken_BCPW");
-        if (!authToken) {
-            addToast({ title: "Sitzungsfehler", type: "error" });
-            await push("/");
-            return;
+            clearValue("authToken_BCPW");
+            setValue("authToken", authToken);
+            await push("/dashboard");
+        } finally {
+            isFetching = false;
         }
-
-        clearValue("authToken_BCPW");
-        setValue("authToken", authToken);
-        await push("/dashboard");
     }
 </script>
 
@@ -140,6 +148,7 @@
             marginTop="10"
             onclick={updatePassword}
             isSubmit={true}
+            disabled={isFetching}
         >
             <span class="material-symbols-rounded">login</span>
             <p class="ml-3">Passwort ändern</p>

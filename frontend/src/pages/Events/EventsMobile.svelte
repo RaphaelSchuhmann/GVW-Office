@@ -30,6 +30,7 @@
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import Textarea from "../../components/Textarea.svelte";
+    import Spinner from "../../components/Spinner.svelte";
 
     // ================
     // MODAL REFERENCES
@@ -61,6 +62,8 @@
         }
     });
 
+    let isSubmitting = $state(false);
+
     const saveDisabled = $derived(!(
         eventInput.type &&
         eventInput.status &&
@@ -69,7 +72,7 @@
         eventInput.title &&
         eventInput.time &&
         eventInput.location
-    ));
+    ) || isSubmitting);
 
     const ordinal = $derived(getOrdinalFromDMY(eventInput.date));
     const weekDay = $derived(getWeekDayFromDMYMondayFirst(eventInput.date));
@@ -87,6 +90,8 @@
      * @returns {Promise<void>}
      */
     async function submitEvent() {
+        isSubmitting = true;
+
         if (eventInput.mode === "monthly") {
             if (eventInput.recurrence.monthlyKind === "date") {
                 eventInput.recurrence.dayOfMonth = Number(eventInput.date.split(".")[0]);
@@ -114,6 +119,8 @@
         await addEvent(event);
         await fetchAndSetRaw();
         addEventModal?.hideModal();
+
+        isSubmitting = false;
     }
 
     /**
@@ -213,7 +220,14 @@
 
     <div class="w-full flex items-center justify-end mt-5 gap-4">
         <Button type="secondary" onclick={() => addEventModal.hideModal()}>Abbrechen</Button>
-        <Button type="primary" disabled={saveDisabled} onclick={submitEvent} isSubmit={true}>Hinzufügen</Button>
+        <Button type="primary" disabled={saveDisabled} onclick={submitEvent} isSubmit={true}>
+            {#if isSubmitting}
+                <Spinner light={true} />
+                <p>Speichern...</p>
+            {:else}
+                Hinzufügen
+            {/if}
+        </Button>
     </div>
 </Modal>
 

@@ -13,6 +13,7 @@
     import YearDatepicker from "../../components/YearDatepicker.svelte";
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
+    import Spinner from "../../components/Spinner.svelte";
 
     let {
         memberData,
@@ -21,6 +22,7 @@
     } = $props();
 
     let draft = $state(null);
+    let isSubmitting = $state(false);
 
     /**
      * Initializes edit mode for the current member.
@@ -66,7 +68,7 @@
 
         const isDifferent = JSON.stringify(draft) !== JSON.stringify(memberData);
 
-        return isDifferent && allFieldsFilled;
+        return !isSubmitting || (isDifferent && allFieldsFilled);
     });
 
     /**
@@ -92,8 +94,10 @@
      * Assumes validation has already been handled externally.
      */
     async function updateMemberData() {
+        isSubmitting = true;
         await updateMember($state.snapshot(draft));
 
+        isSubmitting = false;
         isEditing = false;
         draft = null;
     }
@@ -270,7 +274,12 @@
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
                         <Button type="primary" disabled={!hasChanges} onclick={async () => await updateMemberData()}>
-                            Speichern
+                            {#if isSubmitting}
+                                <Spinner light={true} />
+                                <p>Speichern...</p>
+                            {:else}
+                                Speichern
+                            {/if}
                         </Button>
                     </div>
                 {/if}

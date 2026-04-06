@@ -24,6 +24,7 @@
     import Checkbox from "../../components/Checkbox.svelte";
     import { getOrdinalFromDMY, getWeekDayFromDMYMondayFirst } from "../../services/utils";
     import Textarea from "../../components/Textarea.svelte";
+    import Spinner from "../../components/Spinner.svelte";
 
     let {
         eventData,
@@ -32,6 +33,7 @@
     } = $props();
 
     let draft = $state(null);
+    let isSubmitting = $state(false);
 
     const currentDate = $derived(isEditing ? draft?.date : eventData?.date);
     const ordinal = $derived(getOrdinalFromDMY(currentDate));
@@ -104,7 +106,7 @@
         }
 
         // Return TRUE if any part changed
-        return baseChanged || descChanged || recurrenceChanged;
+        return !isSubmitting || baseChanged || descChanged || recurrenceChanged;
     });
 
     /**
@@ -130,8 +132,10 @@
      * Assumes validation has already been handled externally.
      */
     async function updateEventData() {
+        isSubmitting = true;
         await updateEvent($state.snapshot(draft));
 
+        isSubmitting = false;
         isEditing = false;
         draft = null;
     }
@@ -227,9 +231,9 @@
                     <TabBar contents={["Einmalig", "Wöchentlich", "Monatlich"]} selected={modeMap[eventData.mode]} disabled={true} />
 
                     {#if eventData.mode === "single"}
-                        <p class="text-gv-dark-text text-dt-4 text-left w-full w-full">Diese Veranstaltung findet nur einmal statt.</p>
+                        <p class="text-gv-dark-text text-dt-4 text-left w-full">Diese Veranstaltung findet nur einmal statt.</p>
                     {:else if eventData.mode === "weekly"}
-                        <p class="text-gv-dark-text text-dt-4 text-left w-full w-full">Jede Woche am {weekDayMap[weekDay]}</p>
+                        <p class="text-gv-dark-text text-dt-4 text-left w-full">Jede Woche am {weekDayMap[weekDay]}</p>
                     {:else if eventData.mode === "monthly"}
                         <div class="w-full flex items-center justify-start gap-4">
                             <Checkbox
@@ -343,7 +347,12 @@
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
                         <Button type="primary" disabled={!hasChanges} onclick={async () => await updateEventData()}>
-                            Speichern
+                            {#if isSubmitting}
+                                <Spinner light={true} />
+                                <p>Speichern...</p>
+                            {:else}
+                                Speichern
+                            {/if}
                         </Button>
                     </div>
                 {/if}

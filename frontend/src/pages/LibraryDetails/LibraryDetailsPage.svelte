@@ -10,6 +10,9 @@
     import { lastRefresh } from "../../stores/sseStore.svelte.js";
     import { scoreExists } from "../../services/libraryService.svelte.js";
     import { addToast } from "../../stores/toasts.svelte.js";
+    import Spinner from "../../components/Spinner.svelte";
+
+    let isGlobalLoading = $derived(user.name.length === 0);
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -72,5 +75,7 @@
         {/if}
     {/key}
 {:else}
-    <p>Lade...</p>
+    <div class="w-full h-screen flex justify-center items-center">
+        <Spinner title="GVW Office" subTitle="Daten werden geladen..."/>
+    </div>
 {/if}

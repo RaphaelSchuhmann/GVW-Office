@@ -10,6 +10,9 @@
     import { lastRefresh } from "../../stores/sseStore.svelte.js";
     import { memberExists } from "../../services/membersService.svelte.js";
     import { addToast } from "../../stores/toasts.svelte.js";
+    import Spinner from "../../components/Spinner.svelte";
+
+    let isGlobalLoading = $derived(user.name.length === 0);
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -65,7 +68,7 @@
     });
 </script>
 
-{#if memberData}
+{#if memberData && !isGlobalLoading}
     {#key memberData.rev}
         {#if viewport.isMobile}
             <MemberDetailsMobile {memberData} bind:isEditing />
@@ -74,5 +77,7 @@
         {/if}
     {/key}
 {:else}
-    <p>Lade...</p>
+    <div class="w-full h-screen flex justify-center items-center">
+        <Spinner title="GVW Office" subTitle="Daten werden geladen..."/>
+    </div>
 {/if}
