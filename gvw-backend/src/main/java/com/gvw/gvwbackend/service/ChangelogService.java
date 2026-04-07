@@ -1,0 +1,72 @@
+package com.gvw.gvwbackend.service;
+
+import com.gvw.gvwbackend.dto.request.AddChangelogRequestDTO;
+import com.gvw.gvwbackend.dto.response.ChangelogResponseDTO;
+import com.gvw.gvwbackend.dto.response.ChangelogsResponseDTO;
+import com.gvw.gvwbackend.exception.BadRequestException;
+import com.gvw.gvwbackend.exception.NotFoundException;
+import com.gvw.gvwbackend.model.Changelog;
+import java.util.List;
+import java.util.Map;
+import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
+
+@Service
+public class ChangelogService {
+  private final DbService dbService;
+  private final ObjectMapper mapper = new ObjectMapper();
+  private final SseService sseService;
+
+  public ChangelogService(DbService dbService, SseService sseService) {
+    this.dbService = dbService;
+    this.sseService = sseService;
+  }
+
+  public ChangelogsResponseDTO getChangelogs() {
+    List<Map<String, Object>> changelogsRaw = dbService.findAll("changelogs");
+
+    List<Changelog> changelogs =
+        changelogsRaw.stream().map(map -> mapper.convertValue(map, Changelog.class)).toList();
+
+    if (changelogs.isEmpty()) {
+      return new ChangelogsResponseDTO(List.of());
+    }
+
+    List<ChangelogResponseDTO> responseChangelogs =
+        changelogs.stream()
+            .map(
+                m ->
+                    new ChangelogResponseDTO(
+                        m.getTitle(), m.getVersion(), m.getContent(), m.getTimestamp()))
+            .toList();
+
+    return new ChangelogsResponseDTO(responseChangelogs);
+  }
+
+  public void addChangelog(AddChangelogRequestDTO request) {
+    Changelog changelog = new Changelog();
+    changelog.setVersion(request.version());
+    changelog.setTitle(request.title());
+    changelog.setContent(request.content());
+    changelog.setTimestamp(request.timestamp());
+
+    dbService.insert("changelogs", changelog);
+
+    sseService.broadcastRefresh("CHANGELOGS");
+  }
+
+  public void deleteChangelog(String id) {
+    if (id == null || id.isBlank()) {
+      throw new BadRequestException("InvalidData");
+    }
+
+    Changelog changelog = dbService.findById("changelogs", id, Changelog.class);
+    if (changelog == null) {
+      throw new NotFoundException("ChangelogNotFound");
+    }
+
+    dbService.delete("changelogs", changelog.getId(), changelog.getRev());
+
+    sseService.broadcastRefresh("CHANGELOGS");
+  }
+}
