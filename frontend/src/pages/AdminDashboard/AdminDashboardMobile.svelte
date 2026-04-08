@@ -37,9 +37,12 @@
     async function submitNewChangelog() {
         isSubmitting = true;
 
-        await addChangelog(addChangelogInputs);
+        try {
+            await addChangelog(addChangelogInputs);
+        } finally {
+            isSubmitting = false;
+        }
 
-        isSubmitting = false;
         addChangelogModal.hideModal();
     }
 
@@ -88,13 +91,15 @@
                     <div class="w-full flex items-center justify-start p-1">
                         <p class="text-gv-dark-text text-dt-4">Changelogs</p>
                         <button
+                            aria-label="Neuen Changelog hinzufügen"
+                            title="Neuen Changelog hinzufügen"
                             class="flex items-center justify-center p-1 cursor-pointer hover:bg-gv-hover-effect rounded-2 ml-auto"
                             onclick={addChangelogModal.showModal}
                         >
                             <span class="material-symbols-rounded text-icon-dt-5">add</span>
                         </button>
                     </div>
-                    <div class="w-full flex- flex-col items-center max-h-[45vh]">
+                    <div class="w-full flex flex-col items-center max-h-[45vh]">
                         <AccordionList itemComponent={ChangelogListItem} list={changelogsStore} />
                     </div>
                 </Card>

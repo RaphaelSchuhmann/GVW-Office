@@ -37,9 +37,12 @@
     async function submitNewChangelog() {
         isSubmitting = true;
 
-        await addChangelog(addChangelogInputs);
+        try {
+            await addChangelog(addChangelogInputs);
+        } finally {
+            isSubmitting = false;
+        }
 
-        isSubmitting = false;
         addChangelogModal.hideModal();
     }
 
@@ -85,6 +88,8 @@
                         <div class="w-full flex items-center justify-start p-2">
                             <p class="text-gv-dark-text text-dt-3">Changelogs</p>
                             <button
+                                aria-label="Neuen Changelog hinzufügen"
+                                title="Neuen Changelog hinzufügen"
                                 class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2 ml-auto"
                                 onclick={addChangelogModal.showModal}
                             >

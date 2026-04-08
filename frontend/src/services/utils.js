@@ -81,17 +81,15 @@ function parseDMY(dateStr) {
  * @returns {string} Formatted date string or fallback message
  */
 export function formatISODateString(dateStr) {
-    try {
-        const date = new Date(dateStr);
+    if (!dateStr) return "Ungültiges Datum";
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return "Ungültiges Datum";
 
-        return new Intl.DateTimeFormat('de-DE', {
-            day: "2-digit",
-            month: "2-digit",
-            year: 'numeric',
-        }).format(date);
-    } catch (error) {
-        return "Ungültiges Datum"
-    }
+    return new Intl.DateTimeFormat('de-DE', {
+        day: "2-digit",
+        month: "2-digit",
+        year: 'numeric',
+    }).format(date);
 }
 
 /**

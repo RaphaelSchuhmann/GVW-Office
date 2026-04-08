@@ -47,6 +47,8 @@
 
             {#if user.role === "admin"}
                 <button
+                    aria-label="Changelog entfernen"
+                    title="Changelog entfernen"
                     type="button"
                     onclick={async (e) => { e.stopPropagation(); await removeChangelog(); }}
                     class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2 hover:text-gv-delete-hover duration-100"
