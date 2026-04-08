@@ -28,7 +28,7 @@
 
     let calendar = $derived(buildCalendar(usedYear, usedMonth));
 
-    let formattedDate = $derived(`${selectedDate}.${usedMonth + 1}.${usedYear}`);
+    let formattedDate = $derived(`${String(selectedDate).padStart(2, '0')}.${String(usedMonth + 1).padStart(2, '0')}.${usedYear}`);
 
     $effect(() => {
         if (selected !== formattedDate) {
