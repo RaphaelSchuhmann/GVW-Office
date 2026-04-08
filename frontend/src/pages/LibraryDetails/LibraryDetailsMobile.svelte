@@ -172,11 +172,13 @@
             voiceCount: draft.voices.length
         };
 
-        await updateScore(score);
-
-        isSubmitting = false;
-        isEditing = false;
-        draft = null;
+        try {
+            await updateScore(score);
+        } finally {
+            isSubmitting = false;
+            isEditing = false;
+            draft = null;
+        }
     }
 
     // ==================

@@ -142,12 +142,15 @@
             return;
         }
 
-        await newMember(payload);
+        try {
+            await newMember(payload);
+        } finally {
+            isSubmitting = false;
+        }
 
         addMemberModal.hideModal();
         await fetchAndSetRaw();
 
-        isSubmitting = false;
     }
 
     // -------------------

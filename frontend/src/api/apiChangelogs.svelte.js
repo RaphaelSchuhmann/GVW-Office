@@ -41,7 +41,7 @@ export async function apiGetChangelogs() {
  *
  * @example
  * const { resp } = await apiAddChangelog({
- *     version: "v1.0,
+ *     version: "v1.0",
  *     title: "Changelog v1.0",
  *     content: "Changelog content",
  *     timestamp: new Date()

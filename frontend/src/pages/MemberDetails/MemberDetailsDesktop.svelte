@@ -100,11 +100,13 @@
      */
     async function updateMemberData() {
         isSubmitting = true;
-        await updateMember($state.snapshot(draft));
-
-        isSubmitting = false;
-        isEditing = false;
-        draft = null;
+        try {
+            await updateMember($state.snapshot(draft));
+        } finally {
+            isSubmitting = false;
+            isEditing = false;
+            draft = null;
+        }
     }
 
     /**

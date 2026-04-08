@@ -43,9 +43,12 @@
             updatedMaxMembers = appSettings.maxMembers;
         }
 
-        await tryUpdateMaxMembers(updatedMaxMembers);
+        try {
+            await tryUpdateMaxMembers(updatedMaxMembers);
+        } finally {
+            isSubmitting = false;
+        }
 
-        isSubmitting = false;
         voiceDistributionSettingsModal.hideModal();
     }
 

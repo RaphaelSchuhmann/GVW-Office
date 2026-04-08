@@ -19,8 +19,11 @@
         if (!data.id) return;
         isDeleting = true;
 
-        await deleteChangelog(data.id);
-        isDeleting = false;
+        try {
+            await deleteChangelog(data.id);
+        } finally {
+            isDeleting = false;
+        }
     }
 </script>
 

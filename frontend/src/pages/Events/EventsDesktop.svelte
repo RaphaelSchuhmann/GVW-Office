@@ -132,11 +132,14 @@
             description: eventInput.description || "Keine Beschreibung"
         };
 
-        await addEvent(event);
+        try {
+            await addEvent(event);
+        } finally {
+            isSubmitting = false;
+        }
+
         await fetchAndSetRaw();
         addEventModal?.hideModal();
-
-        isSubmitting = false;
     }
 
     /**

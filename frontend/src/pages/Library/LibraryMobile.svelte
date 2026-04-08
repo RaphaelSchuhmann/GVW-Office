@@ -180,11 +180,14 @@
             voiceCount: scoreInput.voices.length
         };
 
-        await addScore($state.snapshot(score));
+        try {
+            await addScore($state.snapshot(score));
+        } finally {
+            isSubmitting = false;
+        }
+
         await fetchAndSetRaw();
         addScoreModal.hideModal();
-
-        isSubmitting = false;
     }
 
     let sidebarOpen = $state(false);
