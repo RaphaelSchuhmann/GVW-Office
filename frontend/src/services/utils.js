@@ -65,6 +65,36 @@ function parseDMY(dateStr) {
 }
 
 /**
+ * Formats an ISO date string into a localized German date string.
+ *
+ * Responsibilities:
+ * - Parses the provided date string into a JavaScript `Date` object
+ * - Formats the date using the German locale (`de-DE`)
+ * - Returns the formatted date in `dd.MM.yyyy` format
+ *
+ * Behavior:
+ * - Returns a formatted date string if parsing is successful
+ * - Returns `"Ungültiges Datum"` if the input cannot be parsed
+ *
+ * @function formatISODateString
+ * @param {string} dateStr - ISO date string (e.g. "2026-04-10T11:55:00Z")
+ * @returns {string} Formatted date string or fallback message
+ */
+export function formatISODateString(dateStr) {
+    try {
+        const date = new Date(dateStr);
+
+        return new Intl.DateTimeFormat('de-DE', {
+            day: "2-digit",
+            month: "2-digit",
+            year: 'numeric',
+        }).format(date);
+    } catch (error) {
+        return "Ungültiges Datum"
+    }
+}
+
+/**
  * Converts DD.MM.YYYY string to JavaScript Date object
  * @param {string} dateStr - Date string in DD.MM.YYYY format
  * @returns {Date} JavaScript Date object

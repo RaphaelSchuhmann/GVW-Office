@@ -29,7 +29,14 @@
 
 <div class="flex flex-col items-center w-full flex-1 overflow-y-auto">
     <div class="flex flex-col items-center w-full h-full flex-1 p-5">
-        <SidebarButton selected={currentPage === "dashboard"} minimized={minimized} onclick={async () => await push("/dashboard")}>
+        {#if user.role === "admin"}
+            <SidebarButton selected={currentPage === "adminDashboard"} minimized={minimized} onclick={async () => await push("/admin")}>
+                <span class="material-symbols-rounded text-icon-dt-4">dashboard_2_gear</span>
+                {#if !minimized}<p class="ml-2">Admin</p>{/if}
+            </SidebarButton>
+        {/if}
+
+        <SidebarButton selected={currentPage === "dashboard"} minimized={minimized} marginTop="5" onclick={async () => await push("/dashboard")}>
             <span class="material-symbols-rounded text-icon-dt-4">dashboard</span>
             {#if !minimized}<p class="ml-2">Dashboard</p>{/if}
         </SidebarButton>

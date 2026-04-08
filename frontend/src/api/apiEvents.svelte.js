@@ -67,7 +67,7 @@ export async function apiCheckEvent(id) {
  * if the request fails before a response is received.
  *
  * @example
- * const { resp } = await addEvent({
+ * const { resp } = await apiAddEvent({
  *     title: "Event",
  *     type: "type",
  *     date: "01.01.2000",
@@ -117,7 +117,7 @@ export async function apiAddEvent(event) {
  * if the request fails before a response is received.
  *
  * @example
- * const { resp } = await deleteEvent(1);
+ * const { resp } = await apiDeleteEvent(1);
  *
  * if (resp?.ok) {
  *   console.log("Event deleted");
@@ -143,7 +143,7 @@ export async function apiDeleteEvent(id) {
  * if the request fails before a response is received.
  *
  * @example
- * const { resp, body } = await switchEventStatus(1, 1);
+ * const { resp, body } = await apiUpdateEventStatus(1, 1);
  *
  * if (resp?.ok) {
  *   console.log("Event status updated: ", body.rev);
@@ -168,7 +168,7 @@ export async function apiUpdateEventStatus(id, rev) {
  * if the request fails before a response is received.
  *
  * @example
- * const { resp, body } = await updateEvent({
+ * const { resp, body } = await apiUpdateEvent({
  *     id: 1,
  *     title: "Event",
  *     type: "type",
