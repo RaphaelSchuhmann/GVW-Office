@@ -110,7 +110,7 @@ export async function addChangelog(changelog) {
             } else {
                 addToast({
                     title: "Fehler beim Hinzufügen",
-                    subTitle: viewport.isMobile ? "" : "Beim Hinzufügen des neuen Mitglieds ist ein Fehler aufgetreten.",
+                    subTitle: viewport.isMobile ? "" : "Beim Hinzufügen des neuen Changelogs ist ein Fehler aufgetreten.",
                     type: "error"
                 });
             }
