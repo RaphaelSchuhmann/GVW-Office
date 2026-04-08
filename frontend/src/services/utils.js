@@ -46,25 +46,6 @@ export function isToday(day, month, year) {
 }
 
 /**
- * Parses a DD.MM.YYYY string into day, month, year numbers
- * @param {string} dateStr - Date string in DD.MM.YYYY format
- * @returns {Object|null} Object with day, month, year or null if invalid
- */
-function parseDMY(dateStr) {
-    const parts = dateStr.split(".");
-    if (parts.length !== 3) return null;
-
-    const [dayStr, monthStr, yearStr] = parts;
-    const day = Number(dayStr);
-    const month = Number(monthStr);
-    const year = Number(yearStr);
-
-    if (!day || !month || !year) return null;
-
-    return { day, month, year };
-}
-
-/**
  * Formats an ISO date string into a localized German date string.
  *
  * Responsibilities:
@@ -92,6 +73,7 @@ export function formatISODateString(dateStr) {
     }).format(date);
 }
 
+// FIXME: Can be removed after standardization on ISO Date Strings is finished
 /**
  * Converts DD.MM.YYYY string to JavaScript Date object
  * @param {string} dateStr - Date string in DD.MM.YYYY format
@@ -106,81 +88,19 @@ export function parseDMYToDate(dateStr) {
 }
 
 /**
- * Validates if a DD.MM.YYYY string represents a valid date
- * @param {string} dateStr - Date string to validate
- * @returns {boolean} True if the date string is valid
- */
-export function isValidDateString(dateStr) {
-    const parsed = parseDMY(dateStr);
-    if (!parsed) return false;
-
-    const { day, month, year } = parsed;
-
-    // JS months are 0-indexed
-    const date = new Date(year, month - 1, day);
-
-    return (
-        date.getFullYear() === year &&
-        date.getMonth() === month - 1 &&
-        date.getDate() === day
-    );
-}
-
-/**
- * Gets the last day of the current month
- * @returns {Date} Date object representing the last day of current month
+ * Gets the last day of the current month.
+ * * Logic: The Date constructor treats day '0' as the last day of the previous month.
+ * By targeting (Current Month + 1) and Day 0, JavaScript rolls back one day
+ * from the start of next month to the exact end of the current month.
+ * * @returns {Date} Date object representing the last day of current month
  */
 export function getLastDayOfCurrentMonth() {
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
 
+    // Setting the day to 0 returns the last day of the month prior to the one provided
     return new Date(year, month + 1, 0);
-}
-
-/**
- * Creates a DD.MM.YYYY string from day and month in current year
- * @param {number} day - Day of the month
- * @param {number} month - Month (0-indexed)
- * @returns {string} Date string in DD.MM.YYYY format
- */
-export function makeDateFromMonthAndDay(day, month) {
-    const today = new Date();
-    const year = today.getFullYear();
-
-    const date = new Date(year, month, day);
-
-    const dd = String(date.getDate()).padStart(2, "0");
-    const mm = String(date.getMonth() + 1).padStart(2, "0"); // JS months are 0-indexed
-    const yyyy = date.getFullYear();
-
-    return `${dd}.${mm}.${yyyy}`;
-}
-
-/**
- * Gets weekday number from DD.MM.YYYY string (Monday = 1, Sunday = 7)
- * @param {string} dateStr - Date string in DD.MM.YYYY format
- * @returns {number} Weekday number (1-7, Monday first)
- */
-export function getWeekDayFromDMYMondayFirst(dateStr) {
-    const [day, month, year] = dateStr.split(".").map(Number);
-    const date = new Date(year, month - 1, day);
-
-    const jsDay = date.getDay(); // 0–6 (Sun–Sat)
-
-    // Convert to 1–7 (Mon–Sun)
-    return jsDay === 0 ? 7 : jsDay;
-}
-
-/**
- * Gets the ordinal week number (1st, 2nd, 3rd, 4th) from a date string
- * @param {string} dateStr - Date string in DD.MM.YYYY format
- * @returns {number} Ordinal week number (1-4)
- */
-export function getOrdinalFromDMY(dateStr) {
-    const [day] = dateStr.split(".").map(Number);
-
-    return Math.ceil(day / 7);
 }
 
 /**

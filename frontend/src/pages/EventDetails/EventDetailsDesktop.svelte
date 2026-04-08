@@ -7,7 +7,9 @@
         statusMap,
         typeMap,
         updateEvent,
-        weekDayMap
+        weekDayMap,
+        getOrdinalFromDMY,
+        getWeekDayFromDMYMondayFirst
     } from "../../services/eventsService.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
@@ -22,7 +24,6 @@
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import TabBar from "../../components/TabBar.svelte";
     import Checkbox from "../../components/Checkbox.svelte";
-    import { getOrdinalFromDMY, getWeekDayFromDMYMondayFirst } from "../../services/utils";
     import Textarea from "../../components/Textarea.svelte";
     import Spinner from "../../components/Spinner.svelte";
     import ChangelogsModal from "../../components/ChangelogsModal.svelte";

@@ -161,6 +161,32 @@ function calculateMonthlyDateOccurrence(dayOfMonth) {
     return `${dd}.${mm}.${yyyy}`;
 }
 
+/**
+ * Gets weekday number from DD.MM.YYYY string (Monday = 1, Sunday = 7)
+ * @param {string} dateStr - Date string in DD.MM.YYYY format
+ * @returns {number} Weekday number (1-7, Monday first)
+ */
+export function getWeekDayFromDMYMondayFirst(dateStr) {
+    const [day, month, year] = dateStr.split(".").map(Number);
+    const date = new Date(year, month - 1, day);
+
+    const jsDay = date.getDay(); // 0–6 (Sun–Sat)
+
+    // Convert to 1–7 (Mon–Sun)
+    return jsDay === 0 ? 7 : jsDay;
+}
+
+/**
+ * Gets the ordinal week number (1st, 2nd, 3rd, 4th) from a date string
+ * @param {string} dateStr - Date string in DD.MM.YYYY format
+ * @returns {number} Ordinal week number (1-4)
+ */
+export function getOrdinalFromDMY(dateStr) {
+    const [day] = dateStr.split(".").map(Number);
+
+    return Math.ceil(day / 7);
+}
+
 const pendingChecks = new Map();
 
 /**

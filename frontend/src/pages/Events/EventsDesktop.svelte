@@ -9,9 +9,10 @@
         typeMap,
         updateStatus,
         getEventOccurrence,
-        addEvent
+        addEvent,
+        getOrdinalFromDMY,
+        getWeekDayFromDMYMondayFirst
     } from "../../services/eventsService.svelte";
-    import { getOrdinalFromDMY, getWeekDayFromDMYMondayFirst } from "../../services/utils";
     import { viewport } from "../../stores/viewport.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
