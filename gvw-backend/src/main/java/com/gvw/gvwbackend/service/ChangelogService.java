@@ -41,7 +41,7 @@ public class ChangelogService {
             .map(
                 m ->
                     new ChangelogResponseDTO(
-                        m.getTitle(), m.getVersion(), m.getContent(), m.getTimestamp()))
+                        m.getId(), m.getTitle(), m.getVersion(), m.getContent(), m.getTimestamp()))
             .toList();
 
     return new ChangelogsResponseDTO(responseChangelogs);

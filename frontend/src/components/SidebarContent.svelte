@@ -7,6 +7,7 @@
     let {
         currentPage = "",
         minimized = false,
+        handleChangelogs,
         ...restProps
     } = $props();
     
@@ -84,6 +85,11 @@
 
                 {#if userOptionsVisible}
                     <div class="absolute bottom-22 w-full bg-white border border-gv-border rounded-1 p-2 flex flex-col items-center">
+                        <button onclick={handleChangelogs}
+                                class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
+                            <span class="material-symbols-rounded text-icon-dt-5 mr-2">campaign</span>
+                            Changelogs
+                        </button>
                         <button onclick={handleLogout}
                                 class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
                             <span class="material-symbols-rounded text-icon-dt-5 mr-2">logout</span>
@@ -93,7 +99,10 @@
                 {/if}
             </div>
         {:else}
-            <div class="flex flex-col items-center">
+            <div class="flex flex-col items-center gap-2">
+                <SidebarButton minimized={minimized} onclick={handleChangelogs}>
+                    <span class="material-symbols-rounded text-icon-dt-3">campaign</span>
+                </SidebarButton>
                 <SidebarButton minimized={minimized} onclick={handleLogout}>
                     <span class="material-symbols-rounded text-icon-dt-3">logout</span>
                 </SidebarButton>

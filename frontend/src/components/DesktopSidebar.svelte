@@ -1,15 +1,13 @@
 <script>
     import SidebarContent from "./SidebarContent.svelte";
 
-    // 1. Define Props
     let {
         currentPage = "",
+        handleChangelogs,
     } = $props();
 
-    // 2. Component State
     let minimized = $state(false);
 
-    // 3. Derived Value (Replaces manual updates in the function)
     let toggleIcon = $derived(minimized ? "arrow_menu_open" : "arrow_menu_close");
 
     /**
@@ -40,5 +38,5 @@
         </button>
     </div>
 
-    <SidebarContent {currentPage} {minimized} />
+    <SidebarContent {currentPage} {minimized} {handleChangelogs} />
 </div>

@@ -8,12 +8,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/changelog")
+@RequestMapping("/changelogs")
 public class ChangelogController {
   private final ChangelogService changelogService;
 
-  public ChangelogController(ChangelogService changelogSerice) {
-    this.changelogService = changelogSerice;
+  public ChangelogController(ChangelogService changelogService) {
+    this.changelogService = changelogService;
   }
 
   @GetMapping("/all")

@@ -3,4 +3,5 @@ export const lastRefresh = $state({
     EVENTS: Date.now(),
     SCORES: Date.now(),
     SETTINGS: Date.now(),
+    CHANGELOGS: Date.now(),
 });

@@ -22,10 +22,14 @@
     import FileSelector from "../../components/FileSelector.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
 
     // ==================
     // MODAL REFERENCES
     // ==================
+    /** @type {import("../../components/ChangelogsModal.svelte").default} */
+    let changelogModal = $state();
+
     /**
      * Reference to the category modal.
      * Used to programmatically open the category dialog.
@@ -186,7 +190,8 @@
     let sidebarOpen = $state(false);
 </script>
 
-<ToastStack isMobile={true}></ToastStack>
+<ToastStack isMobile={true}/>
+<ChangelogsModal bind:this={changelogModal} isMobile={true}/>
 
 <CategoryModal bind:this={categoryModal} isMobile={true} />
 
@@ -242,7 +247,7 @@
     </div>
 </Modal>
 
-<MobileSidebar currentPage="library" bind:isOpen={sidebarOpen} />
+<MobileSidebar currentPage="library" bind:isOpen={sidebarOpen} handleChangelogs={changelogModal.showModal} />
 
 <main class="flex overflow-hidden">
     <div class="flex flex-col w-full h-dvh overflow-hidden p-7 min-h-0">

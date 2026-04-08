@@ -31,10 +31,14 @@
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import Textarea from "../../components/Textarea.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
 
     // ================
     // MODAL REFERENCES
     // ================
+    /** @type {import("../../components/ChangelogsModal.svelte").default} */
+    let changelogModal = $state();
+
     /**
      * Reference to the "Add Event" modal.
      * Controls visibility and lifecycle of the member creation dialog.
@@ -151,7 +155,8 @@
     let sidebarOpen = $state(false);
 </script>
 
-<ToastStack isMobile={true}></ToastStack>
+<ToastStack isMobile={true}/>
+<ChangelogsModal bind:this={changelogModal} isMobile={true}/>
 
 <Modal bind:this={addEventModal} extraFunction={resetAddInputs} isMobile={true}
        title="Neue Veranstaltung hinzufügen" subTitle="Erfassen Sie hier die Details der Veranstaltung"
@@ -231,7 +236,7 @@
     </div>
 </Modal>
 
-<MobileSidebar currentPage="events" bind:isOpen={sidebarOpen} />
+<MobileSidebar currentPage="events" bind:isOpen={sidebarOpen} handleChangelogs={changelogModal.showModal} />
 
 <main class="flex h-screen overflow-hidden">
     <div class="flex flex-col w-full overflow-hidden p-7 min-h-0">

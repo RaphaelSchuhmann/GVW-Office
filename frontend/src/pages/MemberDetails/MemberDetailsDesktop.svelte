@@ -15,12 +15,16 @@
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
 
     let {
         memberData,
         isEditing = $bindable(),
         ...restProps
     } = $props();
+
+    /** @type {import("../../components/ChangelogsModal.svelte").default} */
+    let changelogModal = $state();
 
     let draft = $state(null);
     let isSubmitting = $state(false);
@@ -127,7 +131,8 @@
     let confirmDeleteMemberModal = $state();
 </script>
 
-<ToastStack></ToastStack>
+<ToastStack/>
+<ChangelogsModal bind:this={changelogModal}/>
 
 <ConfirmDeleteModal expectedInput={`${memberData.name} ${memberData.surname}`} id={memberData.id}
                     title="Mitglied löschen" subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?"
@@ -137,7 +142,7 @@
 />
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="members"></DesktopSidebar>
+    <DesktopSidebar currentPage="members" handleChangelogs={changelogModal.showModal}/>
     <div class="flex flex-col min-h-0 w-full p-10 overflow-hidden">
         <PageHeader title="Mitglied" subTitle={`Daten von "${memberData?.name ?? ""} ${memberData?.surname ?? ""}"`}>
             {#if viewport.width > 900}
