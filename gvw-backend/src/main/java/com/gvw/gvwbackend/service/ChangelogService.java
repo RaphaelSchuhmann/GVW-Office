@@ -9,6 +9,9 @@ import com.gvw.gvwbackend.model.Changelog;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -17,6 +20,7 @@ public class ChangelogService {
   private final DbService dbService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SseService sseService;
+  private static final Logger log = LoggerFactory.getLogger(ChangelogService.class);
 
   public ChangelogService(DbService dbService, SseService sseService) {
     this.dbService = dbService;
@@ -56,7 +60,11 @@ public class ChangelogService {
 
     dbService.insert("changelogs", changelog);
 
-    sseService.broadcastRefresh("CHANGELOGS");
+    try {
+      sseService.broadcastRefresh("CHANGELOGS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast CHANGELOGS refresh: ", ex);
+    }
   }
 
   public void deleteChangelog(String id) {
@@ -71,6 +79,10 @@ public class ChangelogService {
 
     dbService.delete("changelogs", changelog.getId(), changelog.getRev());
 
-    sseService.broadcastRefresh("CHANGELOGS");
+    try {
+      sseService.broadcastRefresh("CHANGELOGS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast CHANGELOGS refresh: ", ex);
+    }
   }
 }

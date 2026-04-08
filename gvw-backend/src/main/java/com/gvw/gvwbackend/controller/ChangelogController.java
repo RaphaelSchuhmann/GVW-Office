@@ -5,6 +5,7 @@ import com.gvw.gvwbackend.dto.response.ChangelogsResponseDTO;
 import com.gvw.gvwbackend.service.ChangelogService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,12 +23,14 @@ public class ChangelogController {
   }
 
   @PostMapping("/add")
+  @PreAuthorize("hasAnyRole('ADMIN')")
   @ResponseStatus(HttpStatus.OK)
   public void addChangelog(@Valid @RequestBody AddChangelogRequestDTO request) {
     changelogService.addChangelog(request);
   }
 
   @DeleteMapping("/delete/{id}")
+  @PreAuthorize("hasAnyRole('ADMIN')")
   @ResponseStatus(HttpStatus.OK)
   public void deleteChangelog(@PathVariable String id) {
     changelogService.deleteChangelog(id);
