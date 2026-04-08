@@ -21,12 +21,15 @@
 
         // retrieve latest changelogs
         isLoading = true;
-        await getChangelogs();
-        isLoading = false;
+        try {
+            await getChangelogs();
+        } finally {
+            isLoading = false;
+        }
     }
 </script>
 
-<Modal bind:this={modal} title="Changelogs" subTitle="">
+<Modal bind:this={modal} title="Changelogs" subTitle="" isMobile={isMobile}>
     {#if isLoading}
         <div class="w-full flex items-center justify-center">
             <Spinner />

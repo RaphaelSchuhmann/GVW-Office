@@ -4,11 +4,12 @@ import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
 import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
 import { changelogsStore } from "../stores/changelogs.svelte.js";
+import DOMPurify from "dompurify";
 
 let isFetching = {
     get: false,
     add: false,
-    delete: false,
+    delete: false
 };
 
 /**
@@ -20,14 +21,29 @@ let isFetching = {
 function handleApiErrors(errorType, context) {
     const errorConfigs = {
         ADD: {
-            BADREQUEST: { title: "Ungültige Daten", sub: "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte." },
-            DEFAULT: { title: "Fehler beim Hinzufügen", sub: "Beim Hinzufügen des neuen Changelogs ist ein Fehler aufgetreten." },
+            BADREQUEST: {
+                title: "Ungültige Daten",
+                sub: "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte."
+            },
+            DEFAULT: {
+                title: "Fehler beim Hinzufügen",
+                sub: "Beim Hinzufügen des neuen Changelogs ist ein Fehler aufgetreten."
+            }
         },
         DELETE: {
-            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
-            NOTFOUND: { title: "Changelog nicht gefunden", sub: "Der gewählte Changelog wurde im System nicht gefunden." },
-            DEFAULT: { title: "Fehler beim Entfernen", sub: "Beim Entfernen des Changelogs ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
-        },
+            BADREQUEST: {
+                title: "Unvollständige Daten",
+                sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut."
+            },
+            NOTFOUND: {
+                title: "Changelog nicht gefunden",
+                sub: "Der gewählte Changelog wurde im System nicht gefunden."
+            },
+            DEFAULT: {
+                title: "Fehler beim Entfernen",
+                sub: "Beim Entfernen des Changelogs ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
+            }
+        }
     };
 
     const config = errorConfigs[context]?.[errorType] ?? errorConfigs[context]?.DEFAULT;
@@ -76,7 +92,7 @@ export async function getChangelogs() {
             addToast({
                 title: "Fehler beim laden der Changelogs",
                 subTitle: viewport.isMobile ? "" : "Während dem Laden der Changelogs ist ein unerwarteter Fehler aufgetreten",
-                type: "error",
+                type: "error"
             });
             return;
         }
@@ -209,18 +225,22 @@ export async function deleteChangelog(changelogId) {
 export function formatChangelog(rawText) {
     if (!rawText) return "";
 
-    return rawText
+    const html = rawText
         .split("\n")
         .map(line => {
-            if (line.trim().startsWith("-")) {
-                return `<li class="ml-4 list-disc">${line.trim().substring(1).trim()}</li>`;
+            const trimmed = line.trim();
+
+            if (trimmed.startsWith("-")) {
+                return `<li class="ml-4 list-disc">${trimmed.substring(1).trim()}</li>`;
             }
 
-            if (line.trim().endsWith(":")) {
-                return `<p class="font-bold mt-2">${line}</p>`
+            if (trimmed.endsWith(":")) {
+                return `<p class="font-bold mt-2">${line}</p>`;
             }
 
             return line;
         })
         .join("");
+
+    return DOMPurify.sanitize(html);
 }

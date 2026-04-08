@@ -32,7 +32,7 @@
         content: "",
     });
 
-    let addChangelogBtnDisabled = $derived(!(addChangelogInputs.title || addChangelogInputs.version || addChangelogInputs.content) || isSubmitting);
+    let addChangelogBtnDisabled = $derived(!(addChangelogInputs.title && addChangelogInputs.version && addChangelogInputs.content) || isSubmitting);
 
     async function submitNewChangelog() {
         isSubmitting = true;
