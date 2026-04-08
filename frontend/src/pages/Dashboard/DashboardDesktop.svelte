@@ -14,9 +14,12 @@
     import Button from "../../components/Button.svelte";
     import { dashboardStore } from "../../stores/dashboard.svelte.js";
     import { prepareEvents, getVoiceCounts } from "../../services/dashboardService.svelte.js";
+    import Spinner from "../../components/Spinner.svelte";
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal = $state();
+
+    let isSubmitting = $state(false);
 
     let maxMembers = $state("");
 
@@ -25,6 +28,7 @@
     let voiceCounts = $derived(getVoiceCounts());
 
     async function updateMaxMembersVoiceDistribution() {
+        isSubmitting = true;
         let updatedMaxMembers = Number(maxMembers);
 
         if (isNaN(updatedMaxMembers) || maxMembers.length === 0 || updatedMaxMembers < 1) {
@@ -33,6 +37,7 @@
 
         await tryUpdateMaxMembers(updatedMaxMembers);
 
+        isSubmitting = false;
         voiceDistributionSettingsModal.hideModal();
     }
 </script>
@@ -43,7 +48,14 @@
     <Input title="Maximale Anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers} />
     <div class="w-full flex items-center justify-end mt-5 gap-2">
         <Button type="secondary" onclick={voiceDistributionSettingsModal.hideModal}>Abbrechen</Button>
-        <Button type="primary" onclick={updateMaxMembersVoiceDistribution} isSubmit={true}>Speichern</Button>
+        <Button type="primary" onclick={updateMaxMembersVoiceDistribution} isSubmit={true}>
+            {#if isSubmitting}
+                <Spinner light={true} />
+                <p>Speichern...</p>
+            {:else}
+                Hinzufügen
+            {/if}
+        </Button>
     </div>
 </Modal>
 <ToastStack></ToastStack>
