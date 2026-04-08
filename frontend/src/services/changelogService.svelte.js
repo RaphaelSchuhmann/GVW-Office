@@ -12,6 +12,36 @@ let isFetching = {
 };
 
 /**
+ * Centralized handler for changelog-related API errors.
+ *
+ * @param {string} errorType - Backend error type (e.g., BADREQUEST, NOTFOUND)
+ * @param {string} context - Operation context ("ADD", "DELETE")
+ */
+function handleApiErrors(errorType, context) {
+    const errorConfigs = {
+        ADD: {
+            BADREQUEST: { title: "Ungültige Daten", sub: "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte." },
+            DEFAULT: { title: "Fehler beim Hinzufügen", sub: "Beim Hinzufügen des neuen Changelogs ist ein Fehler aufgetreten." },
+        },
+        DELETE: {
+            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
+            NOTFOUND: { title: "Changelog nicht gefunden", sub: "Der gewählte Changelog wurde im System nicht gefunden." },
+            DEFAULT: { title: "Fehler beim Entfernen", sub: "Beim Entfernen des Changelogs ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
+        },
+    };
+
+    const config = errorConfigs[context]?.[errorType] ?? errorConfigs[context]?.DEFAULT;
+
+    if (!config) return;
+
+    addToast({
+        title: config.title,
+        subTitle: viewport.isMobile ? "" : config.sub,
+        type: "error"
+    });
+}
+
+/**
  * Fetches all changelogs from the backend and stores them in `changelogsStore`.
  *
  * Responsibilities:
@@ -101,20 +131,7 @@ export async function addChangelog(changelog) {
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Ungülite Eingabe",
-                    subTitle: viewport.isMobile ? "" : "Bitte überprüfen Sie Ihre Eingaben. Einige Felder sind leer oder enthalten ungültige Werte.",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Hinzufügen",
-                    subTitle: viewport.isMobile ? "" : "Beim Hinzufügen des neuen Changelogs ist ein Fehler aufgetreten.",
-                    type: "error"
-                });
-            }
-
+            handleApiErrors(normalizedResponse.errorType, "ADD");
             return;
         }
 
@@ -159,7 +176,7 @@ export async function deleteChangelog(changelogId) {
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            handleDeleteError(normalizedResponse.errorType);
+            handleApiErrors(normalizedResponse.errorType, "DELETE");
             return;
         }
 
@@ -171,49 +188,6 @@ export async function deleteChangelog(changelogId) {
     } finally {
         isFetching.delete = false;
     }
-}
-
-/**
- * Handles error responses for changelog deletion.
- *
- * Responsibilities:
- * - Maps API error types to user-friendly messages
- * - Falls back to a default error configuration
- * - Displays an error toast
- *
- * Behavior:
- * - Uses predefined configurations for:
- *   - NOTFOUND
- *   - BADREQUEST
- *   - DEFAULT (fallback)
- *
- * @function handleDeleteError
- * @param {string} errorType - Error type returned from the API
- * @returns {void}
- */
-function handleDeleteError(errorType) {
-    const errorConfigs = {
-        NOTFOUND: {
-            title: "Changelog nicht gefunden",
-            subTitle: "Der angegebene Changelog konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
-        },
-        BADREQUEST: {
-            title: "Ungültiger Changelog",
-            subTitle: "Der angegebene Changelog ist ungültig. Bitte versuchen Sie es später erneut."
-        },
-        DEFAULT: {
-            title: "Fehler beim Löschen",
-            subTitle: "Beim Löschen des Changelog ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-        }
-    };
-
-    const config = errorConfigs[errorType] || errorConfigs.DEFAULT;
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.subTitle,
-        type: "error"
-    });
 }
 
 /**
