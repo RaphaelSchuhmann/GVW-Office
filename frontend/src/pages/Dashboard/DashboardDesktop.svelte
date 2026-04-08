@@ -14,9 +14,16 @@
     import Button from "../../components/Button.svelte";
     import { dashboardStore } from "../../stores/dashboard.svelte.js";
     import { prepareEvents, getVoiceCounts } from "../../services/dashboardService.svelte.js";
+    import Spinner from "../../components/Spinner.svelte";
+    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal = $state();
+
+    /** @type {import("../../components/ChangelogsModal.svelte").default} */
+    let changelogModal = $state();
+
+    let isSubmitting = $state(false);
 
     let maxMembers = $state("");
 
@@ -25,13 +32,18 @@
     let voiceCounts = $derived(getVoiceCounts());
 
     async function updateMaxMembersVoiceDistribution() {
+        isSubmitting = true;
         let updatedMaxMembers = Number(maxMembers);
 
         if (isNaN(updatedMaxMembers) || maxMembers.length === 0 || updatedMaxMembers < 1) {
             updatedMaxMembers = appSettings.maxMembers;
         }
 
-        await tryUpdateMaxMembers(updatedMaxMembers);
+        try {
+            await tryUpdateMaxMembers(updatedMaxMembers);
+        } finally {
+            isSubmitting = false;
+        }
 
         voiceDistributionSettingsModal.hideModal();
     }
@@ -43,12 +55,22 @@
     <Input title="Maximale Anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers} />
     <div class="w-full flex items-center justify-end mt-5 gap-2">
         <Button type="secondary" onclick={voiceDistributionSettingsModal.hideModal}>Abbrechen</Button>
-        <Button type="primary" onclick={updateMaxMembersVoiceDistribution} isSubmit={true}>Speichern</Button>
+        <Button type="primary" disabled={isSubmitting} onclick={updateMaxMembersVoiceDistribution} isSubmit={true}>
+            {#if isSubmitting}
+                <Spinner light={true} />
+                <p>Speichern...</p>
+            {:else}
+                Hinzufügen
+            {/if}
+        </Button>
     </div>
 </Modal>
-<ToastStack></ToastStack>
+
+<ToastStack/>
+<ChangelogsModal bind:this={changelogModal}/>
+
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="dashboard"></DesktopSidebar>
+    <DesktopSidebar currentPage="dashboard" handleChangelogs={() => changelogModal?.showModal()}/>
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full flex-1 overflow-hidden p-10 min-h-0">
             <PageHeader title="Dashboard" subTitle="Willkommen in GVW Office - Übersicht Gesangverein Weppersdorf"

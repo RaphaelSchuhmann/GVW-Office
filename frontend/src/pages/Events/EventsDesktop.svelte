@@ -36,10 +36,14 @@
     import { addToast } from "../../stores/toasts.svelte";
     import Textarea from "../../components/Textarea.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
 
     // ================
     // MODAL REFERENCES
     // ================
+    /** @type {import("../../components/ChangelogsModal.svelte").default} */
+    let changelogModal = $state();
+
     /**
      * Reference to the "Add Event" modal.
      * Controls visibility and lifecycle of the member creation dialog.
@@ -128,11 +132,14 @@
             description: eventInput.description || "Keine Beschreibung"
         };
 
-        await addEvent(event);
+        try {
+            await addEvent(event);
+        } finally {
+            isSubmitting = false;
+        }
+
         await fetchAndSetRaw();
         addEventModal?.hideModal();
-
-        isSubmitting = false;
     }
 
     /**
@@ -225,7 +232,8 @@
 
 <svelte:window oncontextmenu={() => (menu.data.open = false)} />
 
-<ToastStack></ToastStack>
+<ToastStack/>
+<ChangelogsModal bind:this={changelogModal}/>
 
 <ContextMenu bind:open={menu.data.open} x={menu.data.x} y={menu.data.y}>
     <Button type="contextMenu" onclick={async () =>  await push(`/events/details?id=${menu.data.activeId}&editing=false`)}>
@@ -333,7 +341,7 @@
 
 <!--Switches to mobile page if width is less than 870px!-->
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="events"></DesktopSidebar>
+    <DesktopSidebar currentPage="events" handleChangelogs={() => changelogModal?.showModal()}/>
 
     <div class="flex flex-col w-full overflow-hidden p-10 min-h-0">
         <PageHeader title="Veranstaltungen" subTitle="Verwaltung von Events, Proben und Konzerten"

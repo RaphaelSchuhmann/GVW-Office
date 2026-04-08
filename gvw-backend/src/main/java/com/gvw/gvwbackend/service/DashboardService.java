@@ -6,7 +6,6 @@ import com.gvw.gvwbackend.dto.response.DashboardResponseDTO;
 import com.gvw.gvwbackend.model.Event;
 import com.gvw.gvwbackend.model.Member;
 import com.gvw.gvwbackend.model.Score;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -45,10 +44,10 @@ public class DashboardService {
         eventsRaw.stream().map(map -> mapper.convertValue(map, Event.class)).toList();
 
     List<Event> upcomingEvents =
-            events.stream()
-                    .filter(event -> "upcoming".equals(event.getStatus()))
-                    .sorted(Comparator.comparing(this::parseDateTime))
-                    .toList();
+        events.stream()
+            .filter(event -> "upcoming".equals(event.getStatus()))
+            .sorted(Comparator.comparing(this::parseDateTime))
+            .toList();
 
     List<DashboardEventSummaryDTO> responseUpcomingEventData =
         upcomingEvents.stream()

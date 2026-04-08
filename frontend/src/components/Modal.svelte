@@ -2,7 +2,6 @@
     import ModalHeader from "./ModalHeader.svelte";
     import { widthMap, heightMap } from "../lib/dynamicStyles";
 
-    // 1. Define Props & Snippets
     let {
         title = "",
         subTitle = "",
@@ -14,7 +13,6 @@
         children
     } = $props();
 
-    // 2. Internal State
     let visible = $state(false);
 
     /**
@@ -59,7 +57,7 @@
         >
             <ModalHeader {title} {subTitle} onclick={hideModal} />
 
-            <div class="w-full flex-1 min-h-0 flex flex-col overflow-y-scroll overflow-x-hidden mt-2">
+            <div class="w-full flex-1 min-h-0 flex flex-col overflow-y-scroll overflow-x-hidden mt-2 p-1">
                 {#if children}
                     {@render children()}
                 {/if}

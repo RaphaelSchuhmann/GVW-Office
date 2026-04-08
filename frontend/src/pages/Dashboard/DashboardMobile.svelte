@@ -14,9 +14,16 @@
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import { dashboardStore } from "../../stores/dashboard.svelte.js";
     import { prepareEvents, getVoiceCounts } from "../../services/dashboardService.svelte.js";
+    import Spinner from "../../components/Spinner.svelte";
+    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal = $state();
+
+    /** @type {import("../../components/ChangelogsModal.svelte").default} */
+    let changelogModal = $state();
+
+    let isSubmitting = $state(false);
 
     let maxMembers = $state("");
 
@@ -29,13 +36,18 @@
      * Validates input and handles API response with appropriate toast messages
      */
     async function updateMaxMembersVoiceDistribution() {
+        isSubmitting = true;
         let updatedMaxMembers = Number(maxMembers);
 
         if (isNaN(updatedMaxMembers) || maxMembers.length === 0 || updatedMaxMembers < 1) {
             updatedMaxMembers = appSettings.maxMembers;
         }
 
-        await tryUpdateMaxMembers(updatedMaxMembers);
+        try {
+            await tryUpdateMaxMembers(updatedMaxMembers);
+        } finally {
+            isSubmitting = false;
+        }
 
         voiceDistributionSettingsModal.hideModal();
     }
@@ -48,13 +60,21 @@
     <Input title="Maximale anzahl an Mitgliedern pro Stimme" type="number" marginTop="5" bind:value={maxMembers}/>
     <div class="w-full flex items-center justify-end mt-5 gap-2">
         <Button type="secondary" onclick={voiceDistributionSettingsModal.hideModal}>Abbrechen</Button>
-        <Button type="primary" onclick={updateMaxMembersVoiceDistribution} isSubmit={true}>Speichern</Button>
+        <Button type="primary" disabled={isSubmitting} onclick={updateMaxMembersVoiceDistribution} isSubmit={true}>
+            {#if isSubmitting}
+                <Spinner light={true} />
+                <p>Speichern...</p>
+            {:else}
+                Hinzufügen
+            {/if}
+        </Button>
     </div>
 </Modal>
 
-<ToastStack></ToastStack>
+<ToastStack isMobile={true}/>
+<ChangelogsModal bind:this={changelogModal} isMobile={true}/>
 
-<MobileSidebar currentPage="dashboard" bind:isOpen={sidebarOpen}/>
+<MobileSidebar currentPage="dashboard" bind:isOpen={sidebarOpen} handleChangelogs={() => changelogModal?.showModal()}/>
 
 <main class="flex overflow-hidden">
     <div class="flex-1 min-h-0 overflow-y-auto">

@@ -132,11 +132,13 @@
      */
     async function updateEventData() {
         isSubmitting = true;
-        await updateEvent($state.snapshot(draft));
-
-        isSubmitting = false;
-        isEditing = false;
-        draft = null;
+        try {
+            await updateEvent($state.snapshot(draft));
+        } finally {
+            isSubmitting = false;
+            isEditing = false;
+            draft = null;
+        }
     }
 
     /**

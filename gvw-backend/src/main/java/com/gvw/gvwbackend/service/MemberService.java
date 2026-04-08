@@ -28,7 +28,6 @@ public class MemberService {
   private final PasswordEncoder passwordEncoder;
   private final MailService mailService;
   private final SseService sseService;
-
   private static final Logger log = LoggerFactory.getLogger(MemberService.class);
 
   public MemberService(
@@ -119,7 +118,11 @@ public class MemberService {
           "newUser",
           Map.of("tempPassword", temporaryPassword));
 
-      sseService.broadcastRefresh("MEMBERS");
+      try {
+        sseService.broadcastRefresh("MEMBERS");
+      } catch (RuntimeException ex) {
+        log.warn("Failed to broadcast MEMBERS refresh: ", ex);
+      }
     } catch (Exception e) {
       log.error("Sync error during member/user creations: {}", e.getMessage());
 
@@ -171,7 +174,11 @@ public class MemberService {
     Map<String, Object> userResult = dbService.update("users", user.getId(), user);
     Map<String, Object> memberResult = dbService.update("members", member.getId(), member);
 
-    sseService.broadcastRefresh("MEMBERS");
+    try {
+      sseService.broadcastRefresh("MEMBERS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast MEMBERS refresh: ", ex);
+    }
 
     if (memberResult != null
         && memberResult.containsKey("rev")
@@ -195,7 +202,11 @@ public class MemberService {
 
     Map<String, Object> memberResult = dbService.update("members", member.getId(), member);
 
-    sseService.broadcastRefresh("MEMBERS");
+    try {
+      sseService.broadcastRefresh("MEMBERS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast MEMBERS refresh: ", ex);
+    }
 
     if (memberResult != null && memberResult.containsKey("rev")) {
       return (String) memberResult.get("rev");

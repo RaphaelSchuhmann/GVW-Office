@@ -14,6 +14,9 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -23,6 +26,7 @@ public class EventService {
   private final DbService dbService;
   private final EventMapper eventMapper;
   private final SseService sseService;
+  private static final Logger log = LoggerFactory.getLogger(EventService.class);
 
   public EventService(DbService dbService, EventMapper eventMapper, SseService sseService) {
     this.dbService = dbService;
@@ -70,7 +74,11 @@ public class EventService {
     }
 
     if (changed) {
-      sseService.broadcastRefresh("EVENTS");
+      try {
+        sseService.broadcastRefresh("EVENTS");
+      } catch (RuntimeException ex) {
+        log.warn("Failed to broadcast EVENTS refresh: ", ex);
+      }
     }
 
     List<EventResponseDTO> responseEvents =
@@ -114,7 +122,11 @@ public class EventService {
 
     dbService.insert("events", event);
 
-    sseService.broadcastRefresh("EVENTS");
+    try {
+      sseService.broadcastRefresh("EVENTS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast EVENTS refresh: ", ex);
+    }
   }
 
   public void deleteEvent(String id) {
@@ -129,7 +141,11 @@ public class EventService {
 
     dbService.delete("events", event.getId(), event.getRev());
 
-    sseService.broadcastRefresh("EVENTS");
+    try {
+      sseService.broadcastRefresh("EVENTS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast EVENTS refresh: ", ex);
+    }
   }
 
   public String updateEventStatus(String id, String _rev) {
@@ -152,7 +168,11 @@ public class EventService {
 
     Map<String, Object> resp = dbService.update("events", event.getId(), event);
 
-    sseService.broadcastRefresh("EVENTS");
+    try {
+      sseService.broadcastRefresh("EVENTS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast EVENTS refresh: ", ex);
+    }
 
     if (resp != null && resp.containsKey("rev")) {
       return (String) resp.get("rev");
@@ -178,7 +198,11 @@ public class EventService {
 
     Map<String, Object> resp = dbService.update("events", event.getId(), event);
 
-    sseService.broadcastRefresh("EVENTS");
+    try {
+      sseService.broadcastRefresh("EVENTS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast EVENTS refresh: ", ex);
+    }
 
     if (resp != null && resp.containsKey("rev")) {
       return (String) resp.get("rev");

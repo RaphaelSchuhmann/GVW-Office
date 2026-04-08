@@ -27,10 +27,14 @@
     import Checkbox from "../../components/Checkbox.svelte";
     import FileSelector from "../../components/FileSelector.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
 
     // ==================
     // MODAL REFERENCES
     // ==================
+    /** @type {import("../../components/ChangelogsModal.svelte").default} */
+    let changelogModal = $state();
+
     /**
      * Reference to the category modal.
      * Used to programmatically open the category dialog.
@@ -188,11 +192,14 @@
             voiceCount: scoreInput.voices.length
         };
 
-        await addScore($state.snapshot(score));
+        try {
+            await addScore($state.snapshot(score));
+        } finally {
+            isSubmitting = false;
+        }
+
         await fetchAndSetRaw();
         addScoreModal.hideModal();
-
-        isSubmitting = false;
     }
 
     // ============
@@ -246,7 +253,8 @@
 </script>
 
 <svelte:window oncontextmenu={() => (menu.data.open = false)} />
-<ToastStack></ToastStack>
+<ToastStack/>
+<ChangelogsModal bind:this={changelogModal}/>
 
 <CategoryModal bind:this={categoryModal} />
 
@@ -323,7 +331,7 @@
 </Modal>
 
 <main class="flex overflow-hidden">
-    <DesktopSidebar currentPage="library"></DesktopSidebar>
+    <DesktopSidebar currentPage="library" handleChangelogs={() => changelogModal?.showModal()} />
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Notenbibliothek" subTitle="Verwaltung des gesamten Notenmaterials"
                     showSlot={viewport.width > 1300}>

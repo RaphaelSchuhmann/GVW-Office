@@ -11,6 +11,7 @@
     import EventDetails from "./pages/EventDetails/EventDetailsPage.svelte";
     import Library from "./pages/Library/LibraryPage.svelte";
     import LibraryDetails from "./pages/LibraryDetails/LibraryDetailsPage.svelte";
+    import AdminDashboard from "./pages/AdminDashboard/AdminDashboardPage.svelte";
 
     import { initSSE } from "./services/sse-handler.js";
     import { user } from "./stores/user.svelte";
@@ -28,6 +29,7 @@
         "/events/details": EventDetails,
         "/library": Library,
         "/library/details": LibraryDetails,
+        "/admin": AdminDashboard,
     };
 
     $effect(() => {

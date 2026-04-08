@@ -34,7 +34,14 @@ public class DbService {
   private final String baseUrl;
 
   private final String[] databases = {
-    "users", "members", "events", "reports", "app_settings", "emergency_token", "library"
+    "users",
+    "members",
+    "events",
+    "reports",
+    "app_settings",
+    "emergency_token",
+    "library",
+    "changelogs"
   };
   private final String appSettingsDb = "app_settings";
   private Map<String, Object> DEFAULT_SETTINGS = new HashMap<>();

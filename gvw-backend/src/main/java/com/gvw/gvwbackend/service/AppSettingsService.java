@@ -46,7 +46,11 @@ public class AppSettingsService {
     }
 
     String rev = (String) revObj;
-    sseService.broadcastRefresh("SETTINGS");
+    try {
+      sseService.broadcastRefresh("SETTINGS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast SETTINGS refresh: ", ex);
+    }
     return rev;
   }
 
@@ -73,7 +77,11 @@ public class AppSettingsService {
 
     Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
 
-    sseService.broadcastRefresh("SETTINGS");
+    try {
+      sseService.broadcastRefresh("SETTINGS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast SETTINGS refresh: ", ex);
+    }
 
     if (resp != null && resp.containsKey("rev")) {
       return (String) resp.get("rev");
@@ -99,7 +107,11 @@ public class AppSettingsService {
     settings.setScoreCategories(categories);
     Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
 
-    sseService.broadcastRefresh("SETTINGS");
+    try {
+      sseService.broadcastRefresh("SETTINGS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast SETTINGS refresh: ", ex);
+    }
 
     if (resp != null && resp.containsKey("rev")) {
       return (String) resp.get("rev");

@@ -103,7 +103,11 @@ public class LibraryService {
 
       dbService.insert("library", score);
 
-      sseService.broadcastRefresh("SCORES");
+      try {
+        sseService.broadcastRefresh("SCORES");
+      } catch (RuntimeException ex) {
+        log.warn("Failed to broadcast SCORES refresh: ", ex);
+      }
     } catch (Exception e) {
       for (Score.File orphan : metaList) {
         deleteFile(orphan.getId() + "." + orphan.getExtension());
@@ -132,7 +136,11 @@ public class LibraryService {
 
     dbService.delete("library", score.getId(), score.getRev());
 
-    sseService.broadcastRefresh("SCORES");
+    try {
+      sseService.broadcastRefresh("SCORES");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast SCORES refresh: ", ex);
+    }
   }
 
   public void streamFilesAsZip(List<Score.File> files, OutputStream out) {
@@ -218,7 +226,11 @@ public class LibraryService {
         deleteFile(oldFile.getId() + "." + oldFile.getExtension());
       }
 
-      sseService.broadcastRefresh("SCORES");
+      try {
+        sseService.broadcastRefresh("SCORES");
+      } catch (RuntimeException ex) {
+        log.warn("Failed to broadcast SCORES refresh: ", ex);
+      }
 
       return (String) resp.get("rev");
     } catch (Exception e) {
