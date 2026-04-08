@@ -77,7 +77,7 @@
 </Modal>
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="adminDashboard" handleChangelogs={changelogModal.showModal}></DesktopSidebar>
+    <DesktopSidebar currentPage="adminDashboard" handleChangelogs={() => changelogModal?.showModal()}/>
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full h-full flex-1 overflow-hidden p-10 min-h-0">
             <PageHeader title="Admin Dashboard" subTitle="Willkommen im Admin Dashboard für GVW Office"

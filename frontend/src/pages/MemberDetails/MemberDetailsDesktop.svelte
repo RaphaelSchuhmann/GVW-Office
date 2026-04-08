@@ -144,7 +144,7 @@
 />
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="members" handleChangelogs={changelogModal.showModal}/>
+    <DesktopSidebar currentPage="members" handleChangelogs={() => changelogModal?.showModal()}/>
     <div class="flex flex-col min-h-0 w-full p-10 overflow-hidden">
         <PageHeader title="Mitglied" subTitle={`Daten von "${memberData?.name ?? ""} ${memberData?.surname ?? ""}"`}>
             {#if viewport.width > 900}

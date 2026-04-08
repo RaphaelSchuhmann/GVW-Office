@@ -181,7 +181,7 @@
 />
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="events" handleChangelogs={changelogModal.showModal} />
+    <DesktopSidebar currentPage="events" handleChangelogs={() => changelogModal?.showModal()} />
     <div class="flex flex-col min-h-0 w-full p-10 overflow-hidden">
         <PageHeader title="Veranstaltung" subTitle={`Details der Veranstaltung "${eventData?.title ?? ""}"`}>
             {#if viewport.width > 900}

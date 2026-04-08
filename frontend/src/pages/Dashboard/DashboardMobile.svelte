@@ -74,7 +74,7 @@
 <ToastStack isMobile={true}/>
 <ChangelogsModal bind:this={changelogModal} isMobile={true}/>
 
-<MobileSidebar currentPage="dashboard" bind:isOpen={sidebarOpen} handleChangelogs={changelogModal.showModal}/>
+<MobileSidebar currentPage="dashboard" bind:isOpen={sidebarOpen} handleChangelogs={() => changelogModal?.showModal()}/>
 
 <main class="flex overflow-hidden">
     <div class="flex-1 min-h-0 overflow-y-auto">

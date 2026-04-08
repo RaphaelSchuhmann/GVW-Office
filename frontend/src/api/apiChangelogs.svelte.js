@@ -75,7 +75,7 @@ export async function apiAddChangelog(changelog) {
  * if the request fails before a response is received.
  *
  * @example
- * const { resp } = await apiDeleteChangelog(1);
+ * const { resp } = await apiDeleteChangelog("1");
  *
  * if (resp?.ok) {
  *   console.log("Changelog deleted");

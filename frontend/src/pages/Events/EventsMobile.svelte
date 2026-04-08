@@ -238,7 +238,7 @@
     </div>
 </Modal>
 
-<MobileSidebar currentPage="events" bind:isOpen={sidebarOpen} handleChangelogs={changelogModal.showModal} />
+<MobileSidebar currentPage="events" bind:isOpen={sidebarOpen} handleChangelogs={() => changelogModal?.showModal()} />
 
 <main class="flex h-screen overflow-hidden">
     <div class="flex flex-col w-full overflow-hidden p-7 min-h-0">

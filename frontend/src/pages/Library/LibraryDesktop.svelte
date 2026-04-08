@@ -331,7 +331,7 @@
 </Modal>
 
 <main class="flex overflow-hidden">
-    <DesktopSidebar currentPage="library" handleChangelogs={changelogModal.showModal} />
+    <DesktopSidebar currentPage="library" handleChangelogs={() => changelogModal?.showModal()} />
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Notenbibliothek" subTitle="Verwaltung des gesamten Notenmaterials"
                     showSlot={viewport.width > 1300}>

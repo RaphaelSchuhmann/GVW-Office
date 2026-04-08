@@ -294,7 +294,7 @@
 </ContextMenu>
 
 <main class="flex overflow-hidden">
-    <DesktopSidebar currentPage="members" handleChangelogs={changelogModal.showModal}/>
+    <DesktopSidebar currentPage="members" handleChangelogs={() => changelogModal?.showModal()}/>
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={viewport.width > 1000}>
             {#if viewport.width > 1000}

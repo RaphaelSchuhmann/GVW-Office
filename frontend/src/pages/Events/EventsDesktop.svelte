@@ -341,7 +341,7 @@
 
 <!--Switches to mobile page if width is less than 870px!-->
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="events" handleChangelogs={changelogModal.showModal}/>
+    <DesktopSidebar currentPage="events" handleChangelogs={() => changelogModal?.showModal()}/>
 
     <div class="flex flex-col w-full overflow-hidden p-10 min-h-0">
         <PageHeader title="Veranstaltungen" subTitle="Verwaltung von Events, Proben und Konzerten"

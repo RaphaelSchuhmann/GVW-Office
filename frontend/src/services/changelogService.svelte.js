@@ -99,8 +99,8 @@ export async function getChangelogs() {
 
         if (!Array.isArray(body?.changelogs)) {
             addToast({
-                title: "Fehler beim laden  der Changelogs",
-                subTitle: viewport.isMobile ? "" : "Die Changelog Daten sind unvollständig zurückgekommen.",
+                title: "Fehler beim laden der Changelogs",
+                subTitle: viewport.isMobile ? "" : "Der Changelog Daten sind unvollständig zurückgekommen.",
                 type: "warning"
             });
             return;
@@ -198,7 +198,7 @@ export async function deleteChangelog(changelogId) {
 
         addToast({
             title: "Changelog gelöscht",
-            subTitle: viewport.isMobile ? "" : "Die Changelog wurde erfolgreich gelöscht.",
+            subTitle: viewport.isMobile ? "" : "Der Changelog wurde erfolgreich gelöscht.",
             type: "success"
         });
     } finally {
