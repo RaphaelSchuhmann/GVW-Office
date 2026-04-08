@@ -6,6 +6,7 @@ import com.gvw.gvwbackend.dto.response.ChangelogsResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.Changelog;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,10 @@ public class ChangelogService {
     List<Map<String, Object>> changelogsRaw = dbService.findAll("changelogs");
 
     List<Changelog> changelogs =
-        changelogsRaw.stream().map(map -> mapper.convertValue(map, Changelog.class)).toList();
+        changelogsRaw.stream()
+            .map(map -> mapper.convertValue(map, Changelog.class))
+            .sorted(Comparator.comparing(Changelog::getTimestamp).reversed())
+            .toList();
 
     if (changelogs.isEmpty()) {
       return new ChangelogsResponseDTO(List.of());
