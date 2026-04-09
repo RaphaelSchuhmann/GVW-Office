@@ -130,3 +130,16 @@ export function isISOString(str) {
     const d = new Date(str);
     return !isNaN(d.getTime());
 }
+
+export function yearToISOString(year) {
+    if (!year) return "";
+
+    const date = new Date(Date.UTC(year, 0, 1));
+    return date.toISOString();
+}
+
+export function getYearFromISOString(dateStr) {
+    if (!dateStr || !isISOString(dateStr)) return "";
+
+    return dateStr.split('-')[0];
+}
