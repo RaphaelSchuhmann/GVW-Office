@@ -13,7 +13,7 @@
     } from "../../services/eventsService.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
-    import { formatISODateString } from "../../services/dateTimeUtils.js";
+    import { formatISODateString, isISOString } from "../../services/dateTimeUtils.js";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -217,11 +217,12 @@
                     <Textarea bind:value={eventData.description} title="Beschreibung"
                               placeholder="Kurze Beschreibung zur Veranstaltung..." readonly={true} />
 
-                    <Input value={formatISODateString(eventData.date)} title="Datum" placeholder="XX.XX.XXXX" readonly={true} />
+                    <Input value={formatISODateString(eventData.date)} title="Datum" placeholder="XX.XX.XXXX"
+                           readonly={true} />
                     <Input value={eventData.time} title="Uhrzeit" placeholder="--:--" readonly={true} />
 
                     <TabBar contents={["Einmalig", "Wöchentlich", "Monatlich"]} selected={modeMap[eventData.mode]}
-                            disabled={true} marginTop="3"/>
+                            disabled={true} marginTop="3" />
 
                     {#if eventData.mode === "single"}
                         <p class="text-gv-dark-text text-dt-6 text-left w-full">Diese Veranstaltung findet nur einmal
@@ -247,7 +248,8 @@
                             <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
                                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
                         {:else}
-                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {formatISODateString(eventData.date)}
+                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
+                                am {formatISODateString(eventData.date)}
                                 .</p>
                         {/if}
                     {/if}
@@ -267,7 +269,14 @@
 
                     <div class="flex flex-col items-start w-full h-full">
                         <p class="text-dt-6 font-medium">Datum</p>
-                        <DefaultDatepicker marginTop="1" onChange={(value) => draft.date = value}
+                        <DefaultDatepicker marginTop="1" onChange={(value) => {
+                            draft.date = value
+                            if (draft.recurrence.monthlyKind === "date") {
+                                draft.recurrence.dayOfMonth = isISOString(draft.date)
+                                    ? formatISODateString(draft.date).split(".").map(Number)[0]
+                                    : draft.date.split(".").map(Number)[0];
+                            }
+                        }}
                                            selected={draft.date} />
                     </div>
                     <Input bind:value={draft.time} title="Uhrzeit" placeholder="--:--" />
@@ -297,8 +306,9 @@
                                 isChecked={draft.recurrence.monthlyKind === "date"}
                                 onChange={() => {
                                     draft.recurrence.monthlyKind = "date";
-                                    const [day] = draft.date.split(".").map(Number);
-                                    draft.recurrence.dayOfMonth = day;
+                                    draft.recurrence.dayOfMonth = isISOString(draft.date)
+                                        ? formatISODateString(draft.date).split(".").map(Number)[0]
+                                        : draft.date.split(".").map(Number)[0];
                                 }}
                             />
 
@@ -317,7 +327,8 @@
                             <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
                                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
                         {:else}
-                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {formatISODateString(draft.date)}
+                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
+                                am {formatISODateString(draft.date)}
                                 .</p>
                         {/if}
                     {/if}
@@ -326,7 +337,8 @@
                 {#if isEditing}
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
-                        <Button type="primary" disabled={!hasChanges || isSubmitting} onclick={async () => await updateEventData()}>
+                        <Button type="primary" disabled={!hasChanges || isSubmitting}
+                                onclick={async () => await updateEventData()}>
                             {#if isSubmitting}
                                 <Spinner light={true} />
                                 <p>Speichern...</p>

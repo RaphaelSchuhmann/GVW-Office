@@ -2,18 +2,18 @@
     import { push } from "svelte-spa-router";
     import { viewport } from "../../stores/viewport.svelte";
     import {
+        getOrdinalFromDateString,
+        getWeekDayFromDateStringMondayFirst,
         modeMap,
         ordinalMap,
         statusMap,
         typeMap,
         updateEvent,
-        weekDayMap,
-        getOrdinalFromDateString,
-        getWeekDayFromDateStringMondayFirst
+        weekDayMap
     } from "../../services/eventsService.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
-    import { formatISODateString } from "../../services/dateTimeUtils.js";
+    import { formatISODateString, isISOString } from "../../services/dateTimeUtils.js";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -106,9 +106,9 @@
 
             recurrenceChanged =
                 dRec.monthlyKind !== eRec.monthlyKind ||
-                dRec.dayOfMonth  !== eRec.dayOfMonth  ||
-                dRec.weekDay     !== eRec.weekDay     ||
-                dRec.ordinal     !== eRec.ordinal;
+                dRec.dayOfMonth !== eRec.dayOfMonth ||
+                dRec.weekDay !== eRec.weekDay ||
+                dRec.ordinal !== eRec.ordinal;
         }
 
         // Return TRUE if any part changed
@@ -172,11 +172,12 @@
     let confirmDeleteEventModal = $state();
 </script>
 
-<ToastStack/>
-<ChangelogsModal bind:this={changelogModal}/>
+<ToastStack />
+<ChangelogsModal bind:this={changelogModal} />
 
 <ConfirmDeleteModal expectedInput={`${eventData.title}`} id={eventData.id}
-                    title="Veranstaltung löschen" subTitle="Sind Sie sich sicher das Sie diese Veranstaltung löschen möchten?"
+                    title="Veranstaltung löschen"
+                    subTitle="Sind Sie sich sicher das Sie diese Veranstaltung löschen möchten?"
                     action="deleteEvent"
                     onClose={async () => {await push("/events")}}
                     bind:this={confirmDeleteEventModal}
@@ -230,17 +231,20 @@
                     <Input bind:value={eventData.location} title="Ort" placeholder="Ort XYZ" readonly={true} />
 
                     <Textarea bind:value={eventData.description} title="Beschreibung"
-                           placeholder="Kurze Beschreibung zur Veranstaltung..." readonly={true} />
+                              placeholder="Kurze Beschreibung zur Veranstaltung..." readonly={true} />
 
                     <div class="w-full flex items-center gap-4">
-                        <Input value={formatISODateString(eventData.date)} title="Datum" placeholder="XX.XX.XXXX" readonly={true} />
+                        <Input value={formatISODateString(eventData.date)} title="Datum" placeholder="XX.XX.XXXX"
+                               readonly={true} />
                         <Input value={eventData.time} title="Uhrzeit" placeholder="--:--" readonly={true} />
                     </div>
 
-                    <TabBar contents={["Einmalig", "Wöchentlich", "Monatlich"]} selected={modeMap[eventData.mode]} disabled={true} />
+                    <TabBar contents={["Einmalig", "Wöchentlich", "Monatlich"]} selected={modeMap[eventData.mode]}
+                            disabled={true} />
 
                     {#if eventData.mode === "single"}
-                        <p class="text-gv-dark-text text-dt-4 text-left w-full">Diese Veranstaltung findet nur einmal statt.</p>
+                        <p class="text-gv-dark-text text-dt-4 text-left w-full">Diese Veranstaltung findet nur einmal
+                            statt.</p>
                     {:else if eventData.mode === "weekly"}
                         <p class="text-gv-dark-text text-dt-4 text-left w-full">Jede Woche am {weekDayMap[weekDay]}</p>
                     {:else if eventData.mode === "monthly"}
@@ -259,9 +263,11 @@
                         </div>
 
                         {#if eventData.recurrence.monthlyKind === "weekday"}
-                            <p class="text-gv-dark-text text-dt-4 text-left mt-2 w-full">Jeden Monat am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
+                            <p class="text-gv-dark-text text-dt-4 text-left mt-2 w-full">Jeden Monat
+                                am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
                         {:else}
-                            <p class="text-gv-dark-text text-dt-4 text-left mt-2 w-full">Jeden Monat am {formatISODateString(eventData.date)}.</p>
+                            <p class="text-gv-dark-text text-dt-4 text-left mt-2 w-full">Jeden Monat
+                                am {formatISODateString(eventData.date).split(".")[0]}.</p>
                         {/if}
                     {/if}
                 {:else}
@@ -271,7 +277,8 @@
                         <Dropdown title="Typ" options={["Proben", "Meeting", "Konzerte", "Sonstiges"]}
                                   onChange={(value) => draft.type = typeMap[value]} selected={typeMap[draft.type]} />
                         <Dropdown title="Status" options={["Bevorstehend", "Abgeschlossen"]}
-                                  onChange={(value) => draft.status = statusMap[value]} selected={statusMap[draft.status]} />
+                                  onChange={(value) => draft.status = statusMap[value]}
+                                  selected={statusMap[draft.status]} />
                     </div>
 
                     <Input bind:value={draft.location} title="Ort" placeholder="Ort XYZ" />
@@ -282,7 +289,15 @@
                     <div class="w-full flex items-center gap-4">
                         <div class="flex flex-col items-start w-full h-full">
                             <p class="text-dt-6 font-medium">Datum</p>
-                            <DefaultDatepicker marginTop="1" onChange={(value) => draft.date = value} selected={formatISODateString(draft.date)} />
+                            <DefaultDatepicker marginTop="1" onChange={(value) => {
+                                draft.date = value;
+                                if (draft.recurrence.monthlyKind === "date") {
+                                    draft.recurrence.dayOfMonth = isISOString(draft.date)
+                                        ? formatISODateString(draft.date).split(".").map(Number)[0]
+                                        : draft.date.split(".").map(Number)[0];
+                                }
+                            }}
+                                               selected={formatISODateString(draft.date)} />
                         </div>
                         <Input bind:value={draft.time} title="Uhrzeit" placeholder="--:--" />
                     </div>
@@ -300,7 +315,8 @@
                     />
 
                     {#if draft.mode === "single"}
-                        <p class="text-gv-dark-text text-dt-4 text-left w-full">Diese Veranstaltung findet nur einmal statt.</p>
+                        <p class="text-gv-dark-text text-dt-4 text-left w-full">Diese Veranstaltung findet nur einmal
+                            statt.</p>
                     {:else if draft.mode === "weekly"}
                         <p class="text-gv-dark-text text-dt-4 text-left w-full">Jede Woche am {weekDayMap[weekDay]}</p>
                     {:else if draft.mode === "monthly"}
@@ -310,8 +326,9 @@
                                 isChecked={draft.recurrence.monthlyKind === "date"}
                                 onChange={() => {
                                     draft.recurrence.monthlyKind = "date";
-                                    const [day] = draft.date.split(".").map(Number);
-                                    draft.recurrence.dayOfMonth = day;
+                                    draft.recurrence.dayOfMonth = isISOString(draft.date)
+                                        ? formatISODateString(draft.date).split(".").map(Number)[0]
+                                        : draft.date.split(".").map(Number)[0];
                                 }}
                             />
 
@@ -330,9 +347,10 @@
                             <p class="text-gv-dark-text text-dt-4 text-left mt-2 w-full">Jeden Monat
                                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
                         {:else}
-                            <p class="text-gv-dark-text text-dt-4 text-left mt-2 w-full">Jeden Monat am {formatISODateString(draft.date)}.</p>
+                            <p class="text-gv-dark-text text-dt-4 text-left mt-2 w-full">Jeden Monat
+                                am {formatISODateString(draft.date).split(".")[0]}.</p>
                         {/if}
-                    {/if}    
+                    {/if}
                 {/if}
 
                 {#if viewport.width > 900 && !isEditing && (user.role === "board_member" || user.role === "admin")}
@@ -351,7 +369,8 @@
                 {#if isEditing}
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
-                        <Button type="primary" disabled={!hasChanges || isSubmitting} onclick={async () => await updateEventData()}>
+                        <Button type="primary" disabled={!hasChanges || isSubmitting}
+                                onclick={async () => await updateEventData()}>
                             {#if isSubmitting}
                                 <Spinner light={true} />
                                 <p>Speichern...</p>
