@@ -2,6 +2,7 @@ package com.gvw.gvwbackend.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,7 +23,7 @@ public class Event {
   private String title;
   private String type;
   private String date;
-  private String time;
+  private LocalTime time;
   private String location;
   private String description;
   private String mode;
