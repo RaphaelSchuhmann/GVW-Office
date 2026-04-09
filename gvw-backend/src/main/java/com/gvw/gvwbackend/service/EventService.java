@@ -46,7 +46,15 @@ public class EventService {
         continue;
       }
 
-      if (event.getDate().isBefore(Instant.now())
+      Instant eventDate;
+      try {
+        eventDate = Instant.parse(event.getDate());
+      } catch (Exception ex) {
+        log.error("Error converting event date string: {}", event.getDate(), ex);
+        throw new RuntimeException("ErrorConvertingDateString", ex);
+      }
+
+      if (eventDate.isBefore(Instant.now())
           && event.getStatus().equals("upcoming")
           && event.getMode().equalsIgnoreCase("single")) {
         event.setStatus("finished");
