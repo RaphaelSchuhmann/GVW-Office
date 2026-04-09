@@ -68,7 +68,7 @@
     }
 
     function scrollToItem(array, item, ref) {
-        if (!array || array.length < 0 || !ref) return;
+        if (!array || array.length === 0 || !ref) return;
 
         const index = array.indexOf(item);
         if (index === -1) return;
@@ -95,7 +95,11 @@
         open = !open;
 
         if (open) {
-            if (!selected) {
+            if (selected) {
+                const [h, m] = selected.split(".");
+                activeHour = h;
+                activeMinute = m;
+            } else {
                 activeHour = String(new Date().getHours()).padStart(2, "0");
                 activeMinute = String(new Date().getMinutes()).padStart(2, "0");
                 updateSelection();
@@ -141,7 +145,8 @@
                          bind:this={hoursRef}>
                         {#each hours as hour}
                             <button class="snap-item h-12 w-full shrink-0 flex items-center justify-center text-dt-4
-                                          {activeHour === hour ? 'text-gv-dark-text font-bold' : 'text-gv-light-text'}">
+                                          {activeHour === hour ? 'text-gv-dark-text font-bold' : 'text-gv-light-text'}"
+                                    onclick={() => { activeHour = hour; updateSelection(); scrollToItem(hours, hour, "hours"); }}>
                                 {hour}
                             </button>
                         {/each}
@@ -155,7 +160,8 @@
                          bind:this={minuteRef}>
                         {#each minutes as minute}
                             <button class="snap-item h-12 w-full shrink-0 flex items-center justify-center text-dt-4
-                                          {activeMinute === minute ? 'text-gv-dark-text font-bold' : 'text-gv-light-text'}">
+                                          {activeMinute === minute ? 'text-gv-dark-text font-bold' : 'text-gv-light-text'}"
+                                    onclick={() => { activeMinute = minute; updateSelection(); scrollToItem(minutes, minute, "minutes"); }}>
                                 {minute}
                             </button>
                         {/each}
