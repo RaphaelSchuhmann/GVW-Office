@@ -83,7 +83,10 @@ export function germanDateToISO(germanDate) {
     if (!germanDate) return null;
 
     const [day, month, year] = germanDate.split('.');
+    if (!day || !month || !year) return null;
+
     const date = new Date(Date.UTC(year, month - 1, day));
+    if (Number.isNaN(date.getTime())) return null;
 
     return date.toISOString();
 }

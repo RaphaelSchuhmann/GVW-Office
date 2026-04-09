@@ -87,7 +87,7 @@ export async function loadDashboardData() {
  */
 export function prepareEvents() {
     return dashboardStore.upcomingEvents.map(event => {
-        const date = formatISODateString(event?.date) || "Unbekannt";
+        const date = event?.date ? formatISODateString(event?.date) : "Unbekannt";
         const time = event?.time || "";
 
         return {

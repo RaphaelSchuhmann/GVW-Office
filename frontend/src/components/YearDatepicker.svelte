@@ -17,9 +17,11 @@
     // Keep this for the display and the "highlight" logic
     let selectedYearNumeric = $derived.by(() => {
         if (!selected) return null;
-        return isISOString(selected)
+        const parsedYear = isISOString(selected)
             ? Number(getYearFromISOString(selected))
             : Number(selected);
+
+        return Number.isFinite(parsedYear) ? parsedYear : null;
     });
 
     // The grid now ONLY cares about navigatedYear, not the selection

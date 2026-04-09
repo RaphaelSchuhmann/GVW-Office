@@ -142,7 +142,7 @@ function getMonthlyOccurrence(event) {
 function calculateMonthlyDateOccurrence(dayOfMonth) {
     const today = new Date();
     const targetDate = new Date(today.getFullYear(), today.getMonth(), 1);
-    const currentMonthDay = Math.min(dayOfMonth, getLastDayOfCurrentMonth());
+    const currentMonthDay = Math.min(dayOfMonth, getLastDayOfCurrentMonth().getDate());
 
     if (currentMonthDay < today.getDate()) {
         targetDate.setMonth(targetDate.getMonth() + 1);
@@ -162,8 +162,8 @@ function calculateMonthlyDateOccurrence(dayOfMonth) {
 }
 
 /**
- * Gets weekday number from DD.MM.YYYY string (Monday = 1, Sunday = 7)
- * @param {string} dateStr - Date string in DD.MM.YYYY format
+ * Gets weekday number from a date string (Monday = 1, Sunday = 7)
+ * @param {string} dateStr - Date string in DD.MM.YYYY or ISO 8601 format
  * @returns {number} Weekday number (1-7, Monday first)
  */
 export function getWeekDayFromDateStringMondayFirst(dateStr) {
