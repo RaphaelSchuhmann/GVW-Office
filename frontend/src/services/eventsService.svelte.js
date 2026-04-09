@@ -167,11 +167,11 @@ function calculateMonthlyDateOccurrence(dayOfMonth) {
  * @returns {number} Weekday number (1-7, Monday first)
  */
 export function getWeekDayFromDateStringMondayFirst(dateStr) {
-    if (typeof dateStr !== "string" || !dateStr) return NaN;
+    if (typeof dateStr !== "string" || !dateStr) return Number.NaN;
     dateStr = isISOString(dateStr) ? formatISODateString(dateStr) : dateStr;
     const [day, month, year] = dateStr.split(".").map(Number);
     const date = new Date(year, month - 1, day);
-    if (Number.isNaN(date.getTime())) return NaN;
+    if (Number.isNaN(date.getTime())) return Number.NaN;
 
     const jsDay = date.getDay(); // 0–6 (Sun–Sat)
 
@@ -185,7 +185,7 @@ export function getWeekDayFromDateStringMondayFirst(dateStr) {
  * `@returns` {number} Ordinal week number (1-5)
  */
 export function getOrdinalFromDateString(dateStr) {
-    if (typeof dateStr !== "string" || !dateStr) return NaN;
+    if (typeof dateStr !== "string" || !dateStr) return Number.NaN;
     const date = isISOString(dateStr) ? formatISODateString(dateStr) : dateStr;
     const [day] = date.split(".").map(Number);
 
@@ -193,7 +193,7 @@ export function getOrdinalFromDateString(dateStr) {
 }
 
 export function getDayOfMonthFromDate(dateStr) {
-    if (typeof dateStr !== "string" || !dateStr) return NaN;
+    if (typeof dateStr !== "string" || !dateStr) return Number.NaN;
     const formatted = isISOString(dateStr)
         ? formatISODateString(dateStr)
         : dateStr;
