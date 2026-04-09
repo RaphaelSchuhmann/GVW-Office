@@ -1,13 +1,14 @@
 package com.gvw.gvwbackend.dto.response;
 
 import com.gvw.gvwbackend.model.Event;
+import java.time.Instant;
 
 public record EventResponseDTO(
     String id,
     String rev,
     String title,
     String type,
-    String date,
+    Instant date,
     String time,
     String location,
     String description,

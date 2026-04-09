@@ -1,5 +1,7 @@
 package com.gvw.gvwbackend.dto.response;
 
+import java.time.Instant;
+
 public record MemberResponseDTO(
     String id,
     String rev,
@@ -11,5 +13,5 @@ public record MemberResponseDTO(
     String voice,
     String status,
     String role,
-    String birthdate,
-    String joined) {}
+    Instant birthdate,
+    Instant joined) {}

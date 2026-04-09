@@ -2,7 +2,8 @@ package com.gvw.gvwbackend.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
+import java.time.Instant;
 
 public record AddMemberRequestDTO(
     @NotBlank String name,
@@ -13,6 +14,5 @@ public record AddMemberRequestDTO(
     @NotBlank String voice,
     @NotBlank String status,
     @NotBlank String role,
-    @NotBlank String birthdate,
-    @NotBlank @Pattern(regexp = "\\d{4}", message = "joined must be in YYYY format")
-        String joined) {}
+    @NotNull Instant birthdate,
+    @NotNull Instant joined) {}

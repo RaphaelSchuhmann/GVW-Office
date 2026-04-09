@@ -2,6 +2,7 @@ package com.gvw.gvwbackend.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.Instant;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,9 +30,8 @@ public class Member {
   private String status;
   private Role role;
 
-  // Should be string as provided by the frontend
-  private String birthdate;
-  private String joined;
+  private Instant birthdate;
+  private Instant joined;
 
   @Builder.Default private final String type = "member";
 }
