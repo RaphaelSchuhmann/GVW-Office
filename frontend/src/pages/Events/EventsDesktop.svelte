@@ -39,6 +39,7 @@
     import Spinner from "../../components/Spinner.svelte";
     import ChangelogsModal from "../../components/ChangelogsModal.svelte";
     import { formatISODateString } from "../../services/dateTimeUtils.js";
+    import TimePicker from "../../components/TimePicker.svelte";
 
     // ================
     // MODAL REFERENCES
@@ -273,7 +274,10 @@
             <p class="text-dt-6 font-medium">Datum</p>
             <DefaultDatepicker marginTop="1" onChange={(value) => eventInput.date = value} />
         </div>
-        <Input bind:value={eventInput.time} title="Uhrzeit" placeholder="--:--" />
+        <div class="flex flex-col items-start w-full h-full">
+            <p class="text-dt-6 font-medium">Uhrzeit</p>
+            <TimePicker marginTop="1" selected={eventInput.time} onChange={(value) => eventInput.time = value} />
+        </div>
     </div>
 
     <TabBar

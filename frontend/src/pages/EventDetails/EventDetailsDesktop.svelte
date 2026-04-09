@@ -14,7 +14,7 @@
     } from "../../services/eventsService.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
-    import { formatISODateString, isISOString } from "../../services/dateTimeUtils.js";
+    import { formatISODateString } from "../../services/dateTimeUtils.js";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -29,6 +29,7 @@
     import Textarea from "../../components/Textarea.svelte";
     import Spinner from "../../components/Spinner.svelte";
     import ChangelogsModal from "../../components/ChangelogsModal.svelte";
+    import TimePicker from "../../components/TimePicker.svelte";
 
     let {
         eventData,
@@ -295,10 +296,12 @@
                                 if (draft.recurrence.monthlyKind === "date") {
                                     draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
                                 }
-                            }}
-                                               selected={formatISODateString(draft.date)} />
+                            }} selected={formatISODateString(draft.date)} />
                         </div>
-                        <Input bind:value={draft.time} title="Uhrzeit" placeholder="--:--" />
+                        <div class="flex flex-col items-start w-full h-full">
+                            <p class="text-dt-6 font-medium">Uhrzeit</p>
+                            <TimePicker marginTop="1" selected={draft.time} onChange={(value) => {draft.time = value;}} />
+                        </div>
                     </div>
 
                     <TabBar
