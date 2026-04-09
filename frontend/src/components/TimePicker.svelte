@@ -96,7 +96,7 @@
 
         if (open) {
             if (selected) {
-                const [h, m] = selected.split(".");
+                const [h, m] = selected.split(":");
                 activeHour = h;
                 activeMinute = m;
             } else {

@@ -185,8 +185,8 @@
     </div>
 
     <div class="flex flex-col items-start w-full h-full mt-5">
-        <p class="text-dt-6 font-medium">Datum</p>
-        <TimePicker marginTop="1" onChange={(value) => eventInput.time = value} />
+        <p class="text-dt-6 font-medium">Uhrzeit</p>
+        <TimePicker marginTop="1" selected={eventInput.time} onChange={(value) => eventInput.time = value} />
     </div>
 
     <div class="h-min mt-5">
