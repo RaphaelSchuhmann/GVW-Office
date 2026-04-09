@@ -18,6 +18,7 @@
     import { getValue } from "./services/store";
     import { ensureUserData } from "./services/userService.svelte";
     import { initSettingsSync } from "./services/appSettingsSyncService.svelte.js";
+    import NotFound from "./pages/NotFound/NotFoundPage.svelte";
 
     const routes = {
         "/": Login,
@@ -30,6 +31,7 @@
         "/library": Library,
         "/library/details": LibraryDetails,
         "/admin": AdminDashboard,
+        "*": NotFound
     };
 
     $effect(() => {
