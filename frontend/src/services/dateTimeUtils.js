@@ -128,9 +128,25 @@ export function isISOString(str) {
     if (!isIsoFormat) return false;
 
     const d = new Date(str);
-    return !isNaN(d.getTime());
+    return !Number.isNaN(d.getTime());
 }
 
+/**
+ * Converts a year value into an ISO 8601 date string representing January 1st of that year.
+ *
+ * Responsibilities:
+ * - Creates a UTC-based Date object for January 1st of the given year
+ * - Returns the date in ISO 8601 format
+ *
+ * Behavior:
+ * - Returns an empty string if input is falsy
+ * - Assumes the input is a valid year (number or numeric string)
+ * - Does not perform validation on malformed input
+ *
+ * @function yearToISOString
+ * @param {number|string} year - The year to convert (e.g. 2026)
+ * @returns {string} ISO 8601 formatted date string (e.g. "2026-01-01T00:00:00.000Z") or empty string if input is invalid
+ */
 export function yearToISOString(year) {
     if (!year) return "";
 
@@ -138,6 +154,21 @@ export function yearToISOString(year) {
     return date.toISOString();
 }
 
+/**
+ * Extracts the year component from a valid ISO 8601 date string.
+ *
+ * Responsibilities:
+ * - Validates the input as a proper ISO 8601 string
+ * - Extracts and returns the year portion (YYYY)
+ *
+ * Behavior:
+ * - Returns an empty string if input is falsy or not a valid ISO string
+ * - Relies on isISOString() for validation
+ *
+ * @function getYearFromISOString
+ * @param {string} dateStr - ISO 8601 date string (e.g. "2026-01-01T00:00:00.000Z")
+ * @returns {string} The extracted year (e.g. "2026") or empty string if invalid
+ */
 export function getYearFromISOString(dateStr) {
     if (!dateStr || !isISOString(dateStr)) return "";
 
