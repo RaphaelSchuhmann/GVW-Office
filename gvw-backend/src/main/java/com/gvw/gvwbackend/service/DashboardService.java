@@ -6,10 +6,6 @@ import com.gvw.gvwbackend.dto.response.DashboardResponseDTO;
 import com.gvw.gvwbackend.model.Event;
 import com.gvw.gvwbackend.model.Member;
 import com.gvw.gvwbackend.model.Score;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +42,7 @@ public class DashboardService {
     List<Event> upcomingEvents =
         events.stream()
             .filter(event -> "upcoming".equals(event.getStatus()))
-            .sorted(Comparator.comparing(this::parseDateTime))
+            .sorted(Comparator.comparing(Event::getDate, Comparator.nullsLast(Comparator.naturalOrder())))
             .toList();
 
     List<DashboardEventSummaryDTO> responseUpcomingEventData =
@@ -65,26 +61,5 @@ public class DashboardService {
 
     return new DashboardResponseDTO(
         responseMemberData, events.size(), responseUpcomingEventData, scores.size());
-  }
-
-  private LocalDateTime parseDateTime(Event event) {
-    try {
-      DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
-      LocalDate date = LocalDate.parse(event.getDate(), dateFormatter);
-
-      // Try parsing time
-      try {
-        DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-        LocalTime time = LocalTime.parse(event.getTime(), timeFormatter);
-        return LocalDateTime.of(date, time);
-      } catch (Exception e) {
-        // Invalid time → push to end of that day
-        return LocalDateTime.of(date, LocalTime.MAX);
-      }
-
-    } catch (Exception e) {
-      // If date is invalid (shouldn’t happen ideally), push far into future
-      return LocalDateTime.MAX;
-    }
   }
 }

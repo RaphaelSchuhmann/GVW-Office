@@ -4,6 +4,7 @@ import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
 import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
 import { dashboardStore } from "../stores/dashboard.svelte.js";
+import { formatISODateString } from "./dateTimeUtils.js";
 
 let isFetching = false;
 
@@ -86,7 +87,7 @@ export async function loadDashboardData() {
  */
 export function prepareEvents() {
     return dashboardStore.upcomingEvents.map(event => {
-        const date = event?.date || "Unbekannt";
+        const date = event?.date ? formatISODateString(event?.date) : "Unbekannt";
         const time = event?.time || "";
 
         return {

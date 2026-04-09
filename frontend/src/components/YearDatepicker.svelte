@@ -1,6 +1,6 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { currentYear } from "../services/utils";
+    import { currentYear, isISOString, getYearFromISOString, yearToISOString } from "../services/dateTimeUtils.js";
 
     let {
         selected = $bindable(""),
@@ -11,13 +11,21 @@
     let open = $state(false);
     let datepickerRef = $state(null);
 
-    let usedYear = $state(selected ? Number(selected) : currentYear);
+    // This is the "navigation" state that controls what 12-year block we see
+    let navigatedYear = $state(currentYear);
 
-    $effect(() => {
-        if (selected) usedYear = Number(selected);
+    // Keep this for the display and the "highlight" logic
+    let selectedYearNumeric = $derived.by(() => {
+        if (!selected) return null;
+        const parsedYear = isISOString(selected)
+            ? Number(getYearFromISOString(selected))
+            : Number(selected);
+
+        return Number.isFinite(parsedYear) ? parsedYear : null;
     });
 
-    let gridStart = $derived(Math.floor(usedYear / 12) * 12);
+    // The grid now ONLY cares about navigatedYear, not the selection
+    let gridStart = $derived(Math.floor(navigatedYear / 12) * 12);
     let yearsGrid = $derived(Array.from({ length: 12 }, (_, i) => gridStart + i));
 
     $effect(() => {
@@ -32,15 +40,17 @@
     });
 
     function updateSelection(year) {
-        usedYear = year;
-        selected = String(year);
-        onChange(selected);
+        const isoValue = yearToISOString(String(year));
+        selected = isoValue;
+        onChange(isoValue);
     }
 
     function toggleOpen() {
         open = !open;
-        if (!selected) {
-            updateSelection(usedYear);
+        // When opening, sync the navigation to whatever is currently selected
+        // so the user starts at the right page
+        if (open) {
+            navigatedYear = selectedYearNumeric ?? currentYear;
         }
     }
 
@@ -49,13 +59,18 @@
         open = false;
     }
 
+    // These now modify navigatedYear directly, and the grid will follow
     function nextRange() {
-        usedYear += 12;
+        navigatedYear += 12;
     }
 
     function backRange() {
-        if (usedYear - 12 < 0) return;
-        usedYear -= 12;
+        if (navigatedYear - 12 < 0) return;
+        navigatedYear -= 12;
+    }
+
+    function compareSelectedToYear(year) {
+        return selectedYearNumeric === year;
     }
 </script>
 
@@ -63,7 +78,9 @@
     <div
         class="flex items-center w-full bg-gv-input-bg border-gv-primary rounded-1 {open ? 'border' : ''} gap-1">
         <input type="text" class="w-full p-2 pl-3 pr-3 rounded-l-1 text-gv-dark-text outline-gv-primary text-dt-6"
-               placeholder="YYYY" bind:value={selected} readonly>
+               placeholder="YYYY"
+               value={selectedYearNumeric ?? ""}
+               readonly>
         <button
             class="p-1.5 rounded-2 h-full aspect-square mr-1 flex items-center justify-center cursor-pointer hover:bg-gv-hover-effect"
             onclick={toggleOpen}>
@@ -78,10 +95,10 @@
                 {#each yearsGrid as year}
                     <button
                         class="py-3 rounded-2 text-dt-6 font-medium transition-all cursor-pointer"
-                        class:bg-gv-dark-turquoise={String(selected) === String(year)}
-                        class:text-white={String(selected) === String(year)}
-                        class:text-gv-light-text={String(selected) !== String(year)}
-                        class:hover:bg-gv-hover-effect={String(selected) !== String(year)}
+                        class:bg-gv-dark-turquoise={compareSelectedToYear(year)}
+                        class:text-white={compareSelectedToYear(year)}
+                        class:text-gv-light-text={!compareSelectedToYear(year)}
+                        class:hover:bg-gv-hover-effect={!compareSelectedToYear(year)}
                         onclick={() => selectYear(year)}
                     >
                         {year}

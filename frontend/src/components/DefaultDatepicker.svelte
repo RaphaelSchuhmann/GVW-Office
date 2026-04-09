@@ -1,6 +1,15 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { daysInMonth, firstWeekdayOfMonth, currentYear, currentMonth, isToday } from "../services/utils";
+    import {
+        daysInMonth,
+        firstWeekdayOfMonth,
+        currentYear,
+        currentMonth,
+        isToday,
+        germanDateToISO,
+        isISOString,
+        formatISODateString
+    } from "../services/dateTimeUtils.js";
     import Dropdown from "./Dropdown.svelte";
 
     let {
@@ -12,12 +21,10 @@
     let open = $state(false);
     let datepickerRef = $state(null);
 
-    // Parse initial value or fallback to current date
-    const initialDate = selected && selected.includes('.') ? selected.split('.').map(Number) : null;
-
-    let usedMonth = $state(initialDate ? initialDate[1] - 1 : currentMonth);
-    let usedYear = $state(initialDate ? initialDate[2] : currentYear);
-    let selectedDate = $state(initialDate ? initialDate[0] : new Date().getDate());
+    // usedMonth/Year/Date are the "Working State" for the UI
+    let usedMonth = $state(currentMonth);
+    let usedYear = $state(currentYear);
+    let selectedDay = $state(new Date().getDate());
 
     const monthOptions = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
@@ -26,24 +33,24 @@
     }
     const yearOptions = generateYears(currentYear, 101);
 
+    // Helper to parse the current 'selected' prop into numbers we can use
+    function parseSelected() {
+        if (!selected) return null;
+
+        let parts;
+        if (isISOString(selected)) {
+            parts = formatISODateString(selected).split('.').map(Number);
+        } else if (selected.includes('.')) {
+            parts = selected.split('.').map(Number);
+        }
+
+        return parts ? { day: parts[0], month: parts[1] - 1, year: parts[2] } : null;
+    }
+
+    // Reactively build the calendar grid
     let calendar = $derived(buildCalendar(usedYear, usedMonth));
 
-    let formattedDate = $derived(`${selectedDate}.${usedMonth + 1}.${usedYear}`);
-
-    $effect(() => {
-        if (selected !== formattedDate) {
-            selected = formattedDate;
-            onChange(formattedDate);
-        }
-    });
-
-    $effect(() => {
-        const maxDays = daysInMonth(usedYear, usedMonth);
-        if (selectedDate > maxDays) {
-            selectedDate = maxDays;
-        }
-    });
-
+    // Handle clicking outside to close
     $effect(() => {
         const handleClickOutside = (event) => {
             if (datepickerRef && !datepickerRef.contains(event.target)) {
@@ -52,6 +59,14 @@
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
+    });
+
+    // Ensure selectedDay doesn't exceed days in month when month/year changes
+    $effect(() => {
+        const maxDays = daysInMonth(usedYear, usedMonth);
+        if (selectedDay > maxDays) {
+            selectedDay = maxDays;
+        }
     });
 
     function buildCalendar(year, month) {
@@ -77,16 +92,28 @@
 
     function toggleDatepicker() {
         open = !open;
+        if (open) {
+            const current = parseSelected();
+            if (current) {
+                usedMonth = current.month;
+                usedYear = current.year;
+                selectedDay = current.day;
+            }
+        }
     }
 
     function itemClicked(day) {
-        selectedDate = day;
+        selectedDay = day;
+        // Construct the display string and convert to ISO for emission
+        const displayStr = `${String(day).padStart(2, '0')}.${String(usedMonth + 1).padStart(2, '0')}.${usedYear}`;
+        selected = displayStr;
+        onChange(germanDateToISO(displayStr));
         open = false;
     }
 
     function next() {
-        if (!yearOptions.includes(String(usedYear + 1)) && usedMonth === 11) return;
         if (usedMonth === 11) {
+            if (!yearOptions.includes(String(usedYear + 1))) return;
             usedMonth = 0;
             usedYear++;
         } else {
@@ -95,13 +122,22 @@
     }
 
     function back() {
-        if (!yearOptions.includes(String(usedYear - 1)) && usedMonth === 0) return;
         if (usedMonth === 0) {
+            if (!yearOptions.includes(String(usedYear - 1))) return;
             usedMonth = 11;
             usedYear--;
         } else {
             usedMonth--;
         }
+    }
+
+    // Highlighting logic helper
+    function isSelected(day) {
+        const current = parseSelected();
+        return current &&
+            current.day === day &&
+            current.month === usedMonth &&
+            current.year === usedYear;
     }
 </script>
 
@@ -111,7 +147,7 @@
             type="text"
             class="w-full p-2 pl-3 pr-3 rounded-l-1 text-gv-dark-text outline-gv-primary text-dt-6"
             placeholder="DD.MM.YYYY"
-            value={selected}
+            value={isISOString(selected) ? formatISODateString(selected) : selected}
             readonly
         >
         <button
@@ -141,11 +177,11 @@
                                         <button
                                             type="button"
                                             class="w-10 h-10 rounded-full text-dt-8 cursor-pointer transition-colors"
-                                            class:bg-gv-dark-turquoise={selectedDate === day}
-                                            class:text-white={selectedDate === day || isToday(day, usedMonth, usedYear)}
-                                            class:bg-gv-primary={isToday(day, usedMonth, usedYear) && selectedDate !== day}
-                                            class:text-gv-light-text={selectedDate !== day && !isToday(day, usedMonth, usedYear)}
-                                            class:hover:bg-gv-hover-effect={selectedDate !== day}
+                                            class:bg-gv-dark-turquoise={isSelected(day)}
+                                            class:text-white={isSelected(day) || isToday(day, usedMonth, usedYear)}
+                                            class:bg-gv-primary={isToday(day, usedMonth, usedYear) && !isSelected(day)}
+                                            class:text-gv-light-text={!isSelected(day) && !isToday(day, usedMonth, usedYear)}
+                                            class:hover:bg-gv-hover-effect={!isSelected(day)}
                                             onclick={() => itemClicked(day)}
                                         >
                                             {day}

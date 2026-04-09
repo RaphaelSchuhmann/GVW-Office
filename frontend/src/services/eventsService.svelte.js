@@ -10,7 +10,7 @@ import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
 import { eventsStore } from "../stores/events.svelte";
-import { getLastDayOfCurrentMonth, parseDMYToDate } from "./utils";
+import { formatISODateString, getLastDayOfCurrentMonth, isISOString } from "./dateTimeUtils.js";
 
 export const typeMap = {
     "all": "Alle Typen",
@@ -82,7 +82,7 @@ export function getEventOccurrence(eventId) {
     const event = eventsStore.raw.find(item => item.id === eventId);
 
     if (!event) return "Unbekannt";
-    if (event.mode === "single") return event.date;
+    if (event.mode === "single") return formatISODateString(event.date);
     if (event.mode === "weekly") return getWeeklyOccurrence(event);
     if (event.mode === "monthly" && event.recurrence) return getMonthlyOccurrence(event);
 
@@ -97,9 +97,9 @@ export function getEventOccurrence(eventId) {
  * @returns {string} e.g. "Jede Woche am Montag"
  */
 function getWeeklyOccurrence(event) {
-    const date = parseDMYToDate(event.date);
+    const date = new Date(event.date);
     if (Number.isNaN(date.getTime())) return "Unbekannt";
-    const dayIndex = date.getDay();
+    const dayIndex = date.getUTCDay();
     const weekDayKey = dayIndex === 0 ? "7" : String(dayIndex);
     return `Jede Woche am ${weekDayMap[weekDayKey]}`;
 }
@@ -142,7 +142,7 @@ function getMonthlyOccurrence(event) {
 function calculateMonthlyDateOccurrence(dayOfMonth) {
     const today = new Date();
     const targetDate = new Date(today.getFullYear(), today.getMonth(), 1);
-    const currentMonthDay = Math.min(dayOfMonth, getLastDayOfCurrentMonth());
+    const currentMonthDay = Math.min(dayOfMonth, getLastDayOfCurrentMonth().getDate());
 
     if (currentMonthDay < today.getDate()) {
         targetDate.setMonth(targetDate.getMonth() + 1);
@@ -159,6 +159,102 @@ function calculateMonthlyDateOccurrence(dayOfMonth) {
     const mm = String(targetDate.getMonth() + 1).padStart(2, "0");
     const yyyy = targetDate.getFullYear();
     return `${dd}.${mm}.${yyyy}`;
+}
+
+/**
+ * Parses a supported date string into its numeric components (day, month, year).
+ *
+ * Responsibilities:
+ * - Accepts date strings in either ISO 8601 or German format (DD.MM.YYYY)
+ * - Converts ISO strings into German format via formatISODateString()
+ * - Validates that the resulting date is a real calendar date
+ *
+ * Behavior:
+ * - Returns null if input is not a string or is empty
+ * - Returns null if the format does not match DD.MM.YYYY
+ * - Returns null if the date is invalid (e.g. 31.02.2024)
+ *
+ * @function parseSupportedDateParts
+ * @param {string} dateStr - Date string in ISO 8601 or "DD.MM.YYYY" format
+ * @returns {{day: number, month: number, year: number} | null} Parsed date parts or null if invalid
+ */
+function parseSupportedDateParts(dateStr) {
+    if (typeof dateStr !== "string" || !dateStr) return null;
+
+    const formatted = isISOString(dateStr) ? formatISODateString(dateStr) : dateStr;
+    const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(formatted);
+    if (!match) return null;
+
+    const [, dayStr, monthStr, yearStr] = match;
+    const day = Number(dayStr);
+    const month = Number(monthStr);
+    const year = Number(yearStr);
+    const date = new Date(year, month - 1, day);
+
+    if (
+        Number.isNaN(date.getTime()) ||
+        date.getFullYear() !== year ||
+        date.getMonth() !== month - 1 ||
+        date.getDate() !== day
+    ) {
+        return null;
+    }
+
+    return { day, month, year };
+}
+
+/**
+ * Gets weekday number from a date string (Monday = 1, Sunday = 7)
+ * @param {string} dateStr - Date string in DD.MM.YYYY or ISO 8601 format
+ * @returns {number} Weekday number (1-7, Monday first)
+ */
+export function getWeekDayFromDateStringMondayFirst(dateStr) {
+    const parts = parseSupportedDateParts(dateStr);
+    if (!parts) return Number.NaN;
+    const date = new Date(parts.year, parts.month - 1, parts.day);
+
+    const jsDay = date.getDay(); // 0–6 (Sun–Sat)
+
+    // Convert to 1–7 (Mon–Sun)
+    return jsDay === 0 ? 7 : jsDay;
+}
+
+/**
+ * Gets the ordinal week number within a month from a date string (1-5).
+ *
+ * Responsibilities:
+ * - Parses the date string into components
+ * - Calculates the ordinal week based on the day of the month
+ *
+ * Behavior:
+ * - Returns NaN if the input is invalid
+ *
+ * @function getOrdinalFromDateString
+ * @param {string} dateStr - Date string in DD.MM.YYYY or ISO 8601 format
+ * @returns {number} Ordinal week number (1-5) or NaN if invalid
+ */
+export function getOrdinalFromDateString(dateStr) {
+    const parts = parseSupportedDateParts(dateStr);
+    return parts ? Math.ceil(parts.day / 7) : Number.NaN;
+}
+
+/**
+ * Extracts the day of the month from a supported date string.
+ *
+ * Responsibilities:
+ * - Parses the date string into components
+ * - Returns the day value (1-31)
+ *
+ * Behavior:
+ * - Returns NaN if the input is invalid
+ *
+ * @function getDayOfMonthFromDate
+ * @param {string} dateStr - Date string in DD.MM.YYYY or ISO 8601 format
+ * @returns {number} Day of the month (1-31) or NaN if invalid
+ */
+export function getDayOfMonthFromDate(dateStr) {
+    const parts = parseSupportedDateParts(dateStr);
+    return parts?.day ?? Number.NaN;
 }
 
 const pendingChecks = new Map();

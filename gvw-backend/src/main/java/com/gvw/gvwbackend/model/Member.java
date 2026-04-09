@@ -29,7 +29,6 @@ public class Member {
   private String status;
   private Role role;
 
-  // Should be string as provided by the frontend
   private String birthdate;
   private String joined;
 

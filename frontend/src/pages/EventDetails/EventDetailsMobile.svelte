@@ -7,10 +7,13 @@
         statusMap,
         typeMap,
         updateEvent,
-        weekDayMap
+        weekDayMap,
+        getOrdinalFromDateString,
+        getWeekDayFromDateStringMondayFirst, getDayOfMonthFromDate
     } from "../../services/eventsService.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
+    import { formatISODateString, isISOString } from "../../services/dateTimeUtils.js";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -21,7 +24,6 @@
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import TabBar from "../../components/TabBar.svelte";
     import Checkbox from "../../components/Checkbox.svelte";
-    import { getOrdinalFromDMY, getWeekDayFromDMYMondayFirst } from "../../services/utils";
     import Textarea from "../../components/Textarea.svelte";
     import Spinner from "../../components/Spinner.svelte";
 
@@ -35,8 +37,8 @@
     let isSubmitting = $state(false);
 
     const currentDate = $derived(isEditing ? draft?.date : eventData?.date);
-    const ordinal = $derived(getOrdinalFromDMY(currentDate));
-    const weekDay = $derived(getWeekDayFromDMYMondayFirst(currentDate));
+    const ordinal = $derived(getOrdinalFromDateString(currentDate));
+    const weekDay = $derived(getWeekDayFromDateStringMondayFirst(currentDate));
 
     /**
      * Initializes edit mode for the current event.
@@ -105,7 +107,7 @@
         }
 
         // Return TRUE if any part changed
-        return !isSubmitting || baseChanged || descChanged || recurrenceChanged;
+        return baseChanged || descChanged || recurrenceChanged;
     });
 
     /**
@@ -215,11 +217,12 @@
                     <Textarea bind:value={eventData.description} title="Beschreibung"
                               placeholder="Kurze Beschreibung zur Veranstaltung..." readonly={true} />
 
-                    <Input bind:value={eventData.date} title="Datum" placeholder="XX.XX.XXXX" readonly={true} />
-                    <Input bind:value={eventData.time} title="Uhrzeit" placeholder="--:--" readonly={true} />
+                    <Input value={formatISODateString(eventData.date)} title="Datum" placeholder="XX.XX.XXXX"
+                           readonly={true} />
+                    <Input value={eventData.time} title="Uhrzeit" placeholder="--:--" readonly={true} />
 
                     <TabBar contents={["Einmalig", "Wöchentlich", "Monatlich"]} selected={modeMap[eventData.mode]}
-                            disabled={true} marginTop="3"/>
+                            disabled={true} marginTop="3" />
 
                     {#if eventData.mode === "single"}
                         <p class="text-gv-dark-text text-dt-6 text-left w-full">Diese Veranstaltung findet nur einmal
@@ -241,14 +244,12 @@
                             />
                         </div>
 
-                        {#if eventData.recurrence.monthlyKind === "date"}
-                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {eventData.date}
-                                .</p>
-                        {:else if eventData.recurrence.monthlyKind === "weekday"}
+                        {#if eventData.recurrence.monthlyKind === "weekday"}
                             <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
                                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
                         {:else}
-                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {eventData.date}
+                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
+                                am {formatISODateString(eventData.date).split(".")[0]}
                                 .</p>
                         {/if}
                     {/if}
@@ -268,7 +269,12 @@
 
                     <div class="flex flex-col items-start w-full h-full">
                         <p class="text-dt-6 font-medium">Datum</p>
-                        <DefaultDatepicker marginTop="1" onChange={(value) => draft.date = value}
+                        <DefaultDatepicker marginTop="1" onChange={(value) => {
+                            draft.date = value
+                            if (draft.recurrence.monthlyKind === "date") {
+                                draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
+                            }
+                        }}
                                            selected={draft.date} />
                     </div>
                     <Input bind:value={draft.time} title="Uhrzeit" placeholder="--:--" />
@@ -298,8 +304,7 @@
                                 isChecked={draft.recurrence.monthlyKind === "date"}
                                 onChange={() => {
                                     draft.recurrence.monthlyKind = "date";
-                                    const [day] = draft.date.split(".").map(Number);
-                                    draft.recurrence.dayOfMonth = day;
+                                    draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
                                 }}
                             />
 
@@ -314,14 +319,12 @@
                             />
                         </div>
 
-                        {#if draft.recurrence.monthlyKind === "date"}
-                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {draft.date}
-                                .</p>
-                        {:else if draft.recurrence.monthlyKind === "weekday"}
+                        {#if draft.recurrence.monthlyKind === "weekday"}
                             <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
                                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
                         {:else}
-                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {draft.date}
+                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
+                                am {formatISODateString(draft.date).split(".")[0]}
                                 .</p>
                         {/if}
                     {/if}
@@ -330,7 +333,8 @@
                 {#if isEditing}
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
-                        <Button type="primary" disabled={!hasChanges} onclick={async () => await updateEventData()}>
+                        <Button type="primary" disabled={!hasChanges || isSubmitting}
+                                onclick={async () => await updateEventData()}>
                             {#if isSubmitting}
                                 <Spinner light={true} />
                                 <p>Speichern...</p>

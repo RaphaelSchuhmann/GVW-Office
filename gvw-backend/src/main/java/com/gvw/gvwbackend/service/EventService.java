@@ -9,12 +9,8 @@ import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.mapper.EventMapper;
 import com.gvw.gvwbackend.model.Event;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -52,9 +48,10 @@ public class EventService {
 
       Instant eventDate;
       try {
-        eventDate = parseDMYToInstant(event.getDate());
-      } catch (RuntimeException e) {
-        continue;
+        eventDate = Instant.parse(event.getDate());
+      } catch (Exception ex) {
+        log.error("Error converting event date string: {}", event.getDate(), ex);
+        throw new RuntimeException("ErrorConvertingDateString", ex);
       }
 
       if (eventDate.isBefore(Instant.now())
@@ -209,14 +206,6 @@ public class EventService {
     }
 
     throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
-  }
-
-  private Instant parseDMYToInstant(String dateStr) {
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d.M.yyyy");
-
-    LocalDate localDate = LocalDate.parse(dateStr, formatter);
-
-    return localDate.atStartOfDay(ZoneOffset.UTC).toInstant();
   }
 
   private boolean validateRecurrence(String mode, Event.Recurrence recurrence) {
