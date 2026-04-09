@@ -178,15 +178,22 @@ export function getWeekDayFromDateStringMondayFirst(dateStr) {
 }
 
 /**
- * Gets the ordinal week number (1st, 2nd, 3rd, 4th) from a date string
- * @param {string} dateStr - Date string in DD.MM.YYYY format
- * @returns {number} Ordinal week number (1-4)
+ * Gets the ordinal week number from a date string (1-5)
+ * `@param` {string} dateStr - Date string in DD.MM.YYYY or ISO 8601 format
+ * `@returns` {number} Ordinal week number (1-5)
  */
 export function getOrdinalFromDateString(dateStr) {
     const date = isISOString(dateStr) ? formatISODateString(dateStr) : dateStr;
     const [day] = date.split(".").map(Number);
 
     return Math.ceil(day / 7);
+}
+
+export function getDayOfMonthFromDate(dateStr) {
+    const formatted = isISOString(dateStr)
+        ? formatISODateString(dateStr)
+        : dateStr;
+    return formatted.split(".").map(Number)[0];
 }
 
 const pendingChecks = new Map();

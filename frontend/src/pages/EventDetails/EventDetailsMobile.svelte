@@ -9,7 +9,7 @@
         updateEvent,
         weekDayMap,
         getOrdinalFromDateString,
-        getWeekDayFromDateStringMondayFirst
+        getWeekDayFromDateStringMondayFirst, getDayOfMonthFromDate
     } from "../../services/eventsService.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
@@ -249,7 +249,7 @@
                                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
                         {:else}
                             <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
-                                am {formatISODateString(eventData.date)}
+                                am {formatISODateString(eventData.date).split(".")[0]}
                                 .</p>
                         {/if}
                     {/if}
@@ -272,9 +272,7 @@
                         <DefaultDatepicker marginTop="1" onChange={(value) => {
                             draft.date = value
                             if (draft.recurrence.monthlyKind === "date") {
-                                draft.recurrence.dayOfMonth = isISOString(draft.date)
-                                    ? formatISODateString(draft.date).split(".").map(Number)[0]
-                                    : draft.date.split(".").map(Number)[0];
+                                draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
                             }
                         }}
                                            selected={draft.date} />
@@ -306,9 +304,7 @@
                                 isChecked={draft.recurrence.monthlyKind === "date"}
                                 onChange={() => {
                                     draft.recurrence.monthlyKind = "date";
-                                    draft.recurrence.dayOfMonth = isISOString(draft.date)
-                                        ? formatISODateString(draft.date).split(".").map(Number)[0]
-                                        : draft.date.split(".").map(Number)[0];
+                                    draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
                                 }}
                             />
 
@@ -328,7 +324,7 @@
                                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
                         {:else}
                             <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
-                                am {formatISODateString(draft.date)}
+                                am {formatISODateString(draft.date).split(".")[0]}
                                 .</p>
                         {/if}
                     {/if}

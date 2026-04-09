@@ -2,6 +2,7 @@
     import { push } from "svelte-spa-router";
     import { viewport } from "../../stores/viewport.svelte";
     import {
+        getDayOfMonthFromDate,
         getOrdinalFromDateString,
         getWeekDayFromDateStringMondayFirst,
         modeMap,
@@ -292,9 +293,7 @@
                             <DefaultDatepicker marginTop="1" onChange={(value) => {
                                 draft.date = value;
                                 if (draft.recurrence.monthlyKind === "date") {
-                                    draft.recurrence.dayOfMonth = isISOString(draft.date)
-                                        ? formatISODateString(draft.date).split(".").map(Number)[0]
-                                        : draft.date.split(".").map(Number)[0];
+                                    draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
                                 }
                             }}
                                                selected={formatISODateString(draft.date)} />
@@ -326,9 +325,7 @@
                                 isChecked={draft.recurrence.monthlyKind === "date"}
                                 onChange={() => {
                                     draft.recurrence.monthlyKind = "date";
-                                    draft.recurrence.dayOfMonth = isISOString(draft.date)
-                                        ? formatISODateString(draft.date).split(".").map(Number)[0]
-                                        : draft.date.split(".").map(Number)[0];
+                                    draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
                                 }}
                             />
 
