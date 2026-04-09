@@ -59,6 +59,7 @@ export function formatISODateString(dateStr) {
         day: "2-digit",
         month: "2-digit",
         year: 'numeric',
+        timeZone: "UTC",
     }).format(date);
 }
 
@@ -152,8 +153,10 @@ export function isISOString(str) {
  */
 export function yearToISOString(year) {
     if (!year) return "";
+    if (!/^\d{4}$/.test(String(year))) return "";
 
-    const date = new Date(Date.UTC(year, 0, 1));
+    const date = new Date(Date.UTC(Number(year), 0, 1));
+    if (Number.isNaN(date.getTime())) return "";
     return date.toISOString();
 }
 

@@ -42,7 +42,7 @@ public class DashboardService {
     List<Event> upcomingEvents =
         events.stream()
             .filter(event -> "upcoming".equals(event.getStatus()))
-            .sorted(Comparator.comparing(Event::getDate))
+            .sorted(Comparator.comparing(Event::getDate, Comparator.nullsLast(Comparator.naturalOrder())))
             .toList();
 
     List<DashboardEventSummaryDTO> responseUpcomingEventData =
