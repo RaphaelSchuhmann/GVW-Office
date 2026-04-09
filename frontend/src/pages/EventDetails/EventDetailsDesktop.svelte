@@ -14,7 +14,7 @@
     } from "../../services/eventsService.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
-    import { formatISODateString, isISOString } from "../../services/dateTimeUtils.js";
+    import { formatISODateString } from "../../services/dateTimeUtils.js";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
