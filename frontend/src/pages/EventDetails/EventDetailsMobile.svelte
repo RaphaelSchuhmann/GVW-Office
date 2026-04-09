@@ -275,7 +275,7 @@
                             if (draft.recurrence.monthlyKind === "date") {
                                 draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
                             }
-                        }} selected={draft.date} />
+                        }} selected={formatISODateString(draft.date)} />
                     </div>
 
                     <div class="flex flex-col items-start w-full h-full">
