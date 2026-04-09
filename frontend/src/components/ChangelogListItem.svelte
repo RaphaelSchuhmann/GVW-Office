@@ -2,7 +2,7 @@
     import { slide } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
     import { user } from "../stores/user.svelte.js";
-    import { formatISODateString } from "../services/utils.js";
+    import { formatISODateString } from "../services/dateTimeUtils.js";
     import { deleteChangelog, formatChangelog } from "../services/changelogService.svelte.js";
     import Spinner from "./Spinner.svelte";
 

@@ -10,8 +10,8 @@
         updateStatus,
         getEventOccurrence,
         addEvent,
-        getOrdinalFromDMY,
-        getWeekDayFromDMYMondayFirst
+        getOrdinalFromDateString,
+        getWeekDayFromDateStringMondayFirst
     } from "../../services/eventsService.svelte";
     import { viewport } from "../../stores/viewport.svelte";
 
@@ -38,6 +38,7 @@
     import Textarea from "../../components/Textarea.svelte";
     import Spinner from "../../components/Spinner.svelte";
     import ChangelogsModal from "../../components/ChangelogsModal.svelte";
+    import { formatISODateString } from "../../services/dateTimeUtils.js";
 
     // ================
     // MODAL REFERENCES
@@ -91,8 +92,8 @@
         eventInput.location
     ) || isSubmitting);
 
-    const ordinal = $derived(getOrdinalFromDMY(eventInput.date));
-    const weekDay = $derived(getWeekDayFromDMYMondayFirst(eventInput.date));
+    const ordinal = $derived(getOrdinalFromDateString(eventInput.date));
+    const weekDay = $derived(getWeekDayFromDateStringMondayFirst(eventInput.date));
 
     /**
      * Submits the new event to the backend.
@@ -309,13 +310,11 @@
             />
         </div>
 
-        {#if eventInput.recurrence.monthlyKind === "date"}
-            <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat am {eventInput.date}.</p>
-        {:else if eventInput.recurrence.monthlyKind === "weekday"}
+        {#if eventInput.recurrence.monthlyKind === "weekday"}
             <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat
                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
         {:else}
-            <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat am {eventInput.date}.</p>
+            <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat am {formatISODateString(eventInput.date)}.</p>
         {/if}
     {/if}
 

@@ -8,11 +8,12 @@
         typeMap,
         updateEvent,
         weekDayMap,
-        getOrdinalFromDMY,
-        getWeekDayFromDMYMondayFirst
+        getOrdinalFromDateString,
+        getWeekDayFromDateStringMondayFirst
     } from "../../services/eventsService.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { user } from "../../stores/user.svelte";
+    import { formatISODateString } from "../../services/dateTimeUtils.js";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -36,8 +37,8 @@
     let isSubmitting = $state(false);
 
     const currentDate = $derived(isEditing ? draft?.date : eventData?.date);
-    const ordinal = $derived(getOrdinalFromDMY(currentDate));
-    const weekDay = $derived(getWeekDayFromDMYMondayFirst(currentDate));
+    const ordinal = $derived(getOrdinalFromDateString(currentDate));
+    const weekDay = $derived(getWeekDayFromDateStringMondayFirst(currentDate));
 
     /**
      * Initializes edit mode for the current event.
@@ -106,7 +107,7 @@
         }
 
         // Return TRUE if any part changed
-        return !isSubmitting || baseChanged || descChanged || recurrenceChanged;
+        return baseChanged || descChanged || recurrenceChanged;
     });
 
     /**
@@ -216,8 +217,8 @@
                     <Textarea bind:value={eventData.description} title="Beschreibung"
                               placeholder="Kurze Beschreibung zur Veranstaltung..." readonly={true} />
 
-                    <Input bind:value={eventData.date} title="Datum" placeholder="XX.XX.XXXX" readonly={true} />
-                    <Input bind:value={eventData.time} title="Uhrzeit" placeholder="--:--" readonly={true} />
+                    <Input value={formatISODateString(eventData.date)} title="Datum" placeholder="XX.XX.XXXX" readonly={true} />
+                    <Input value={eventData.time} title="Uhrzeit" placeholder="--:--" readonly={true} />
 
                     <TabBar contents={["Einmalig", "Wöchentlich", "Monatlich"]} selected={modeMap[eventData.mode]}
                             disabled={true} marginTop="3"/>
@@ -242,14 +243,11 @@
                             />
                         </div>
 
-                        {#if eventData.recurrence.monthlyKind === "date"}
-                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {eventData.date}
-                                .</p>
-                        {:else if eventData.recurrence.monthlyKind === "weekday"}
+                        {#if eventData.recurrence.monthlyKind === "weekday"}
                             <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
                                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
                         {:else}
-                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {eventData.date}
+                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {formatISODateString(eventData.date)}
                                 .</p>
                         {/if}
                     {/if}
@@ -315,14 +313,11 @@
                             />
                         </div>
 
-                        {#if draft.recurrence.monthlyKind === "date"}
-                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {draft.date}
-                                .</p>
-                        {:else if draft.recurrence.monthlyKind === "weekday"}
+                        {#if draft.recurrence.monthlyKind === "weekday"}
                             <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat
                                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
                         {:else}
-                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {draft.date}
+                            <p class="text-gv-dark-text text-dt-6 text-left mt-2 w-full">Jeden Monat am {formatISODateString(draft.date)}
                                 .</p>
                         {/if}
                     {/if}
@@ -331,7 +326,7 @@
                 {#if isEditing}
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
-                        <Button type="primary" disabled={!hasChanges} onclick={async () => await updateEventData()}>
+                        <Button type="primary" disabled={!hasChanges || isSubmitting} onclick={async () => await updateEventData()}>
                             {#if isSubmitting}
                                 <Spinner light={true} />
                                 <p>Speichern...</p>

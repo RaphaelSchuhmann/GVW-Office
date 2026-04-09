@@ -1,6 +1,6 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { currentYear } from "../services/utils";
+    import { currentYear } from "../services/dateTimeUtils.js";
 
     let {
         selected = $bindable(""),

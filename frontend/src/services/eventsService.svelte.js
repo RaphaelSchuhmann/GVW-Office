@@ -10,7 +10,7 @@ import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
 import { eventsStore } from "../stores/events.svelte";
-import { getLastDayOfCurrentMonth, parseDMYToDate } from "./utils";
+import { formatISODateString, getLastDayOfCurrentMonth, isISOString } from "./dateTimeUtils.js";
 
 export const typeMap = {
     "all": "Alle Typen",
@@ -82,7 +82,7 @@ export function getEventOccurrence(eventId) {
     const event = eventsStore.raw.find(item => item.id === eventId);
 
     if (!event) return "Unbekannt";
-    if (event.mode === "single") return event.date;
+    if (event.mode === "single") return formatISODateString(event.date);
     if (event.mode === "weekly") return getWeeklyOccurrence(event);
     if (event.mode === "monthly" && event.recurrence) return getMonthlyOccurrence(event);
 
@@ -97,7 +97,7 @@ export function getEventOccurrence(eventId) {
  * @returns {string} e.g. "Jede Woche am Montag"
  */
 function getWeeklyOccurrence(event) {
-    const date = parseDMYToDate(event.date);
+    const date = new Date(event.date);
     if (Number.isNaN(date.getTime())) return "Unbekannt";
     const dayIndex = date.getDay();
     const weekDayKey = dayIndex === 0 ? "7" : String(dayIndex);
@@ -166,7 +166,8 @@ function calculateMonthlyDateOccurrence(dayOfMonth) {
  * @param {string} dateStr - Date string in DD.MM.YYYY format
  * @returns {number} Weekday number (1-7, Monday first)
  */
-export function getWeekDayFromDMYMondayFirst(dateStr) {
+export function getWeekDayFromDateStringMondayFirst(dateStr) {
+    dateStr = isISOString(dateStr) ? formatISODateString(dateStr) : dateStr;
     const [day, month, year] = dateStr.split(".").map(Number);
     const date = new Date(year, month - 1, day);
 
@@ -181,8 +182,9 @@ export function getWeekDayFromDMYMondayFirst(dateStr) {
  * @param {string} dateStr - Date string in DD.MM.YYYY format
  * @returns {number} Ordinal week number (1-4)
  */
-export function getOrdinalFromDMY(dateStr) {
-    const [day] = dateStr.split(".").map(Number);
+export function getOrdinalFromDateString(dateStr) {
+    const date = isISOString(dateStr) ? formatISODateString(dateStr) : dateStr;
+    const [day] = date.split(".").map(Number);
 
     return Math.ceil(day / 7);
 }

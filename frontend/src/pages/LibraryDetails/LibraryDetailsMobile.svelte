@@ -12,7 +12,7 @@
     import Dropdown from "../../components/Dropdown.svelte";
     import TabBar from "../../components/TabBar.svelte";
     import Checkbox from "../../components/Checkbox.svelte";
-    import { determineChoirType } from "../../services/utils";
+    import { determineChoirType } from "../../services/utils.js";
     import FileSelector from "../../components/FileSelector.svelte";
     import { appSettings } from "../../stores/appSettings.svelte";
     import { downloadScoreFiles, getLibraryCategories, updateScore } from "../../services/libraryService.svelte";
@@ -100,7 +100,7 @@
 
         const isDifferent = JSON.stringify(normalizeScore(draft)) !== JSON.stringify(normalizeScore(scoreData));
 
-        return !isSubmitting || (isDifferent && allFieldsFilled);
+        return (isDifferent && allFieldsFilled);
     });
 
     /**
@@ -357,7 +357,7 @@
                 {#if isEditing}
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
-                        <Button type="primary" disabled={!hasChanges} onclick={async () => await updateScoreData()}>
+                        <Button type="primary" disabled={!hasChanges || isSubmitting} onclick={async () => await updateScoreData()}>
                             {#if isSubmitting}
                                 <Spinner light={true} />
                                 <p>Speichern...</p>

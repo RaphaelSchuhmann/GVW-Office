@@ -14,6 +14,7 @@
     import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import { formatISODateString } from "../../services/dateTimeUtils.js";
 
     let {
         memberData,
@@ -68,7 +69,7 @@
 
         const isDifferent = JSON.stringify(draft) !== JSON.stringify(memberData);
 
-        return !isSubmitting || (isDifferent && allFieldsFilled);
+        return (isDifferent && allFieldsFilled);
     });
 
     /**
@@ -206,7 +207,7 @@
                     </div>
 
                     <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
-                        <Input value={memberData.birthdate} title="Geburtsdatum" readonly={true} />
+                        <Input value={formatISODateString(memberData.birthdate)} title="Geburtsdatum" readonly={true} />
                         <Input value={memberData.joined} title="Mitglied seit" readonly={true} />
                     </div>
                 {:else}
@@ -275,7 +276,7 @@
                 {#if isEditing}
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
-                        <Button type="primary" disabled={!hasChanges} onclick={async () => await updateMemberData()}>
+                        <Button type="primary" disabled={!hasChanges || isSubmitting} onclick={async () => await updateMemberData()}>
                             {#if isSubmitting}
                                 <Spinner light={true} />
                                 <p>Speichern...</p>

@@ -1,6 +1,6 @@
 <script>
     import { marginMap, paddingMap } from "../lib/dynamicStyles";
-    import { capitalizeWords } from "../services/utils";
+    import { capitalizeWords } from "../services/utils.js";
 
     let {
         selected = $bindable("wählen"),

@@ -1,7 +1,15 @@
 <script>
     import { marginMap } from "../lib/dynamicStyles";
-    import { daysInMonth, firstWeekdayOfMonth, currentYear, currentMonth, isToday } from "../services/utils";
+    import {
+        daysInMonth,
+        firstWeekdayOfMonth,
+        currentYear,
+        currentMonth,
+        isToday,
+        germanDateToISO, isISOString
+    } from "../services/dateTimeUtils.js";
     import Dropdown from "./Dropdown.svelte";
+    import { formatISODateString } from "../services/dateTimeUtils.js";
 
     let {
         selected = $bindable(""),
@@ -13,7 +21,12 @@
     let datepickerRef = $state(null);
 
     // Parse initial value or fallback to current date
-    const initialDate = selected && selected.includes('.') ? selected.split('.').map(Number) : null;
+    let initialDate = null
+    if (selected && isISOString(selected)) {
+        initialDate = formatISODateString(selected).split('.').map(Number);
+    } else if (selected && selected.includes('.')) {
+        initialDate = selected.split('.').map(Number);
+    }
 
     let usedMonth = $state(initialDate ? initialDate[1] - 1 : currentMonth);
     let usedYear = $state(initialDate ? initialDate[2] : currentYear);
@@ -33,7 +46,7 @@
     $effect(() => {
         if (selected !== formattedDate) {
             selected = formattedDate;
-            onChange(formattedDate);
+            onChange(germanDateToISO(formattedDate));
         }
     });
 
@@ -111,7 +124,7 @@
             type="text"
             class="w-full p-2 pl-3 pr-3 rounded-l-1 text-gv-dark-text outline-gv-primary text-dt-6"
             placeholder="DD.MM.YYYY"
-            value={selected}
+            value={isISOString(selected) ? formatISODateString(selected) : selected}
             readonly
         >
         <button
