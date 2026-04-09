@@ -23,6 +23,7 @@
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
     import Spinner from "../../components/Spinner.svelte";
     import ChangelogsModal from "../../components/ChangelogsModal.svelte";
+    import { getYearFromISOString } from "../../services/dateTimeUtils.js";
 
     // ==================
     // MODAL REFERENCES
@@ -376,7 +377,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{member.joined}</p>
+                                        <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{getYearFromISOString(member.joined)}</p>
                                     </td>
                                     <td class="px-6 py-4">
                                         <Chip text={statusMap[member.status]} />

@@ -16,7 +16,7 @@
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import Spinner from "../../components/Spinner.svelte";
     import ChangelogsModal from "../../components/ChangelogsModal.svelte";
-    import { formatISODateString } from "../../services/dateTimeUtils.js";
+    import { formatISODateString, getYearFromISOString } from "../../services/dateTimeUtils.js";
 
     let {
         memberData,
@@ -38,7 +38,6 @@
      */
     function startEditing() {
         draft = JSON.parse(JSON.stringify(memberData));
-        console.log(draft);
         isEditing = true;
     }
 
@@ -216,7 +215,7 @@
 
                     <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
                         <Input value={formatISODateString(memberData.birthdate)} title="Geburtsdatum" readonly={true} />
-                        <Input value={memberData.joined} title="Mitglied seit" readonly={true} />
+                        <Input value={getYearFromISOString(memberData.joined)} title="Mitglied seit" readonly={true} />
                     </div>
                 {:else}
                     <div class="flex items-center min-[900px]:gap-4 gap-5 w-full max-[900px]:flex-col">
