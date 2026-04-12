@@ -13,6 +13,7 @@
     import Button from "../../components/Button.svelte";
     import { addChangelog } from "../../services/changelogService.svelte.js";
     import ChangelogsModal from "../../components/ChangelogsModal.svelte";
+    import HorizontalNavBar from "../../components/AdminHorizontalNavBar.svelte";
 
     let sidebarOpen = $state(false);
 
@@ -84,8 +85,11 @@
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">menu</span>
                 </button>
             </div>
-            <PageHeader title="Admin Dashboard" subTitle="Willkommen im Admin Dashboard für GVW Office"
-                        showSlot={false} />
+            <div class="mt-5">
+                <HorizontalNavBar currentPage="overview"/>
+            </div>
+            <PageHeader title="Admin Dashboard" subTitle=""
+                        showSlot={false} marginTop="5" hideSubTitle={true} />
             <div class="flex flex-col w-full gap-4 mt-10">
                 <Card>
                     <div class="w-full flex items-center justify-start p-1">

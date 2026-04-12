@@ -12,13 +12,14 @@
     import Library from "./pages/Library/LibraryPage.svelte";
     import LibraryDetails from "./pages/LibraryDetails/LibraryDetailsPage.svelte";
     import AdminDashboard from "./pages/AdminDashboard/AdminDashboardPage.svelte";
+    import AdminDashboardReportHub from "./pages/AdminDashboardReportHub/AdminDashboardReportHubPage.svelte"
+    import NotFound from "./pages/NotFound/NotFoundPage.svelte";
 
     import { initSSE } from "./services/sse-handler.js";
     import { user } from "./stores/user.svelte";
     import { getValue } from "./services/store";
     import { ensureUserData } from "./services/userService.svelte";
     import { initSettingsSync } from "./services/appSettingsSyncService.svelte.js";
-    import NotFound from "./pages/NotFound/NotFoundPage.svelte";
 
     const routes = {
         "/": Login,
@@ -30,7 +31,8 @@
         "/events/details": EventDetails,
         "/library": Library,
         "/library/details": LibraryDetails,
-        "/admin": AdminDashboard,
+        "/admin/overview": AdminDashboard,
+        "/admin/reportHub": AdminDashboardReportHub,
         "*": NotFound
     };
 

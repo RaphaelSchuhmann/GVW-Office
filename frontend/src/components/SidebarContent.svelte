@@ -31,7 +31,7 @@
 <div class="flex flex-col items-center w-full flex-1 overflow-y-auto">
     <div class="flex flex-col items-center w-full h-full flex-1 p-5">
         {#if user.role === "admin"}
-            <SidebarButton selected={currentPage === "adminDashboard"} minimized={minimized} onclick={async () => await push("/admin")}>
+            <SidebarButton selected={currentPage === "adminDashboard"} minimized={minimized} onclick={async () => await push("/admin/overview")}>
                 <span class="material-symbols-rounded text-icon-dt-4">dashboard_2_gear</span>
                 {#if !minimized}<p class="ml-2">Admin</p>{/if}
             </SidebarButton>
