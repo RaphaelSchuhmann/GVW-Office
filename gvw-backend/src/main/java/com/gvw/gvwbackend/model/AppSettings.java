@@ -23,6 +23,7 @@ public class AppSettings {
   private int maxMembers;
   private Map<String, String> scoreCategories;
   private Map<String, String> feedbackCategories;
+  private String appVersion;
 
   @Builder.Default private final String type = "appSettings";
 }

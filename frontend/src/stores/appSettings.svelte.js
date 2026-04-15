@@ -9,5 +9,6 @@ export const appSettings = $state({
         "Alle Kategorien": "all"
     }, // Library Page Categories
     feedbackCategories: {},
+    appVersion: "",
     rev: null,
 });

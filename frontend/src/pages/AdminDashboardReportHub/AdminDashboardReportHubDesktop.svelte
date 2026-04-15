@@ -91,7 +91,7 @@
 
                                             <div class="flex items-center justify-between w-full">
                                                 <p class="text-dt-6 text-gv-dark-text">App Version</p>
-                                                <p class="text-dt-6 text-gv-dark-text">v1 von app settings</p>
+                                                <p class="text-dt-6 text-gv-dark-text">{appSettings.appVersion}</p>
                                             </div>
 
                                             <div class="flex items-center justify-between w-full">
