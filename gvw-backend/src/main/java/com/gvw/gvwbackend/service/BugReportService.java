@@ -44,6 +44,7 @@ public class BugReportService {
 
     List<BugReportResponseDTO> bugReportResponseDTOS = bugReports.stream().map(
             m -> new BugReportResponseDTO(
+                    m.getId(),
                     m.getTitle(),
                     m.getSeverity()
             )

@@ -42,7 +42,7 @@ public class FeedbackService {
 
     List<FeedbackResponseDTO> feedbackResponseDTOS = feedbacks.stream().map(
             m -> new FeedbackResponseDTO(
-                    m.getTitle(), m.getCategory()
+                    m.getId(), m.getTitle(), m.getCategory()
             )
     ).toList();
 
@@ -79,6 +79,7 @@ public class FeedbackService {
     UserFeedback feedback = new UserFeedback();
     feedback.setTitle(request.title());
     feedback.setCategory(request.category());
+    feedback.setMessage(request.message());
     feedback.setSentiment(request.sentiment());
 
     ReportMetaData metaData = new ReportMetaData();

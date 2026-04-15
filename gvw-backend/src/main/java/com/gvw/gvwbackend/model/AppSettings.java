@@ -22,6 +22,7 @@ public class AppSettings {
 
   private int maxMembers;
   private Map<String, String> scoreCategories;
+  private Map<String, String> feedbackCategories;
 
   @Builder.Default private final String type = "appSettings";
 }
