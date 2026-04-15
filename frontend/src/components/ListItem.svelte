@@ -2,18 +2,20 @@
     import Chip from "./Chip.svelte";
 
     let {
+        id = "",
         title = "",
         chipText = "",
         showDelete = true,
         isMobile = false,
         isLastItem = false,
         asyncDeleteFunction = () => {},
+        onclick = () => {},
         ...restProps
     } = $props();
 </script>
 
-<div class={`w-full p-2 pl-4 flex items-center justify-start gap-2 hover:bg-gv-border ${isLastItem ? "" : "border-b-2 border-gv-border"}`}>
-    <button class="w-full flex items-center justify-between cursor-pointer" {...restProps}>
+<div class={`w-full p-3 pl-4 flex items-center justify-start gap-2 hover:bg-gv-border ${isLastItem ? "" : "border-b-2 border-gv-border"}`}>
+    <button class="w-full flex items-center justify-between cursor-pointer" onclick={() => onclick(id)}>
         <span class="text-dt-6 text-gv-dark-text">{title}</span>
         <Chip text={chipText} />
     </button>

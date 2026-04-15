@@ -4,10 +4,13 @@
     import { auth } from "../../stores/auth.svelte";
     import { user } from "../../stores/user.svelte";
     import { push } from "svelte-spa-router";
+    import { lastRefresh } from "../../stores/sseStore.svelte";
+    import { untrack } from "svelte";
 
     import DashboardReportHubDesktop from "./AdminDashboardReportHubDesktop.svelte";
     import DashboardReportHubMobile from "./AdminDashboardReportHubMobile.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import { getAllBugReports, getAllFeedbacks } from "../../services/reportHubService.svelte";
 
     let isGlobalLoading = $derived(user.name.length === 0);
 
@@ -28,17 +31,17 @@
             ready = true;
         })();
     });
-
-    // TODO: Add automatic refresh on sse signal for feedback and bug
+    
     $effect(() => {
-        // Trigger: FEEDBACK; BUG
-        // const _triggerChangelogs = lastRefresh.CHANGELOGS;
+        const _triggerFeedback = lastRefresh.FEEDBACK;
+        const _triggerBug = lastRefresh.BUG;
 
-        // if (!ready) return;
+        if (!ready) return;
 
-        // untrack(() => {
-        //     getChangelogs();
-        // });
+        untrack(() => {
+            getAllFeedbacks();
+            getAllBugReports();
+        });
     });
 </script>
 
