@@ -180,3 +180,17 @@ export function getYearFromISOString(dateStr) {
 
     return dateStr.split('-')[0];
 }
+
+/**
+ * Removes the milliseconds from a given timestamp that should be a 
+ * valid ISO 8601 date string.
+ * 
+ * @function removeMillisecondsFromTimeStamp
+ * @param {string} ts - ISO 8601 date string (e.g. "2026-01-01T00:00:00.000Z")
+ * @returns {string} The date string without the milliseconds or same string if millisenconds weren't found
+ */
+export function removeMillisecondsFromTimeStamp(ts) {
+    if (!ts.includes(".")) return ts;
+
+    return ts.slice(0, ts.indexOf('.'));
+}
