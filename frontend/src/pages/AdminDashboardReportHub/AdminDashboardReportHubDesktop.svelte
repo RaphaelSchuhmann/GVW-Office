@@ -101,7 +101,39 @@
             />
         </div>
     {:else if selectedView === "Bug Reports" && bugReportItemDetails.title}
-        <p>here</p>
+        <div class="w-full h-full flex flex-col items-start justify-start gap-4 p-2">
+            <p class="text-dt-4 font-semibold line-clamp-2 truncate">
+                {bugReportItemDetails.title}
+            </p>
+
+            <div class="flex items-center justify-start gap-4">
+                <Chip
+                    text={bugReportItemDetails.severity}
+                />
+                <div class="flex gap-1 items-center">
+                    <p class="text-dt-5 font-semibold">
+                        {feedbackItemDetails.sentiment}
+                    </p>
+                    <span class="material-symbols-rounded-filled text-icon-dt-3 text-gv-sentiment-selected">
+                        star
+                    </span>
+                </div>
+            </div>
+                                        
+            <CollapsableViewer title="Nachricht" expanded={true}>
+                <p>{bugReportItemDetails.stepsToReproduce}</p>
+            </CollapsableViewer>
+
+            <ReportHubDetails 
+                userEmail={bugReportItemDetails.userEmail}
+                timestamp={bugReportItemDetails.timestamp}
+                appVersion={bugReportItemDetails.appVersion}
+                route={bugReportItemDetails.route}
+                os={bugReportItemDetails.os}
+                browser={bugReportItemDetails.browser}
+                viewport={bugReportItemDetails.viewport}
+            />
+        </div>
     {/if}
 </Modal>
 
