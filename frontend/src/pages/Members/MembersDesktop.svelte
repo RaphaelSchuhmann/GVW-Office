@@ -227,7 +227,7 @@
 <ChangelogsModal bind:this={changelogModal}/>
 
 <Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
-       subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5">
+       subTitle="Erfassen Sie hier die Mitgliedsdaten" width={viewport.width > 1300 ? "2/5" : "3/5"}>
 
     <div class="flex items-center gap-4 mt-5">
         <Input bind:value={memberInput.name} title="Vorname" placeholder="Max" />

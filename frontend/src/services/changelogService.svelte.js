@@ -178,11 +178,11 @@ export async function addChangelog(changelog) {
  *
  * @async
  * @function deleteChangelog
- * @param {string|number} changelogId - ID of the changelog to delete
+ * @param {string} changelogId - ID of the changelog to delete
  * @returns {Promise<void>}
  */
 export async function deleteChangelog(changelogId) {
-    if (isFetching.delete) return;
+    if (!changelogId || isFetching.delete) return;
     isFetching.delete = true;
 
     try {
