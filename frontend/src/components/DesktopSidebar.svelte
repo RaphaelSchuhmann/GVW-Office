@@ -3,7 +3,6 @@
 
     let {
         currentPage = "",
-        handleChangelogs,
     } = $props();
 
     let minimized = $state(false);
@@ -38,5 +37,5 @@
         </button>
     </div>
 
-    <SidebarContent {currentPage} {minimized} {handleChangelogs} />
+    <SidebarContent currentPage={currentPage} minimized={minimized} />
 </div>

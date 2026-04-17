@@ -22,15 +22,11 @@
     import ContextMenu from "../../components/ContextMenu.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
     import Spinner from "../../components/Spinner.svelte";
-    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
     import { getYearFromISOString } from "../../services/dateTimeUtils.js";
 
     // ==================
     // MODAL REFERENCES
     // ==================
-    /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
-
     /**
      * Reference to the "Add Member" modal.
      * Controls visibility and lifecycle of the member creation dialog.
@@ -224,7 +220,6 @@
 <svelte:window oncontextmenu={() => (menu.data.open = false)} />
 
 <ToastStack />
-<ChangelogsModal bind:this={changelogModal}/>
 
 <Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
        subTitle="Erfassen Sie hier die Mitgliedsdaten" width={viewport.width > 1300 ? "2/5" : "3/5"}>
@@ -295,7 +290,7 @@
 </ContextMenu>
 
 <main class="flex overflow-hidden">
-    <DesktopSidebar currentPage="members" handleChangelogs={() => changelogModal?.showModal()}/>
+    <DesktopSidebar currentPage="members" />
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={viewport.width > 1000}>
             {#if viewport.width > 1000}

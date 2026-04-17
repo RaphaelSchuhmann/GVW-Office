@@ -19,14 +19,10 @@
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import { addToast } from "../../stores/toasts.svelte";
     import Spinner from "../../components/Spinner.svelte";
-    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
 
     // ==================
     // MODAL REFERENCES
     // ==================
-    /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
-
     /**
      * Reference to the "Add Member" modal.
      * Controls visibility and lifecycle of the member creation dialog.
@@ -146,7 +142,6 @@
 </script>
 
 <ToastStack isMobile={true} />
-<ChangelogsModal bind:this={changelogModal} isMobile={true}/>
 
 <Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
        subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5" isMobile={true}>
@@ -192,7 +187,7 @@
     </div>
 </Modal>
 
-<MobileSidebar currentPage="members" bind:isOpen={sidebarOpen} handleChangelogs={() => changelogModal?.showModal()} />
+<MobileSidebar currentPage="members" bind:isOpen={sidebarOpen} />
 
 <main class="flex overflow-hidden">
     <div class="flex flex-col flex-1 min-h-0 w-full p-7 overflow-y-auto overflow-x-hidden">

@@ -13,7 +13,6 @@
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
     import HorizontalNavBar from "../../components/AdminHorizontalNavBar.svelte";
     import TabBar from "../../components/TabBar.svelte";
     import Card from "../../components/Card.svelte";
@@ -22,9 +21,6 @@
     import CollapsableViewer from "../../components/CollapsableViewer.svelte";
     import Modal from "../../components/Modal.svelte";
     import ReportHubDetails from "../../components/ReportHubDetails.svelte";
-
-    /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
 
     /** @type {import("../../components/Modal.svelte").default} */
     let detailsModal = $state(null);
@@ -67,7 +63,6 @@
 </script>
 
 <ToastStack />
-<ChangelogsModal bind:this={changelogModal} />
 
 <Modal bind:this={detailsModal} width="1/3"
        title={`${selectedView === "Feedback" ? "Feedback" : "Bug Report"} Details`} hideSubtitle={true}>
@@ -138,10 +133,7 @@
 </Modal>
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar
-        currentPage="adminDashboard"
-        handleChangelogs={() => changelogModal?.showModal()}
-    />
+    <DesktopSidebar currentPage="adminDashboard"/>
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full h-full flex-1 overflow-hidden p-10 min-h-0">
             <HorizontalNavBar currentPage="reportHub" />

@@ -14,14 +14,10 @@
     import Button from "../../components/Button.svelte";
     import Spinner from "../../components/Spinner.svelte";
     import { addChangelog } from "../../services/changelogService.svelte.js";
-    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
     import HorizontalNavBar from "../../components/AdminHorizontalNavBar.svelte";
 
     /** @type {import("../../components/Modal.svelte").default} */
     let addChangelogModal = $state();
-
-    /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
 
     // Add changelog
 
@@ -55,7 +51,6 @@
 </script>
 
 <ToastStack/>
-<ChangelogsModal bind:this={changelogModal}/>
 
 <Modal bind:this={addChangelogModal} title="Neuen Changelog hinzufügen" subTitle="Erfassen Sie hier die Changelogdaten"
        extraFunction={resetChangelogInputs}>
@@ -78,7 +73,7 @@
 </Modal>
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="adminDashboard" handleChangelogs={() => changelogModal?.showModal()}/>
+    <DesktopSidebar currentPage="adminDashboard"/>
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full h-full flex-1 overflow-hidden p-10 min-h-0">
             <HorizontalNavBar currentPage="overview"/>

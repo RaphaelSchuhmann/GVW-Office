@@ -3,14 +3,22 @@
     import { user } from "../stores/user.svelte";
     import SidebarButton from "./SidebarButton.svelte";
     import { logout } from "../services/userService.svelte";
+    import FeedbackModal from "./FeedbackModal.svelte";
+    import { viewport } from "../stores/viewport.svelte";
+    import ChangelogsModal from "./ChangelogsModal.svelte";
 
     let {
         currentPage = "",
         minimized = false,
-        handleChangelogs,
         ...restProps
     } = $props();
     
+    /** @type {import("../components/ChangelogsModal.svelte").default} */
+    let changelogModal = $state();
+
+    /** @type {import("../components/FeedbackModal.svelte").default} */
+    let feedbackModal = $state(null);
+
     const mitgliederAccess = ["admin", "board_member"];
     const reportsAccess = ["admin", "secretary"];
 
@@ -27,6 +35,9 @@
         await push("/");
     }
 </script>
+
+<ChangelogsModal bind:this={changelogModal} isMobile={viewport.isMobile}/>
+<FeedbackModal bind:this={feedbackModal} isMobile={viewport.isMobile}/>
 
 <div class="flex flex-col items-center w-full flex-1 overflow-y-auto">
     <div class="flex flex-col items-center w-full h-full flex-1 p-5">
@@ -85,7 +96,12 @@
 
                 {#if userOptionsVisible}
                     <div class="absolute bottom-22 w-full bg-white border border-gv-border rounded-1 p-2 flex flex-col items-center">
-                        <button onclick={handleChangelogs}
+                        <button onclick={() => {feedbackModal.showModal(); userOptionsVisible = false;}}
+                                class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
+                            <span class="material-symbols-rounded text-icon-dt-5 mr-2">feedback</span>
+                            Feedback
+                        </button>
+                        <button onclick={() => {changelogModal.showModal(); userOptionsVisible = false;}}
                                 class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
                             <span class="material-symbols-rounded text-icon-dt-5 mr-2">campaign</span>
                             Changelogs
@@ -100,7 +116,10 @@
             </div>
         {:else}
             <div class="flex flex-col items-center gap-2">
-                <SidebarButton minimized={minimized} onclick={handleChangelogs}>
+                <SidebarButton minimized={minimized} onclick={() => {feedbackModal.showModal()}}>
+                    <span class="material-symbols-rounded text-icon-dt-3">feedback</span>
+                </SidebarButton>
+                <SidebarButton minimized={minimized} onclick={() => {changelogModal.showModal()}}>
                     <span class="material-symbols-rounded text-icon-dt-3">campaign</span>
                 </SidebarButton>
                 <SidebarButton minimized={minimized} onclick={handleLogout}>

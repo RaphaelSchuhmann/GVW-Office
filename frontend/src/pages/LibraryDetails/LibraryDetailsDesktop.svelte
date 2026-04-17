@@ -18,16 +18,12 @@
     import { appSettings } from "../../stores/appSettings.svelte";
     import { downloadScoreFiles, getLibraryCategories, updateScore } from "../../services/libraryService.svelte";
     import Spinner from "../../components/Spinner.svelte";
-    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
 
     let {
         scoreData,
         isEditing = $bindable(),
         ...restProps
     } = $props();
-
-    /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
 
     let draft = $state(null);
     let isSubmitting = $state(false);
@@ -216,7 +212,6 @@
 </script>
 
 <ToastStack/>
-<ChangelogsModal bind:this={changelogModal}/>
 
 <ConfirmDeleteModal expectedInput={`${scoreData.title}`} id={scoreData.id}
                     title="Noten löschen" subTitle="Sind Sie sich sicher das Sie diese Noten löschen möchten?"
@@ -226,7 +221,7 @@
 />
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="library" handleChangelogs={() => changelogModal?.showModal()}/>
+    <DesktopSidebar currentPage="library" />
     <div class="flex flex-col min-h-0 w-full p-10 overflow-hidden">
         <PageHeader title="Veranstaltung" subTitle={`Details der Noten: "${scoreData?.title ?? ""}"`}>
             {#if viewport.width > 900}

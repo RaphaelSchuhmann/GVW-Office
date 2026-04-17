@@ -2,6 +2,7 @@ import { apiDeleteBugReport, apiGetBugReportDetails, apiGetBugReports } from "..
 import { apiDeleteFeedback, apiGetFeedbackDetails, apiGetFeedbacks } from "../api/apiFeedback.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
+import { appSettings } from "../stores/appSettings.svelte";
 import { bugReportStore, feedbackStore } from "../stores/reportHub.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
@@ -59,6 +60,25 @@ function handleReportHubError(errorType, context) {
     });
 }
 
+export function getFeedbackCategories() {
+    const categories = appSettings.feedbackCategories || {};
+    const displayNames = [];
+    const processedKeys = new Set();
+
+    Object.keys(categories).forEach((key) => {
+        if (processedKeys.has(key)) return;
+        
+        const value = categories[key];
+
+        if (!value.startsWith("_") && key.includes("_")) displayNames.push(value);
+
+        processedKeys.add(key);
+        processedKeys.add(value);
+    });
+
+    return displayNames;
+}
+
 export async function getAllFeedbacks() {
     if (isFetching.allFeedbacks) return;
     isFetching.allFeedbacks = true;
@@ -105,7 +125,7 @@ export async function getAllBugReports() {
         
         Object.assign(bugReportStore, { data: body.reports });
     } finally {
-        isFetching.allFeedbacks = false;
+        isFetching.allBugReports = false;
     }
 }
 

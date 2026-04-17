@@ -12,16 +12,12 @@
     import Input from "../../components/Input.svelte";
     import Button from "../../components/Button.svelte";
     import { addChangelog } from "../../services/changelogService.svelte.js";
-    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
     import HorizontalNavBar from "../../components/AdminHorizontalNavBar.svelte";
 
     let sidebarOpen = $state(false);
 
     /** @type {import("../../components/Modal.svelte").default} */
     let addChangelogModal = $state();
-
-    /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
 
     // Add changelog
 
@@ -55,7 +51,6 @@
 </script>
 
 <ToastStack isMobile={true} />
-<ChangelogsModal bind:this={changelogModal} isMobile={true}/>
 
 <Modal isMobile={true} bind:this={addChangelogModal} title="Neuen Changelog hinzufügen" subTitle="Erfassen Sie hier die Changelogdaten"
        extraFunction={resetChangelogInputs}>
@@ -75,7 +70,7 @@
     </div>
 </Modal>
 
-<MobileSidebar currentPage="adminDashboard" bind:isOpen={sidebarOpen} handleChangelogs={() => changelogModal?.showModal()} />
+<MobileSidebar currentPage="adminDashboard" bind:isOpen={sidebarOpen} />
 
 <main class="flex overflow-hidden">
     <div class="flex-1 min-h-0 overflow-y-auto">

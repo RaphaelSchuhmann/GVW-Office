@@ -2,7 +2,6 @@
     import ToastStack from "../../components/ToastStack.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
-    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
     import HorizontalNavBar from "../../components/AdminHorizontalNavBar.svelte";
     import TabBar from "../../components/TabBar.svelte";
     import Card from "../../components/Card.svelte";
@@ -13,8 +12,8 @@
     import ReportHubDetails from "../../components/ReportHubDetails.svelte";
 
     import {
-    deleteBugReport,
-    deleteFeedback,
+        deleteBugReport,
+        deleteFeedback,
         getAllBugReports,
         getAllFeedbacks,
         getItemDetails,
@@ -23,9 +22,6 @@
     import { appSettings } from "../../stores/appSettings.svelte";
 
     let sidebarOpen = $state(false);
-
-    /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
 
     /** @type {import("../../components/Modal.svelte").default} */
     let detailsModal = $state(null);
@@ -68,7 +64,6 @@
 </script>
 
 <ToastStack isMobile={true} />
-<ChangelogsModal bind:this={changelogModal} isMobile={true} />
 
 <Modal bind:this={detailsModal} isMobile={true} 
        title={`${selectedView === "Feedback" ? "Feedback" : "Bug Report"} Details`} hideSubtitle={true}>
@@ -139,11 +134,7 @@
     {/if}
 </Modal>
 
-<MobileSidebar
-    currentPage="adminDashboard"
-    bind:isOpen={sidebarOpen}
-    handleChangelogs={() => changelogModal?.showModal()}
-/>
+<MobileSidebar currentPage="adminDashboard" bind:isOpen={sidebarOpen}/>
 
 <main class="flex overflow-hidden h-screen">
     <div class="flex-1 min-h-0 overflow-y-auto">

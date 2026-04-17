@@ -5,7 +5,6 @@
     let {
         currentPage = "",
         isOpen = $bindable(false),
-        handleChangelogs,
         ...restProps
     } = $props();
 
@@ -41,6 +40,6 @@
             </button>
         </div>
 
-        <SidebarContent {currentPage} minimized={false} {handleChangelogs} />
+        <SidebarContent currentPage={currentPage} minimized={false} />
     </div>
 {/if}

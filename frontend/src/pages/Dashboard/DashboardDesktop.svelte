@@ -15,13 +15,9 @@
     import { dashboardStore } from "../../stores/dashboard.svelte.js";
     import { prepareEvents, getVoiceCounts } from "../../services/dashboardService.svelte.js";
     import Spinner from "../../components/Spinner.svelte";
-    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal = $state();
-
-    /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
 
     let isSubmitting = $state(false);
 
@@ -67,10 +63,9 @@
 </Modal>
 
 <ToastStack/>
-<ChangelogsModal bind:this={changelogModal}/>
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="dashboard" handleChangelogs={() => changelogModal?.showModal()}/>
+    <DesktopSidebar currentPage="dashboard" />
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full flex-1 overflow-hidden p-10 min-h-0">
             <PageHeader title="Dashboard" subTitle="Willkommen in GVW Office - Übersicht Gesangverein Weppersdorf"
