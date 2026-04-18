@@ -50,13 +50,17 @@ public class SupportController {
 
   @PostMapping("/feedback/add")
   @ResponseStatus(HttpStatus.OK)
-  public void addFeedback(@Valid @RequestBody AddFeedbackRequestDTO request, @RequestAttribute("userId") String userId) {
+  public void addFeedback(
+      @Valid @RequestBody AddFeedbackRequestDTO request,
+      @RequestAttribute("userId") String userId) {
     feedbackService.addFeedback(request, userId);
   }
 
   @PostMapping("/bugs/add")
   @ResponseStatus(HttpStatus.OK)
-  public void addBugReport(@Valid @RequestBody AddBugReportRequestDTO request, @RequestAttribute("userId") String userId) {
+  public void addBugReport(
+      @Valid @RequestBody AddBugReportRequestDTO request,
+      @RequestAttribute("userId") String userId) {
     bugReportService.addBugReport(request, userId);
   }
 

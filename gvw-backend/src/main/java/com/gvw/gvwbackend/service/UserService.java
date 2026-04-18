@@ -133,14 +133,17 @@ public class UserService {
 
   public String resolveUserIdToEmail(String id) {
     if (id == null || id.isBlank()) {
-      return "Unknown";
+      return "";
     }
 
-    List<User> users = dbService.findByQuery("users", Map.of("selector", Map.of("userId", id), "limit", 1), User.class);
-    if (users.isEmpty()) {
-      return "Unknown";
+    List<User> users =
+            dbService.findByQuery(
+                    "users", Map.of("selector", Map.of("userId", id), "limit", 1), User.class);
+    if (users == null || users.isEmpty()) {
+      return "";
     }
 
-    return users.getFirst().getEmail();
+    String email = users.getFirst().getEmail();
+    return email == null ? "" : email;
   }
 }

@@ -8,14 +8,13 @@ import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.ReportMetaData;
 import com.gvw.gvwbackend.model.UserFeedback;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 
 @Service
 public class FeedbackService {
@@ -34,17 +33,17 @@ public class FeedbackService {
   public FeedbacksResponseDTO getFeedbacks() {
     List<Map<String, Object>> rawFeedbacks = dbService.findAll("feedbacks");
 
-    List<UserFeedback> feedbacks = rawFeedbacks.stream().map(map -> mapper.convertValue(map, UserFeedback.class)).toList();
+    List<UserFeedback> feedbacks =
+        rawFeedbacks.stream().map(map -> mapper.convertValue(map, UserFeedback.class)).toList();
 
     if (feedbacks.isEmpty()) {
       return new FeedbacksResponseDTO(List.of());
     }
 
-    List<FeedbackResponseDTO> feedbackResponseDTOS = feedbacks.stream().map(
-            m -> new FeedbackResponseDTO(
-                    m.getId(), m.getTitle(), m.getCategory()
-            )
-    ).toList();
+    List<FeedbackResponseDTO> feedbackResponseDTOS =
+        feedbacks.stream()
+            .map(m -> new FeedbackResponseDTO(m.getId(), m.getTitle(), m.getCategory()))
+            .toList();
 
     return new FeedbacksResponseDTO(feedbackResponseDTOS);
   }
@@ -60,15 +59,14 @@ public class FeedbackService {
     }
 
     return new FeedbackDetailsResponseDTO(
-            feedback.getTitle(),
-            feedback.getCategory(),
-            feedback.getMessage(),
-            feedback.getSentiment(),
-            userService.resolveUserIdToEmail(feedback.getMetaData().getUserId()),
-            feedback.getMetaData().getTimestamp(),
-            feedback.getMetaData().getAppVersion(),
-            feedback.getMetaData().getRoute()
-    );
+        feedback.getTitle(),
+        feedback.getCategory(),
+        feedback.getMessage(),
+        feedback.getSentiment(),
+        userService.resolveUserIdToEmail(feedback.getMetaData().getUserId()),
+        feedback.getMetaData().getTimestamp(),
+        feedback.getMetaData().getAppVersion(),
+        feedback.getMetaData().getRoute());
   }
 
   public void addFeedback(AddFeedbackRequestDTO request, String userId) {
@@ -109,7 +107,10 @@ public class FeedbackService {
       throw new NotFoundException("FeedbackNotFound");
     }
 
-    dbService.delete("feedbacks", feedback.getId(), feedback.getRev());
+    boolean deleted = dbService.delete("feedbacks", feedback.getId(), feedback.getRev());
+    if (!deleted) {
+      throw new RuntimeException("FailedToDelete");
+    }
 
     try {
       sseService.broadcastRefresh("FEEDBACK");
