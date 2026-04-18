@@ -55,6 +55,7 @@
                 onfocus={() => handleHover(i)}
                 onblur={resetHover}
                 aria-label="{i + 1} von {numberOfStars} Sternen"
+                aria-pressed={i < selected}
             >
                 <span class="{baseStyles} {styles[state]}">
                     star

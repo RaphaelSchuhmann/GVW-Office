@@ -55,10 +55,13 @@
     async function selectItem(id) {
         const type = selectedView.toLowerCase().replaceAll(" ", "_");
 
+        const details = await getItemDetails(id, type);
+        if (!details) return;
+
         if (type === "feedback") {
-            feedbackItemDetails = await getItemDetails(id, type);
+            feedbackItemDetails = details;
         } else {
-            bugReportItemDetails = await getItemDetails(id, type);
+            bugReportItemDetails = details;
         }
     }
 </script>
@@ -104,7 +107,7 @@
 
             <div class="flex items-center justify-start gap-4">
                 <Chip
-                    text={bugReportItemDetails.severity}
+                    text={severityMap[bugReportItemDetails.severity]}
                 />
                 <div class="flex gap-1 items-center">
                     <p class="text-dt-5 font-semibold">

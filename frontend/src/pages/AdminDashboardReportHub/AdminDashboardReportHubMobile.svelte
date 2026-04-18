@@ -56,10 +56,13 @@
     async function selectItem(id) {
         const type = selectedView.toLowerCase().replaceAll(" ", "_");
 
+        const details = await getItemDetails(id, type);
+        if (!details) return;
+
         if (type === "feedback") {
-            feedbackItemDetails = await getItemDetails(id, type);
+            feedbackItemDetails = details;
         } else {
-            bugReportItemDetails = await getItemDetails(id, type);
+            bugReportItemDetails = details;
         }
     }
 </script>

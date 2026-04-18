@@ -190,7 +190,7 @@ export function getYearFromISOString(dateStr) {
  * @returns {string} The date string without the milliseconds or same string if millisenconds weren't found
  */
 export function removeMillisecondsFromTimeStamp(ts) {
+    if (typeof ts !== "string") return ts ?? "";
     if (!ts.includes(".")) return ts;
-
-    return ts.slice(0, ts.indexOf('.'));
+    return ts.slice(0, ts.indexOf("."));
 }

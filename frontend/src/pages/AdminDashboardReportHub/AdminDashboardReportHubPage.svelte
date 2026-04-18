@@ -20,13 +20,13 @@
         if (!auth.token) return;
 
         (async () => {
+            await ensureUserData();
+            if (!auth.token) return;
+
             if (user.role !== "admin") {
                 await push("/dashboard");
                 return;
             }
-
-            await ensureUserData();
-            if (!auth.token) return;
 
             ready = true;
         })();

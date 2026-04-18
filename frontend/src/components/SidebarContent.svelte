@@ -101,7 +101,7 @@
                             <span class="material-symbols-rounded text-icon-dt-5 mr-2">feedback</span>
                             Feedback
                         </button>
-                        <button onclick={() => {changelogModal.showModal(); toggleUserOptions()}}
+                        <button onclick={async () => {await changelogModal.showModal(); toggleUserOptions()}}
                                 class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
                             <span class="material-symbols-rounded text-icon-dt-5 mr-2">campaign</span>
                             Changelogs
@@ -119,7 +119,7 @@
                 <SidebarButton minimized={minimized} onclick={() => {feedbackModal.showModal()}}>
                     <span class="material-symbols-rounded text-icon-dt-3">feedback</span>
                 </SidebarButton>
-                <SidebarButton minimized={minimized} onclick={() => {changelogModal.showModal()}}>
+                <SidebarButton minimized={minimized} onclick={async () => {await changelogModal.showModal()}}>
                     <span class="material-symbols-rounded text-icon-dt-3">campaign</span>
                 </SidebarButton>
                 <SidebarButton minimized={minimized} onclick={handleLogout}>
