@@ -33,6 +33,7 @@
     let {
         eventData,
         isEditing = $bindable(),
+        isDeleting = $bindable(false),
         ...restProps
     } = $props();
 
@@ -79,12 +80,10 @@
     const hasChanges = $derived.by(() => {
         if (!draft || !eventData) return false;
 
-        // 1. Validation: Ensure required fields aren't empty
         const requiredFields = ["title", "type", "status", "location", "date", "time", "mode"];
         const isFilled = requiredFields.every(field => draft[field]?.toString().trim());
         if (!isFilled) return false;
 
-        // 2. Comparison: Check top-level fields
         const baseChanged =
             draft.title !== eventData.title ||
             draft.type !== eventData.type ||
@@ -177,6 +176,7 @@
                     subTitle="Sind Sie sich sicher das Sie diese Veranstaltung löschen möchten?"
                     action="deleteEvent"
                     onClose={async () => {await push("/events")}}
+                    onCancel={() => {isDeleting = false}}
                     bind:this={confirmDeleteEventModal}
 />
 
@@ -206,7 +206,7 @@
             <div class="flex flex-col items-center gap-5 min-[1500px]:w-1/2 min-[1200px]:w-2/3 w-full mt-5">
                 {#if viewport.width < 900 && !isEditing && (user.role === "board_member" || user.role === "admin")}
                     <div class="flex items-center gap-2 w-full">
-                        <Button type="delete" onclick={() => confirmDeleteEventModal.startDelete()}>
+                        <Button type="delete" onclick={() => {isDeleting = true; confirmDeleteEventModal.startDelete();}}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>
@@ -350,7 +350,7 @@
 
                 {#if viewport.width > 900 && !isEditing && (user.role === "board_member" || user.role === "admin")}
                     <div class="flex items-center gap-4 w-full">
-                        <Button type="delete" onclick={() => confirmDeleteEventModal.startDelete()}>
+                        <Button type="delete" onclick={() => {isDeleting = true; confirmDeleteEventModal.startDelete();}}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>

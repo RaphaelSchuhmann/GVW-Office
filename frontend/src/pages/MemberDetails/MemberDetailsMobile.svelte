@@ -19,6 +19,7 @@
     let {
         memberData,
         isEditing = $bindable(),
+        isDeleting = $bindable(false),
         ...restProps
     } = $props();
 
@@ -135,6 +136,7 @@
                     title="Mitglied löschen" subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?"
                     action="deleteMember"
                     onClose={async () => {await push("/members")}}
+                    onCancel={() => {isDeleting = false}}
                     bind:this={confirmDeleteMemberModal} isMobile={true}
 />
 

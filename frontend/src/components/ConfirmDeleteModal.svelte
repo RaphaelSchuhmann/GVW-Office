@@ -22,6 +22,7 @@
         expectedInput = "",
         id = "",
         onClose = () => {},
+        onCancel = () => {},
         isMobile = false,
         ...restProps
     } = $props();
@@ -72,7 +73,7 @@
 
 <Modal
     bind:this={confirmDeleteModal}
-    extraFunction={() => { confirmInput = "" }}
+    extraFunction={() => { confirmInput = ""; onCancel(); }}
     {title}
     {subTitle}
     {isMobile}
@@ -88,7 +89,7 @@
     <div class="w-full flex items-center justify-end mt-5 gap-4">
         <Button
             type="secondary"
-            onclick={() => confirmDeleteModal.hideModal()}
+            onclick={() => confirmDeleteModal?.hideModal()}
         >
             Abbrechen
         </Button>
