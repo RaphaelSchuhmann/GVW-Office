@@ -43,7 +43,7 @@
         ready = true;
     });
 
-    let isDeleting = $state(null);
+    let isDeleting = $state(false);
 
     $effect(() => {
         const _trigger = lastRefresh.EVENTS;

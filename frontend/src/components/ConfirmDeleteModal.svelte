@@ -69,16 +69,11 @@
         isDeleting = false;
         onClose();
     }
-
-    function cancelDelete() {
-        confirmDeleteModal?.hideModal();
-        onCancel();
-    }
 </script>
 
 <Modal
     bind:this={confirmDeleteModal}
-    extraFunction={() => { confirmInput = "" }}
+    extraFunction={() => { confirmInput = ""; onCancel(); }}
     {title}
     {subTitle}
     {isMobile}
@@ -94,7 +89,7 @@
     <div class="w-full flex items-center justify-end mt-5 gap-4">
         <Button
             type="secondary"
-            onclick={cancelDelete}
+            onclick={() => confirmDeleteModal?.hideModal()}
         >
             Abbrechen
         </Button>

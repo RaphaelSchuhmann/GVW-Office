@@ -45,7 +45,7 @@
         ready = true;
     });
 
-    let isDeleting = $state();
+    let isDeleting = $state(false);
 
     $effect(() => {
         const _trigger = lastRefresh.SCORES;
