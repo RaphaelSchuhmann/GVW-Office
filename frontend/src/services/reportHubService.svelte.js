@@ -382,7 +382,7 @@ function getMetadata() {
         viewport: ""
     };
 
-    metaData.route = globalThis.location.href.split("/").filter(Boolean).at(-1);
+    metaData.route = globalThis.location.href.split("/").findLast(part => part !== "");
 
     metaData.appVersion = appSettings.appVersion;
 
