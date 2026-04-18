@@ -98,7 +98,7 @@ public class BugReportService {
 
     bugReport.setMetaData(metaData);
 
-    dbService.insert("bug_report", bugReport);
+    dbService.insert("bug_reports", bugReport);
             
     String email = userService.resolveUserIdToEmail(userId);
 
