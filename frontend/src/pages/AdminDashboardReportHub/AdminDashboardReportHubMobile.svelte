@@ -1,4 +1,15 @@
 <script>
+    import {
+        deleteBugReport,
+        deleteFeedback,
+        getAllBugReports,
+        getAllFeedbacks,
+        getItemDetails,
+    } from "../../services/reportHubService.svelte";
+    import { bugReportStore, feedbackStore } from "../../stores/reportHub.svelte";
+    import { appSettings } from "../../stores/appSettings.svelte";
+    import { severityMap } from "../../services/reportHubService.svelte.js";
+
     import ToastStack from "../../components/ToastStack.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -10,16 +21,6 @@
     import CollapsableViewer from "../../components/CollapsableViewer.svelte";
     import Modal from "../../components/Modal.svelte";
     import ReportHubDetails from "../../components/ReportHubDetails.svelte";
-
-    import {
-        deleteBugReport,
-        deleteFeedback,
-        getAllBugReports,
-        getAllFeedbacks,
-        getItemDetails,
-    } from "../../services/reportHubService.svelte";
-    import { bugReportStore, feedbackStore } from "../../stores/reportHub.svelte";
-    import { appSettings } from "../../stores/appSettings.svelte";
 
     let sidebarOpen = $state(false);
 
@@ -53,7 +54,7 @@
     });
 
     async function selectItem(id) {
-        const type = selectedView.toLowerCase().replaceAll(" ", "");
+        const type = selectedView.toLowerCase().replaceAll(" ", "_");
 
         if (type === "feedback") {
             feedbackItemDetails = await getItemDetails(id, type);
@@ -98,30 +99,20 @@
             />
         </div>
     {:else if selectedView === "Bug Reports" && bugReportItemDetails.title}
-        <div class="w-full h-full flex flex-col items-start justify-start gap-4 p-2">
+        <div class="w-full h-full flex flex-col items-start justify-start gap-4">
             <p class="text-dt-4 font-semibold line-clamp-2 truncate">
                 {bugReportItemDetails.title}
             </p>
-            
-            <div class="flex items-center justify-start gap-4">
-                <Chip
-                    text={bugReportItemDetails.severity}
-                />
-                <div class="flex gap-1 items-center">
-                    <p class="text-dt-5 font-semibold">
-                        {feedbackItemDetails.sentiment}
-                    </p>
-                    <span class="material-symbols-rounded-filled text-icon-dt-3 text-gv-sentiment-selected">
-                        star
-                    </span>
-                </div>
-            </div>
-            
+
+            <Chip
+                text={severityMap[bugReportItemDetails.severity]}
+            />
+
             <CollapsableViewer title="Nachricht" expanded={true}>
                 <p>{bugReportItemDetails.stepsToReproduce}</p>
             </CollapsableViewer>
 
-            <ReportHubDetails 
+            <ReportHubDetails
                 userEmail={bugReportItemDetails.userEmail}
                 timestamp={bugReportItemDetails.timestamp}
                 appVersion={bugReportItemDetails.appVersion}
@@ -198,7 +189,7 @@
                                 <ListItem
                                     id={bugReport.id}
                                     title={bugReport.title}
-                                    chipText={bugReport.severity}
+                                    chipText={severityMap[bugReport.severity]}
                                     asyncDeleteFunction={deleteBugReport}
                                     onclick={async (id) => {
                                         await selectItem(id); 

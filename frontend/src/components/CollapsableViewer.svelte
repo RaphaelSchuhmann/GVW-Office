@@ -1,10 +1,8 @@
 <script>
     import { slide } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
-    import { user } from "../stores/user.svelte.js";
 
     let {
-        data,
         expanded = $bindable(false),
         title = "",
         children,
@@ -27,7 +25,7 @@
     </div>
     
     {#if expanded}
-        <div transition:slide={{ duration: 200, easing: cubicOut }} class="w-full max-h-[20vh] overflow-y-auto mt-2">
+        <div transition:slide={{ duration: 200, easing: cubicOut }} class="w-full max-h-[30vh] overflow-y-auto mt-2">
             {@render children()}      
         </div>
     {/if}

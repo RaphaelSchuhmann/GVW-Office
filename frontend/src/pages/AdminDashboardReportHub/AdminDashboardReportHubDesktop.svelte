@@ -9,6 +9,7 @@
     import { viewport } from "../../stores/viewport.svelte";
     import { bugReportStore, feedbackStore } from "../../stores/reportHub.svelte";
     import { appSettings } from "../../stores/appSettings.svelte";
+    import { severityMap } from "../../services/reportHubService.svelte.js";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
@@ -52,7 +53,7 @@
     });
 
     async function selectItem(id) {
-        const type = selectedView.toLowerCase().replaceAll(" ", "");
+        const type = selectedView.toLowerCase().replaceAll(" ", "_");
 
         if (type === "feedback") {
             feedbackItemDetails = await getItemDetails(id, type);
@@ -223,7 +224,7 @@
                                 <ListItem
                                     id={bugReport.id}
                                     title={bugReport.title}
-                                    chipText={bugReport.severity}
+                                    chipText={severityMap[bugReport.severity]}
                                     asyncDeleteFunction={deleteBugReport}
                                     onclick={async (id) => {
                                         await selectItem(id); 
@@ -242,19 +243,9 @@
                                             {bugReportItemDetails.title}
                                         </p>
 
-                                        <div class="flex items-center justify-start gap-4">
-                                            <Chip
-                                                text={bugReportItemDetails.severity}
-                                            />
-                                            <div class="flex gap-1 items-center">
-                                                <p class="text-dt-5 font-semibold">
-                                                    {feedbackItemDetails.sentiment}
-                                                </p>
-                                                <span class="material-symbols-rounded-filled text-icon-dt-3 text-gv-sentiment-selected">
-                                                    star
-                                                </span>
-                                            </div>
-                                        </div>
+                                        <Chip
+                                            text={severityMap[bugReportItemDetails.severity]}
+                                        />
                                         
                                         <CollapsableViewer title="Nachricht" expanded={true}>
                                             <p>{bugReportItemDetails.stepsToReproduce}</p>

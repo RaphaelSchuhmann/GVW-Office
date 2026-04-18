@@ -13,6 +13,7 @@
         onChange = undefined,
         textWrap = true,
         displayTop = false,
+        doCapitalizeWords = true,
         ...restProps
     } = $props();
 
@@ -99,7 +100,7 @@
                         class={`text-left p-2 pl-4 pr-4 cursor-pointer hover:bg-gv-hover-effect w-full rounded-1 ${textWrap ? "text-wrap" : "text-nowrap"}`}
                         onclick={() => selectOption(option)}
                     >
-                        {capitalizeWords(option)}
+                        {doCapitalizeWords ? capitalizeWords(option) : option}
                     </button>
                 {/each}
             </div>

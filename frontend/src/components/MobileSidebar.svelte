@@ -40,6 +40,6 @@
             </button>
         </div>
 
-        <SidebarContent currentPage={currentPage} minimized={false} />
+        <SidebarContent currentPage={currentPage} minimized={false} isMobile={true} />
     </div>
 {/if}

@@ -1,11 +1,27 @@
-import { apiDeleteBugReport, apiGetBugReportDetails, apiGetBugReports } from "../api/apiBugReport.svelte";
-import { apiDeleteFeedback, apiGetFeedbackDetails, apiGetFeedbacks } from "../api/apiFeedback.svelte";
+import {
+    apiAddBugReport,
+    apiDeleteBugReport,
+    apiGetBugReportDetails,
+    apiGetBugReports
+} from "../api/apiBugReport.svelte";
+import { apiAddFeedback, apiDeleteFeedback, apiGetFeedbackDetails, apiGetFeedbacks } from "../api/apiFeedback.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { appSettings } from "../stores/appSettings.svelte";
 import { bugReportStore, feedbackStore } from "../stores/reportHub.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
+
+export const severityMap = {
+    "_low": "Niedrig",
+    "_medium": "Mittel",
+    "_high": "Hoch",
+    "_severe": "Schwer",
+    "Niedrig": "_low",
+    "Mittel": "_medium",
+    "Hoch": "_high",
+    "Schwer": "_severe"
+};
 
 let currentlyDeleting = {
     FEEDBACK: new Set(),
@@ -15,6 +31,8 @@ let currentlyDeleting = {
 let isFetching = {
     allFeedbacks: false,
     allBugReports: false,
+    submitFeedback: false,
+    submitBugReport: false,
 }
 
 function handleReportHubError(errorType, context) {
@@ -60,8 +78,8 @@ function handleReportHubError(errorType, context) {
     });
 }
 
-export function getFeedbackCategories() {
-    const categories = appSettings.feedbackCategories || {};
+export function getDropdownItemsFromMap(map) {
+    const categories = map || {};
     const displayNames = [];
     const processedKeys = new Set();
 
@@ -129,6 +147,134 @@ export async function getAllBugReports() {
     }
 }
 
+export async function submitNewItem(data, type) {
+    if (!type) return;
+
+    if (type === "Feedback") {
+        const feedback = {
+            title: data.title,
+            category: data.dropdown,
+            message: data.textarea,
+            sentiment: data.sentiment,
+            route: "",
+            appVersion: ""
+        };
+
+        const metaData = getMetadata();
+
+        feedback.route = metaData.route;
+        feedback.appVersion = metaData.appVersion;
+
+        await addFeedback(feedback);
+    } else if (type === "Fehler melden") {
+        const bugReport = {
+            title: data.title,
+            severity: data.dropdown,
+            stepsToReproduce: data.textarea,
+            route: "",
+            appVersion: "",
+            os: "",
+            browser: "",
+            viewport: ""
+        };
+
+        const metaData = getMetadata();
+
+        bugReport.route = metaData.route;
+        bugReport.appVersion = metaData.appVersion;
+        bugReport.os = metaData.os;
+        bugReport.browser = metaData.browser;
+        bugReport.viewport = metaData.viewport;
+
+        await addBugReport(bugReport);
+    }
+}
+
+async function addFeedback(feedback) {
+    if (isFetching.submitFeedback) return;
+    isFetching.submitFeedback = true;
+
+    try {
+        const { resp } = await apiAddFeedback(feedback);
+        const normalizedResponse = normalizeResponse(resp);
+
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            handleReportHubError(normalizedResponse.errorType, "ADD_FEEDBACK");
+            return;
+        }
+
+        addToast({
+            title: "Feedback abgeschickt",
+            subTitle: viewport.isMobile ? "" : "Ihr Feedback wurde erfolgreich abgeschickt.",
+            type: "success"
+        });
+    } finally {
+        isFetching.submitFeedback = false;
+    }
+}
+
+async function addBugReport(bugReport) {
+    if (isFetching.submitBugReport) return;
+    isFetching.submitBugReport = true;
+
+    try {
+        const { resp } = await apiAddBugReport(bugReport);
+        const normalizedResponse = normalizeResponse(resp);
+
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            handleReportHubError(normalizedResponse.errorType, "ADD_BUG");
+            return;
+        }
+
+        addToast({
+            title: "Fehler gemeldet",
+            subTitle: viewport.isMobile ? "" : "Der Fehler wurde erfolgreich gemeldet.",
+            type: "success"
+        });
+    } finally {
+        isFetching.submitBugReport = false;
+    }
+}
+
+function getMetadata() {
+    const metaData = {
+        route: "",
+        appVersion: "",
+        os: "",
+        browser: "",
+        viewport: ""
+    };
+
+    const routeParts = window.location.href.split("/");
+    metaData.route = routeParts[routeParts.length - 1];
+
+    metaData.appVersion = appSettings.appVersion;
+
+    if (navigator.userAgentData) {
+        const brand = navigator.userAgentData.brands.find(b =>
+            b.brand !== 'Chromium' && b.brand !== 'Not(A:Brand)' && b.brand !== 'Not-A.Brand'
+        );
+        if (brand) {
+            metaData.browser = `${brand.brand} ${brand.version}`;
+        } else {
+            metaData.browser = "N/A";
+        }
+
+        metaData.os = navigator.userAgentData.platform;
+    } else {
+        metaData.browser = "N/A";
+        metaData.os = "N/A";
+    }
+
+    metaData.viewport = `${window.innerWidth}x${window.innerHeight}`;
+
+    return metaData;
+}
+
 export async function deleteFeedback(id) {
     if (!id || currentlyDeleting.FEEDBACK.has(id)) return;
     currentlyDeleting.FEEDBACK.add(id);
@@ -149,8 +295,6 @@ export async function deleteFeedback(id) {
             subTitle: viewport.isMobile ? "" : "Das User Feedback wurde erfolgreich aus dem System entfernt.",
             type: "success"
         });
-
-        return;
     } finally {
         currentlyDeleting.FEEDBACK.delete(id);
     }
@@ -176,8 +320,6 @@ export async function deleteBugReport(id) {
             subTitle: viewport.isMobile ? "" : "Das User Feedback wurde erfolgreich aus dem System entfernt.",
             type: "success"
         });
-
-        return;
     } finally {
         currentlyDeleting.BUG_REPORT.add(id);
     }
