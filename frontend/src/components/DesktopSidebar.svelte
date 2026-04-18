@@ -1,11 +1,12 @@
 <script>
     import SidebarContent from "./SidebarContent.svelte";
+    import { uiStates } from "../stores/user.svelte.js";
 
     let {
         currentPage = "",
     } = $props();
 
-    let minimized = $state(false);
+    let minimized = $state(uiStates.sidebarMinimized || false);
 
     let toggleIcon = $derived(minimized ? "arrow_menu_open" : "arrow_menu_close");
 
@@ -14,6 +15,7 @@
      */
     function toggleSidebarState() {
         minimized = !minimized;
+        uiStates.sidebarMinimized = minimized;
     }
 </script>
 
