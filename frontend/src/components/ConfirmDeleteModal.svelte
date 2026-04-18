@@ -22,6 +22,7 @@
         expectedInput = "",
         id = "",
         onClose = () => {},
+        onCancel = () => {},
         isMobile = false,
         ...restProps
     } = $props();
@@ -68,6 +69,11 @@
         isDeleting = false;
         onClose();
     }
+
+    function cancelDelete() {
+        confirmDeleteModal?.hideModal();
+        onCancel();
+    }
 </script>
 
 <Modal
@@ -88,7 +94,7 @@
     <div class="w-full flex items-center justify-end mt-5 gap-4">
         <Button
             type="secondary"
-            onclick={() => confirmDeleteModal.hideModal()}
+            onclick={cancelDelete}
         >
             Abbrechen
         </Button>

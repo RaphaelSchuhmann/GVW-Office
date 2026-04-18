@@ -12,8 +12,6 @@
     import { addToast } from "../../stores/toasts.svelte.js";
     import Spinner from "../../components/Spinner.svelte";
 
-    let isGlobalLoading = $derived(user.name.length === 0);
-
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
     const params = new URLSearchParams(queryString);
@@ -45,10 +43,12 @@
         ready = true;
     });
 
+    let isDeleting = $state(null);
+
     $effect(() => {
         const _trigger = lastRefresh.EVENTS;
 
-        if (!ready) return;
+        if (!ready || isDeleting) return;
 
         (async () => {
             const exists = await eventExists(eventId);
@@ -69,9 +69,9 @@
 {#if eventData}
     {#key eventData.rev}
         {#if viewport.isMobile}
-            <EventDetailsMobile {eventData} bind:isEditing />
+            <EventDetailsMobile {eventData} bind:isEditing bind:isDeleting />
         {:else}
-            <EventDetailsDesktop {eventData} bind:isEditing />
+            <EventDetailsDesktop {eventData} bind:isEditing bind:isDeleting />
         {/if}
     {/key}
 {:else}

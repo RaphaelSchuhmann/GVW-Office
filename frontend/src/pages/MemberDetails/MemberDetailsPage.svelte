@@ -47,10 +47,12 @@
         ready = true;
     });
 
+    let isDeleting = $state(false);
+
     $effect(() => {
         const _trigger = lastRefresh.MEMBERS;
 
-        if (!ready) return;
+        if (!ready || isDeleting) return;
 
         (async () => {
             const exists = await memberExists(memberId);
@@ -71,9 +73,9 @@
 {#if memberData && !isGlobalLoading}
     {#key memberData.rev}
         {#if viewport.isMobile}
-            <MemberDetailsMobile {memberData} bind:isEditing />
+            <MemberDetailsMobile {memberData} bind:isEditing bind:isDeleting />
         {:else}
-            <MemberDetailsDesktop {memberData} bind:isEditing />
+            <MemberDetailsDesktop {memberData} bind:isEditing bind:isDeleting />
         {/if}
     {/key}
 {:else}

@@ -21,6 +21,7 @@
     let {
         scoreData,
         isEditing = $bindable(),
+        isDeleting = $bindable(false),
         ...restProps
     } = $props();
 
@@ -214,6 +215,7 @@
                     title="Noten löschen" subTitle="Sind Sie sich sicher das Sie diese Noten löschen möchten?"
                     action="deleteLibEntry"
                     onClose={async () => {await routeToLibrary()}}
+                    onCancel={() => {isDeleting = false}}
                     bind:this={confirmDeleteScoreModal} isMobile={true}
 />
 
@@ -242,7 +244,7 @@
             <div class="flex flex-col items-center gap-5 min-[1500px]:w-1/2 min-[1200px]:w-2/3 w-full mt-5">
                 {#if viewport.width < 900 && !isEditing && (user.role === "board_member" || user.role === "admin" || user.role === "librarian" || user.role === "conductor")}
                     <div class="flex items-center gap-2 w-full">
-                        <Button type="delete" onclick={() => confirmDeleteScoreModal.startDelete()}>
+                        <Button type="delete" onclick={() => {isDeleting = true; confirmDeleteScoreModal.startDelete();}}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>
@@ -336,7 +338,7 @@
 
                 {#if viewport.width > 900 && !isEditing && (user.role === "board_member" || user.role === "admin" || user.role === "librarian" || user.role === "conductor")}
                     <div class="flex items-center gap-4 w-full">
-                        <Button type="delete" onclick={() => confirmDeleteScoreModal.startDelete()}>
+                        <Button type="delete" onclick={() => {isDeleting = true; confirmDeleteScoreModal.startDelete();}}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>

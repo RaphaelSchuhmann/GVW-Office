@@ -45,10 +45,12 @@
         ready = true;
     });
 
+    let isDeleting = $state();
+
     $effect(() => {
         const _trigger = lastRefresh.SCORES;
 
-        if (!ready) return;
+        if (!ready || isDeleting) return;
 
         (async () => {
             const exists = await scoreExists(scoreId);
@@ -69,9 +71,9 @@
 {#if scoreData}
     {#key scoreData.rev}
         {#if viewport.width < 800}
-            <LibraryDetailsMobile {scoreData} bind:isEditing />
+            <LibraryDetailsMobile {scoreData} bind:isEditing bind:isDeleting />
         {:else}
-            <LibraryDetailsDesktop {scoreData} bind:isEditing />
+            <LibraryDetailsDesktop {scoreData} bind:isEditing bind:isDeleting />
         {/if}
     {/key}
 {:else}
