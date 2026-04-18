@@ -28,7 +28,6 @@
     import Checkbox from "../../components/Checkbox.svelte";
     import Textarea from "../../components/Textarea.svelte";
     import Spinner from "../../components/Spinner.svelte";
-    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
     import TimePicker from "../../components/TimePicker.svelte";
 
     let {
@@ -36,9 +35,6 @@
         isEditing = $bindable(),
         ...restProps
     } = $props();
-
-    /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
 
     let draft = $state(null);
     let isSubmitting = $state(false);
@@ -175,7 +171,6 @@
 </script>
 
 <ToastStack />
-<ChangelogsModal bind:this={changelogModal} />
 
 <ConfirmDeleteModal expectedInput={`${eventData.title}`} id={eventData.id}
                     title="Veranstaltung löschen"
@@ -186,7 +181,7 @@
 />
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="events" handleChangelogs={() => changelogModal?.showModal()} />
+    <DesktopSidebar currentPage="events" />
     <div class="flex flex-col min-h-0 w-full p-10 overflow-hidden">
         <PageHeader title="Veranstaltung" subTitle={`Details der Veranstaltung "${eventData?.title ?? ""}"`}>
             {#if viewport.width > 900}

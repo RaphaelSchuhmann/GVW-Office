@@ -96,7 +96,7 @@ export async function apiDeleteScore(id) {
  * If the HTTP request itself fails (e.g., network error), the function
  * returns `{ resp: null, body: null }`.
  *
- * @param {string|number} id - The unique identifier of the score whose files should be downloaded.
+ * @param {string} id - The unique identifier of the score whose files should be downloaded.
  * @returns {Promise<{resp: Response|null, body: Blob|any|null}>}
  * An object containing:
  * - `resp`: The original {@link Response} object or `null` if the request failed.

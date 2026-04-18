@@ -183,7 +183,7 @@ export async function scoreExists(id) {
  *
  * A success toast is displayed when the score is deleted successfully.
  *
- * @param {number|string} id - The unique identifier of the score to delete.
+ * @param {string} id - The unique identifier of the score to delete.
  * @returns {Promise<void>}
  */
 export async function deleteScore(id) {
@@ -402,7 +402,7 @@ export async function addScore(score) {
         if (handleGlobalApiError(normalizedResponse)) return;
 
         if (!normalizedResponse.ok) {
-            showScoreErrorToast(normalizedResponse.errorType, "ADD");
+            showScoreErrorToast(normalizedResponse.errorType, "ADD", "");
             return;
         }
 

@@ -13,6 +13,7 @@
         onChange = undefined,
         textWrap = true,
         displayTop = false,
+        doCapitalizeWords = true,
         ...restProps
     } = $props();
 
@@ -79,7 +80,7 @@
         >
             <div class="flex w-full">
                 <p class={`${selected === "wählen" ? "text-gv-input-placeholder" : "text-gv-dark-text"} ${textWrap ? "text-wrap" : "text-nowrap"}`}>
-                    {capitalizeWords(selected)}
+                    {doCapitalizeWords ? capitalizeWords(selected) : selected}
                 </p>
                 <span class="material-symbols-rounded ml-auto">
                     {open ? "arrow_drop_up" : "arrow_drop_down"}
@@ -99,7 +100,7 @@
                         class={`text-left p-2 pl-4 pr-4 cursor-pointer hover:bg-gv-hover-effect w-full rounded-1 ${textWrap ? "text-wrap" : "text-nowrap"}`}
                         onclick={() => selectOption(option)}
                     >
-                        {capitalizeWords(option)}
+                        {doCapitalizeWords ? capitalizeWords(option) : option}
                     </button>
                 {/each}
             </div>

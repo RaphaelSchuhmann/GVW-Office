@@ -14,13 +14,10 @@
     import Button from "../../components/Button.svelte";
     import Spinner from "../../components/Spinner.svelte";
     import { addChangelog } from "../../services/changelogService.svelte.js";
-    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
+    import HorizontalNavBar from "../../components/AdminHorizontalNavBar.svelte";
 
     /** @type {import("../../components/Modal.svelte").default} */
     let addChangelogModal = $state();
-
-    /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
 
     // Add changelog
 
@@ -54,7 +51,6 @@
 </script>
 
 <ToastStack/>
-<ChangelogsModal bind:this={changelogModal}/>
 
 <Modal bind:this={addChangelogModal} title="Neuen Changelog hinzufügen" subTitle="Erfassen Sie hier die Changelogdaten"
        extraFunction={resetChangelogInputs}>
@@ -77,11 +73,12 @@
 </Modal>
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="adminDashboard" handleChangelogs={() => changelogModal?.showModal()}/>
+    <DesktopSidebar currentPage="adminDashboard"/>
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full h-full flex-1 overflow-hidden p-10 min-h-0">
-            <PageHeader title="Admin Dashboard" subTitle="Willkommen im Admin Dashboard für GVW Office"
-                        showSlot={false} />
+            <HorizontalNavBar currentPage="overview"/>
+            <PageHeader title="Admin Dashboard" subTitle=""
+                        showSlot={false} marginTop="5" hideSubTitle={true} />
             <div class="flex max-[1300px]:flex-col min-[1300px]:h-full w-full gap-4 mt-10 overflow-y-auto">
                 <div class="w-full h-full flex flex-col items-center">
                     <Card fillHeight={viewport.width > 1300}>

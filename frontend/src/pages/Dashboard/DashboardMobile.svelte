@@ -15,13 +15,9 @@
     import { dashboardStore } from "../../stores/dashboard.svelte.js";
     import { prepareEvents, getVoiceCounts } from "../../services/dashboardService.svelte.js";
     import Spinner from "../../components/Spinner.svelte";
-    import ChangelogsModal from "../../components/ChangelogsModal.svelte";
 
     /** @type {import("../../components/Modal.svelte").default} */
     let voiceDistributionSettingsModal = $state();
-
-    /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
 
     let isSubmitting = $state(false);
 
@@ -72,9 +68,8 @@
 </Modal>
 
 <ToastStack isMobile={true}/>
-<ChangelogsModal bind:this={changelogModal} isMobile={true}/>
 
-<MobileSidebar currentPage="dashboard" bind:isOpen={sidebarOpen} handleChangelogs={() => changelogModal?.showModal()}/>
+<MobileSidebar currentPage="dashboard" bind:isOpen={sidebarOpen} />
 
 <main class="flex overflow-hidden">
     <div class="flex-1 min-h-0 overflow-y-auto">

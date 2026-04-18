@@ -29,7 +29,7 @@
     });
 </script>
 
-<div class={`flex p-1 rounded-full bg-gv-input-bg gap-2 ${marginMap[marginTop]} overflow-x-auto w-full`} style="min-height: 2.75rem">
+<div class={`flex p-1 rounded-full bg-gv-input-bg gap-2 ${marginMap[marginTop]} overflow-x-auto w-full`} style="min-height: min-content">
     {#each contents as title}
         <button
             type="button"

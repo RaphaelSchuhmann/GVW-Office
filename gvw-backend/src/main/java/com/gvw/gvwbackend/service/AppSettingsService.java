@@ -30,7 +30,11 @@ public class AppSettingsService {
     AppSettings settings = appSettings();
 
     return new AppSettingsResponseDTO(
-        settings.getMaxMembers(), settings.getScoreCategories(), appSettings().getRev());
+        settings.getMaxMembers(),
+        settings.getScoreCategories(),
+        settings.getFeedbackCategories(),
+        settings.getAppVersion(),
+        appSettings().getRev());
   }
 
   public String updateMaxMembers(UpdateMaxMembersRequestDTO requestDTO) {

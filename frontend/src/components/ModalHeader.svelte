@@ -1,9 +1,8 @@
 <script>
-    // 1. Props & Event Handling
-    // We use ...restProps to catch 'onclick' from the Modal
     let {
         title = "",
         subTitle = "",
+        hideSubTitle = false,
         onclick,
     } = $props();
 
@@ -17,8 +16,7 @@
             closeBtn?.click();
         }
     }
-
-    // 2. Lifecycle (replaces onMount/onDestroy)
+    
     $effect(() => {
         window.addEventListener("keydown", handleKeyDown);
         return () => {
@@ -27,14 +25,16 @@
     });
 </script>
 
-<div class="w-full flex items-start">
+<div class={`w-full flex ${hideSubTitle ? "items-center" : "items-start"}`}>
     <div class="flex flex-col items-start justify-around">
         <p class="min-[1500px]:text-dt-3 text-dt-4 max-[470px]:text-dt-5 text-gv-dark-text">
             {title}
         </p>
-        <p class="min-[1500px]:text-dt-6 text-dt-7 text-gv-light-text">
-            {subTitle}
-        </p>
+        {#if !hideSubTitle}
+            <p class="min-[1500px]:text-dt-6 text-dt-7 text-gv-light-text">
+                {subTitle}
+            </p>
+        {/if}
     </div>
 
     <button

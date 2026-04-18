@@ -130,4 +130,20 @@ public class UserService {
 
     return users.getFirst();
   }
+
+  public String resolveUserIdToEmail(String id) {
+    if (id == null || id.isBlank()) {
+      return "";
+    }
+
+    List<User> users =
+            dbService.findByQuery(
+                    "users", Map.of("selector", Map.of("userId", id), "limit", 1), User.class);
+    if (users == null || users.isEmpty()) {
+      return "";
+    }
+
+    String email = users.getFirst().getEmail();
+    return email == null ? "" : email;
+  }
 }

@@ -1,7 +1,6 @@
 <script>
     import { marginMap, fontColorMap } from "../lib/dynamicStyles";
 
-    // 1. Define Props & Snippets
     let {
         type = "primary",
         marginTop = "",
@@ -36,7 +35,6 @@
         }
     }
 
-    // 2. Lifecycle Replacement
     $effect(() => {
         if (isSubmit || isCancel) {
             window.addEventListener("keydown", handleKeyDown);
@@ -45,7 +43,6 @@
         }
     });
 
-    // 3. Class Logic simplified
     const baseClasses = "flex items-center justify-center rounded-1 min-[768px]:text-dt-4 min-[470px]:text-dt-5 text-dt-6 duration-200 disabled:opacity-50 disabled:cursor-not-allowed";
 
     const typeClasses = {
