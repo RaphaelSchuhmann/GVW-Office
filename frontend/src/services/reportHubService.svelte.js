@@ -249,8 +249,7 @@ function getMetadata() {
         viewport: ""
     };
 
-    const routeParts = window.location.href.split("/");
-    metaData.route = routeParts[routeParts.length - 1];
+    metaData.route = globalThis.location.href.split("/").filter(Boolean).at(-1);
 
     metaData.appVersion = appSettings.appVersion;
 
@@ -270,7 +269,7 @@ function getMetadata() {
         metaData.os = "N/A";
     }
 
-    metaData.viewport = `${window.innerWidth}x${window.innerHeight}`;
+    metaData.viewport = `${globalThis.innerWidth}x${globalThis.innerHeight}`;
 
     return metaData;
 }
