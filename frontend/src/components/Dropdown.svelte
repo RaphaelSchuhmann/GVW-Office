@@ -80,7 +80,7 @@
         >
             <div class="flex w-full">
                 <p class={`${selected === "wählen" ? "text-gv-input-placeholder" : "text-gv-dark-text"} ${textWrap ? "text-wrap" : "text-nowrap"}`}>
-                    {capitalizeWords(selected)}
+                    {doCapitalizeWords ? capitalizeWords(selected) : selected}
                 </p>
                 <span class="material-symbols-rounded ml-auto">
                     {open ? "arrow_drop_up" : "arrow_drop_down"}

@@ -26,7 +26,7 @@
     
     {#if expanded}
         <div transition:slide={{ duration: 200, easing: cubicOut }} class="w-full max-h-[30vh] overflow-y-auto mt-2">
-            {@render children()}      
+            {@render children?.()}
         </div>
     {/if}
 </div>

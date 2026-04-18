@@ -51,7 +51,7 @@
 }
 
 :root {
-    font-family: "Inter", sans-serif;
+    font-family: Inter, sans-serif;
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -140,6 +140,6 @@ body.no-scroll {
 
     display: inline-block;
     direction: ltr;
-    word-wrap: normal;
+    overflow-wrap: normal;
     white-space: nowrap;
 }

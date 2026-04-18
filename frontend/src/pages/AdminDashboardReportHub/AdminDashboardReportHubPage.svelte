@@ -31,7 +31,7 @@
             ready = true;
         })();
     });
-    
+
     $effect(() => {
         const _triggerFeedback = lastRefresh.FEEDBACK;
         const _triggerBug = lastRefresh.BUG;

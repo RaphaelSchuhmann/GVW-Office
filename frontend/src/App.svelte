@@ -12,7 +12,7 @@
     import Library from "./pages/Library/LibraryPage.svelte";
     import LibraryDetails from "./pages/LibraryDetails/LibraryDetailsPage.svelte";
     import AdminDashboard from "./pages/AdminDashboard/AdminDashboardPage.svelte";
-    import AdminDashboardReportHub from "./pages/AdminDashboardReportHub/AdminDashboardReportHubPage.svelte"
+    import AdminDashboardReportHub from "./pages/AdminDashboardReportHub/AdminDashboardReportHubPage.svelte";
     import NotFound from "./pages/NotFound/NotFoundPage.svelte";
 
     import { initSSE } from "./services/sse-handler.js";
