@@ -6,7 +6,6 @@
         id = "",
         title = "",
         chipText = "",
-        showDelete = true,
         isMobile = false,
         isLastItem = false,
         asyncDeleteFunction = () => {},

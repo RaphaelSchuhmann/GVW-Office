@@ -97,7 +97,7 @@
                     options={getDropdownItemsFromMap(appSettings.feedbackCategories)}
                     doCapitalizeWords={false}
                     title="Kategorie"
-                    onChange={(val) => inputs.dropdown = appSettings.feedbackCategories[val] || appSettings.feedbackCategories["other"]}
+                    onChange={(val) => inputs.dropdown = appSettings.feedbackCategories[val] || appSettings.feedbackCategories["_other"]}
                 />
             {:else}
                 <div class="flex items-center gap-4 w-full">

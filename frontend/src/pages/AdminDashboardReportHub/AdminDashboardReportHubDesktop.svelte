@@ -17,7 +17,7 @@
     import HorizontalNavBar from "../../components/AdminHorizontalNavBar.svelte";
     import TabBar from "../../components/TabBar.svelte";
     import Card from "../../components/Card.svelte";
-    import ListItem from "../../components/ListItem.svelte";
+    import ReportHubListItem from "../../components/ReportHubListItem.svelte";
     import Chip from "../../components/Chip.svelte";
     import CollapsableViewer from "../../components/CollapsableViewer.svelte";
     import Modal from "../../components/Modal.svelte";
@@ -66,7 +66,7 @@
 <ToastStack />
 
 <Modal bind:this={detailsModal} width="1/3"
-       title={`${selectedView === "Feedback" ? "Feedback" : "Bug Report"} Details`} hideSubtitle={true}>
+       title={`${selectedView === "Feedback" ? "Feedback" : "Bug Report"} Details`} hideSubTitle={true}>
     {#if selectedView === "Feedback" && feedbackItemDetails.title}
         <div class="w-full h-full flex flex-col items-start justify-start gap-4">
             <p class="text-dt-4 font-semibold line-clamp-2 truncate">
@@ -74,7 +74,7 @@
             </p>
             <div class="flex items-center justify-start gap-4">
                 <Chip
-                    text={appSettings.feedbackCategories[feedbackItemDetails.category] || appSettings.feedbackCategories["other"]}
+                    text={appSettings.feedbackCategories[feedbackItemDetails.category] || appSettings.feedbackCategories["_other"]}
                 />
                 <div class="flex gap-1 items-center">
                     <p class="text-dt-5 font-semibold">
@@ -164,10 +164,10 @@
                     <div class="h-full min-[1650px]:w-3/5 min-[1300px]:w-1/2 w-full">
                         <Card fillHeight={true} padding="0">
                             {#each feedbackStore.data as feedback}
-                                <ListItem
+                                <ReportHubListItem
                                     id={feedback.id}
                                     title={feedback.title}
-                                    chipText={appSettings.feedbackCategories[feedback.category] || appSettings.feedbackCategories["other"]}
+                                    chipText={appSettings.feedbackCategories[feedback.category] || appSettings.feedbackCategories["_other"]}
                                     asyncDeleteFunction={deleteFeedback}
                                     onclick={async (id) => {
                                         await selectItem(id); 
@@ -188,7 +188,7 @@
 
                                         <div class="flex items-center justify-start gap-4">
                                             <Chip
-                                                text={appSettings.feedbackCategories[feedbackItemDetails.category] || appSettings.feedbackCategories["other"]}
+                                                text={appSettings.feedbackCategories[feedbackItemDetails.category] || appSettings.feedbackCategories["_other"]}
                                             />
                                             <div class="flex gap-1 items-center">
                                                 <p class="text-dt-5 font-semibold">
@@ -221,7 +221,7 @@
                     <div class="h-full min-[1650px]:w-3/5 min-[1300px]:w-1/2 w-full">
                         <Card fillHeight={true} padding="0">
                             {#each bugReportStore.data as bugReport}
-                                <ListItem
+                                <ReportHubListItem
                                     id={bugReport.id}
                                     title={bugReport.title}
                                     chipText={severityMap[bugReport.severity]}
