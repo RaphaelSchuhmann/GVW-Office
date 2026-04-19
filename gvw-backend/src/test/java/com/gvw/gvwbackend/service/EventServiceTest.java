@@ -11,6 +11,7 @@ import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.mapper.EventMapper;
 import com.gvw.gvwbackend.model.Event;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,7 +39,7 @@ public class EventServiceTest {
     validEvent.setTitle("Practice");
     validEvent.setStatus("upcoming");
     validEvent.setMode("single");
-    validEvent.setDate("1.12.2026");
+    validEvent.setDate("1.12.2028");
   }
 
   @Test
@@ -55,18 +56,19 @@ public class EventServiceTest {
   void testAllEventsShouldAutoFinishPastSingleEvents() {
     Event pastEvent = new Event();
     pastEvent.setId("past-id");
-    pastEvent.setDate("01.01.2025");
+    pastEvent.setDate("2025-01-01T00:00:00.000Z");
     pastEvent.setStatus("upcoming");
     pastEvent.setMode("Single");
 
     Map<String, Object> eventMap =
         Map.of(
             "id", "past-id",
-            "date", "1.1.2025",
+            "date", "2025-01-01T00:00:00.000Z",
             "status", "upcoming",
             "mode", "Single");
 
     when(dbService.findAll("events")).thenReturn(List.of(eventMap));
+    when(dbService.update(eq("events"), any(), any(Event.class))).thenReturn(Map.of("rev", "rev-3"));
 
     EventsResponseDTO response = eventService.allEvents();
 
@@ -77,7 +79,15 @@ public class EventServiceTest {
   void testAddEventShouldSuccessForSingleMode() {
     AddEventRequestDTO request =
         new AddEventRequestDTO(
-            "Title", "practice", "2.4.2026", "18:00", "Loc", "Desc", "upcoming", "single", null);
+            "Title",
+            "practice",
+            "2026-04-02T00:00:00.000Z",
+            LocalTime.of(18, 0),
+            "Loc",
+            "Desc",
+            "upcoming",
+            "single",
+            null);
 
     assertDoesNotThrow(() -> eventService.addEvent(request));
     verify(dbService).insert(eq("events"), any(Event.class));
@@ -87,7 +97,15 @@ public class EventServiceTest {
   void testAddEventShouldThrowBadRequestForInvalidMonthlyRecurrence() {
     AddEventRequestDTO request =
         new AddEventRequestDTO(
-            "Title", "practice", "2.4.2026", "18:00", "Loc", "Desc", "upcoming", "monthly", null);
+            "Title",
+            "practice",
+            "2026-04-02T00:00:00.000Z",
+            LocalTime.of(18, 0),
+            "Loc",
+            "Desc",
+            "upcoming",
+            "monthly",
+            null);
 
     assertThrows(BadRequestException.class, () -> eventService.addEvent(request));
     verify(dbService, never()).insert(any(), any());
@@ -100,8 +118,8 @@ public class EventServiceTest {
         new AddEventRequestDTO(
             "Title",
             "practice",
-            "2.4.2026",
-            "18:00",
+            "2026-04-02T00:00:00.000Z",
+            LocalTime.of(18, 0),
             "Loc",
             "Desc",
             "upcoming",
@@ -125,7 +143,7 @@ public class EventServiceTest {
 
     eventService.deleteEvent("event-123");
 
-    verify(dbService).delete("events", "event-123", "rev-1");
+    verify(dbService).delete("events", "event-123", "1-rev");
   }
 
   @Test
@@ -167,7 +185,7 @@ public class EventServiceTest {
             "New Title",
             "practice",
             "5.5.2026",
-            "19:00",
+            LocalTime.of(19, 0),
             "New Loc",
             "New Desc",
             "upcoming",
@@ -196,7 +214,7 @@ public class EventServiceTest {
             "Title",
             "practice",
             "5.5.2026",
-            "19:00",
+            LocalTime.of(19, 0),
             "Loc",
             "Desc",
             "upcoming",
