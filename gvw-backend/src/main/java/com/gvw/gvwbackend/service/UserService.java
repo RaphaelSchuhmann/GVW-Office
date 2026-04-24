@@ -7,6 +7,7 @@ import com.gvw.gvwbackend.dto.response.UserManagerResponseDTO;
 import com.gvw.gvwbackend.dto.response.UserManagerResponsesDTO;
 import com.gvw.gvwbackend.dto.response.UserResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
+import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.InvalidCredentialsException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.mapper.UserMapper;
@@ -162,9 +163,18 @@ public class UserService {
     }
 
     User user = getUserByUserId(id);
+    if (user == null) {
+      throw new NotFoundException("UserNotFound");
+    }
   }
 
   public void addUser(AddUserAdminRequestDTO request) {
+    List<User> usersWithRequestMail = dbService.findByQuery("users", Map.of("selector", Map.of("email", request.email())), User.class);
+
+    if (!usersWithRequestMail.isEmpty()) {
+      throw new ConflictException("EmailAlreadyInUse");
+    }
+
     User user = createUserFromRequest(request);
 
     String temporaryPassword = AuthService.generatePassword(3, 2);
