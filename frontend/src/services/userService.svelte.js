@@ -5,7 +5,7 @@ import { auth } from "../stores/auth.svelte.js";
 import { clearValue } from "./store";
 import { user } from "../stores/user.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
-import { getUserData } from "../api/apiUser.svelte";
+import { apiAddUserAD, apiGetUserData } from "../api/apiUser.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { resetPageState } from "./filterService.svelte";
 import { teardownEventSource } from "./sse-handler.js";
@@ -27,6 +27,27 @@ export const roleMap = {
     "librarian": "Notenwart"
 };
 
+export const filterRoleMap = {
+    "Alle Rollen": "all",
+    "Admin": "admin",
+    "Mitglied": "member",
+    "Vorstand": "board_member",
+    "Schriftführer": "secretary",
+    "Chorleitung": "conductor",
+    "Notenwart": "librarian",
+    "all": "Alle Rollen",
+    "admin": "Admin",
+    "secretary": "Schriftführer",
+    "board_member": "Vorstand",
+    "member": "Mitglied",
+    "conductor": "Chorleitung",
+    "librarian": "Notenwart"
+};
+
+let isFetching = {
+    add: false,
+};
+
 /**
  * Attempts to retrieve the latest user data from the API.
  * 
@@ -39,7 +60,7 @@ export async function ensureUserData() {
     const { lastFetched, email } = user;
 
     if ((!lastFetched || isStale(lastFetched)) || !email) {
-        const { resp, body } = await getUserData();
+        const { resp, body } = await apiGetUserData();
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
         
@@ -104,4 +125,41 @@ export function logout() {
 
     Object.assign(auth, { token: "" });
     clearValue("authToken");
+}
+
+export async function addUser(user) {
+    if (isFetching.add || !user) return;
+    isFetching.add = true;
+
+    try {
+        const { resp } = await apiAddUserAD(user);
+        const normalizedResponse = normalizeResponse(resp);
+
+        if (handleGlobalApiError(normalizedResponse)) return;
+
+        if (!normalizedResponse.ok) {
+            if (normalizedResponse.errorType === "CONFLICT") {
+                addToast({
+                    title: "E-Mail-Adresse bereits verwendet",
+                    subTitle: viewport.isMobile ? "" : "Die E-Mail-Adresse ist bereits einem anderen Mitglied oder Benutzer zugeordnet.",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Fehler beim Hinzufügen", 
+                    subTitle: viewport.isMobile ? "" : "Beim Hinzufügen des neuen Mitglieds ist ein Fehler aufgetreten.",
+                    type: "error"
+                });
+            }
+            return;
+        }
+
+        addToast({
+            title: "Benutzer hinzugefügt",
+            subTitle: viewport.isMobile ? "" : "Der neue Benutzer wurde erfolgreich im System hinzugefügt.",
+            type: "success"
+        });
+    } finally {
+        isFetching.add = false;
+    }
 }

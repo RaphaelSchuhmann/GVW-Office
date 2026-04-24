@@ -13,6 +13,7 @@
     import LibraryDetails from "./pages/LibraryDetails/LibraryDetailsPage.svelte";
     import AdminDashboard from "./pages/AdminDashboard/AdminDashboardPage.svelte";
     import AdminDashboardReportHub from "./pages/AdminDashboardReportHub/AdminDashboardReportHubPage.svelte";
+    import AdminDashboardUserManagement from "./pages/AdminDashboardUserManager/AdminDashboardUserManagerPage.svelte";
     import NotFound from "./pages/NotFound/NotFoundPage.svelte";
 
     import { initSSE } from "./services/sse-handler.js";
@@ -33,6 +34,7 @@
         "/library/details": LibraryDetails,
         "/admin/overview": AdminDashboard,
         "/admin/reportHub": AdminDashboardReportHub,
+        "/admin/userManagement": AdminDashboardUserManagement,
         "*": NotFound
     };
 

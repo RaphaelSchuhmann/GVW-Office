@@ -11,10 +11,10 @@
         ...restProps
     } = $props();
 
-    const validPages = ["events", "reports", "library"];
+    const validPages = ["events", "reports", "library", "userManager"];
     const activePage = $derived(validPages.includes(page) ? page : "none");
 
-    let regEntry = $state(filterRegistry[activePage] || {
+    let regEntry = $derived(filterRegistry[activePage] || {
         optionMap: {},
         config: { dropdown: { options: null, customDefault: null } },
         filterState: {
