@@ -40,54 +40,6 @@ public class UserServiceTest {
   }
 
   @Test
-  void testUpdateUserShouldUpdateUserData() {
-    User user = new User();
-    user.setId("456");
-    user.setRev("1-rev");
-    user.setUserId("123");
-    user.setMemberId("321");
-    user.setEmail("email");
-    user.setAddress("address");
-    user.setPhone("phone");
-
-    Member member = new Member();
-    member.setId("321");
-    member.setEmail("original@mail.com");
-    member.setAddress("address");
-    member.setPhone("phone");
-
-    when(dbService.findByQuery(any(), any(), eq(User.class))).thenReturn(List.of(user));
-    when(memberService.getMemberById("321")).thenReturn(member);
-
-    when(dbService.update(eq("users"), eq("456"), any(User.class)))
-        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
-    when(dbService.update(eq("members"), eq("321"), any(Member.class)))
-        .thenReturn(Map.of("ok", true, "rev", "2-newrev"));
-
-    UpdateUserRequestDTO request =
-        new UpdateUserRequestDTO("new@mail.com", "newPhone", "newAddress", "1-rev");
-
-    userService.updateUser("123", request);
-
-    ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-    ArgumentCaptor<Member> memberCaptor = ArgumentCaptor.forClass(Member.class);
-
-    verify(dbService).update(eq("users"), eq("456"), userCaptor.capture());
-    verify(dbService).update(eq("members"), eq("321"), memberCaptor.capture());
-
-    User updatedUser = userCaptor.getValue();
-    Member updatedMember = memberCaptor.getValue();
-
-    assertEquals("new@mail.com", updatedMember.getEmail());
-    assertEquals("newPhone", updatedMember.getPhone());
-    assertEquals("newAddress", updatedMember.getAddress());
-
-    assertEquals("new@mail.com", updatedUser.getEmail());
-    assertEquals("newPhone", updatedUser.getPhone());
-    assertEquals("newAddress", updatedUser.getAddress());
-  }
-
-  @Test
   void testResetPasswordShouldUpdateAndSetFlag() {
     User user = new User();
     user.setId("321");

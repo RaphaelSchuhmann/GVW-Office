@@ -65,47 +65,6 @@ public class UserService {
         user.getRev());
   }
 
-  public List<String> updateUser(String userId, UpdateUserRequestDTO requestDTO) {
-    if (userId == null || userId.isEmpty()) {
-      throw new InvalidCredentialsException("Unauthorized");
-    }
-
-    if (requestDTO == null
-        || requestDTO.email() == null
-        || requestDTO.email().isBlank()
-        || requestDTO.phone() == null
-        || requestDTO.phone().isBlank()
-        || requestDTO.address() == null
-        || requestDTO.address().isBlank()) {
-      throw new BadRequestException("InvalidData");
-    }
-
-    User user = getUserByUserId(userId);
-    Member member = memberService.getMemberById(user.getMemberId());
-
-    user.setEmail(requestDTO.email());
-    user.setPhone(requestDTO.phone());
-    user.setAddress(requestDTO.address());
-
-    Map<String, Object> respUser = dbService.update("users", user.getId(), user);
-
-    if (respUser == null || !respUser.containsKey("rev")) {
-      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
-    }
-
-    member.setEmail(requestDTO.email());
-    member.setPhone(requestDTO.phone());
-    member.setAddress(requestDTO.address());
-
-    Map<String, Object> respMember = dbService.update("members", member.getId(), member);
-
-    if (respMember == null || !respMember.containsKey("rev")) {
-      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
-    }
-
-    return List.of((String) respMember.get("rev"), (String) respUser.get("rev"));
-  }
-
   public String resetPasswordUsingMemberId(String memberId) {
     if (memberId == null || memberId.isEmpty()) {
       throw new BadRequestException("InvalidData");
