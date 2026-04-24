@@ -1,7 +1,8 @@
 <script>
     import { push } from "svelte-spa-router";
     import { membersStore } from "../../stores/members.svelte";
-    import { newMember, roleMap, voiceMap, statusMap } from "../../services/membersService.svelte";
+    import { newMember, voiceMap, statusMap } from "../../services/membersService.svelte";
+    import { roleMap } from "../../services/userService.svelte";
     import { viewport } from "../../stores/viewport.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
 

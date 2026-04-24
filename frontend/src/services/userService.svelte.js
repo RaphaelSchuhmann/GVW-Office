@@ -12,6 +12,21 @@ import { teardownEventSource } from "./sse-handler.js";
 
 const USER_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
+export const roleMap = {
+    "Admin": "admin",
+    "Mitglied": "member",
+    "Vorstand": "board_member",
+    "Schriftführer": "secretary",
+    "Chorleitung": "conductor",
+    "Notenwart": "librarian",
+    "admin": "Admin",
+    "secretary": "Schriftführer",
+    "board_member": "Vorstand",
+    "member": "Mitglied",
+    "conductor": "Chorleitung",
+    "librarian": "Notenwart"
+};
+
 /**
  * Attempts to retrieve the latest user data from the API.
  * 

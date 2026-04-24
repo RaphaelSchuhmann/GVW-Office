@@ -358,7 +358,7 @@
 
         <div class="flex min-[1300px]:items-center max-[1300px]:flex-col w-full gap-2 mt-5">
             <SearchBar placeholder="Noten durchsuchen..." page="library" />
-            <div class="h-full min-[1300px]:max-w-1/3 max-[1300px]:w-full">
+            <div class="min-[1300px]:max-w-1/3 max-[1300px]:w-full">
                 <Filter page="library" options={categories} textWrap={false} customDefault="Alle Kategorien" />
             </div>
         </div>
