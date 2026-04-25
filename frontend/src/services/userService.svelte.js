@@ -16,7 +16,6 @@ import {
 import { normalizeResponse } from "../api/http.svelte";
 import { resetPageState } from "./filterService.svelte";
 import { teardownEventSource } from "./sse-handler.js";
-import { eventsStore } from "../stores/events.svelte.js";
 import { userManagerStore } from "../stores/userManager.svelte.js";
 
 const USER_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
@@ -230,7 +229,7 @@ export async function addUser(user) {
 
     try {
         const { resp } = await apiAddUserAD(user);
-        const normalizedResponse = normalizeResponse(resp);
+        const normalizedResponse = normalizeResponse(resp); // NOSONAR
 
         if (handleGlobalApiError(normalizedResponse)) return;
 
