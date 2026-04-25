@@ -126,7 +126,7 @@ export async function httpPatch(url, body, customToken = "", doAuth = true, usin
  * @returns {Promise<Response | null>} The fetch response, or `null` if the request fails.
  *
  * @example
- * const resp = await httpDelete("/api/delete/{memberId}");
+ * const resp = await httpDelete("/api/delete/{userId}");
  * if (resp?.ok) console.log("Delete successful");
  */
 export async function httpDelete(url, customToken = "", doAuth = true) {

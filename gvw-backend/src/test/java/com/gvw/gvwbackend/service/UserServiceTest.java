@@ -5,9 +5,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.gvw.gvwbackend.dto.request.UpdateUserRequestDTO;
 import com.gvw.gvwbackend.mapper.UserMapper;
-import com.gvw.gvwbackend.model.Member;
 import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.model.User;
 import java.util.List;
@@ -25,7 +23,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class UserServiceTest {
   @Mock private DbService dbService;
   @Mock private PasswordEncoder passwordEncoder;
-  @Mock private MemberService memberService;
   @Mock private MailService mailService;
   @Mock private SseService sseService;
 
@@ -36,7 +33,7 @@ public class UserServiceTest {
     UserMapper userMapper = Mappers.getMapper(UserMapper.class);
     userService =
         new UserService(
-            dbService, passwordEncoder, memberService, mailService, sseService, userMapper);
+            dbService, passwordEncoder, mailService, sseService, userMapper);
   }
 
   @Test

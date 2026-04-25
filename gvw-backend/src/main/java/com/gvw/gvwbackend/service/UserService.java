@@ -2,7 +2,6 @@ package com.gvw.gvwbackend.service;
 
 import com.gvw.gvwbackend.dto.request.AddUserAdminRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateUserAdminRequestDTO;
-import com.gvw.gvwbackend.dto.request.UpdateUserRequestDTO;
 import com.gvw.gvwbackend.dto.response.UserManagerResponseDTO;
 import com.gvw.gvwbackend.dto.response.UserManagerResponsesDTO;
 import com.gvw.gvwbackend.dto.response.UserResponseDTO;
@@ -27,7 +26,6 @@ import tools.jackson.databind.ObjectMapper;
 public class UserService {
   private final DbService dbService;
   private final PasswordEncoder passwordEncoder;
-  private final MemberService memberService;
   private final MailService mailService;
   private final ObjectMapper mapper = new ObjectMapper();
   private final SseService sseService;
@@ -37,13 +35,11 @@ public class UserService {
   public UserService(
       DbService dbService,
       PasswordEncoder passwordEncoder,
-      MemberService memberService,
       MailService mailService,
       SseService sseService,
       UserMapper userMapper) {
     this.dbService = dbService;
     this.passwordEncoder = passwordEncoder;
-    this.memberService = memberService;
     this.mailService = mailService;
     this.sseService = sseService;
     this.userMapper = userMapper;
@@ -109,6 +105,8 @@ public class UserService {
                         m.getRev(),
                         m.getName(),
                         m.getEmail(),
+                        m.getPhone(),
+                        m.getAddress(),
                         m.getRole().getValue(),
                         isOrphan(m.getMemberId())))
             .toList();
@@ -121,7 +119,8 @@ public class UserService {
       throw new BadRequestException("InvalidData");
     }
 
-    User user = getUserByUserId(id);
+    User user = getUserByID(id);
+
     if (user == null) {
       throw new NotFoundException("UserNotFound");
     }
@@ -155,12 +154,12 @@ public class UserService {
     }
   }
 
-  public String resetPasswordUsingUserId(String userId) {
-    if (userId == null || userId.isEmpty()) {
+  public String resetPasswordUsingUserId(String id) {
+    if (id == null || id.isEmpty()) {
       throw new BadRequestException("InvalidData");
     }
 
-    User user = getUserByUserId(userId);
+    User user = getUserByID(id);
 
     String temporaryPassword = AuthService.generatePassword(3, 2);
 
@@ -182,7 +181,7 @@ public class UserService {
   }
 
   public String updateUser(UpdateUserAdminRequestDTO request) {
-    User user = getUserByUserId(request.id());
+    User user = getUserByID(request.id());
 
     if (!isOrphan(user.getMemberId())) {
       throw new BadRequestException("InvalidAction");
@@ -212,7 +211,7 @@ public class UserService {
       throw new BadRequestException("InvalidData");
     }
 
-    User user = getUserByUserId(id);
+    User user = getUserByID(id);
 
     if (!isOrphan(user.getMemberId())) {
       throw new BadRequestException("InvalidAction");
@@ -238,6 +237,15 @@ public class UserService {
 
   private User getUserByUserId(String userId) {
     Map<String, Object> query = Map.of("selector", Map.of("userId", userId), "limit", 1);
+    List<User> users = dbService.findByQuery("users", query, User.class);
+
+    if (users == null || users.isEmpty()) throw new NotFoundException("UserNotFound");
+
+    return users.getFirst();
+  }
+  
+  private User getUserByID(String id) {
+    Map<String, Object> query = Map.of("selector", Map.of("_id", id), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
     if (users == null || users.isEmpty()) throw new NotFoundException("UserNotFound");

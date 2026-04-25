@@ -14,6 +14,7 @@
     import AdminDashboard from "./pages/AdminDashboard/AdminDashboardPage.svelte";
     import AdminDashboardReportHub from "./pages/AdminDashboardReportHub/AdminDashboardReportHubPage.svelte";
     import AdminDashboardUserManagement from "./pages/AdminDashboardUserManager/AdminDashboardUserManagerPage.svelte";
+    import AdminDashboardUserManagerDetails from "./pages/AdminDashboardUserManagerDetails/AdminDashboardUserManagerDetailsPage.svelte";
     import NotFound from "./pages/NotFound/NotFoundPage.svelte";
 
     import { initSSE } from "./services/sse-handler.js";
@@ -35,6 +36,7 @@
         "/admin/overview": AdminDashboard,
         "/admin/reportHub": AdminDashboardReportHub,
         "/admin/userManagement": AdminDashboardUserManagement,
+        "/admin/userManagement/details": AdminDashboardUserManagerDetails,
         "*": NotFound
     };
 

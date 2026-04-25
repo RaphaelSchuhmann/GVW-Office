@@ -2,6 +2,7 @@
     import { roleMap } from "../services/userService.svelte";
     import Chip from "./Chip.svelte";
     import Spinner from "./Spinner.svelte";
+    import { push } from "svelte-spa-router";
 
     let {
         id = "",
@@ -16,7 +17,7 @@
 
 {#if isMobile && isOrphan}
     <button class="w-full p-3 pl-4 flex items-center justify-start gap-4 border-b-2 border-gv-border"
-            onclick={() => {console.log("test")}}>
+            onclick={async () => await push(`/admin/userManagement/details?id=${id}&editing=false`)}>
         <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text">verified_off</span>
         <div class="flex flex-col item-start justify-around">
             <p class="text-dt-6 text-gv-dark-text text-left">{name}</p>
@@ -46,7 +47,7 @@
                 <Chip text={role == role.toLowerCase() ? roleMap[role] || roleMap["member"] : role}/>
                 {#if isOrphan}
                     <button class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2"
-                            onclick={() => {console.log("test")}}>
+                            onclick={async () => await push(`/admin/userManagement/details?id=${id}&editing=false`)}>
                         <span class="material-symbols-rounded text-icon-dt-5">manage_accounts</span>
                     </button>
                 {/if}
