@@ -169,7 +169,7 @@
                 <div class="w-full h-full flex gap-4 mt-5">
                     <div class="h-full w-full">
                         <Card fillHeight={true} padding="0">
-                            {#each feedbackStore.data as feedback, i}
+                            {#each feedbackStore.data as feedback}
                                 <ReportHubListItem
                                     id={feedback.id}
                                     title={feedback.title}
@@ -188,7 +188,7 @@
                 <div class="w-full h-full flex gap-4 mt-5">
                     <div class="h-full w-full">
                         <Card fillHeight={true} padding="0">
-                            {#each bugReportStore.data as bugReport, i}
+                            {#each bugReportStore.data as bugReport}
                                 <ReportHubListItem
                                     id={bugReport.id}
                                     title={bugReport.title}

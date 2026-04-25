@@ -44,7 +44,7 @@
 
         {#if !isMobile}
             <div class="flex ml-auto items-center gap-2">
-                <Chip text={role == role.toLowerCase() ? roleMap[role] || roleMap["member"] : role}/>
+                <Chip text={roleMap[role] ?? role ?? "—"}/>
                 {#if isOrphan}
                     <button class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2"
                             onclick={async () => await push(`/admin/userManagement/details?id=${id}&editing=false`)}>

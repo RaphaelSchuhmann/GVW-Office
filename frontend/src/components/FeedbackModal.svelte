@@ -75,10 +75,6 @@
     export function showModal() {
         modal.showModal();
     }
-
-    $effect(() => {
-        getDropdownItemsFromMap(appSettings.feedbackCategories);
-    })
 </script>
 
 <Modal bind:this={modal} extraFunction={resetInputs} title="Feedback"
