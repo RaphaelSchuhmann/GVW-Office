@@ -91,7 +91,6 @@ export function processFilters() {
     const filterState = entry.filterState;
 
     if (filterState.dropdown !== "" && filterState.dropdown !== "all") {
-        console.log(filterState.dropdown);
         working = working.filter(item => item.type === filterState.dropdown);
     }
 

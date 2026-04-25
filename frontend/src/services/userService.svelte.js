@@ -293,7 +293,7 @@ export async function deleteUser(id) {
 
         addToast({
             title: "Benutzer gelöscht",
-            subTitle: viewport.isMobile ? "" : "Der Bentuzer wurde erfolgreich gelöscht.",
+            subTitle: viewport.isMobile ? "" : "Der Benutzer wurde erfolgreich gelöscht.",
             type: "success"
         });
     } finally {
@@ -427,8 +427,8 @@ function handleApiErrors(errorType, context) {
             subTitle: "Beim Aktualisieren des Benutzers ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
         },
         DEFAULT_RESET_PASSWORD: {
-            title: "Fehler beim Passwort zurücksetzten",
-            subTitle: "Beim Zurücksetzten des Passworts ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+            title: "Fehler beim Passwort zurücksetzen",
+            subTitle: "Beim Zurücksetzen des Passworts ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
         }
     };
 
