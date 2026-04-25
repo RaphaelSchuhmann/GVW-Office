@@ -15,7 +15,9 @@ import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.model.User;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -89,14 +91,30 @@ public class UserService {
 
   public UserManagerResponsesDTO getUsers() {
     List<Map<String, Object>> usersRaw = dbService.findAll("users");
-
     List<User> users = usersRaw.stream().map(map -> mapper.convertValue(map, User.class)).toList();
+    if (users.isEmpty()) return new UserManagerResponsesDTO(List.of());
 
-    if (users.isEmpty()) {
-      return new UserManagerResponsesDTO(List.of());
-    }
+    // Collect non-empty memberIds
+    Set<String> memberIds =
+        users.stream()
+            .map(User::getMemberId)
+            .filter(id -> id != null && !id.isBlank())
+            .collect(Collectors.toSet());
 
-    List<UserManagerResponseDTO> responseDTOS =
+    // One bulk lookup against members
+    Set<String> existingMemberIds =
+        memberIds.isEmpty()
+            ? Set.of()
+            : dbService
+                .findByQuery(
+                    "members",
+                    Map.of("selector", Map.of("_id", Map.of("$in", memberIds))),
+                    Member.class)
+                .stream()
+                .map(Member::getId)
+                .collect(Collectors.toSet());
+
+    List<UserManagerResponseDTO> dtos =
         users.stream()
             .map(
                 m ->
@@ -108,10 +126,12 @@ public class UserService {
                         m.getPhone(),
                         m.getAddress(),
                         m.getRole().getValue(),
-                        isOrphan(m.getMemberId())))
+                        m.getMemberId() == null
+                            || m.getMemberId().isBlank()
+                            || !existingMemberIds.contains(m.getMemberId())))
             .toList();
 
-    return new UserManagerResponsesDTO(responseDTOS);
+    return new UserManagerResponsesDTO(dtos);
   }
 
   public void checkUser(String id) {
@@ -120,14 +140,12 @@ public class UserService {
     }
 
     User user = getUserByID(id);
-
-    if (user == null) {
-      throw new NotFoundException("UserNotFound");
-    }
   }
 
   public void addUser(AddUserAdminRequestDTO request) {
-    List<User> usersWithRequestMail = dbService.findByQuery("users", Map.of("selector", Map.of("email", request.email())), User.class);
+    List<User> usersWithRequestMail =
+        dbService.findByQuery(
+            "users", Map.of("selector", Map.of("email", request.email())), User.class);
 
     if (!usersWithRequestMail.isEmpty()) {
       throw new ConflictException("EmailAlreadyInUse");
@@ -187,6 +205,14 @@ public class UserService {
       throw new BadRequestException("InvalidAction");
     }
 
+    if (!user.getEmail().equalsIgnoreCase(request.email())) {
+      List<User> conflicts = dbService.findByQuery(
+              "users", Map.of("selector", Map.of("email", request.email())), User.class);
+      if (conflicts.stream().anyMatch(u -> !u.getId().equals(user.getId()))) {
+        throw new ConflictException("EmailAlreadyInUse");
+      }
+    }
+
     userMapper.updateUserFromDto(request, user);
 
     user.setRev(request.rev());
@@ -243,14 +269,13 @@ public class UserService {
 
     return users.getFirst();
   }
-  
+
   private User getUserByID(String id) {
-    Map<String, Object> query = Map.of("selector", Map.of("_id", id), "limit", 1);
-    List<User> users = dbService.findByQuery("users", query, User.class);
+    User user = dbService.findById("users", id, User.class);
 
-    if (users == null || users.isEmpty()) throw new NotFoundException("UserNotFound");
+    if (user == null) throw new NotFoundException("UserNotFound");
 
-    return users.getFirst();
+    return user;
   }
 
   public String resolveUserIdToEmail(String id) {

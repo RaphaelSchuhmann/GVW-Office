@@ -39,7 +39,7 @@ public class EventServiceTest {
     validEvent.setTitle("Practice");
     validEvent.setStatus("upcoming");
     validEvent.setMode("single");
-    validEvent.setDate("1.12.2028");
+    validEvent.setDate("2028-01-01T00:00:00.000Z");
   }
 
   @Test
@@ -68,7 +68,8 @@ public class EventServiceTest {
             "mode", "Single");
 
     when(dbService.findAll("events")).thenReturn(List.of(eventMap));
-    when(dbService.update(eq("events"), any(), any(Event.class))).thenReturn(Map.of("rev", "rev-3"));
+    when(dbService.update(eq("events"), any(), any(Event.class)))
+        .thenReturn(Map.of("rev", "rev-3"));
 
     EventsResponseDTO response = eventService.allEvents();
 

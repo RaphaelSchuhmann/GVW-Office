@@ -31,9 +31,7 @@ public class UserServiceTest {
   @BeforeEach
   void setup() {
     UserMapper userMapper = Mappers.getMapper(UserMapper.class);
-    userService =
-        new UserService(
-            dbService, passwordEncoder, mailService, sseService, userMapper);
+    userService = new UserService(dbService, passwordEncoder, mailService, sseService, userMapper);
   }
 
   @Test
