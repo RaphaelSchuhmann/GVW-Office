@@ -81,7 +81,17 @@
             return value !== null && value !== undefined && String(value).trim() !== "";
         });
 
-        const isDifferent = JSON.stringify(draft) !== JSON.stringify(userData);
+        const normalizedOriginal = requiredFields.reduce((acc, f) => {
+            acc[f] = userData[f] ?? "";
+            return acc;
+        }, {});
+
+        const normalizedDraft = requiredFields.reduce((acc, f) => {
+            acc[f] = draft[f] ?? "";
+            return acc;
+        }, {});
+        const isDifferent = JSON.stringify(normalizedDraft) !== JSON.stringify(normalizedOriginal);
+
 
         return (isDifferent && allFieldsFilled);
     });

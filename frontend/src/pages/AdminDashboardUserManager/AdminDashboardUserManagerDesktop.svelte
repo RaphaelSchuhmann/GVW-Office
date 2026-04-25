@@ -65,7 +65,7 @@
         userInput.email = "";
         userInput.phone = "";
         userInput.address = "";
-        userInput.role = null;
+        userInput.role = "";
     }
 
     async function submitUser() {

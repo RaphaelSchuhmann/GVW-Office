@@ -1,6 +1,5 @@
 <script>
     import { push } from "svelte-spa-router";
-    import { resetMemberPassword, updateMember } from "../../services/membersService.svelte";
     import { viewport } from "../../stores/viewport.svelte";
     import { resetPassword, roleMap, updateUser } from "../../services/userService.svelte";
 
@@ -78,7 +77,16 @@
             return value !== null && value !== undefined && String(value).trim() !== "";
         });
 
-        const isDifferent = JSON.stringify(draft) !== JSON.stringify(userData);
+        const normalizedOriginal = requiredFields.reduce((acc, f) => {
+            acc[f] = userData[f] ?? "";
+            return acc;
+        }, {});
+
+        const normalizedDraft = requiredFields.reduce((acc, f) => {
+            acc[f] = draft[f] ?? "";
+            return acc;
+        }, {});
+        const isDifferent = JSON.stringify(normalizedDraft) !== JSON.stringify(normalizedOriginal);
 
         return (isDifferent && allFieldsFilled);
     });
@@ -190,7 +198,7 @@
                         </Button>
                     </div>
                     <div class="flex items-center w-full">
-                        <Button type="secondary" onclick={async () => await resetMemberPassword(userData.id)}>Passwort
+                        <Button type="secondary" onclick={async () => await resetPassword(userData.id)}>Passwort
                             Zurücksetzten
                         </Button>
                     </div>

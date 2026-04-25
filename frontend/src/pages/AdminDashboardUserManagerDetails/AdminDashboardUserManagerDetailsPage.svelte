@@ -39,14 +39,17 @@
 
         if (!userId) {
             push("/admin/userManagement");
+            return;
         } else if (membersStore.raw.length === 0) {
             init("userManager");
         } else if (!userData) {
             push("/admin/userManagement");
+            return;
         }
 
         if (userData && !userData.isOrphan) {
             push("/admin/userManagement");
+            return;
         }
 
         ready = true;
