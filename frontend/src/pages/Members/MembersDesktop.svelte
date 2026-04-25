@@ -1,11 +1,13 @@
 <script>
     import { push } from "svelte-spa-router";
     import { membersStore } from "../../stores/members.svelte";
-    import { newMember, roleMap, voiceMap, statusMap, switchMemberStatus } from "../../services/membersService.svelte";
+    import { newMember, voiceMap, statusMap, switchMemberStatus } from "../../services/membersService.svelte";
+    import { roleMap } from "../../services/userService.svelte";
     import { addToast } from "../../stores/toasts.svelte";
     import { viewport } from "../../stores/viewport.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import { createContextMenu } from "../../lib/contextMenu.svelte.js";
+    import { getYearFromISOString } from "../../services/dateTimeUtils.js";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
@@ -22,7 +24,6 @@
     import ContextMenu from "../../components/ContextMenu.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
     import Spinner from "../../components/Spinner.svelte";
-    import { getYearFromISOString } from "../../services/dateTimeUtils.js";
 
     // ==================
     // MODAL REFERENCES

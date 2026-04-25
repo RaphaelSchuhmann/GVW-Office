@@ -1,9 +1,7 @@
 <script>
     import { push } from "svelte-spa-router";
-    import { resetMemberPassword, updateMember } from "../../services/membersService.svelte";
     import { viewport } from "../../stores/viewport.svelte";
-    import { statusMap, voiceMap } from "../../services/membersService.svelte";
-    import { roleMap } from "../../services/userService.svelte";
+    import { resetPassword, roleMap, updateUser } from "../../services/userService.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -19,23 +17,36 @@
     import { formatISODateString, getYearFromISOString } from "../../services/dateTimeUtils.js";
 
     let {
-        memberData,
-        isEditing = $bindable(),
+        userData,
+        isEditing = $bindable(false),
         isDeleting = $bindable(false),
         ...restProps
     } = $props();
 
-    let draft = $state(null);
+    let draft = $state({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        type: ""
+    });
     let isSubmitting = $state(false);
 
     /**
-     * Initializes edit mode for the current member.
+     * Initializes edit mode for the current user.
      *
-     * Creates a deep clone of `memberData` and assigns it to `draft`
+     * Creates a deep clone of `userData` and assigns it to `draft`
      * to allow non-destructive editing. Enables the editing state.
      */
     function startEditing() {
-        draft = JSON.parse(JSON.stringify(memberData));
+        const clone = JSON.parse(JSON.stringify(userData));
+
+        const fields = ["name", "email", "phone", "address", "type"];
+        fields.forEach(field => {
+            if (clone[field] == null) clone[field] = "";
+        });
+
+        draft = clone;
         isEditing = true;
     }
 
@@ -55,22 +66,32 @@
      * the current draft can be saved.
      *
      * Returns `true` only if:
-     * - A draft and original member data exist
+     * - A draft and original user data exist
      * - All required fields are non-null, defined, and non-empty
-     * - The draft differs from the original member data
+     * - The draft differs from the original user data
      *
      * Used to enable or disable the save/update action.
      */
     const hasChanges = $derived.by(() => {
-        if (!draft || !memberData) return false;
+        if (!draft || !userData) return false;
 
-        const requiredFields = ["name", "surname", "email", "phone", "address", "voice", "status", "role", "birthdate", "joined"];
+        const requiredFields = ["name", "email", "phone", "address", "type"];
         const allFieldsFilled = requiredFields.every(field => {
             const value = draft[field];
             return value !== null && value !== undefined && String(value).trim() !== "";
         });
 
-        const isDifferent = JSON.stringify(draft) !== JSON.stringify(memberData);
+        const normalizedOriginal = requiredFields.reduce((acc, f) => {
+            acc[f] = userData[f] ?? "";
+            return acc;
+        }, {});
+
+        const normalizedDraft = requiredFields.reduce((acc, f) => {
+            acc[f] = draft[f] ?? "";
+            return acc;
+        }, {});
+        const isDifferent = JSON.stringify(normalizedDraft) !== JSON.stringify(normalizedOriginal);
+
 
         return (isDifferent && allFieldsFilled);
     });
@@ -79,13 +100,13 @@
      * Pre-effect that ensures a draft exists when entering edit mode.
      *
      * If editing is enabled but no draft is present,
-     * a deep clone of the current member data is created.
+     * a deep clone of the current user data is created.
      *
      * Acts as a safety mechanism against inconsistent state.
      */
     $effect.pre(() => {
         if (isEditing && !draft) {
-            draft = JSON.parse(JSON.stringify(memberData));
+            draft = JSON.parse(JSON.stringify(userData));
         }
     });
 
@@ -97,10 +118,10 @@
      *
      * Assumes validation has already been handled externally.
      */
-    async function updateMemberData() {
+    async function updateUserData() {
         isSubmitting = true;
         try {
-            await updateMember($state.snapshot(draft));
+            await updateUser($state.snapshot(draft));
         } finally {
             isSubmitting = false;
             isEditing = false;
@@ -109,16 +130,21 @@
     }
 
     /**
-     * Navigates back to the members overview page.
+     * Navigates back to the user overview page.
      *
-     * - Refreshes the raw member list
-     * - Performs route navigation to `/members`
+     * - Refreshes the raw user list
+     * - Performs route navigation to `/admin/userManagement`
      *
      * Ensures the overview reflects the latest persisted state.
      */
-    async function routeToMembers() {
+    async function routeToUserManager() {
         await fetchAndSetRaw();
-        await push("/members");
+        await push("/admin/userManagement");
+    }
+
+    function startDeleting() {
+        isDeleting = true;
+        confirmDeleteUserModal.startDelete();
     }
 
     // ==================
@@ -126,29 +152,29 @@
     // ==================
     /**
      * Reference to the delete confirmation modal.
-     * Used to initiate and confirm member deletion flow.
+     * Used to initiate and confirm user deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
-    let confirmDeleteMemberModal = $state();
+    let confirmDeleteUserModal = $state();
 </script>
 
-<ToastStack/>
+<ToastStack />
 
-<ConfirmDeleteModal expectedInput={`${memberData.name} ${memberData.surname}`} id={memberData.id}
-                    title="Mitglied löschen" subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?"
-                    action="deleteMember"
-                    onClose={async () => {await push("/members")}}
+<ConfirmDeleteModal expectedInput={userData.name} id={userData.id}
+                    title="Benutzer löschen" subTitle="Sind Sie sich sicher das Sie diesen Benutzer löschen möchten?"
+                    action="deleteUser"
+                    onClose={async () => {await push("/admin/userManagement"); await fetchAndSetRaw();}}
                     onCancel={() => {isDeleting = false}}
-                    bind:this={confirmDeleteMemberModal}
+                    bind:this={confirmDeleteUserModal}
 />
 
 <main class="flex h-screen overflow-hidden">
-    <DesktopSidebar currentPage="members" />
+    <DesktopSidebar currentPage="adminDashboard" />
     <div class="flex flex-col min-h-0 w-full p-10 overflow-hidden">
-        <PageHeader title="Mitglied" subTitle={`Daten von "${memberData?.name ?? ""} ${memberData?.surname ?? ""}"`}>
+        <PageHeader title="Benutzer" subTitle={`Daten von "${userData?.name ?? ""}"`}>
             {#if viewport.width > 900}
                 {#if !isEditing}
-                    <Button type="secondary" onclick={async () => await routeToMembers()}>
+                    <Button type="secondary" onclick={async () => await routeToUserManager()}>
                         <span class="material-symbols-rounded text-icon-dt-5">arrow_back</span>
                         <p class="ml-2 text-dt-3">Zurück</p>
                     </Button>
@@ -157,7 +183,7 @@
                 <button
                     type="button"
                     class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-2 rounded-2"
-                    onclick={async () => await routeToMembers()}
+                    onclick={async () => await routeToUserManager()}
                 >
                     <span class="material-symbols-rounded text-icon-dt-2">close</span>
                 </button>
@@ -165,10 +191,10 @@
         </PageHeader>
 
         <div class="flex-1 min-h-0 overflow-y-auto w-full">
-            <div class="flex flex-col items-center gap-5 min-[1500px]:w-1/2 min-[1200px]:w-2/3 w-full mt-5">
+            <div class="flex flex-col items-center gap-5 min-[1500px]:w-1/2 min-[1200px]:w-2/3 w-full mt-5 p-0.5">
                 {#if viewport.width < 900 && !isEditing}
                     <div class="flex items-center gap-2 w-full">
-                        <Button type="delete" onclick={() => {isDeleting = true; confirmDeleteMemberModal.startDelete();}}>
+                        <Button type="delete" onclick={() => {startDeleting();}}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>
@@ -178,8 +204,8 @@
                         </Button>
                     </div>
                     <div class="flex items-center w-full">
-                        <Button type="secondary" onclick={async () => await resetMemberPassword(memberData.id)}>Passwort
-                            Zurücksetzten
+                        <Button type="secondary" onclick={() => resetPassword(userData.id)}>
+                            Passwort Zurücksetzten
                         </Button>
                     </div>
                 {/if}
@@ -187,82 +213,49 @@
                 {#if !isEditing}
                     <div class="flex items-center gap-4 w-full max-[900px]:flex-col">
                         <Input
-                            value={memberData.name}
-                            title="Vorname"
+                            value={userData.name}
+                            title="Name"
                             readonly={!isEditing}
                         />
                         <Input
-                            value={memberData.surname}
-                            title="Nachname"
+                            value={userData.email}
+                            title="E-Mail"
                             readonly={true}
                         />
                     </div>
 
-                    <Input value={memberData.email} title="E-Mail" placeholder="max.mustermann@email.com"
-                           readonly={true} />
-                    <Input value={memberData.phone} title="Telefon" placeholder="01701234 5678"
-                           readonly={true} />
-                    <Input value={memberData.address} title="Adresse" placeholder="Hauptstraße 1..."
+                    <Input value={userData.phone || "Unbekannt"} title="Telefon" placeholder="01701234 5678"
                            readonly={true} />
 
-                    <div class="w-full flex items-center gap-4 max-[900px]:flex-col">
-                        <Input value={voiceMap[memberData.voice]} title="Stimmlage" readonly={true} />
-                        <Input value={statusMap[memberData.status]} title="Status" readonly={true} />
-                        <Input value={roleMap[memberData.role]} title="Rolle" readonly={true} />
-                    </div>
+                    <Input value={userData.address || "Unbekannt"} title="Adresse" placeholder="Hauptstraße 1..."
+                           readonly={true} />
 
-                    <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
-                        <Input value={formatISODateString(memberData.birthdate)} title="Geburtsdatum" readonly={true} />
-                        <Input value={getYearFromISOString(memberData.joined)} title="Mitglied seit" readonly={true} />
-                    </div>
+                    <Input value={roleMap[userData.type]} title="Rolle" readonly={true} />
                 {:else}
                     <div class="flex items-center min-[900px]:gap-4 gap-5 w-full max-[900px]:flex-col">
                         <Input
                             bind:value={draft.name}
-                            title="Vorname"
+                            title="Name"
                         />
                         <Input
-                            bind:value={draft.surname}
-                            title="Nachname"
+                            bind:value={draft.email}
+                            title="E-Mail"
+                            placeholder="max.mustermann@email.com"
                         />
                     </div>
 
-                    <Input bind:value={draft.email} title="E-Mail"
-                           placeholder="max.mustermann@email.com" />
                     <Input bind:value={draft.phone} title="Telefon" placeholder="01701234 5678" />
+
                     <Input bind:value={draft.address} title="Adresse" placeholder="Hauptstraße 1..." />
 
-                    <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
-                        <Dropdown onChange={(value) => draft.voice = voiceMap[value]} selected={voiceMap[draft.voice]}
-                                  title="Stimmlage"
-                                  options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
-
-                        <Dropdown onChange={(value) => draft.status = statusMap[value]}
-                                  selected={statusMap[draft.status]} title="Status"
-                                  options={["Aktiv", "Passiv"]} />
-
-                        <Dropdown onChange={(value) => draft.role = roleMap[value]} selected={roleMap[draft.role]}
-                                  title="Rolle"
-                                  options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} />
-                    </div>
-
-                    <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
-                        <div class="flex flex-col items-start w-full">
-                            <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>
-                            <DefaultDatepicker onChange={(value) => draft.birthdate = value}
-                                               selected={draft.birthdate} />
-                        </div>
-
-                        <div class="flex flex-col items-start w-full">
-                            <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>
-                            <YearDatepicker onChange={(value) => draft.joined = value} selected={draft.joined} />
-                        </div>
-                    </div>
+                    <Dropdown onChange={(value) => draft.type = roleMap[value]} selected={roleMap[draft.type]}
+                              title="Rolle"
+                              options={["Admin", "Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} />
                 {/if}
 
                 {#if viewport.width > 900 && !isEditing}
                     <div class="flex items-center gap-4 w-full">
-                        <Button type="delete" onclick={() => confirmDeleteMemberModal.startDelete()}>
+                        <Button type="delete" onclick={() => startDeleting()}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>
@@ -272,8 +265,8 @@
                         </Button>
                     </div>
                     <div class="flex items-center w-full">
-                        <Button type="secondary" onclick={async () => await resetMemberPassword(memberData.id)}>Passwort
-                            Zurücksetzten
+                        <Button type="secondary" onclick={() => resetPassword(userData.id)}>
+                            Passwort Zurücksetzten
                         </Button>
                     </div>
                 {/if}
@@ -281,7 +274,8 @@
                 {#if viewport.width > 900 && isEditing}
                     <div class="flex items-center w-full gap-2">
                         <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
-                        <Button type="primary" disabled={!hasChanges || isSubmitting} onclick={async () => await updateMemberData()}>
+                        <Button type="primary" disabled={!hasChanges || isSubmitting}
+                                onclick={async () => await updateUserData()}>
                             {#if isSubmitting}
                                 <Spinner light={true} />
                                 <p>Speichern...</p>

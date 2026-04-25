@@ -7,7 +7,6 @@
         title = "",
         chipText = "",
         isMobile = false,
-        isLastItem = false,
         asyncDeleteFunction = () => {},
         onclick = () => {},
         ...restProps
@@ -27,7 +26,7 @@
     }
 </script>
 
-<div class={`w-full p-3 pl-4 flex items-center justify-start gap-2 hover:bg-gv-border ${isLastItem ? "" : "border-b-2 border-gv-border"}`}>
+<div class="w-full p-3 pl-4 flex items-center justify-start gap-2 border-b-2 border-gv-border">
     {#if isDeleting}
         <div class="flex justify-center items-center w-full">
             <Spinner/>

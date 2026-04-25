@@ -12,20 +12,6 @@ import { viewport } from "../stores/viewport.svelte";
 import { user } from "../stores/user.svelte.js";
 import { membersStore } from "../stores/members.svelte.js";
 
-export const roleMap = {
-    "Mitglied": "member",
-    "Vorstand": "board_member",
-    "Schriftführer": "secretary",
-    "Chorleitung": "conductor",
-    "Notenwart": "librarian",
-    "admin": "admin",
-    "secretary": "Schriftführer",
-    "board_member": "Vorstand",
-    "member": "Mitglied",
-    "conductor": "Chorleitung",
-    "librarian": "Notenwart"
-};
-
 export const voiceMap = {
     "1. Tenor": "tenor1",
     "2. Tenor": "tenor2",

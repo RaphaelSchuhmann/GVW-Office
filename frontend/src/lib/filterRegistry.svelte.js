@@ -6,6 +6,9 @@ import { apiGetMembers } from "../api/apiMembers.svelte";
 import { apiGetEvents } from "../api/apiEvents.svelte";
 import { apiGetScores } from "../api/apiLibrary.svelte";
 import { appSettings } from "../stores/appSettings.svelte";
+import { filterRoleMap } from "../services/userService.svelte";
+import { userManagerFilterState, userManagerStore } from "../stores/userManager.svelte";
+import { apiGetUsersAD } from "../api/apiUser.svelte";
 
 /**
  * Filter registry containing both filter and search configurations
@@ -30,7 +33,7 @@ export const filterRegistry = {
         fetch: apiGetEvents,
         store: eventsStore,
         filterState: eventsFilterState,
-        optionMap: typeMap,
+        get optionMap() { return typeMap },
         tabMap: statusMap,
         config: {
             dropdown: {
@@ -56,6 +59,24 @@ export const filterRegistry = {
             },
             dropdown: {
                 customDefault: "Alle Kategorien"
+            },
+        }
+    },
+    userManager: {
+        fetch: apiGetUsersAD,
+        store: userManagerStore,
+        filterState: userManagerFilterState,
+        get optionMap(){ return filterRoleMap; },
+        fuse: {
+            keys: ["name", "email"],
+            threshold: 0.3
+        },
+        config: {
+            search: {
+                placeholder: "Benutzer durchsuchen..."
+            },
+            dropdown: {
+                customDefault: "Alle Rollen"
             },
         }
     }

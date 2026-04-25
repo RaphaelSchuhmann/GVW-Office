@@ -6,4 +6,5 @@ export const lastRefresh = $state({
     CHANGELOGS: Date.now(),
     FEEDBACK: Date.now(),
     BUG: Date.now(),
+    USER: Date.now(),
 });

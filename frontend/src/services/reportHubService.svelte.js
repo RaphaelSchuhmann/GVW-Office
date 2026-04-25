@@ -112,21 +112,7 @@ function handleReportHubError(errorType, context) {
  */
 export function getDropdownItemsFromMap(map) {
     const categories = map || {};
-    const displayNames = [];
-    const processedKeys = new Set();
-
-    Object.keys(categories).forEach((key) => {
-        if (processedKeys.has(key)) return;
-        
-        const value = categories[key];
-
-        if (!value.startsWith("_") && key.includes("_")) displayNames.push(value);
-
-        processedKeys.add(key);
-        processedKeys.add(value);
-    });
-
-    return displayNames;
+    return Object.keys(categories).filter(key => !key.startsWith("_"));
 }
 
 /**

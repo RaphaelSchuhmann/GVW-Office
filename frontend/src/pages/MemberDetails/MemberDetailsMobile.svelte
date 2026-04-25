@@ -2,7 +2,8 @@
     import { push } from "svelte-spa-router";
     import { resetMemberPassword, updateMember } from "../../services/membersService.svelte";
     import { viewport } from "../../stores/viewport.svelte";
-    import { roleMap, statusMap, voiceMap } from "../../services/membersService.svelte";
+    import { statusMap, voiceMap } from "../../services/membersService.svelte";
+    import { roleMap } from "../../services/userService.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";

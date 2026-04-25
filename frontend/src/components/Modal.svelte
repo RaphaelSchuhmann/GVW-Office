@@ -11,6 +11,7 @@
         isMobile = false,
         extraFunction = () => {},
         extraFunctionOnClose = true,
+        onCancel = () => {},
         children
     } = $props();
 
@@ -56,7 +57,7 @@
             class="bg-white flex flex-col p-5 overflow-hidden max-h-[90vh]
                    {isMobile ? 'w-full h-8/9 rounded-t-1' : `${widthMap[width]} ${heightMap[height]} rounded-1`}"
         >
-            <ModalHeader {title} {subTitle} {hideSubTitle} onclick={hideModal} />
+            <ModalHeader {title} {subTitle} {hideSubTitle} onclick={() => {hideModal(); onCancel();}} />
 
             <div class="w-full flex-1 min-h-0 flex flex-col overflow-y-scroll overflow-x-hidden mt-2 p-0.5">
                 {#if children}

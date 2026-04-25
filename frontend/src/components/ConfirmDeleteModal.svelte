@@ -5,6 +5,7 @@
     import { removeMember } from "../services/membersService.svelte";
     import { deleteEvent } from "../services/eventsService.svelte";
     import { deleteScore } from "../services/libraryService.svelte";
+    import { deleteUser } from "../services/userService.svelte";
     import { addToast } from "../stores/toasts.svelte";
     import Spinner from "./Spinner.svelte";
 
@@ -12,6 +13,7 @@
         "deleteMember": removeMember,
         "deleteEvent": deleteEvent,
         "deleteLibEntry": deleteScore,
+        "deleteUser": deleteUser,
     };
 
     let {
@@ -73,7 +75,8 @@
 
 <Modal
     bind:this={confirmDeleteModal}
-    extraFunction={() => { confirmInput = ""; onCancel(); }}
+    extraFunction={() => { confirmInput = ""; }}
+    onCancel={onCancel}
     {title}
     {subTitle}
     {isMobile}
@@ -89,7 +92,7 @@
     <div class="w-full flex items-center justify-end mt-5 gap-4">
         <Button
             type="secondary"
-            onclick={() => confirmDeleteModal?.hideModal()}
+            onclick={() => {confirmDeleteModal?.hideModal(); onCancel();}}
         >
             Abbrechen
         </Button>

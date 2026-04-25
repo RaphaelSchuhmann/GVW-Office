@@ -3,8 +3,9 @@ package com.gvw.gvwbackend.dto.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-public record UpdateUserRequestDTO(
+public record AddUserAdminRequestDTO(
+    @NotBlank String name,
     @NotBlank @Email String email,
     @NotBlank String phone,
     @NotBlank String address,
-    @NotBlank String rev) {}
+    @NotBlank String role) {}
