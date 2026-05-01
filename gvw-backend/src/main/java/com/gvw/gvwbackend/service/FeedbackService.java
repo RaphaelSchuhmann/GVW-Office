@@ -6,8 +6,8 @@ import com.gvw.gvwbackend.dto.response.FeedbackResponseDTO;
 import com.gvw.gvwbackend.dto.response.FeedbacksResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.NotFoundException;
-import com.gvw.gvwbackend.model.ReportMetaData;
 import com.gvw.gvwbackend.model.UserFeedback;
+import com.gvw.gvwbackend.model.UserReportMetaData;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +80,7 @@ public class FeedbackService {
     feedback.setMessage(request.message());
     feedback.setSentiment(request.sentiment());
 
-    ReportMetaData metaData = new ReportMetaData();
+    UserReportMetaData metaData = new UserReportMetaData();
     metaData.setUserId(userId);
     metaData.setRoute(request.route());
     metaData.setAppVersion(request.appVersion());

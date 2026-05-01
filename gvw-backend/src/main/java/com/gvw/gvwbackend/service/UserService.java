@@ -206,7 +206,8 @@ public class UserService {
     }
 
     if (!user.getEmail().equalsIgnoreCase(request.email())) {
-      List<User> conflicts = dbService.findByQuery(
+      List<User> conflicts =
+          dbService.findByQuery(
               "users", Map.of("selector", Map.of("email", request.email())), User.class);
       if (conflicts.stream().anyMatch(u -> !u.getId().equals(user.getId()))) {
         throw new ConflictException("EmailAlreadyInUse");

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReportMetaData {
+public class UserReportMetaData {
   private String userId;
   private String route;
   private String appVersion;

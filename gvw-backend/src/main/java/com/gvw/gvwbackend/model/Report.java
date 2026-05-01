@@ -2,6 +2,7 @@ package com.gvw.gvwbackend.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class UserFeedback {
+public class Report {
   @JsonProperty("_id")
   private String id;
 
@@ -20,12 +21,15 @@ public class UserFeedback {
   private String rev;
 
   private String title;
-  private String category;
-  private String message;
-  private Integer sentiment;
-  private UserReportMetaData metaData;
+  private String author;
+  private String description;
+  private String type;
+  private String createdAt;
+  private String lastEditedBy;
+
+  private List<TextEditorBlock> contents;
 
   @Builder.Default
   @JsonProperty("doc_type")
-  private final String docType = "userFeedback";
+  private final String docType = "report";
 }

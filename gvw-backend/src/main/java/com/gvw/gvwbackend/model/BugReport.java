@@ -22,7 +22,7 @@ public class BugReport {
   private String title;
   private String severity;
   private String stepsToReproduce;
-  private ReportMetaData metaData;
+  private UserReportMetaData metaData;
 
   @Builder.Default
   @JsonProperty("doc_type")

@@ -7,7 +7,7 @@ import com.gvw.gvwbackend.dto.response.BugReportsResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.BugReport;
-import com.gvw.gvwbackend.model.ReportMetaData;
+import com.gvw.gvwbackend.model.UserReportMetaData;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +87,7 @@ public class BugReportService {
     bugReport.setSeverity(request.severity());
     bugReport.setStepsToReproduce(request.stepsToReproduce());
 
-    ReportMetaData metaData = new ReportMetaData();
+    UserReportMetaData metaData = new UserReportMetaData();
     metaData.setUserId(userId);
     metaData.setRoute(request.route());
     metaData.setAppVersion(request.appVersion());

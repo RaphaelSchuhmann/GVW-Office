@@ -20,7 +20,7 @@
     let feedbackModal = $state(null);
 
     const mitgliederAccess = ["admin", "board_member"];
-    const reportsAccess = ["admin", "secretary"];
+    const reportsAccess = ["admin", "board_member", "secretary"];
 
     let userOptionsVisible = $state(false);
     let userOptionsIcon = $state("expand_all");
