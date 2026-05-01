@@ -230,7 +230,7 @@ public class ReportService {
         title = url;
       }
 
-      String favicon = "";
+      String favicon;
       Element iconElement = doc.head().select("link[rel~=(?i)^(shortcut|icon|apple-touch-icon)$]").first();
 
       if (iconElement != null) {
