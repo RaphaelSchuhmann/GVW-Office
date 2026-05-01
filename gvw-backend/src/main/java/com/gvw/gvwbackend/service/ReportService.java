@@ -10,6 +10,8 @@ import com.gvw.gvwbackend.model.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -261,11 +263,35 @@ public class ReportService {
 
   public LinkMetadataResponseDTO resolveUrl(String url) {
     try {
+      URI uri = new URI(url);
+
+      if (!"https".equalsIgnoreCase(uri.getScheme())) {
+        throw new BadRequestException("InvalidScheme");
+      }
+
+      String host = uri.getHost();
+      if (host == null) {
+        throw new BadRequestException("InvalidHost");
+      }
+
+      InetAddress[] addresses = InetAddress.getAllByName(host);
+
+      for (InetAddress address : addresses) {
+        if (isBlockedAddress(address)) {
+          throw new BadRequestException("BlockedIPRange");
+        }
+      }
+
+      InetAddress[] addresses2 = InetAddress.getAllByName(host);
+      if (addresses.length != addresses2.length) {
+        throw new IllegalArgumentException("DNS rebind detected");
+      }
+
       Document doc =
-          Jsoup.connect(url)
-              .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-              .timeout(5000)
-              .get();
+              Jsoup.connect(uri.toString())
+                      .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+                      .timeout(5000)
+                      .get();
 
       String title = doc.title();
       if (title.isBlank()) {
@@ -274,12 +300,12 @@ public class ReportService {
 
       String favicon;
       Element iconElement =
-          doc.head().select("link[rel~=(?i)^(shortcut|icon|apple-touch-icon)$]").first();
+              doc.head().select("link[rel~=(?i)^(shortcut|icon|apple-touch-icon)$]").first();
 
       if (iconElement != null) {
         favicon = iconElement.attr("abs:href");
       } else {
-        favicon = url.substring(0, url.indexOf("/", 8)) + "/favicon.ico";
+        favicon = uri.getScheme() + "://" + host + "/favicon.ico";
       }
 
       return new LinkMetadataResponseDTO(title, favicon);
@@ -514,5 +540,12 @@ public class ReportService {
     }
 
     return ids;
+  }
+
+  private boolean isBlockedAddress(InetAddress addr) {
+    return addr.isAnyLocalAddress()
+            || addr.isLoopbackAddress()
+            || addr.isLinkLocalAddress()
+            || addr.isSiteLocalAddress();
   }
 }

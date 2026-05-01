@@ -12,13 +12,12 @@ import com.gvw.gvwbackend.model.AttachmentResource;
 import com.gvw.gvwbackend.service.FileValidator;
 import com.gvw.gvwbackend.service.ReportService;
 import jakarta.validation.Valid;
+
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -84,6 +83,7 @@ public class ReportController {
   }
 
   @GetMapping("/resolve")
+  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   public LinkMetadataResponseDTO resolveLink(@RequestParam("url") String url) {
     return reportService.resolveUrl(url);
   }
@@ -125,7 +125,12 @@ public class ReportController {
 
     return ResponseEntity.ok()
         .contentType(MediaType.parseMediaType(attachment.getContentType()))
-        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + originalName + "\"")
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            ContentDisposition.attachment()
+                .filename(originalName, StandardCharsets.UTF_8)
+                .build()
+                .toString())
         .body(attachment.getResource());
   }
 }
