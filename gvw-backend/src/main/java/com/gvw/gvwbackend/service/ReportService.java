@@ -1,6 +1,8 @@
 package com.gvw.gvwbackend.service;
 
 import com.gvw.gvwbackend.dto.request.AddReportRequestDTO;
+import com.gvw.gvwbackend.dto.request.UpdateReportDescriptionRequestDTO;
+import com.gvw.gvwbackend.dto.request.UpdateReportRequestDTO;
 import com.gvw.gvwbackend.dto.response.*;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.NotFoundException;
@@ -11,13 +13,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
 
 @Service
@@ -34,8 +33,10 @@ public class ReportService {
   private final ObjectMapper mapper = new ObjectMapper();
   private static final Logger log = LoggerFactory.getLogger(ReportService.class);
 
+  private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
+
   @Value("${reports.directory:./api-data/reports}")
-  private String imagesDir;
+  private String filesDir;
 
   public ReportService(DbService dbService, SseService sseService) {
     this.dbService = dbService;
@@ -110,7 +111,12 @@ public class ReportService {
     List<String> words = Arrays.stream(contents.split("\\s+")).toList();
 
     return new FullReportResponseDTO(
-        report.getId(), report.getTitle(), report.getAuthor(), report.getRev(), words.size() / 200, report.getContents());
+        report.getId(),
+        report.getTitle(),
+        report.getAuthor(),
+        report.getRev(),
+        words.size() / 200,
+        report.getContents());
   }
 
   public AttachmentResource getReportImage(String reportId, String filename) {
@@ -119,10 +125,10 @@ public class ReportService {
     }
 
     if (filename.contains("..") || filename.contains("/")) {
-      throw new SecurityException("Invalid filename");
+      throw new BadRequestException("InvalidFileName");
     }
 
-    Path filePath = Paths.get(imagesDir, filename);
+    Path filePath = Paths.get(filesDir, filename);
     File file = filePath.toFile();
 
     if (!file.exists()) {
@@ -142,6 +148,35 @@ public class ReportService {
     }
   }
 
+  public AttachmentResource getReportFile(String reportId, String filename) {
+    if (reportId == null || reportId.isBlank() || filename == null || filename.isBlank()) {
+      throw new BadRequestException("InvalidData");
+    }
+
+    if (filename.contains("..") || filename.contains("/")) {
+      throw new BadRequestException("InvalidFileName");
+    }
+
+    Path filePath = Paths.get(filesDir, filename);
+    File file = filePath.toFile();
+
+    if (!file.exists()) {
+      throw new NotFoundException("FileNotFound");
+    }
+
+    try {
+      String contentType = Files.probeContentType(filePath);
+
+      if (contentType == null || contentType.isBlank()) {
+        contentType = "application/octet-stream";
+      }
+
+      return new AttachmentResource(new FileInputStream(file), contentType);
+    } catch (IOException exception) {
+      throw new RuntimeException("ErrorLoadingFile", exception);
+    }
+  }
+
   public void deleteReport(String id) {
     if (id == null || id.isBlank()) {
       throw new BadRequestException("InvalidData");
@@ -152,11 +187,17 @@ public class ReportService {
       throw new NotFoundException("ReportNotFound");
     }
 
-    List<String> images = getImageFilenames(report);
+    List<String> files = getFilenames(report);
 
-    if (!images.isEmpty()) {
-      for (String image : images) {
-        deleteFile(image);
+    if (!files.isEmpty()) {
+      for (String file : files) {
+        // Handle file block data
+        if (file.contains(":")) {
+          int index = file.indexOf(":");
+          file = file.substring(index + 1);
+        }
+
+        deleteFile(file);
       }
     }
 
@@ -220,7 +261,8 @@ public class ReportService {
 
   public LinkMetadataResponseDTO resolveUrl(String url) {
     try {
-      Document doc = Jsoup.connect(url)
+      Document doc =
+          Jsoup.connect(url)
               .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
               .timeout(5000)
               .get();
@@ -231,7 +273,8 @@ public class ReportService {
       }
 
       String favicon;
-      Element iconElement = doc.head().select("link[rel~=(?i)^(shortcut|icon|apple-touch-icon)$]").first();
+      Element iconElement =
+          doc.head().select("link[rel~=(?i)^(shortcut|icon|apple-touch-icon)$]").first();
 
       if (iconElement != null) {
         favicon = iconElement.attr("abs:href");
@@ -245,6 +288,90 @@ public class ReportService {
     }
   }
 
+  public String updateReport(UpdateReportRequestDTO request, List<MultipartFile> files) {
+    Report report = dbService.findById("reports", request.id(), Report.class);
+    if (report == null) {
+      throw new NotFoundException("ReportNotFound");
+    }
+
+    List<String> newlyUploadedFiles = new ArrayList<>();
+
+    try {
+      if (files != null && !files.isEmpty()) {
+        newlyUploadedFiles = storeFiles(files);
+      }
+
+      Set<String> originalFileIds = extractFileIds(report.getContents());
+      Set<String> updatedFileIds = extractFileIds(request.content());
+      Set<String> removedFiles = new HashSet<>(originalFileIds);
+      removedFiles.removeAll(updatedFileIds);
+
+      report.setTitle(request.title());
+      report.setLastEditedBy(request.editor());
+      report.setContents(request.content());
+      report.setRev(request.rev());
+
+      Map<String, Object> resp = dbService.update("reports", report.getId(), report);
+
+      if (resp == null || !resp.containsKey("rev")) {
+        throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+      }
+
+      if (!removedFiles.isEmpty()) {
+        for (String file : removedFiles) {
+          deleteFile(file);
+        }
+      }
+
+      try {
+        sseService.broadcastRefresh("REPORTS");
+      } catch (RuntimeException ex) {
+        log.warn("Failed to broadcast REPORTS refresh: ", ex);
+      }
+
+      return (String) resp.get("rev");
+    } catch (Exception e) {
+      log.error("Update failed. Rolling back new uploads.", e);
+
+      for (String newFile : newlyUploadedFiles) {
+        deleteFile(newFile);
+      }
+
+      if (e instanceof RuntimeException) throw (RuntimeException) e;
+      throw new RuntimeException("UpdateOperationFailed", e);
+    }
+  }
+
+  public String updateReportDescription(UpdateReportDescriptionRequestDTO request) {
+    String description = request.description();
+
+    if (description.isBlank()) {
+      description = "Keine Beschreibung";
+    }
+
+    Report report = dbService.findById("reports", request.id(), Report.class);
+    if (report == null) {
+      throw new NotFoundException("ReportNotFound");
+    }
+
+    report.setDescription(description);
+    report.setRev(request.rev());
+
+    Map<String, Object> resp = dbService.update("reports", report.getId(), report);
+
+    if (resp == null || !resp.containsKey("rev")) {
+      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    }
+
+    try {
+      sseService.broadcastRefresh("REPORTS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast REPORTS refresh: ", ex);
+    }
+
+    return (String) resp.get("rev");
+  }
+
   private String getContentsAsString(Report report) {
     if (report == null) return "";
 
@@ -255,7 +382,7 @@ public class ReportService {
     StringBuilder sb = new StringBuilder();
 
     for (TextEditorBlock block : contents) {
-      if (block.getType() == TextEditorBlockType.IMAGE) continue;
+      if (block.getType() == TextEditorBlockType.IMAGE || block.getType() == TextEditorBlockType.FILE) continue;
 
       String data = block.getData();
       if (data == null || data.isEmpty()) continue;
@@ -271,7 +398,7 @@ public class ReportService {
     return sb.toString();
   }
 
-  private List<String> getImageFilenames(Report report) {
+  private List<String> getFilenames(Report report) {
     if (report == null) {
       return List.of();
     }
@@ -281,7 +408,7 @@ public class ReportService {
     List<TextEditorBlock> content = report.getContents();
 
     for (TextEditorBlock block : content) {
-      if (block.getType() != TextEditorBlockType.IMAGE) continue;
+      if (block.getType() != TextEditorBlockType.IMAGE && block.getType() != TextEditorBlockType.FILE) continue;
 
       filenames.add(block.getData());
     }
@@ -290,7 +417,7 @@ public class ReportService {
   }
 
   private void deleteFile(String fileName) {
-    Path filePath = Paths.get(imagesDir, fileName);
+    Path filePath = Paths.get(filesDir, fileName);
 
     if (!Files.exists(filePath)) {
       log.info("File not found on disk while deleting, skipping: {}", filePath);
@@ -302,6 +429,51 @@ public class ReportService {
     } catch (IOException e) {
       throw new RuntimeException("FileSystemError", e);
     }
+  }
+
+  private List<String> storeFiles(List<MultipartFile> files) throws IOException {
+    if (files == null || files.isEmpty()) return List.of();
+
+    List<String> filenames = new ArrayList<>();
+    List<Path> physicalPaths = new ArrayList<>();
+    Path root = Paths.get(filesDir);
+
+    try {
+      Files.createDirectories(root);
+
+      for (MultipartFile file : files) {
+        if (file.getSize() > MAX_FILE_SIZE) {
+          throw new BadRequestException("FileSizeTooLarge");
+        }
+
+        String originalName = file.getOriginalFilename();
+        if (originalName == null || originalName.isBlank()) continue;
+
+        String id = UUID.randomUUID().toString();
+        int dotIndex = originalName.lastIndexOf('.');
+        String extensionWithDot = (dotIndex == -1) ? "" : originalName.substring(dotIndex);
+
+        Path targetPath = root.resolve(id + extensionWithDot);
+
+        Files.copy(file.getInputStream(), targetPath);
+
+        filenames.add(id + extensionWithDot);
+        physicalPaths.add(targetPath);
+      }
+    } catch (Exception e) {
+      log.error("Internal file storage failed. Cleaning up partial uploads...", e);
+      for (Path path : physicalPaths) {
+        try {
+          Files.deleteIfExists(path);
+        } catch (IOException cleanupEx) {
+          log.warn("Failed to clean up partial upload: {}", path, cleanupEx);
+        }
+      }
+
+      throw new RuntimeException("FileSystemError", e);
+    }
+
+    return filenames;
   }
 
   private String extractSnippet(String content, int hitStart, int hitEnd) {
@@ -317,5 +489,27 @@ public class ReportService {
     end = Math.min(hitEnd + 50, content.length());
 
     return content.substring(start, end);
+  }
+
+  private Set<String> extractFileIds(List<TextEditorBlock> content) {
+    Set<String> ids = new HashSet<>();
+
+    if (content == null || content.isEmpty()) {
+      return ids;
+    }
+
+    for (TextEditorBlock block : content) {
+      if (block.getType() != TextEditorBlockType.FILE && block.getType() != TextEditorBlockType.IMAGE) continue;
+
+      if (block.getType() == TextEditorBlockType.FILE && block.getData().contains(":")) {
+        int i = block.getData().indexOf(":");
+        ids.add(block.getData().substring(i + 1));
+        continue;
+      }
+
+      ids.add(block.getData());
+    }
+
+    return ids;
   }
 }

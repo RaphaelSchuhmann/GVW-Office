@@ -7,6 +7,7 @@ import lombok.Getter;
 public enum TextEditorBlockType {
   TEXT("text"),
   IMAGE("image"),
+  FILE("file"),
   BLOCKQUOTE("blockquote"),
   HEADING_T1("headingT1"),
   HEADING_T2("headingT2"),
