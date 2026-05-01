@@ -382,7 +382,8 @@ public class ReportService {
     StringBuilder sb = new StringBuilder();
 
     for (TextEditorBlock block : contents) {
-      if (block.getType() == TextEditorBlockType.IMAGE || block.getType() == TextEditorBlockType.FILE) continue;
+      if (block.getType() == TextEditorBlockType.IMAGE
+          || block.getType() == TextEditorBlockType.FILE) continue;
 
       String data = block.getData();
       if (data == null || data.isEmpty()) continue;
@@ -408,7 +409,8 @@ public class ReportService {
     List<TextEditorBlock> content = report.getContents();
 
     for (TextEditorBlock block : content) {
-      if (block.getType() != TextEditorBlockType.IMAGE && block.getType() != TextEditorBlockType.FILE) continue;
+      if (block.getType() != TextEditorBlockType.IMAGE
+          && block.getType() != TextEditorBlockType.FILE) continue;
 
       filenames.add(block.getData());
     }
@@ -499,7 +501,8 @@ public class ReportService {
     }
 
     for (TextEditorBlock block : content) {
-      if (block.getType() != TextEditorBlockType.FILE && block.getType() != TextEditorBlockType.IMAGE) continue;
+      if (block.getType() != TextEditorBlockType.FILE
+          && block.getType() != TextEditorBlockType.IMAGE) continue;
 
       if (block.getType() == TextEditorBlockType.FILE && block.getData().contains(":")) {
         int i = block.getData().indexOf(":");

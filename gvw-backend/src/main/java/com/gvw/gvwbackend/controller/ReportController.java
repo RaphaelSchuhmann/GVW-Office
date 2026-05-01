@@ -3,7 +3,6 @@ package com.gvw.gvwbackend.controller;
 import com.gvw.gvwbackend.dto.request.AddReportRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateReportDescriptionRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateReportRequestDTO;
-import com.gvw.gvwbackend.dto.request.UpdateScoreRequestDTO;
 import com.gvw.gvwbackend.dto.response.FullReportResponseDTO;
 import com.gvw.gvwbackend.dto.response.LinkMetadataResponseDTO;
 import com.gvw.gvwbackend.dto.response.ReportsResponseDTO;
@@ -109,7 +108,8 @@ public class ReportController {
   @PatchMapping("/update/description")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
-  public Map<String, Object> updateReportDescription(@Valid @RequestBody UpdateReportDescriptionRequestDTO request) {
+  public Map<String, Object> updateReportDescription(
+      @Valid @RequestBody UpdateReportDescriptionRequestDTO request) {
     String rev = reportService.updateReportDescription(request);
     return Map.of("rev", rev);
   }
@@ -117,15 +117,15 @@ public class ReportController {
   @GetMapping("/{id}/files/{internalName}")
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   public ResponseEntity<Resource> downloadReportFile(
-          @PathVariable String id,
-          @PathVariable String internalName,
-          @RequestParam("name") String originalName) {
+      @PathVariable String id,
+      @PathVariable String internalName,
+      @RequestParam("name") String originalName) {
 
     AttachmentResource attachment = reportService.getReportFile(id, internalName);
 
     return ResponseEntity.ok()
-            .contentType(MediaType.parseMediaType(attachment.getContentType()))
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + originalName + "\"")
-            .body(attachment.getResource());
+        .contentType(MediaType.parseMediaType(attachment.getContentType()))
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + originalName + "\"")
+        .body(attachment.getResource());
   }
 }
