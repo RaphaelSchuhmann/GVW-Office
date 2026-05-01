@@ -192,6 +192,8 @@ public class ReportService {
 
     List<String> files = getFilenames(report);
 
+    dbService.delete("reports", report.getId(), report.getRev());
+
     if (!files.isEmpty()) {
       for (String file : files) {
         // Handle file block data
@@ -203,8 +205,6 @@ public class ReportService {
         deleteFile(file);
       }
     }
-
-    dbService.delete("reports", report.getId(), report.getRev());
 
     try {
       sseService.broadcastRefresh("REPORTS");
@@ -499,6 +499,8 @@ public class ReportService {
           log.warn("Failed to clean up partial upload: {}", path, cleanupEx);
         }
       }
+
+      if (e instanceof BadRequestException) throw (BadRequestException) e;
 
       throw new RuntimeException("FileSystemError", e);
     }
