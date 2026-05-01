@@ -88,6 +88,7 @@ public class ReportService {
     report.setAuthor(request.author());
     report.setDescription(request.description());
     report.setType(request.type());
+    report.setContents(List.of());
 
     dbService.insert("reports", report);
 
@@ -403,7 +404,7 @@ public class ReportService {
 
     List<TextEditorBlock> contents = report.getContents();
 
-    if (contents.isEmpty()) return "";
+    if (contents == null || contents.isEmpty()) return "";
 
     StringBuilder sb = new StringBuilder();
 
@@ -433,6 +434,7 @@ public class ReportService {
     List<String> filenames = new ArrayList<>();
 
     List<TextEditorBlock> content = report.getContents();
+    if (content == null || content.isEmpty()) return filenames;
 
     for (TextEditorBlock block : content) {
       if (block.getType() != TextEditorBlockType.IMAGE

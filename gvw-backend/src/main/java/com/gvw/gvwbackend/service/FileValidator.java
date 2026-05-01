@@ -13,7 +13,6 @@ public class FileValidator {
           "jpg",
           "jpeg",
           "gif",
-          "svg",
           "mp3",
           "wav",
           "midi",
