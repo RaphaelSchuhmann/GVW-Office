@@ -7,4 +7,5 @@ export const lastRefresh = $state({
     FEEDBACK: Date.now(),
     BUG: Date.now(),
     USER: Date.now(),
+    REPORTS: Date.now(),
 });

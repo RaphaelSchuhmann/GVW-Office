@@ -15,6 +15,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -89,6 +90,7 @@ public class ReportService {
     report.setDescription(request.description());
     report.setType(request.type());
     report.setContents(List.of());
+    report.setCreatedAt(Instant.now().toString());
 
     dbService.insert("reports", report);
 

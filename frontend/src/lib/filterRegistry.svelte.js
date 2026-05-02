@@ -9,6 +9,9 @@ import { appSettings } from "../stores/appSettings.svelte";
 import { filterRoleMap } from "../services/userService.svelte";
 import { userManagerFilterState, userManagerStore } from "../stores/userManager.svelte";
 import { apiGetUsersAD } from "../api/apiUser.svelte";
+import { reportTypeFilterMap, reportTypeMap } from "../services/reportService.svelte.js";
+import { apiGetReports } from "../api/apiReports.svelte.js";
+import { reportDeepSearchStore, reportsFilterState, reportsStore } from "../stores/report.svelte.js";
 
 /**
  * Filter registry containing both filter and search configurations
@@ -25,7 +28,8 @@ export const filterRegistry = {
         },
         config: {
             search: {
-                placeholder: "Mitglied suchen..."
+                placeholder: "Mitglied suchen...",
+                deepSearch: false,
             }
         }
     },
@@ -55,7 +59,8 @@ export const filterRegistry = {
         },
         config: {
             search: {
-                placeholder: "Noten durchsuchen..."
+                placeholder: "Noten durchsuchen...",
+                deepSearch: false,
             },
             dropdown: {
                 customDefault: "Alle Kategorien"
@@ -73,10 +78,31 @@ export const filterRegistry = {
         },
         config: {
             search: {
-                placeholder: "Benutzer durchsuchen..."
+                placeholder: "Benutzer durchsuchen...",
+                deepSearch: false,
             },
             dropdown: {
                 customDefault: "Alle Rollen"
+            },
+        }
+    },
+    reports: {
+        fetch: apiGetReports,
+        store: reportsStore,
+        filterState: reportsFilterState,
+        get optionMap() { return reportTypeFilterMap; },
+        fuse: {
+            keys: ["title", "author", "description"],
+            threshold: 0.3
+        },
+        config: {
+            search: {
+                placeholder: "Berichte durchsuchen...",
+                deepSearch: true,
+                deepSearchStore: reportDeepSearchStore,
+            },
+            dropdown: {
+                customDefault: "Alle Typen"
             },
         }
     }
