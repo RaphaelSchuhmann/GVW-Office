@@ -17,7 +17,7 @@
 
 <Card>
     <div class={`items-start w-full ${isMobile ? "flex-col" : "flex"}`}>
-        <button class="flex flex-col items-start gap-4 cursor-pointer">
+        <button class="flex flex-col items-start gap-4 cursor-pointer w-full">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-rounded text-gv-primary text-icon-dt-4">docs</span>
                 <span class="text-gv-dark-text text-dt-5 text-nowrap truncate">{title}</span>
