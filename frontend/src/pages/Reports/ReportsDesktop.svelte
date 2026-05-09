@@ -12,11 +12,12 @@
     import Modal from "../../components/Modal.svelte";
     import Input from "../../components/Input.svelte";
     import Dropdown from "../../components/Dropdown.svelte";
-    import { addReport, reportTypeMap } from "../../services/reportService.svelte.js";
+    import { addReport, highlight, reportTypeMap } from "../../services/reportService.svelte.js";
     import Spinner from "../../components/Spinner.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte.js";
-    import { reportsStore } from "../../stores/report.svelte.js";
+    import { reportDeepSearchStore, reportsStore } from "../../stores/report.svelte.js";
     import { formatISODateString } from "../../services/dateTimeUtils.js";
+    import Chip from "../../components/Chip.svelte";
 
     // ==================
     // MODAL REFERENCES
@@ -27,6 +28,13 @@
      * @type {import("../../components/Modal.svelte").default}
      */
     let addReportModal = $state();
+
+    /**
+     * Reference to the deep search result modal.
+     * Used to programmatically open the deep search result dialog.
+     * @type {import("../../components/Modal.svelte").default}
+     */
+    let deepSearchResultModal = $state();
 
     // ==========
     // ADD REPORT
@@ -106,6 +114,17 @@
     </div>
 </Modal>
 
+<Modal bind:this={deepSearchResultModal} width="1/2"
+       title="Deep Search Suchergebnisse" subTitle="" hideSubTitle={true}>
+    <div class="flex items-center gap-4 w-full">
+        {#each reportDeepSearchStore.data as report}
+            <ReportItem id={report.id} title={report.title} date={formatISODateString(report.createdAt)}
+                        author={report.author} type={report.type} additionalText={highlight(report.snippet, reportDeepSearchStore.query)}
+                        isSearchResult={true} />
+        {/each}
+    </div>
+</Modal>
+
 <main class="flex overflow-hidden">
     <DesktopSidebar currentPage="reports" />
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
@@ -134,6 +153,12 @@
                         textWrap={false} />
             </div>
         </div>
+
+        {#if reportDeepSearchStore.data.length > 0}
+            <button class="cursor-pointer mt-5" onclick={() => deepSearchResultModal.showModal()}>
+                <Chip fontSize="6" text={`Gefunden in ${reportDeepSearchStore.data.length} ${reportDeepSearchStore.data.length > 1 ? "Berichten" : "Bericht"}`} />
+            </button>
+        {/if}
 
         <div class="flex-1 min-h-0 overflow-y-auto mt-5 flex flex-col items-center justify-start gap-2">
             {#each reportsStore.display as report}

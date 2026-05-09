@@ -1,8 +1,9 @@
-import { apiAddReport, apiDeleteReport } from "../api/apiReports.svelte.js";
+import { apiAddReport, apiCheckReport, apiDeleteReport, apiGetReport } from "../api/apiReports.svelte.js";
 import { normalizeResponse } from "../api/http.svelte.js";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
 import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
+import { sanitize } from "./utils.js";
 
 export const reportTypeMap = {
     "Jahresbericht": "annualReport",
@@ -32,6 +33,91 @@ export const reportTypeFilterMap = {
 let isFetching = {
     add: false,
     delete: false,
+    check: false,
+    getReport: false,
+}
+
+const pendingChecks = new Map();
+
+/**
+ * Checks whether an event with the given ID exists in the system.
+ *
+ * Responsibilities:
+ * - Prevents duplicate API calls by reusing an in-flight request (`pendingChecks`)
+ * - Validates input (returns false if no ID is provided)
+ * - Performs API request to verify existence
+ * - Delegates global API errors to the global handler
+ *
+ * Behavior:
+ * - Returns `false` if:
+ *   - No ID is provided
+ *   - The API responds with HTTP 404 (event does not exist)
+ * - Returns `true` if:
+ *   - The event exists (any non-404 successful response)
+ *   - A global API error occurs (e.g. UNAUTHORIZED, NETWORK)
+ *   - An unexpected exception is thrown
+ *
+ * Notes:
+ * - Concurrent calls share the same promise via `pendingChecks`
+ *   to avoid redundant network requests.
+ * - Errors default to `true` to avoid blocking dependent flows
+ *   (e.g. route guards or navigation logic).
+ *
+ * @async
+ * @function reportExists
+ * @param {string} id - ID of the event to check
+ * @returns {Promise<boolean>} Whether the event exists or should be treated as existing
+ */
+export async function reportExists(id) {
+    if (!id) return false;
+
+    if (pendingChecks.has(id)) return await pendingChecks.get(id);
+
+    isFetching.check = true;
+
+    const request = (async () => {
+        try {
+            const { resp } = await apiCheckReport(id);
+            const normalized = normalizeResponse(resp);
+
+            if (normalized.status === 404) return false;
+
+            if (handleGlobalApiError(normalized)) return true;
+
+            return true;
+        } catch (e) {
+            return true;
+        } finally {
+            pendingChecks.delete(id);
+            if (pendingChecks.size === 0) {
+                isFetching.check = false;
+            }
+        }
+    })();
+
+    pendingChecks.set(id, request);
+    return await request;
+}
+
+export async function getReport(id) {
+    if (!id) return null;
+    isFetching.getReport = true;
+
+    try {
+        const { resp, body } = await apiGetReport(id);
+        const normalized = normalizeResponse(resp);
+
+        if (handleGlobalApiError(normalized)) return null;
+
+        if (!normalized.ok) {
+            handleError(normalized.errorType, "GET");
+            return null;
+        }
+
+        return body;
+    } finally {
+        isFetching.getReport = false;
+    }
 }
 
 export async function addReport(report) {
@@ -82,7 +168,7 @@ export async function deleteReport(reportId) {
         if (handleGlobalApiError(normalizedResp)) return;
 
         if (!normalizedResp.ok) {
-            handleDeleteError(normalizedResp.errorType);
+            handleError(normalizedResp.errorType, "DELETE");
             return;
         }
 
@@ -107,9 +193,10 @@ export async function deleteReport(reportId) {
  * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
  *
  * @param {string} errorType - Error identifier returned from API
+ * @param {string} context - Action performed before the error (DELETE, GET)
  * @returns {void}
  */
-function handleDeleteError(errorType) {
+function handleError(errorType, context) {
     const errorConfigs = {
         NOTFOUND: {
             title: "Bericht nicht gefunden",
@@ -119,17 +206,39 @@ function handleDeleteError(errorType) {
             title: "Ungültiger Bericht",
             subTitle: "Der angegebene Bericht ist ungültig. Bitte versuchen Sie es später erneut."
         },
-        DEFAULT: {
+        DELETE_DEFAULT: {
             title: "Fehler beim Löschen",
             subTitle: "Beim Löschen des Berichts ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
+        },
+        GET_DEFAULT: {
+            title: "Fehler beim Laden",
+            subTitle: "Beim Laden des Berichts ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
         }
     };
 
-    const config = errorConfigs[errorType] || errorConfigs.DEFAULT;
+    const config = errorConfigs[errorType] || context === "DELETE" ? errorConfigs.DELETE_DEFAULT : errorConfigs.GET_DEFAULT;
 
     addToast({
         title: config.title,
         subTitle: viewport.isMobile ? "" : config.subTitle,
         type: "error"
     });
+}
+
+/**
+ * Wraps matches in <mark> tags
+ * @param {string} text - The full text to search in
+ * @param {string} term - The word to highlight
+ */
+export function highlight(text, term) {
+    let safeText = sanitize(text);
+
+    if (!term || term.length < 2) return safeText;
+
+    const safeTerm = sanitize(term.trim());
+
+    const escapedTerm = safeTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(${escapedTerm})`, 'gi');
+
+    return safeText.replace(regex, '<mark class="highlight">$1</mark>');
 }

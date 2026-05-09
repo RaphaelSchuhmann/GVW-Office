@@ -9,8 +9,8 @@ import { appSettings } from "../stores/appSettings.svelte";
 import { filterRoleMap } from "../services/userService.svelte";
 import { userManagerFilterState, userManagerStore } from "../stores/userManager.svelte";
 import { apiGetUsersAD } from "../api/apiUser.svelte";
-import { reportTypeFilterMap, reportTypeMap } from "../services/reportService.svelte.js";
-import { apiGetReports } from "../api/apiReports.svelte.js";
+import { reportTypeFilterMap } from "../services/reportService.svelte.js";
+import { apiDeepSearchReport, apiGetReports } from "../api/apiReports.svelte.js";
 import { reportDeepSearchStore, reportsFilterState, reportsStore } from "../stores/report.svelte.js";
 
 /**
@@ -100,6 +100,7 @@ export const filterRegistry = {
                 placeholder: "Berichte durchsuchen...",
                 deepSearch: true,
                 deepSearchStore: reportDeepSearchStore,
+                deepSearchFetch: apiDeepSearchReport,
             },
             dropdown: {
                 customDefault: "Alle Typen"

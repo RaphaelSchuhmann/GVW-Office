@@ -143,3 +143,11 @@ body.no-scroll {
     overflow-wrap: normal;
     white-space: nowrap;
 }
+
+.highlight {
+    display: inline;
+    background-color: var(--color-gv-sentiment-selected);
+    color: var(--color-gv-dark-text);
+    padding: 0 1px;
+    border-radius: 2px;
+}

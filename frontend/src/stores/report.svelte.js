@@ -12,6 +12,7 @@ export const reportsStore = $state({
  */
 export const reportDeepSearchStore = $state({
     data: [],
+    query: "",
     loading: false
 });
 

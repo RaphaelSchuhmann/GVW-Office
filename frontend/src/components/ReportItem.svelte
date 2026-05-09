@@ -12,6 +12,8 @@
         additionalText = "",
         isMobile = false,
         deletable = true,
+        isSearchResult = false,
+        ...restProps
     } = $props();
 </script>
 
@@ -32,7 +34,13 @@
                     <span class="text-gv-light-text text-dt-6">{author}</span>
                 </div>
             </div>
-            <span class="text-gv-light-text mt-2 text-dt-6 line-clamp-2 truncate">{additionalText}</span>
+            {#if isSearchResult}
+                <div class="flex w-full justify-start">
+                    {@html additionalText}
+                </div>
+            {:else}
+                <span class="text-gv-light-text mt-2 text-dt-6 line-clamp-2 truncate">{additionalText}</span>
+            {/if}
         </button>
         <div class={`flex items-center ${isMobile ? "justify-start mt-4" : "justify-end"} gap-4 ml-auto`}>
             <Chip text={reportTypeMap[type] || reportTypeMap["other"]} />

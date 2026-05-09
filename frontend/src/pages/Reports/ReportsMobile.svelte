@@ -1,9 +1,7 @@
 <script>
     import { user } from "../../stores/user.svelte.js";
-    import { viewport } from "../../stores/viewport.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
-    import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
     import SearchBar from "../../components/SearchBar.svelte";
     import Filter from "../../components/Filter.svelte";
@@ -12,12 +10,13 @@
     import Modal from "../../components/Modal.svelte";
     import Input from "../../components/Input.svelte";
     import Dropdown from "../../components/Dropdown.svelte";
-    import { addReport, reportTypeMap } from "../../services/reportService.svelte.js";
+    import { addReport, highlight, reportTypeMap } from "../../services/reportService.svelte.js";
     import Spinner from "../../components/Spinner.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte.js";
-    import { reportsStore } from "../../stores/report.svelte.js";
+    import { reportDeepSearchStore, reportsStore } from "../../stores/report.svelte.js";
     import { formatISODateString } from "../../services/dateTimeUtils.js";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
+    import Chip from "../../components/Chip.svelte";
 
     // ==================
     // MODAL REFERENCES
@@ -28,6 +27,13 @@
      * @type {import("../../components/Modal.svelte").default}
      */
     let addReportModal = $state();
+
+    /**
+     * Reference to the deep search result modal.
+     * Used to programmatically open the deep search result dialog.
+     * @type {import("../../components/Modal.svelte").default}
+     */
+    let deepSearchResultModal = $state();
 
     // ==========
     // ADD REPORT
@@ -107,6 +113,17 @@
     </div>
 </Modal>
 
+<Modal bind:this={deepSearchResultModal} isMobile={true}
+       title="Deep Search Suchergebnisse" subTitle="" hideSubTitle={true}>
+    <div class="flex items-center gap-4 w-full">
+        {#each reportDeepSearchStore.data as report}
+            <ReportItem id={report.id} title={report.title} date={formatISODateString(report.createdAt)}
+                        author={report.author} type={report.type} additionalText={highlight(report.snippet, reportDeepSearchStore.query)}
+                        isSearchResult={true} isMobile={true}/>
+        {/each}
+    </div>
+</Modal>
+
 <MobileSidebar currentPage="reports" bind:isOpen={sidebarOpen} />
 
 <main class="flex overflow-hidden">
@@ -135,6 +152,12 @@
                         textWrap={false} />
             </div>
         </div>
+
+        {#if reportDeepSearchStore.data.length > 0}
+            <button class="cursor-pointer mt-5" onclick={() => deepSearchResultModal.showModal()}>
+                <Chip text={`Gefunden in ${reportDeepSearchStore.data.length} ${reportDeepSearchStore.data.length > 1 ? "Berichten" : "Bericht"}`} />
+            </button>
+        {/if}
 
         <div class="flex-1 min-h-0 overflow-y-auto mt-5 flex flex-col items-center justify-start gap-2">
             {#each reportsStore.display as report}

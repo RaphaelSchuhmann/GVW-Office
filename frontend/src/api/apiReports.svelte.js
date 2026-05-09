@@ -29,6 +29,47 @@ export async function apiGetReports() {
 }
 
 /**
+ * Sends a check request to see whether a report still exists or not
+ *
+ * Sends a GET request to `/report/check/{id}` endpoint with an Authorization header.
+ *
+ * @param {string} id - The ID of the report to check
+ * @returns {Promise<{ resp: Response | null, body: any | null }>}
+ * An object containing the raw fetch Response (`resp`) and the parsed
+ * JSON response body (`body`). Returns `{ resp: null, body: null }`
+ * if the request fails before a response is received.
+ *
+ * The response body is expected to be empty.
+ *
+ * @example
+ * const { resp } = await apiCheckReport("report-id");
+ *
+ * if (resp?.ok) {
+ *   console.log("report checked");
+ * }
+ */
+export async function apiCheckReport(id) {
+    const resp = await httpGet(`${apiUrl}/report/check/${id}`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+export async function apiGetReport(id) {
+    const resp = await httpGet(`${apiUrl}/report/${id}`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+export async function apiDeepSearchReport(query, signal){
+    const resp = await httpGet(`${apiUrl}/report/search?q=${query}`, "", true, signal);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+/**
  * Adds a repot
  *
  * Sends a POST request to `/report/add` endpoint with an Authorization header.
