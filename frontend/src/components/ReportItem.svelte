@@ -2,6 +2,7 @@
     import Card from "./Card.svelte";
     import Chip from "./Chip.svelte";
     import { reportTypeMap, deleteReport } from "../services/reportService.svelte.js";
+    import { push } from "svelte-spa-router";
 
     let {
         id = "",
@@ -15,11 +16,16 @@
         isSearchResult = false,
         ...restProps
     } = $props();
+
+    async function openReport() {
+        if (isMobile) return;
+        await push(`/reports/details?id=${id}`);
+    }
 </script>
 
 <Card>
     <div class={`items-start w-full ${isMobile ? "flex-col" : "flex"}`}>
-        <button class="flex flex-col items-start gap-4 cursor-pointer w-full">
+        <button class="flex flex-col items-start gap-4 cursor-pointer w-full" onclick={openReport}>
             <div class="flex items-center gap-2">
                 <span class="material-symbols-rounded text-gv-primary text-icon-dt-4">docs</span>
                 <span class="text-gv-dark-text text-dt-5 text-nowrap truncate">{title}</span>
