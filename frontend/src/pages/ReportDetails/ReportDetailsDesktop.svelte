@@ -1,12 +1,10 @@
 <script>
-    import { viewport } from "../../stores/viewport.svelte";
-
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
     import Button from "../../components/Button.svelte";
     import { push } from "svelte-spa-router";
     import Spinner from "../../components/Spinner.svelte";
-    import TextEditor from "../../components/TextEditor.svelte";
+    import TextEditor from "../../components/TextEditor/TextEditor.svelte";
 
     let {
         reportData,
@@ -15,6 +13,13 @@
 
     let isEditing = $state(false);
     let isSubmitting = $state(false);
+
+    let draft = $state(null);
+
+    function startEditing() {
+        draft = JSON.parse(JSON.stringify(reportData));
+        isEditing = true;
+    }
 </script>
 
 <ToastStack />
@@ -37,7 +42,12 @@
                         <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_back</span>
                         <p class="text-dt-6 text-gv-dark-text ml-2">Zurück</p>
                     </Button>
-                    <button class="bg-gv-primary p-2 pl-4 pr-4 text-white cursor-pointer hover:bg-gv-primary-hover rounded-1 flex items-center justify-center aspect-square">
+                    <Button type="primary" padding="3" onclick={startEditing}>
+                        <span class="material-symbols-rounded text-icon-dt-6">edit</span>
+                        <p class="text-dt-6 ml-2">Bearbeiten</p>
+                    </Button>
+                    <button
+                        class="bg-gv-primary p-3.5 pl-4 pr-4 text-white cursor-pointer hover:bg-gv-primary-hover rounded-1 flex items-center justify-center">
                         <span class="material-symbols-rounded text-icon-dt-6">info</span>
                     </button>
                 {:else}
@@ -56,7 +66,8 @@
             </div>
         </div>
         <div class="flex h-full w-full items-start gap-4">
-            <TextEditor isEditing={isEditing} title={reportData?.title} author={reportData?.author} readingTime={reportData?.readingTimeInMinutes} />
+            <TextEditor isEditing={isEditing} id={reportData?.id} title={reportData?.title} author={reportData?.author}
+                        readingTime={reportData?.readingTimeInMinutes} page="reportEditor" />
         </div>
     </div>
 </main>

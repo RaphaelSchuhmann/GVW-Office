@@ -106,5 +106,20 @@ export const filterRegistry = {
                 customDefault: "Alle Typen"
             },
         }
+    },
+    reportEditor: {
+        fetch: apiGetReports,
+        store: reportsStore,
+        filterState: reportsFilterState,
+        fuse: {
+            keys: ["title", "author", "description"],
+            threshold: 0.3
+        },
+        config: {
+            search: {
+                placeholder: "Berichte durchsuchen...",
+                deepSearch: false
+            }
+        }
     }
 }
