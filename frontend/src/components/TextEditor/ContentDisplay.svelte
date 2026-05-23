@@ -1,6 +1,4 @@
 <script>
-    import { apiGetReportImage } from "../../api/apiReports.svelte.js";
-    import { getReportImage } from "../../services/reportService.svelte.js";
     import Image from "./Image.svelte";
 
     let {
@@ -17,7 +15,7 @@
         draggedIndex = index;
 
         // This stops the browser from trying to drag the actual image file or text selection
-        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.effectAllowed = "move";
     }
 
     function handleDragEnter(event, index) {
@@ -59,7 +57,16 @@
             {/if}
 
             {#if item.type === "text"}
-                <div contenteditable={isEditing} class="select-none text-base break-all text-gv-dark-text outline-none whitespace-normal break-words [overflow-wrap:anywhere]">{item.data}</div>
+                {#if isEditing}
+                    <div
+                        contenteditable="true"
+                        class="w-full text-base text-gv-dark-text outline-none whitespace-normal break-all [overflow-wrap:anywhere]"
+                        class:select-none={!isEditing}
+                        bind:textContent={item.data}
+                    ></div>
+                {:else}
+                    <div class="select-none">{item.data}</div>
+                {/if}
             {:else if item.type === "image"}
                 <!-- Pointer events none prevents the raw image from stealing the drag target focus -->
                 <div class="pointer-events-none select-none flex justify-start w-full">

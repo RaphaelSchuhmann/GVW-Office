@@ -83,8 +83,7 @@
             </div>
         </div>
         <div class="flex h-full w-full items-start gap-4">
-            <TextEditor isEditing={isEditing} id={reportData?.id} title={reportData?.title} author={reportData?.author}
-                        readingTime={reportData?.readingTimeInMinutes} content={reportData?.content} page="reportEditor" />
+            <TextEditor isEditing={isEditing} reportData={reportData} draft={draft} page="reportEditor" />
         </div>
     </div>
 </main>

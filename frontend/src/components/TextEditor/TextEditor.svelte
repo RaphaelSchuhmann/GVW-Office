@@ -8,12 +8,9 @@
 
 
     let {
-        id = "",
-        title = "",
-        author = "",
-        readingTime = "",
+        reportData,
+        draft,
         page = "",
-        content = $bindable([]),
         isEditing = $bindable(false),
         ...restProps
     } = $props();
@@ -45,7 +42,7 @@
             <div class="flex items-center gap-1">
                 <StyleButton icon="format_list_bulleted" disabled={true} />
                 <ImageUpload disabled={true} />
-                <LinkItem id={id} page={page} disabled={true}/>
+                <LinkItem id={reportData.id} page={page} disabled={true}/>
                 <StyleButton icon="format_quote" disabled={true} />
             </div>
         </div>
@@ -57,15 +54,15 @@
                 <div class="flex w-full items-center justify-start gap-4">
                     <div class="flex items-center justify-start gap-2">
                         <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text">person</span>
-                        <p class="text-dt-6 text-gv-dark-text">{author}</p>
+                        <p class="text-dt-6 text-gv-dark-text">{reportData?.author}</p>
                     </div>
                     <div class="flex items-center justify-start gap-2">
                         <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text">overview</span>
-                        <p class="text-dt-6 text-gv-dark-text">{readingTime} Minuten</p>
+                        <p class="text-dt-6 text-gv-dark-text">{reportData?.readingTimeInMinutes} Minuten</p>
                     </div>
                 </div>
             {/if}
-            <ContentDisplay content={content} isEditing={isEditing} reportId={id} />
+            <ContentDisplay content={isEditing ? draft?.content : reportData?.content} isEditing={isEditing} reportId={reportData?.id} />
         </div>
     </div>
 </div>
