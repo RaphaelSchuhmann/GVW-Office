@@ -16,9 +16,26 @@
 
     let draft = $state(null);
 
+    /**
+     * Initializes edit mode for the current report.
+     *
+     * Creates a deep clone of `reportData` and assigns it to `draft`
+     * to allow non-destructive editing. Enables the editing state.
+     */
     function startEditing() {
         draft = JSON.parse(JSON.stringify(reportData));
         isEditing = true;
+    }
+
+    /**
+     * Cancels the current editing session.
+     *
+     * Discards the draft object and exits edit mode
+     * without persisting any changes.
+     */
+    function cancelEditing() {
+        draft = null;
+        isEditing = false;
     }
 </script>
 
@@ -59,7 +76,7 @@
                             Speichern
                         {/if}
                     </Button>
-                    <Button type="secondary">
+                    <Button type="secondary" onclick={cancelEditing}>
                         Abbrechen
                     </Button>
                 {/if}
@@ -67,7 +84,7 @@
         </div>
         <div class="flex h-full w-full items-start gap-4">
             <TextEditor isEditing={isEditing} id={reportData?.id} title={reportData?.title} author={reportData?.author}
-                        readingTime={reportData?.readingTimeInMinutes} page="reportEditor" />
+                        readingTime={reportData?.readingTimeInMinutes} content={reportData?.content} page="reportEditor" />
         </div>
     </div>
 </main>

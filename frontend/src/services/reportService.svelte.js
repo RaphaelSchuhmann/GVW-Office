@@ -1,4 +1,10 @@
-import { apiAddReport, apiCheckReport, apiDeleteReport, apiGetReport } from "../api/apiReports.svelte.js";
+import {
+    apiAddReport,
+    apiCheckReport,
+    apiDeleteReport,
+    apiGetReport,
+    apiGetReportImage
+} from "../api/apiReports.svelte.js";
 import { normalizeResponse } from "../api/http.svelte.js";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
 import { addToast } from "../stores/toasts.svelte.js";
@@ -35,8 +41,10 @@ let isFetching = {
     delete: false,
     check: false,
     getReport: false,
+    getImage: false
 }
 
+const pendingImages = new Set();
 const pendingChecks = new Map();
 
 /**
@@ -241,4 +249,26 @@ export function highlight(text, term) {
     const regex = new RegExp(`(${escapedTerm})`, 'gi');
 
     return safeText.replace(regex, '<mark class="highlight">$1</mark>');
+}
+
+export async function getReportImage(reportId, imageId) {
+    if (!reportId || !imageId) return;
+
+    if (pendingImages.has(imageId)) return;
+
+    isFetching.getImage = true;
+
+    try {
+        const { resp, blob } = await apiGetReportImage(reportId, imageId);
+        const normalizedResp = normalizeResponse(resp);
+
+        if (!normalizedResp.ok) return null;
+
+        return URL.createObjectURL(blob);
+    } catch (e) {
+        return null;
+    } finally {
+        isFetching.getImage = false;
+        pendingImages.delete(imageId);
+    }
 }

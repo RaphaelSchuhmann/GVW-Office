@@ -6,9 +6,11 @@
         options = [],
         optionMap = {},
         selected = $bindable(""),
-        onChange = (val) => {},
+        onChange = (val) => {
+        },
         width = "1/5",
         fillHeight = false,
+        disabled = false,
         ...respProps
     } = $props();
 
@@ -19,8 +21,8 @@
         if (options.length === 0) return 0;
 
         const getVisualLength = (html) => {
-            const textOnly = html.replace(/<[^>]*>/g, '');
-            const hasIcon = html.includes('material-symbols-rounded');
+            const textOnly = html.replace(/<[^>]*>/g, "");
+            const hasIcon = html.includes("material-symbols-rounded");
 
             return textOnly.length + (hasIcon ? 4 : 0);
         };
@@ -50,7 +52,7 @@
                 title: "Ein unerwarteter Fehler ist aufgetreten",
                 subTitle: viewport.isMobile ? "" : "Beim verarbeiten ihrer Auswahl ist ein Fehler aufgetreten",
                 type: "error"
-            })
+            });
         }
 
         selected = option;
@@ -60,11 +62,13 @@
     }
 </script>
 
-<div class={`flex flex-col items-start justify-start gap-2 ${fillHeight ? "h-full" : ""}`} style={minWidth > 0 ? `min-width: ${minWidth}px` : ""} bind:this={dropdownRef}>
+<div class={`flex flex-col items-start justify-start gap-2 ${fillHeight ? "h-full" : ""}`}
+     style={minWidth > 0 ? `min-width: ${minWidth}px` : ""} bind:this={dropdownRef}>
     <div class={`relative inline-block w-full ${fillHeight ? "h-full" : ""}`}>
         <button
-            class={`flex items-center justify-start cursor-pointer bg-gv-input-bg rounded-2 p-2 pl-2 pr-4 hover:opacity-85 transition-50 h-full ${fillHeight ? "h-full" : ""}`}
+            class={`flex items-center justify-start cursor-pointer bg-gv-input-bg rounded-2 p-2 pl-2 pr-4 hover:opacity-85 transition-50 h-full ${fillHeight ? "h-full" : ""} disabled:cursor-not-allowed disabled:opacity-50`}
             style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}
+            disabled={disabled}
             onclick={() => open = !open}
         >
             {@html selected}

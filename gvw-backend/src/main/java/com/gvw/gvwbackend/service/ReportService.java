@@ -25,6 +25,7 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -147,7 +148,7 @@ public class ReportService {
         contentType = "application/octet-stream";
       }
 
-      return new AttachmentResource(new FileInputStream(file), contentType);
+      return new AttachmentResource(file, contentType);
     } catch (IOException exception) {
       throw new RuntimeException("ErrorLoadingImage", exception);
     }
@@ -176,7 +177,7 @@ public class ReportService {
         contentType = "application/octet-stream";
       }
 
-      return new AttachmentResource(new FileInputStream(file), contentType);
+      return new AttachmentResource(file, contentType);
     } catch (IOException exception) {
       throw new RuntimeException("ErrorLoadingFile", exception);
     }

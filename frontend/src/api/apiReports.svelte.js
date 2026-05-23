@@ -128,3 +128,10 @@ export async function apiDeleteReport(reportId) {
     const body = await parseBodySafe(resp);
     return { resp, body };
 }
+
+export async function apiGetReportImage(reportId, imageId){
+    const resp = await httpGet(`${apiUrl}/report/${reportId}/images/${imageId}`);
+    if (!resp) return { resp: null, blob: null };
+    const blob = await resp.blob();
+    return { resp, blob };
+}
