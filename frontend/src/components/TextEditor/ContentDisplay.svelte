@@ -3,6 +3,9 @@
 
     let {
         reportId,
+        title = $bindable(""),
+        author = "",
+        readingTime = "",
         content = $bindable([]), // Using $bindable ensures the parent array updates too
         isEditing = false,
         ...restProps
@@ -37,6 +40,25 @@
 </script>
 
 <div class="h-full flex flex-col items-start justify-start gap-1 w-full overflow-y-auto overflow-x-hidden">
+    {#if isEditing}
+        <input type="text" class="text-dt-3 text-gv-dark-text ml-9.5" bind:value={title} placeholder="Berichttitel"/>
+    {:else}
+        <p class={`text-dt-3 text-gv-dark-text`}>{title}</p>
+    {/if}
+
+    {#if !isEditing}
+        <div class="flex w-full items-center justify-start gap-4">
+            <div class="flex items-center justify-start gap-2">
+                <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text">person</span>
+                <p class="text-dt-6 text-gv-dark-text">{author}</p>
+            </div>
+            <div class="flex items-center justify-start gap-2">
+                <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text">overview</span>
+                <p class="text-dt-6 text-gv-dark-text">{readingTime} Minuten</p>
+            </div>
+        </div>
+    {/if}
+
     {#each content as item, index (item.id)}
         <div
             class="group flex items-start justify-start gap-2 p-2 rounded transition-all duration-75 w-full"

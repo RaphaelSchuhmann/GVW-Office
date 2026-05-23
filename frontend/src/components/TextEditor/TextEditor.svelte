@@ -8,20 +8,40 @@
 
 
     let {
-        reportData,
-        draft,
+        reportData = $bindable({}),
+        draft = $bindable({}),
         page = "",
         isEditing = $bindable(false),
         ...restProps
     } = $props();
 
     const config = $derived(textEditorConfigs[page]);
+    let data = $state({
+        title: "",
+        author: "",
+        readingTime: "",
+        content: []
+    });
 
     $effect(() => {
         if (!config) {
             console.warn(`Unknown editor config page key: ${page}`);
         }
     });
+
+    $effect(() => {
+        if (isEditing) {
+            data.title = draft?.title;
+            data.author = draft?.author;
+            data.readingTime = draft?.readingTimeInMinutes;
+            data.content = draft?.content;
+        } else {
+            data.title = reportData?.title;
+            data.author = reportData?.author;
+            data.readingTime = reportData?.readingTimeInMinutes;
+            data.content = reportData?.content;
+        }
+    })
 </script>
 
 <div class="w-full h-full flex flex-col items-start justify-start rounded-1 bg-white drop-shadow-md">
@@ -49,20 +69,7 @@
     {/if}
     <div class="flex flex-col w-full h-full items-center justify-start">
         <div class="flex flex-col items-start justify-start p-5 pl-8 pr-8 gap-4 max-w-3/5 w-3/5 h-full">
-            <p class={`text-dt-3 text-gv-dark-text ${isEditing ? "ml-9.5" : ""}`}>Document Title</p>
-            {#if !isEditing}
-                <div class="flex w-full items-center justify-start gap-4">
-                    <div class="flex items-center justify-start gap-2">
-                        <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text">person</span>
-                        <p class="text-dt-6 text-gv-dark-text">{reportData?.author}</p>
-                    </div>
-                    <div class="flex items-center justify-start gap-2">
-                        <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text">overview</span>
-                        <p class="text-dt-6 text-gv-dark-text">{reportData?.readingTimeInMinutes} Minuten</p>
-                    </div>
-                </div>
-            {/if}
-            <ContentDisplay content={isEditing ? draft?.content : reportData?.content} isEditing={isEditing} reportId={reportData?.id} />
+            <ContentDisplay reportId={reportData.id} bind:title={data.title} author={data.author} readingTime={data.readingTime} bind:content={data.content} isEditing={isEditing} />
         </div>
     </div>
 </div>
