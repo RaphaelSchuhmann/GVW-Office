@@ -5,7 +5,8 @@
     import LinkItem from "./LinkItem.svelte";
     import { textEditorConfigs } from "../../lib/textEditorConfig.svelte.js";
     import ContentDisplay from "./ContentDisplay.svelte";
-
+    import { editorSelectionStore } from "../../stores/textEditorSelection.svelte.js";
+    import { actionMap, wrapSelection } from "../../services/textEditorService.svelte.js";
 
     let {
         reportData = $bindable({}),
@@ -22,6 +23,10 @@
         readingTime: "",
         content: []
     });
+
+    let boldEnabled = $derived(editorSelectionStore.isBold);
+    let italicEnabled = $derived(editorSelectionStore.isItalic);
+    let underlineEnabled = $derived(editorSelectionStore.isUnderline);
 
     $effect(() => {
         if (!config) {
@@ -41,7 +46,28 @@
             data.readingTime = reportData?.readingTimeInMinutes;
             data.content = reportData?.content;
         }
-    })
+    });
+
+    function updateStyle(action, toggleState) {
+        const { itemId, startOffset, endOffset } = editorSelectionStore;
+
+        if (!itemId || !action) return;
+
+        const targetIndex = draft.content.findIndex(item => item.id === itemId);
+        if (targetIndex === -1) return;
+
+        if (draft.content[targetIndex].type === "image") return;
+
+        const originalText = draft.content[targetIndex].data;
+
+        const before = originalText.substring(0, startOffset);
+        const highlighted = originalText.substring(startOffset, endOffset);
+        const after = originalText.substring(endOffset);
+
+        wrapSelection(draft.content, `${action}:${toggleState}`);
+
+        editorSelectionStore.itemId = '';
+    }
 </script>
 
 <div class="w-full h-full flex flex-col items-start justify-start rounded-1 bg-white drop-shadow-md">
@@ -52,9 +78,9 @@
             <div class="w-0.75 bg-gv-separator h-full rounded-1"></div>
 
             <div class="flex items-center gap-1">
-                <StyleButton icon="format_bold" disabled={true} />
-                <StyleButton icon="format_underlined" disabled={true} />
-                <StyleButton icon="format_italic" disabled={true} />
+                <StyleButton icon="format_bold" disabled={!isEditing} bind:isToggled={boldEnabled} onChange={() => updateStyle("bold", boldEnabled)} />
+                <StyleButton icon="format_underlined" disabled={!isEditing} bind:isToggled={italicEnabled} onChange={() => updateStyle("italic", italicEnabled)} />
+                <StyleButton icon="format_italic" disabled={!isEditing} bind:isToggled={underlineEnabled} onChange={() => updateStyle("underline", underlineEnabled)} />
             </div>
 
             <div class="w-0.75 bg-gv-separator h-full rounded-1"></div>

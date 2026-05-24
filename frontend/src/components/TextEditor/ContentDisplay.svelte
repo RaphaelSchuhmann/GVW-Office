@@ -1,5 +1,7 @@
 <script>
     import Image from "./Image.svelte";
+    import { editorSelectionStore } from "../../stores/textEditorSelection.svelte.js";
+    import { renderToHTML } from "../../services/textEditorService.svelte.js";
 
     let {
         reportId,
@@ -16,26 +18,90 @@
     function handleDragStart(event, index) {
         if (!isEditing) return;
         draggedIndex = index;
-
-        // This stops the browser from trying to drag the actual image file or text selection
         event.dataTransfer.effectAllowed = "move";
     }
 
     function handleDragEnter(event, index) {
         if (!isEditing || draggedIndex === null || draggedIndex === index) return;
 
-        // Swap the array positions
         const updatedItems = [...content];
         const [draggedItem] = updatedItems.splice(draggedIndex, 1);
         updatedItems.splice(index, 0, draggedItem);
 
-        // Update tracking to the new home index immediately
         draggedIndex = index;
         content = updatedItems;
     }
 
     function handleDragEnd() {
         draggedIndex = null;
+    }
+
+    function trackSelection(event) {
+        if (!isEditing) return;
+
+        const selection = window.getSelection();
+
+        if (!selection) {
+            editorSelectionStore.text = '';
+            editorSelectionStore.itemId = null;
+            return;
+        }
+
+        const range = selection.getRangeAt(0);
+
+        const editableDiv = range.commonAncestorContainer.parentElement.closest('[contenteditable="true"]');
+        if (!editableDiv) return;
+
+        const itemId = editableDiv.dataset.id;
+
+        const { isBold, isItalic, isUnderline } = getActiveStylesInRange(range);
+
+        function getGlobalOffset(editableDiv, range) {
+            let preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(editableDiv);
+            preCaretRange.setEnd(range.startContainer, range.startOffset);
+
+            // Returns the length of all text BEFORE the selection starts
+            return preCaretRange.toString().length;
+        }
+
+        const globalStart = getGlobalOffset(editableDiv, range);
+        const globalEnd = globalStart + range.toString().length;
+
+        editorSelectionStore.startOffset = globalStart;
+        editorSelectionStore.endOffset = globalEnd;
+        editorSelectionStore.itemId = itemId;
+        editorSelectionStore.isBold = isBold;
+        editorSelectionStore.isItalic = isItalic;
+        editorSelectionStore.isUnderline = isUnderline;
+    }
+
+    function getActiveStylesInRange(range) {
+        if (!range) return { isBold: false, isItalic: false, isUnderline: false };
+
+        let container = range.commonAncestorContainer;
+        if (container.nodeType === Node.TEXT_NODE) {
+            container = container.parentNode;
+        }
+
+        let isBold = false;
+        let isItalic = false;
+        let isUnderline = false;
+        let current = container;
+
+        while (current) {
+            const tagName = current.tagName;
+
+            if (tagName === 'STRONG' || tagName === 'B') isBold = true;
+            if (tagName === 'EM' || tagName === 'I') isItalic = true;
+            if (tagName === 'U') isItalic = true;
+
+            if (current.getAttribute('contenteditable') === 'true') break;
+
+            current = current.parentElement;
+        }
+
+        return { isBold, isItalic, isUnderline };
     }
 </script>
 
@@ -84,10 +150,16 @@
                         contenteditable="true"
                         class="w-full text-base text-gv-dark-text outline-none whitespace-normal break-all [overflow-wrap:anywhere]"
                         class:select-none={!isEditing}
-                        bind:textContent={item.data}
-                    ></div>
+                        data-id={item.id}
+                        onmouseup={trackSelection}
+                        onkeyup={trackSelection}
+                    >
+                        {@html renderToHTML(item.data)}
+                    </div>
                 {:else}
-                    <div class="select-none">{item.data}</div>
+                    <div class="select-none">
+                        {@html renderToHTML(item.data)}
+                    </div>
                 {/if}
             {:else if item.type === "image"}
                 <!-- Pointer events none prevents the raw image from stealing the drag target focus -->
