@@ -121,6 +121,11 @@
 
         return { isBold, isItalic, isUnderline };
     }
+
+    function setup(node, data) {
+        node.innerHTML = renderToHTML(data);
+        return { update(newData){}, destroy() {} }
+    }
 </script>
 
 <div class="h-full flex flex-col items-start justify-start gap-1 w-full overflow-y-auto overflow-x-hidden">
@@ -177,11 +182,8 @@
                         class:select-none={!isEditing}
                         data-id={item.id}
                         oninput={(e) => {item.data = convertHTMLToRaw(e.currentTarget.innerHTML)}}
-                    >
-                        {#key item.version}
-                            {@html untrack(() => renderToHTML(item.data))}
-                        {/key}
-                    </div>
+                        use:setup={item.data}
+                    ></div>
                 {:else}
                     <div class="select-none">
                         {@html renderToHTML(item.data)}
