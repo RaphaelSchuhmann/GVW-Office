@@ -24,9 +24,9 @@
         content: []
     });
 
-    let boldEnabled = $derived(editorSelectionStore.isBold);
-    let italicEnabled = $derived(editorSelectionStore.isItalic);
-    let underlineEnabled = $derived(editorSelectionStore.isUnderline);
+    let boldEnabled = $derived(editorSelectionStore.selection.isBold);
+    let italicEnabled = $derived(editorSelectionStore.selection.isItalic);
+    let underlineEnabled = $derived(editorSelectionStore.selection.isUnderline);
 
     $effect(() => {
         if (!config) {
@@ -52,14 +52,14 @@
         wrapSelection(draft.content, `${action}:${toggleState}`);
 
         if (action === "BOLD") {
-            editorSelectionStore.isBold = toggleState;
+            editorSelectionStore.selection.isBold = toggleState;
         } else if (action === "UNDERLINE") {
-            editorSelectionStore.isUnderline = toggleState;
+            editorSelectionStore.selection.isUnderline = toggleState;
         } else if (action === "ITALIC") {
-            editorSelectionStore.isItalic = toggleState;
+            editorSelectionStore.selection.isItalic = toggleState;
         }
 
-        editorSelectionStore.itemId = '';
+        editorSelectionStore.selection.itemId = null;
     }
 </script>
 
