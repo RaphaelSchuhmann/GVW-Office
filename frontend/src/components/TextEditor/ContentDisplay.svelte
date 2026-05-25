@@ -1,14 +1,15 @@
 <script>
     import Image from "./Image.svelte";
     import { editorSelectionStore } from "../../stores/textEditorSelection.svelte.js";
-    import { renderToHTML } from "../../services/textEditorService.svelte.js";
+    import { convertHTMLToRaw, renderToHTML } from "../../services/textEditorService.svelte.js";
+    import { untrack } from "svelte";
 
     let {
         reportId,
         title = $bindable(""),
         author = "",
         readingTime = "",
-        content = $bindable([]), // Using $bindable ensures the parent array updates too
+        content = $bindable([]),
         isEditing = false,
         ...restProps
     } = $props();
@@ -36,41 +37,72 @@
         draggedIndex = null;
     }
 
+    $effect(() => {
+        const handleSelection = () => {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+
+            const range = sel.getRangeAt(0);
+
+            const startNode = sel.anchorNode;
+            const endNode = sel.focusNode;
+
+            const getSpan = (node) => {
+                if (!node) return null;
+                const el = node.nodeType === 3 ? node.parentElement : node;
+                return el.closest('span[data-index]');
+            };
+
+            const startSpan = getSpan(startNode);
+            const endSpan = getSpan(endNode);
+
+            if (startSpan && endSpan) {
+                const sIdx = parseInt(startSpan.dataset.index);
+                const eIdx = parseInt(endSpan.dataset.index);
+
+                editorSelectionStore.isMultitoken = sIdx !== eIdx;
+                editorSelectionStore.startOffset = range.startOffset + sIdx;
+                editorSelectionStore.endOffset = range.endOffset + eIdx;
+            } else {
+                editorSelectionStore.startOffset = range.startOffset;
+                editorSelectionStore.endOffset = range.endOffset;
+            }
+        };
+
+        document.addEventListener('selectionchange', handleSelection);
+        return () => document.removeEventListener('selectionchange', handleSelection);
+    });
+
     function trackSelection(event) {
         if (!isEditing) return;
 
         const selection = window.getSelection();
-
         if (!selection) {
-            editorSelectionStore.text = '';
             editorSelectionStore.itemId = null;
             return;
         }
 
         const range = selection.getRangeAt(0);
 
-        const editableDiv = range.commonAncestorContainer.parentElement.closest('[contenteditable="true"]');
+        const ancestor = range.commonAncestorContainer;
+
+        const elementToCheck = ancestor.nodeType === Node.TEXT_NODE
+            ? ancestor.parentElement
+            : ancestor;
+
+        let editableDiv = null;
+
+        const isEditable = elementToCheck.getAttribute('contenteditable') === 'true';
+
+        if (isEditable) {
+            editableDiv = elementToCheck;
+        } else {
+            editableDiv = elementToCheck.closest('[contenteditable="true"]');
+        }
         if (!editableDiv) return;
 
-        const itemId = editableDiv.dataset.id;
-
         const { isBold, isItalic, isUnderline } = getActiveStylesInRange(range);
-
-        function getGlobalOffset(editableDiv, range) {
-            let preCaretRange = range.cloneRange();
-            preCaretRange.selectNodeContents(editableDiv);
-            preCaretRange.setEnd(range.startContainer, range.startOffset);
-
-            // Returns the length of all text BEFORE the selection starts
-            return preCaretRange.toString().length;
-        }
-
-        const globalStart = getGlobalOffset(editableDiv, range);
-        const globalEnd = globalStart + range.toString().length;
-
-        editorSelectionStore.startOffset = globalStart;
-        editorSelectionStore.endOffset = globalEnd;
-        editorSelectionStore.itemId = itemId;
+        editorSelectionStore.itemId = editableDiv.dataset.id;
         editorSelectionStore.isBold = isBold;
         editorSelectionStore.isItalic = isItalic;
         editorSelectionStore.isUnderline = isUnderline;
@@ -92,11 +124,11 @@
         while (current) {
             const tagName = current.tagName;
 
-            if (tagName === 'STRONG' || tagName === 'B') isBold = true;
-            if (tagName === 'EM' || tagName === 'I') isItalic = true;
-            if (tagName === 'U') isItalic = true;
+            if (tagName === "STRONG" || tagName === "B") isBold = true;
+            if (tagName === "EM" || tagName === "I") isItalic = true;
+            if (tagName === "U") isItalic = true;
 
-            if (current.getAttribute('contenteditable') === 'true') break;
+            if (current.getAttribute("contenteditable") === "true") break;
 
             current = current.parentElement;
         }
@@ -107,7 +139,7 @@
 
 <div class="h-full flex flex-col items-start justify-start gap-1 w-full overflow-y-auto overflow-x-hidden">
     {#if isEditing}
-        <input type="text" class="text-dt-3 text-gv-dark-text ml-9.5" bind:value={title} placeholder="Berichttitel"/>
+        <input type="text" class="text-dt-3 text-gv-dark-text ml-9.5" bind:value={title} placeholder="Berichttitel" />
     {:else}
         <p class={`text-dt-3 text-gv-dark-text`}>{title}</p>
     {/if}
@@ -131,7 +163,8 @@
             class:opacity-40={draggedIndex === index}
             ondragenter={(e) => handleDragEnter(e, index)}
             ondragover={(e) => e.preventDefault()}
-            aria-label="Drag to reorder item"
+            aria-label="Draggable item"
+            role="group"
         >
             {#if isEditing}
                 <span
@@ -139,6 +172,8 @@
                     class="material-symbols-rounded text-gv-light-text cursor-grab active:cursor-grabbing select-none group-hover:opacity-100 opacity-0"
                     ondragstart={(e) => handleDragStart(e, index)}
                     ondragend={handleDragEnd}
+                    aria-label="Drag to reorder"
+                    role="presentation"
                 >
                     drag_indicator
                 </span>
@@ -148,13 +183,20 @@
                 {#if isEditing}
                     <div
                         contenteditable="true"
-                        class="w-full text-base text-gv-dark-text outline-none whitespace-normal break-all [overflow-wrap:anywhere]"
+                        role="textbox"
+                        tabindex="0"
+                        aria-multiline="true"
+                        aria-label="Edit text content"
+                        class="w-full text-base text-gv-dark-text outline-none whitespace-normal break-all overflow-wrap-anywhere"
                         class:select-none={!isEditing}
                         data-id={item.id}
                         onmouseup={trackSelection}
                         onkeyup={trackSelection}
+                        oninput={(e) => {item.data = convertHTMLToRaw(e.currentTarget.innerHTML)}}
                     >
-                        {@html renderToHTML(item.data)}
+                        {#key item.version}
+                            {@html untrack(() => renderToHTML(item.data))}
+                        {/key}
                     </div>
                 {:else}
                     <div class="select-none">

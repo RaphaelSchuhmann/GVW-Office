@@ -4,8 +4,7 @@
         icon = "",
         disabled = false,
         isToggled = $bindable(false),
-        onChange = (val) => {
-        },
+        onChange = (val) => {},
         ...restProps
     } = $props();
 

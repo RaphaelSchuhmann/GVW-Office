@@ -44,6 +44,11 @@
             getReport(reportId).then(data => {
                 if (active) {
                     reportData = data;
+                    if (reportData.content.length > 0) {
+                        reportData.content.forEach(item => {
+                            item.version = 0;
+                        });
+                    }
                 }
             });
 
