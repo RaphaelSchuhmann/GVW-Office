@@ -49,8 +49,15 @@
     });
 
     function updateStyle(action, toggleState) {
-        console.log("action:togglestate: ", action, toggleState);
         wrapSelection(draft.content, `${action}:${toggleState}`);
+
+        if (action === "BOLD") {
+            editorSelectionStore.isBold = toggleState;
+        } else if (action === "UNDERLINE") {
+            editorSelectionStore.isUnderline = toggleState;
+        } else if (action === "ITALIC") {
+            editorSelectionStore.isItalic = toggleState;
+        }
 
         editorSelectionStore.itemId = '';
     }
@@ -65,8 +72,8 @@
 
             <div class="flex items-center gap-1">
                 <StyleButton icon="format_bold" disabled={!isEditing} isToggled={boldEnabled} onChange={(state) => updateStyle("BOLD", state)} />
-                <StyleButton icon="format_underlined" disabled={!isEditing} isToggled={italicEnabled} onChange={(state) => updateStyle("ITALIC", state)} />
-                <StyleButton icon="format_italic" disabled={!isEditing} isToggled={underlineEnabled} onChange={(state) => updateStyle("UNDERLINE", state)} />
+                <StyleButton icon="format_underlined" disabled={!isEditing} isToggled={underlineEnabled} onChange={(state) => updateStyle("UNDERLINE", state)} />
+                <StyleButton icon="format_italic" disabled={!isEditing} isToggled={italicEnabled} onChange={(state) => updateStyle("ITALIC", state)} />
             </div>
 
             <div class="w-0.75 bg-gv-separator h-full rounded-1"></div>

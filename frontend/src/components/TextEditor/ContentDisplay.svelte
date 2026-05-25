@@ -40,7 +40,7 @@
     $effect(() => {
         const handleSelection = () => {
             const sel = window.getSelection();
-            if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+            if (!sel || sel.rangeCount === 0) return;
 
             const range = sel.getRangeAt(0);
 
@@ -56,57 +56,43 @@
             const startSpan = getSpan(startNode);
             const endSpan = getSpan(endNode);
 
+            let itemId = null;
+            let startOffset = range.startOffset;
+            let endOffset = range.endOffset;
+            let isMultitoken = false;
+
             if (startSpan && endSpan) {
                 const sIdx = parseInt(startSpan.dataset.index);
                 const eIdx = parseInt(endSpan.dataset.index);
 
-                editorSelectionStore.isMultitoken = sIdx !== eIdx;
-                editorSelectionStore.startOffset = range.startOffset + sIdx;
-                editorSelectionStore.endOffset = range.endOffset + eIdx;
+                itemId = startSpan.closest('[contenteditable="true"]')?.dataset.id;
+
+                startOffset = range.startOffset + sIdx;
+                endOffset = range.endOffset + eIdx;
+                isMultitoken = sIdx !== eIdx;
             } else {
-                editorSelectionStore.startOffset = range.startOffset;
-                editorSelectionStore.endOffset = range.endOffset;
+                const editable = range.commonAncestorContainer?.parentElement?.closest?.('[contenteditable="true"]');
+                itemId = editable?.dataset?.id;
             }
+
+            const { isBold, isItalic, isUnderline } = getActiveStylesInRange(range);
+
+            editorSelectionStore.selection = {
+                itemId,
+                startOffset,
+                endOffset,
+                isMultitoken,
+                isBold,
+                isItalic,
+                isUnderline
+            };
+
+            editorSelectionStore.domNode = sel.anchorNode?.parentElement ?? null;
         };
 
         document.addEventListener('selectionchange', handleSelection);
         return () => document.removeEventListener('selectionchange', handleSelection);
     });
-
-    function trackSelection(event) {
-        if (!isEditing) return;
-
-        const selection = window.getSelection();
-        if (!selection) {
-            editorSelectionStore.itemId = null;
-            return;
-        }
-
-        const range = selection.getRangeAt(0);
-
-        const ancestor = range.commonAncestorContainer;
-
-        const elementToCheck = ancestor.nodeType === Node.TEXT_NODE
-            ? ancestor.parentElement
-            : ancestor;
-
-        let editableDiv = null;
-
-        const isEditable = elementToCheck.getAttribute('contenteditable') === 'true';
-
-        if (isEditable) {
-            editableDiv = elementToCheck;
-        } else {
-            editableDiv = elementToCheck.closest('[contenteditable="true"]');
-        }
-        if (!editableDiv) return;
-
-        const { isBold, isItalic, isUnderline } = getActiveStylesInRange(range);
-        editorSelectionStore.itemId = editableDiv.dataset.id;
-        editorSelectionStore.isBold = isBold;
-        editorSelectionStore.isItalic = isItalic;
-        editorSelectionStore.isUnderline = isUnderline;
-    }
 
     function getActiveStylesInRange(range) {
         if (!range) return { isBold: false, isItalic: false, isUnderline: false };
@@ -126,7 +112,7 @@
 
             if (tagName === "STRONG" || tagName === "B") isBold = true;
             if (tagName === "EM" || tagName === "I") isItalic = true;
-            if (tagName === "U") isItalic = true;
+            if (tagName === "U") isUnderline = true;
 
             if (current.getAttribute("contenteditable") === "true") break;
 
@@ -190,8 +176,6 @@
                         class="w-full text-base text-gv-dark-text outline-none whitespace-normal break-all overflow-wrap-anywhere"
                         class:select-none={!isEditing}
                         data-id={item.id}
-                        onmouseup={trackSelection}
-                        onkeyup={trackSelection}
                         oninput={(e) => {item.data = convertHTMLToRaw(e.currentTarget.innerHTML)}}
                     >
                         {#key item.version}
