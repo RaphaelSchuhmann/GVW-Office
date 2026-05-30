@@ -1,8 +1,7 @@
 <script>
+    import { addBlock } from "../../services/textEditorService.svelte";
     import Image from "./Image.svelte";
-    import { editorSelectionStore } from "../../stores/textEditorSelection.svelte.js";
-    import { convertHTMLToRaw, renderToHTML } from "../../services/textEditorService.svelte.js";
-    import { untrack } from "svelte";
+    import { tick } from "svelte";
 
     let {
         reportId,
@@ -37,95 +36,101 @@
         draggedIndex = null;
     }
 
-    $effect(() => {
-        const handleSelection = () => {
-            const sel = window.getSelection();
-            if (!sel || sel.rangeCount === 0) return;
+    function setup(node, item) {
+        node.innerHTML = item.data;
+        const contentEntryIndex = content.findIndex(i => i.id === item.id);
+        if (contentEntryIndex !== -1 && contentEntryIndex === 0) {
+            node.focus();
+        }
 
-            const range = sel.getRangeAt(0);
+        return { update(newData) {}, destroy() {} };
+    }
 
-            const startNode = sel.anchorNode;
-            const endNode = sel.focusNode;
+    function handleKeyDown(e) {
+        const currentBlock = e.currentTarget;
 
-            const getSpan = (node) => {
-                if (!node) return null;
-                const el = node.nodeType === 3 ? node.parentElement : node;
-                return el.closest('span[data-index]');
-            };
+        if (e.key === "Enter") {
+            if (e.shiftKey) return;
 
-            const startSpan = getSpan(startNode);
-            const endSpan = getSpan(endNode);
+            e.preventDefault();
 
-            let itemId = null;
-            let startOffset = range.startOffset;
-            let endOffset = range.endOffset;
-            let isMultitoken = false;
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
 
-            if (startSpan && endSpan) {
-                const sIdx = parseInt(startSpan.dataset.index);
-                const eIdx = parseInt(endSpan.dataset.index);
+            const splitRange = document.createRange();
+            splitRange.setStart(range.startContainer, range.startOffset);
+            splitRange.setEndAfter(currentBlock.lastChild || currentBlock);
 
-                itemId = startSpan.closest('[contenteditable="true"]')?.dataset.id;
+            const docFragment = splitRange.extractContents();
 
-                startOffset = range.startOffset + sIdx;
-                endOffset = range.endOffset + eIdx;
-                isMultitoken = sIdx !== eIdx;
-            } else {
-                const editable = range.commonAncestorContainer?.parentElement?.closest?.('[contenteditable="true"]');
-                itemId = editable?.dataset?.id;
+            const id = currentBlock.dataset.id;
+
+            const tempDiv = document.createElement("div");
+            tempDiv.appendChild(docFragment);
+            const newHTML = tempDiv.innerHTML;
+
+            // Update internal data
+            const index = content.findIndex(i => i.id === id);
+            content[index].data = currentBlock.innerHTML;
+
+            // Create new block
+            const newBlockId = addBlock(content, index, newHTML, "text");
+            if (newBlockId) {
+                tick().then(() => {
+                    const newBlock = document.querySelector(`[data-id="${newBlockId}"]`);
+                    if (newBlock) {
+                        // @ts-ignore
+                        // can be ignored as only contenteditable divs have the data-id attribute
+                        newBlock.focus();
+                    }
+                });
             }
 
-            const { isBold, isItalic, isUnderline } = getActiveStylesInRange(range);
-
-            editorSelectionStore.selection = {
-                itemId,
-                startOffset,
-                endOffset,
-                isMultitoken,
-                isBold,
-                isItalic,
-                isUnderline
-            };
-
-            editorSelectionStore.domNode = sel.anchorNode?.parentElement ?? null;
-        };
-
-        document.addEventListener('selectionchange', handleSelection);
-        return () => document.removeEventListener('selectionchange', handleSelection);
-    });
-
-    function getActiveStylesInRange(range) {
-        if (!range) return { isBold: false, isItalic: false, isUnderline: false };
-
-        let container = range.commonAncestorContainer;
-        if (container.nodeType === Node.TEXT_NODE) {
-            container = container.parentNode;
+            return;
         }
 
-        let isBold = false;
-        let isItalic = false;
-        let isUnderline = false;
-        let current = container;
+        if (e.key === "Backspace" && currentBlock.textContent.trim().length === 0) {
+            const hasMedia = currentBlock.querySelector('img') !== null;
 
-        while (current) {
-            const tagName = current.tagName;
+            if (!hasMedia) {
+                if (content.length > 1) {
+                    e.preventDefault();
 
-            if (tagName === "STRONG" || tagName === "B") isBold = true;
-            if (tagName === "EM" || tagName === "I") isItalic = true;
-            if (tagName === "U") isUnderline = true;
+                    const id = currentBlock.dataset.id;
+                    const index = content.findIndex(i => i.id === id);
 
-            if (current.getAttribute("contenteditable") === "true") break;
+                    const previousIndex = index > 0 ? index - 1 : 0;
+                    const previousId = content[previousIndex].id;
 
-            current = current.parentElement;
+                    content.splice(index, 1);
+
+                    tick().then(() => {
+                        const prevEl = document.querySelector(`[data-id="${previousId}"]`);
+                        if (prevEl) {
+                            // @ts-ignore
+                            // can be ignored as only contenteditable divs have the data-id attribute
+                            prevEl.focus();
+
+                            // Update caret position
+                            const range = document.createRange();
+                            range.selectNodeContents(prevEl);
+                            range.collapse(false);
+                            const sel = window.getSelection();
+                            sel.removeAllRanges();
+                            sel.addRange(range);
+                        }
+                    });
+                    return;
+                }
+            }
         }
 
-        return { isBold, isItalic, isUnderline };
+        const index = content.findIndex(i => i.id === currentBlock.dataset.id);
+        if (index === -1) return;
+        content[index].data = currentBlock.innerHTML;
     }
 
-    function setup(node, data) {
-        node.innerHTML = renderToHTML(data);
-        return { update(newData){}, destroy() {} }
-    }
+
 </script>
 
 <div class="h-full flex flex-col items-start justify-start gap-1 w-full overflow-y-auto overflow-x-hidden">
@@ -181,12 +186,12 @@
                         class="w-full text-base text-gv-dark-text outline-none whitespace-normal break-all overflow-wrap-anywhere"
                         class:select-none={!isEditing}
                         data-id={item.id}
-                        oninput={(e) => {item.data = convertHTMLToRaw(e.currentTarget.innerHTML)}}
-                        use:setup={item.data}
+                        onkeydown={(e) => handleKeyDown(e)}
+                        use:setup={item}
                     ></div>
                 {:else}
                     <div class="select-none">
-                        {@html renderToHTML(item.data)}
+                        {@html item.data}
                     </div>
                 {/if}
             {:else if item.type === "image"}
