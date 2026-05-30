@@ -53,6 +53,7 @@
                 subTitle: viewport.isMobile ? "" : "Beim verarbeiten ihrer Auswahl ist ein Fehler aufgetreten",
                 type: "error"
             });
+            return;
         }
 
         selected = option;
@@ -69,7 +70,10 @@
             class={`flex items-center justify-start cursor-pointer bg-gv-input-bg rounded-2 p-2 pl-2 pr-4 hover:opacity-85 transition-50 h-full ${fillHeight ? "h-full" : ""} disabled:cursor-not-allowed disabled:opacity-50`}
             style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}
             disabled={disabled}
-            onclick={() => open = !open}
+            onmousedown={(e) => {
+                e.preventDefault();
+                open = !open;
+            }}
         >
             {@html selected}
         </button>
@@ -83,7 +87,10 @@
                     <button
                         type="button"
                         class={`flex items-center text-left p-2 pl-4 pr-4 cursor-pointer hover:bg-gv-hover-effect w-full rounded-1 text-nowrap`}
-                        onclick={() => selectOption(option)}
+                        onmousedown={(e) => {
+                            e.preventDefault();
+                            selectOption(option);
+                        }}
                     >
                         {@html option}
                     </button>

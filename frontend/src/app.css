@@ -38,6 +38,10 @@
     --text-dt-7: 16px;
     --text-dt-8: 14px;
     --text-dt-9: 12px;
+    --text-dt-h1: 32px;
+    --text-dt-h2: 28px;
+    --text-dt-h3: 24px;
+    --text-dt-h4: 20px;
     --text-icon-dt-1: 56px;
     --text-icon-dt-2: 40px;
     --text-icon-dt-3: 38px;
@@ -151,4 +155,12 @@ body.no-scroll {
     color: var(--color-gv-dark-text);
     padding: 0 1px;
     border-radius: 2px;
+}
+
+.heading1 {
+
+}
+
+.blockquote {
+
 }

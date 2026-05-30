@@ -1,6 +1,6 @@
 <script>
-    import { getReportImage } from "../../services/reportService.svelte.js";
-    import Spinner from "../Spinner.svelte";
+    import { getReportImage } from "../../../services/reportService.svelte.js";
+    import Spinner from "../../Spinner.svelte";
 
     let {
         imageId,

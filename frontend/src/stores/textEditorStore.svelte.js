@@ -6,5 +6,6 @@ export const editorSelectionStore = $state({
         isBold: false,
         isItalic: false,
         isUnderline: false,
+        blockType: "text",
     }
 });

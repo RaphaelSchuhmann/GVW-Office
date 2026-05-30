@@ -1,7 +1,14 @@
 <script>
     import { addBlock } from "../../services/textEditorService.svelte";
-    import Image from "./Image.svelte";
     import { tick } from "svelte";
+    import { editorSelectionStore } from "../../stores/textEditorStore.svelte";
+    import TextBlock from "./Blocks/TextBlock.svelte";
+    import H1Block from "./Blocks/H1Block.svelte";
+    import H2Block from "./Blocks/H2Block.svelte";
+    import H3Block from "./Blocks/H3Block.svelte";
+    import H4Block from "./Blocks/H4Block.svelte";
+    import Image from "./Blocks/Image.svelte";
+    import BlockQuote from "./Blocks/BlockQuote.svelte";
 
     let {
         reportId,
@@ -10,6 +17,7 @@
         readingTime = "",
         content = $bindable([]),
         isEditing = false,
+        activeBlock = $bindable(null),
         ...restProps
     } = $props();
 
@@ -43,7 +51,11 @@
             node.focus();
         }
 
-        return { update(newData) {}, destroy() {} };
+        return {
+            update(newData) {
+            }, destroy() {
+            }
+        };
     }
 
     function handleKeyDown(e) {
@@ -90,7 +102,7 @@
         }
 
         if (e.key === "Backspace" && currentBlock.textContent.trim().length === 0) {
-            const hasMedia = currentBlock.querySelector('img') !== null;
+            const hasMedia = currentBlock.querySelector("img") !== null;
 
             if (!hasMedia) {
                 if (content.length > 1) {
@@ -125,12 +137,70 @@
             }
         }
 
-        const index = content.findIndex(i => i.id === currentBlock.dataset.id);
-        if (index === -1) return;
-        content[index].data = currentBlock.innerHTML;
+        // const index = content.findIndex(i => i.id === currentBlock.dataset.id);
+        // if (index === -1) return;
+        // content[index].data = currentBlock.innerHTML;
+        // console.log("updated data", content[index].data);
     }
 
+    $effect(() => {
+        const handleSelection = () => {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
 
+            const range = sel.getRangeAt(0);
+
+            const editable = range.commonAncestorContainer?.parentElement?.closest?.("[contenteditable=\"true\"]");
+            // @ts-ignore
+            const itemId = editable?.dataset?.id;
+
+            const block = content.find(i => i.id === itemId);
+
+            const { isBold, isItalic, isUnderline } = getActiveStylesInRange(range);
+
+            editorSelectionStore.itemId = itemId;
+            editorSelectionStore.root = sel.anchorNode?.parentElement ?? null;
+            editorSelectionStore.range = range;
+
+            editorSelectionStore.activeStyles = {
+                isBold: isBold,
+                isItalic: isItalic,
+                isUnderline: isUnderline,
+                blockType: block.type,
+            };
+        };
+
+        document.addEventListener('selectionchange', handleSelection);
+        return () => document.removeEventListener('selectionchange', handleSelection);
+    });
+
+    function getActiveStylesInRange(range) {
+        if (!range) return { isBold: false, isItalic: false, isUnderline: false };
+
+        let container = range.commonAncestorContainer;
+        if (container.nodeType === Node.TEXT_NODE) {
+            container = container.parentNode;
+        }
+
+        let isBold = false;
+        let isItalic = false;
+        let isUnderline = false;
+        let current = container;
+
+        while (current) {
+            const tagName = current.tagName;
+
+            if (tagName === "STRONG" || tagName === "B") isBold = true;
+            if (tagName === "EM" || tagName === "I") isItalic = true;
+            if (tagName === "U") isUnderline = true;
+
+            if (current.getAttribute("contenteditable") === "true") break;
+
+            current = current.parentElement;
+        }
+
+        return { isBold, isItalic, isUnderline };
+    }
 </script>
 
 <div class="h-full flex flex-col items-start justify-start gap-1 w-full overflow-y-auto overflow-x-hidden">
@@ -176,24 +246,23 @@
             {/if}
 
             {#if item.type === "text"}
-                {#if isEditing}
-                    <div
-                        contenteditable="true"
-                        role="textbox"
-                        tabindex="0"
-                        aria-multiline="true"
-                        aria-label="Edit text content"
-                        class="w-full text-base text-gv-dark-text outline-none whitespace-normal break-all overflow-wrap-anywhere"
-                        class:select-none={!isEditing}
-                        data-id={item.id}
-                        onkeydown={(e) => handleKeyDown(e)}
-                        use:setup={item}
-                    ></div>
-                {:else}
-                    <div class="select-none">
-                        {@html item.data}
-                    </div>
-                {/if}
+                <TextBlock bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
+                           bind:activeBlock={activeBlock} />
+            {:else if item.type === "h1"}
+                <H1Block bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
+                         bind:activeBlock={activeBlock} />
+            {:else if item.type === "h2"}
+                <H2Block bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
+                         bind:activeBlock={activeBlock} />
+            {:else if item.type === "h3"}
+                <H3Block bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
+                         bind:activeBlock={activeBlock} />
+            {:else if item.type === "h4"}
+                <H4Block bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
+                         bind:activeBlock={activeBlock} />
+            {:else if item.type === "blockquote"}
+                <BlockQuote bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
+                           bind:activeBlock={activeBlock} />
             {:else if item.type === "image"}
                 <!-- Pointer events none prevents the raw image from stealing the drag target focus -->
                 <div class="pointer-events-none select-none flex justify-start w-full">
