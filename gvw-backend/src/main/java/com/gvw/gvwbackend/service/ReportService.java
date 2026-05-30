@@ -90,8 +90,13 @@ public class ReportService {
     report.setAuthor(request.author());
     report.setDescription(request.description());
     report.setType(request.type());
-    report.setContents(List.of());
     report.setCreatedAt(Instant.now().toString());
+
+    TextEditorBlock startBlock = new TextEditorBlock();
+    startBlock.setId(UUID.randomUUID().toString());
+    startBlock.setType(TextEditorBlockType.TEXT);
+    startBlock.setData("");
+    report.setContents(List.of(startBlock));
 
     dbService.insert("reports", report);
 
