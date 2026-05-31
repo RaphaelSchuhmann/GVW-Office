@@ -137,10 +137,68 @@
             }
         }
 
-        // const index = content.findIndex(i => i.id === currentBlock.dataset.id);
-        // if (index === -1) return;
-        // content[index].data = currentBlock.innerHTML;
-        // console.log("updated data", content[index].data);
+        if (e.key === "ArrowUp") {
+            if (isCaretAtBoundary(currentBlock, "top")) {
+                e.preventDefault();
+                const index = content.findIndex(i => i.id === currentBlock.dataset.id);
+                if (index > 0) {
+                    const block = document.querySelector(`[data-id="${content[index - 1].id}"]`);
+                    if (block) {
+                        // @ts-ignore
+                        block.focus();
+
+                        const selection = window.getSelection();
+                        const range = document.createRange();
+                        range.selectNodeContents(block);
+                        range.collapse(false); // Move to end
+
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+                    }
+                }
+            }
+        }
+
+        if (e.key === "ArrowDown") {
+            if (isCaretAtBoundary(currentBlock, "bottom")) {
+                e.preventDefault();
+                const index = content.findIndex(i => i.id === currentBlock.dataset.id);
+                if (index > -1) {
+                    tick().then(() => {
+                        const block = document.querySelector(`[data-id="${content[index + 1].id}"]`);
+                        if (block) {
+                            // @ts-ignore
+                            block.focus();
+
+                            const selection = window.getSelection();
+                            const range = document.createRange();
+                            range.selectNodeContents(block);
+                            range.collapse(true); // Move to start
+
+                            selection.removeAllRanges();
+                            selection.addRange(range);
+                        }
+                    })
+                }
+            }
+        }
+    }
+
+    function isCaretAtBoundary(el, side) {
+        const selection = window.getSelection();
+        if (selection.rangeCount === 0) return false;
+
+        const range = selection.getRangeAt(0);
+        const cursorRect = range.getClientRects()[0];
+        const blockRect = el.getBoundingClientRect();
+
+        if (!cursorRect) return true;
+
+        if (side === 'top') {
+            return cursorRect.top - blockRect.top < 10;
+        } else {
+            return blockRect.bottom - cursorRect.bottom < 10;
+        }
     }
 
     $effect(() => {
@@ -155,7 +213,6 @@
             const itemId = editable?.dataset?.id;
 
             const block = content.find(i => i.id === itemId);
-
             const { isBold, isItalic, isUnderline } = getActiveStylesInRange(range);
 
             editorSelectionStore.itemId = itemId;
@@ -166,7 +223,7 @@
                 isBold: isBold,
                 isItalic: isItalic,
                 isUnderline: isUnderline,
-                blockType: block.type,
+                blockType: block ? block.type : "text"
             };
         };
 
