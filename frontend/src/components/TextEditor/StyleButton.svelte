@@ -1,6 +1,5 @@
 <script>
     let {
-        btnId = "",
         icon = "",
         disabled = false,
         isToggled = $bindable(false),

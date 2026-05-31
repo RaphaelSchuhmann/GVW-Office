@@ -1,11 +1,15 @@
 export const blockTypes = new Set(["text", "image", "file", "blockquote", "h1", "h2", "h3", "h4"]);
 
-// TODO: Implement adding and removal of images (if possible also via just drag and drop and copy paste)
 // TODO: Implement metadata view + editing of metadata
 // TODO: Implement file attachments in metadata
 
-export function addBlock(items, insertAfterIndex, content, type) {
-    if (insertAfterIndex < 0 && items.length > 0 || insertAfterIndex === -1) return;
+// k: image name / temp id, v: file
+export const pendingImages = new Map();
+// k: image name / temp id, v: blobUrl
+export const previewUrls = new Map();
+
+export function addBlock(items, index, content, type, insertAtIndex = false) {
+    if (index < 0 && items.length > 0 || index === -1) return;
 
     if (!blockTypes.has(type)) return;
 
@@ -19,10 +23,10 @@ export function addBlock(items, insertAfterIndex, content, type) {
 
     if (items.length === 0) {
         items.push(block);
-        return;
+        return id;
     }
 
-    items.splice(insertAfterIndex + 1, 0, block);
+    insertAtIndex ? items.splice(index, 0, block) : items.splice(index + 1, 0, block);
 
     return id;
 }
@@ -43,6 +47,68 @@ export function updateBlockType(blockId, type, items) {
 
     items[index].type = type;
     return blockId;
+}
+
+export function deleteBlock(items, blockId, isImage = false) {
+    if (!blockId) return;
+
+    const index = items.findIndex(i => i.id === blockId);
+    const block = items.find(i => i.id === blockId);
+    if (!block) return;
+
+    if (isImage) {
+        const blockData = block.data;
+
+        if (previewUrls.has(blockData)) {
+            previewUrls.delete(blockId);
+        }
+
+        if (pendingImages.has(blockData)) {
+            pendingImages.delete(blockId);
+        }
+    }
+
+    items.splice(index, 1);
+}
+
+export function insertImageBlock(file, items, insertAfterIndex) {
+    const tempId = `temp_${crypto.randomUUID()}.${file.name.split('.').pop()}`;
+
+    pendingImages.set(tempId, file);
+    previewUrls.set(tempId, URL.createObjectURL(file));
+
+    const block = {
+        id: crypto.randomUUID(),
+        type: "image",
+        data: tempId
+    };
+
+    if (items.length === 0) {
+        items.push(block);
+        return;
+    }
+
+    items.splice(insertAfterIndex + 1, 0, block);
+}
+
+export function bulkInsertImageBlocks(images, items, insertAfterIndex) {
+    const newBlocks = [];
+
+    for (const file of images) {
+        const tempId = `temp_${crypto.randomUUID()}.${file.name.split('.').pop()}`;
+
+        pendingImages.set(tempId, file);
+        previewUrls.set(tempId, URL.createObjectURL(file));
+
+        const block = {
+            id: crypto.randomUUID(),
+            type: "image",
+            data: tempId
+        };
+
+        newBlocks.push(block);
+    }
+    items.splice(insertAfterIndex + 1, 0, ...newBlocks);
 }
 
 export function updateStylesInDOM(content, action) {

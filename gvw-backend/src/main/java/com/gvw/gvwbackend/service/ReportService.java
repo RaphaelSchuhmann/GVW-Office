@@ -329,11 +329,28 @@ public class ReportService {
       throw new NotFoundException("ReportNotFound");
     }
 
-    List<String> newlyUploadedFiles = new ArrayList<>();
+    Map<String, String> newlyUploadedFiles = new HashMap<>();
 
     try {
       if (files != null && !files.isEmpty()) {
         newlyUploadedFiles = storeFiles(files);
+      }
+
+      // Update Image block data to permanent internal filenames
+      List<TextEditorBlock> blocks = request.content();
+      for (TextEditorBlock block : blocks) {
+        if (block.getType() != TextEditorBlockType.IMAGE) continue;
+
+        String tempId = block.getData();
+        if (tempId.startsWith("temp_")) {
+          String realId = newlyUploadedFiles.get(tempId);
+          if (realId != null) {
+            block.setData(realId);
+          } else {
+            log.error("Missing file for temp ID: {}", tempId);
+            throw new BadRequestException("MissingFileForTempID");
+          }
+        }
       }
 
       Set<String> originalFileIds = extractFileIds(report.getContents());
@@ -368,7 +385,7 @@ public class ReportService {
     } catch (Exception e) {
       log.error("Update failed. Rolling back new uploads.", e);
 
-      for (String newFile : newlyUploadedFiles) {
+      for (String newFile : newlyUploadedFiles.values()) {
         deleteFile(newFile);
       }
 
@@ -469,10 +486,10 @@ public class ReportService {
     }
   }
 
-  private List<String> storeFiles(List<MultipartFile> files) throws IOException {
-    if (files == null || files.isEmpty()) return List.of();
+  private Map<String, String> storeFiles(List<MultipartFile> files) throws IOException {
+    if (files == null || files.isEmpty()) return Map.of();
 
-    List<String> filenames = new ArrayList<>();
+    Map<String, String> filenames = new HashMap<>();
     List<Path> physicalPaths = new ArrayList<>();
     Path root = Paths.get(filesDir);
 
@@ -495,7 +512,7 @@ public class ReportService {
 
         Files.copy(file.getInputStream(), targetPath);
 
-        filenames.add(id + extensionWithDot);
+        filenames.put(originalName, id + extensionWithDot);
         physicalPaths.add(targetPath);
       }
     } catch (Exception e) {

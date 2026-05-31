@@ -1,5 +1,5 @@
 <script>
-    import { addBlock } from "../../services/textEditorService.svelte";
+    import { addBlock, bulkInsertImageBlocks } from "../../services/textEditorService.svelte";
     import { tick } from "svelte";
     import { editorSelectionStore } from "../../stores/textEditorStore.svelte";
     import TextBlock from "./Blocks/TextBlock.svelte";
@@ -178,8 +178,46 @@
                             selection.removeAllRanges();
                             selection.addRange(range);
                         }
-                    })
+                    });
                 }
+            }
+        }
+    }
+
+    function handlePaste(e) {
+        const items = Array.from(e.clipboardData.items);
+        const files = items.filter(item => item.type.startsWith("image/")).map(item => item.getAsFile());
+
+        if (files.length === 0) return;
+
+        e.preventDefault();
+
+        const currentIndex = content.findIndex(item => item.id === activeBlock);
+        if (currentIndex === -1) return;
+
+        bulkInsertImageBlocks(files, content, currentIndex);
+    }
+
+    function handleDrop(e) {
+        e.preventDefault();
+
+        if (e.dataTransfer.items) {
+            const currentIndex = content.findIndex(item => item.id === activeBlock);
+            if (currentIndex === -1) return;
+
+            const files = [];
+
+            for (let i = 0; i < e.dataTransfer.items.length; i++) {
+                if (e.dataTransfer.items[i].kind === "file") {
+                    const file = e.dataTransfer.items[i].getAsFile();
+                    if (file && file.type.startsWith("image/")) {
+                        files.push(file);
+                    }
+                }
+            }
+
+            if (files.length > 0) {
+                bulkInsertImageBlocks(files, content, currentIndex);
             }
         }
     }
@@ -194,7 +232,7 @@
 
         if (!cursorRect) return true;
 
-        if (side === 'top') {
+        if (side === "top") {
             return cursorRect.top - blockRect.top < 10;
         } else {
             return blockRect.bottom - cursorRect.bottom < 10;
@@ -227,8 +265,8 @@
             };
         };
 
-        document.addEventListener('selectionchange', handleSelection);
-        return () => document.removeEventListener('selectionchange', handleSelection);
+        document.addEventListener("selectionchange", handleSelection);
+        return () => document.removeEventListener("selectionchange", handleSelection);
     });
 
     function getActiveStylesInRange(range) {
@@ -304,26 +342,26 @@
 
             {#if item.type === "text"}
                 <TextBlock bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
-                           bind:activeBlock={activeBlock} />
+                           bind:activeBlock={activeBlock} handlePaste={handlePaste} handleDrop={handleDrop} />
             {:else if item.type === "h1"}
                 <H1Block bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
-                         bind:activeBlock={activeBlock} />
+                         bind:activeBlock={activeBlock} handlePaste={handlePaste} handleDrop={handleDrop} />
             {:else if item.type === "h2"}
                 <H2Block bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
-                         bind:activeBlock={activeBlock} />
+                         bind:activeBlock={activeBlock} handlePaste={handlePaste} handleDrop={handleDrop} />
             {:else if item.type === "h3"}
                 <H3Block bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
-                         bind:activeBlock={activeBlock} />
+                         bind:activeBlock={activeBlock} handlePaste={handlePaste} handleDrop={handleDrop} />
             {:else if item.type === "h4"}
                 <H4Block bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
-                         bind:activeBlock={activeBlock} />
+                         bind:activeBlock={activeBlock} handlePaste={handlePaste} handleDrop={handleDrop} />
             {:else if item.type === "blockquote"}
                 <BlockQuote bind:item={content[index]} isEditing={isEditing} handleKeyDown={handleKeyDown} setup={setup}
-                           bind:activeBlock={activeBlock} />
+                            bind:activeBlock={activeBlock} handlePaste={handlePaste} handleDrop={handleDrop} />
             {:else if item.type === "image"}
                 <!-- Pointer events none prevents the raw image from stealing the drag target focus -->
-                <div class="pointer-events-none select-none flex justify-start w-full">
-                    <Image reportId={reportId} imageId={item.data} />
+                <div class="select-none flex justify-start w-full">
+                    <Image reportId={reportId} imageId={item.data} content={content} blockId={item.id} />
                 </div>
             {/if}
         </div>

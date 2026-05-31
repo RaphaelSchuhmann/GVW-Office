@@ -1,9 +1,15 @@
 <script>
+    import { insertImageBlock } from "../../services/textEditorService.svelte";
+
     let {
         selected = $bindable(),
         disabled = false,
+        activeBlock,
+        items,
         ...restProps
     } = $props();
+
+    let targetBlockId = null;
 
     let isOpen = $state(false);
     let menuRef = $state();
@@ -24,9 +30,24 @@
 
             selected = file;
             isOpen = false;
+
+            const index = items.findIndex(i => i.id === targetBlockId);
+            if (index === -1) return;
+
+            insertImageBlock(selected, items, index);
+
+            targetBlockId = null;
         };
 
         input.click();
+    }
+
+    function toggleOverlay() {
+        isOpen = !isOpen;
+
+        if (activeBlock) {
+            targetBlockId = activeBlock;
+        }
     }
 
     $effect(() => {
@@ -47,7 +68,7 @@
             class={`p-2 flex items-center justify-center cursor-pointer rounded-2 hover:bg-gv-hover-effect text-gv-dark-text disabled:text-gv-dark-text/50 disabled:cursor-not-allowed`}
             onmousedown={(e) => {
                 e.preventDefault();
-                isOpen = !isOpen;
+                toggleOverlay();
             }}
             disabled={disabled}
         >
@@ -60,7 +81,10 @@
             >
                 <button
                     class="flex items-center justify-center gap-4 cursor-pointer hover:bg-gv-hover-effect text-gv-dark-text p-2 pl-4 pr-4 rounded-2"
-                    onclick={selectImage}
+                    onmousedown={(e) => {
+                        e.preventDefault();
+                        selectImage();
+                    }}
                 >
                     <span class="material-symbols-rounded text-icon-dt-6">upload</span>
                     <span class="text-dt-6 text-nowrap">Bild Hochladen</span>

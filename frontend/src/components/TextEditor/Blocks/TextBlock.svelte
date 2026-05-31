@@ -5,6 +5,8 @@
         handleKeyDown,
         setup,
         activeBlock = $bindable(),
+        handlePaste,
+        handleDrop,
         ...restProps
     } = $props();
 </script>
@@ -24,6 +26,8 @@
         onfocus={() => activeBlock = item.id}
         onblur={() => activeBlock = null}
         oninput={(e) => item.data = e.currentTarget.innerHTML}
+        onpaste={handlePaste}
+        ondrop={handleDrop}
     ></div>
 {:else}
     <div class="select-none">

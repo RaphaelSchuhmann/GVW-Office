@@ -82,8 +82,6 @@
                 {/if}
             </div>
         </div>
-        <div class="flex h-full w-full items-start gap-4">
-            <TextEditor isEditing={isEditing} itemData={reportData} draft={draft} page="reportEditor" />
-        </div>
+        <TextEditor isEditing={isEditing} itemData={reportData} draft={draft} page="reportEditor" />
     </div>
 </main>
