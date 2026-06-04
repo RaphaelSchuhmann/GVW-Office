@@ -69,7 +69,7 @@ public class ReportController {
         .body(attachment.getResource());
   }
 
-  @PostMapping("/search")
+  @GetMapping("/search")
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   public ReportsSearchResponseDTO reportsDeepSearch(@RequestParam("q") String input) {
     return reportService.reportDeepSearch(input);

@@ -12,9 +12,9 @@ public enum TextEditorBlockType {
   IMAGE("image"),
   FILE("file"),
   BLOCKQUOTE("blockquote"),
-  HEADING_T1("headingT1"),
-  HEADING_T2("headingT2"),
-  HEADING_T3("headingT3");
+  HEADING_T1("h1"),
+  HEADING_T2("h2"),
+  HEADING_T3("h3");
 
   private final String value;
 

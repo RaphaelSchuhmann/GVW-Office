@@ -32,13 +32,14 @@ export function normalizeResponse(response) {
  * @param {string} url - The endpoint URL to fetch.
  * @param {string} [customToken=""] - Optional token to override the authSvelte store token.
  * @param {boolean} [doAuth=true] - Whether to include the Authorization header.
+ * @param {AbortSignal} [signal=null] - The abort signal from an AbortContorller.
  * @returns {Promise<Response | null>} The fetch response, or `null` if the request fails.
  * 
  * @example
  * const resp = await httpGet("/api/data");
  * if (resp?.ok) console.log(await resp.json());
  */
-export async function httpGet(url, customToken = "", doAuth = true) {
+export async function httpGet(url, customToken = "", doAuth = true, signal = null) {
     const headers = new Headers();
     const token = customToken || auth.token;
     if (doAuth && token) headers.append("Authorization", `Bearer ${token}`);
@@ -46,7 +47,8 @@ export async function httpGet(url, customToken = "", doAuth = true) {
     try {
         return await fetch(url, {
             method: "GET",
-            headers: headers
+            headers: headers,
+            signal: signal,
         });
     } catch {
         return null;

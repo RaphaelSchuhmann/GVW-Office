@@ -585,21 +585,21 @@ function handleUpdateError(errorType, updateType) {
     const errorConfigs = {
         NOTFOUND: {
             title: "Veranstaltung nicht gefunden",
-            subTitle: "Der angegebene Noteneintrag konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
+            subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
         },
         BADREQUEST: {
             title: "Ungültige Daten",
             subTitle: updateType === "FULL"
                 ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben."
-                : "Der angegebene Noteneintrag ist ungültig. Bitte versuchen Sie es später erneut."
+                : "Die angegebene Veranstaltung ist ungültig. Bitte versuchen Sie es später erneut."
         },
         CONFLICT: {
             title: "Speicher-Konflikt",
-            subTitle: "Jemand anderes hat diesen Noteneintrag bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen."
+            subTitle: "Jemand anderes hat diese Veranstaltung bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen."
         },
         DEFAULT: {
             title: "Fehler beim Aktualisieren",
-            subTitle: "Beim Aktualisieren des Noteneintrags ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
+            subTitle: "Beim Aktualisieren der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
         }
     };
 

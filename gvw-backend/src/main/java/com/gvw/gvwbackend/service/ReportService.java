@@ -8,13 +8,13 @@ import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.*;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -88,7 +88,14 @@ public class ReportService {
     report.setAuthor(request.author());
     report.setDescription(request.description());
     report.setType(request.type());
-    report.setContents(List.of());
+    report.setCreatedAt(Instant.now().toString());
+    report.setLastEditedBy(request.author());
+
+    TextEditorBlock startBlock = new TextEditorBlock();
+    startBlock.setId(UUID.randomUUID().toString());
+    startBlock.setType(TextEditorBlockType.TEXT);
+    startBlock.setData("");
+    report.setContents(List.of(startBlock));
 
     dbService.insert("reports", report);
 
@@ -111,14 +118,23 @@ public class ReportService {
     }
 
     String contents = getContentsAsString(report);
-    List<String> words = Arrays.stream(contents.split("\\s+")).toList();
+    String plainText = Jsoup.parse(contents).text();
+
+    List<String> words = Arrays.stream(plainText.split("\\s+"))
+            .filter(word -> !word.isEmpty())
+            .toList();
 
     return new FullReportResponseDTO(
         report.getId(),
         report.getTitle(),
         report.getAuthor(),
         report.getRev(),
+        report.getDescription(),
         words.size() / 200,
+        words.size(),
+        report.getCreatedAt(),
+        report.getLastEditedBy(),
+        report.getType(),
         report.getContents());
   }
 
@@ -145,7 +161,7 @@ public class ReportService {
         contentType = "application/octet-stream";
       }
 
-      return new AttachmentResource(new FileInputStream(file), contentType);
+      return new AttachmentResource(file, contentType);
     } catch (IOException exception) {
       throw new RuntimeException("ErrorLoadingImage", exception);
     }
@@ -174,7 +190,7 @@ public class ReportService {
         contentType = "application/octet-stream";
       }
 
-      return new AttachmentResource(new FileInputStream(file), contentType);
+      return new AttachmentResource(file, contentType);
     } catch (IOException exception) {
       throw new RuntimeException("ErrorLoadingFile", exception);
     }
@@ -321,11 +337,28 @@ public class ReportService {
       throw new NotFoundException("ReportNotFound");
     }
 
-    List<String> newlyUploadedFiles = new ArrayList<>();
+    Map<String, String> newlyUploadedFiles = new HashMap<>();
 
     try {
       if (files != null && !files.isEmpty()) {
         newlyUploadedFiles = storeFiles(files);
+      }
+
+      // Update Image block data to permanent internal filenames
+      List<TextEditorBlock> blocks = request.content();
+      for (TextEditorBlock block : blocks) {
+        if (block.getType() != TextEditorBlockType.IMAGE) continue;
+
+        String tempId = block.getData();
+        if (tempId.startsWith("temp_")) {
+          String realId = newlyUploadedFiles.get(tempId);
+          if (realId != null) {
+            block.setData(realId);
+          } else {
+            log.error("Missing file for temp ID: {}", tempId);
+            throw new BadRequestException("MissingFileForTempID");
+          }
+        }
       }
 
       Set<String> originalFileIds = extractFileIds(report.getContents());
@@ -360,7 +393,7 @@ public class ReportService {
     } catch (Exception e) {
       log.error("Update failed. Rolling back new uploads.", e);
 
-      for (String newFile : newlyUploadedFiles) {
+      for (String newFile : newlyUploadedFiles.values()) {
         deleteFile(newFile);
       }
 
@@ -461,10 +494,10 @@ public class ReportService {
     }
   }
 
-  private List<String> storeFiles(List<MultipartFile> files) throws IOException {
-    if (files == null || files.isEmpty()) return List.of();
+  private Map<String, String> storeFiles(List<MultipartFile> files) throws IOException {
+    if (files == null || files.isEmpty()) return Map.of();
 
-    List<String> filenames = new ArrayList<>();
+    Map<String, String> filenames = new HashMap<>();
     List<Path> physicalPaths = new ArrayList<>();
     Path root = Paths.get(filesDir);
 
@@ -487,7 +520,7 @@ public class ReportService {
 
         Files.copy(file.getInputStream(), targetPath);
 
-        filenames.add(id + extensionWithDot);
+        filenames.put(originalName, id + extensionWithDot);
         physicalPaths.add(targetPath);
       }
     } catch (Exception e) {

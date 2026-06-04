@@ -7,6 +7,9 @@ let isFetching = $state(false);
 let currentPageKey = $state("");
 let entry = $state(null);
 
+let deepSearchEnabled = $state(false);
+let deepSearchStore = $state(null);
+
 let cleanupEffect = null;
 
 /**
@@ -30,6 +33,11 @@ export async function init(pageKey) {
 
     currentPageKey = pageKey;
     entry = filterRegistry[pageKey];
+
+    deepSearchEnabled = entry?.config.search.deepSearch;
+    if (deepSearchEnabled) {
+        deepSearchStore = entry?.config.search.deepSearchStore;
+    }
 
     cleanupEffect = $effect.root(() => {
         $effect(() => {

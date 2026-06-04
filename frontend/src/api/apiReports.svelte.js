@@ -1,4 +1,4 @@
-import { httpGet, parseBodySafe } from "./http.svelte";
+import { httpDelete, httpGet, httpPatch, httpPost, parseBodySafe } from "./http.svelte";
 
 const apiUrl = __API_URL__;
 
@@ -21,9 +21,124 @@ const apiUrl = __API_URL__;
  *   console.log("Reports: ", body);
  * }
  */
-export async function getReports() {
-    const resp = await httpGet(`${apiUrl}/reports/all`);
+export async function apiGetReports() {
+    const resp = await httpGet(`${apiUrl}/report/all`);
     if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+/**
+ * Sends a check request to see whether a report still exists or not
+ *
+ * Sends a GET request to `/report/check/{id}` endpoint with an Authorization header.
+ *
+ * @param {string} id - The ID of the report to check
+ * @returns {Promise<{ resp: Response | null, body: any | null }>}
+ * An object containing the raw fetch Response (`resp`) and the parsed
+ * JSON response body (`body`). Returns `{ resp: null, body: null }`
+ * if the request fails before a response is received.
+ *
+ * The response body is expected to be empty.
+ *
+ * @example
+ * const { resp } = await apiCheckReport("report-id");
+ *
+ * if (resp?.ok) {
+ *   console.log("report checked");
+ * }
+ */
+export async function apiCheckReport(id) {
+    const resp = await httpGet(`${apiUrl}/report/check/${id}`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+export async function apiGetReport(id) {
+    const resp = await httpGet(`${apiUrl}/report/${id}`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+export async function apiDeepSearchReport(query, signal){
+    const resp = await httpGet(`${apiUrl}/report/search?q=${query}`, "", true, signal);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+/**
+ * Adds a repot
+ *
+ * Sends a POST request to `/report/add` endpoint with an Authorization header.
+ *
+ * @param {Object} report - The report to add
+ * @returns {Promise<{ resp: Response | null, body: any | null }>}
+ * An object containing the raw fetch Response (`resp`) and the parsed
+ * JSON response body (`body`). Returns `{ resp: null, body: null }`
+ * if the request fails before a response is received.
+ *
+ * @example
+ * const { resp } = await apiAddReport({
+ *     title: "Report",
+ *     author: "Max Mustermann",
+ *     type: "ReportType",
+ *     description: "Keine Beschreibung"
+ * });
+ *
+ * if (resp?.ok) {
+ *   console.log("Report added");
+ * }
+ */
+export async function apiAddReport(report) {
+    const resp = await httpPost(`${apiUrl}/report/add`, {
+        title: report.title,
+        author: report.author,
+        type: report.type,
+        description: report.description,
+    });
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+/**
+ * Deletes a report
+ *
+ * Sends a DELETE request to `/report/delete/{id}` endpoint with an Authorization header.
+ *
+ * @param {string} reportId - The id of the report to delete
+ * @returns {Promise<{ resp: Response | null, body: any | null }>}
+ * An object containing the raw fetch Response (`resp`) and the parsed
+ * JSON response body (`body`). Returns `{ resp: null, body: null }`
+ * if the request fails before a response is received.
+ *
+ * @example
+ * const { resp } = await apiDeleteReport("report-id");
+ *
+ * if (resp?.ok) {
+ *   console.log("Report deleted");
+ * }
+ */
+export async function apiDeleteReport(reportId) {
+    const resp = await httpDelete(`${apiUrl}/report/delete/${reportId}`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+export async function apiGetReportImage(reportId, imageId){
+    const resp = await httpGet(`${apiUrl}/report/${reportId}/images/${imageId}`);
+    if (!resp) return { resp: null, blob: null };
+    const blob = await resp.blob();
+    return { resp, blob };
+}
+
+export async function apiUpdateDescription(reportId, rev, description) {
+    const resp = await httpPatch(`${apiUrl}/report/update/description`, {id: reportId, rev: rev, description: description});
+    if (!resp) return { resp: null, blob: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
 }

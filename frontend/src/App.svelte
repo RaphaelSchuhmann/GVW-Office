@@ -11,6 +11,8 @@
     import EventDetails from "./pages/EventDetails/EventDetailsPage.svelte";
     import Library from "./pages/Library/LibraryPage.svelte";
     import LibraryDetails from "./pages/LibraryDetails/LibraryDetailsPage.svelte";
+    import Reports from "./pages/Reports/ReportsPage.svelte";
+    import ReportDetails from "./pages/ReportDetails/ReportDetailsPage.svelte";
     import AdminDashboard from "./pages/AdminDashboard/AdminDashboardPage.svelte";
     import AdminDashboardReportHub from "./pages/AdminDashboardReportHub/AdminDashboardReportHubPage.svelte";
     import AdminDashboardUserManagement from "./pages/AdminDashboardUserManager/AdminDashboardUserManagerPage.svelte";
@@ -31,6 +33,8 @@
         "/members/details": MemberDetails,
         "/events": Events,
         "/events/details": EventDetails,
+        "/reports": Reports,
+        "/reports/details": ReportDetails,
         "/library": Library,
         "/library/details": LibraryDetails,
         "/admin/overview": AdminDashboard,
