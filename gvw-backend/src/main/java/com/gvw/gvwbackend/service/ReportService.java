@@ -127,6 +127,8 @@ public class ReportService {
         report.getAuthor(),
         report.getRev(),
         words.size() / 200,
+        report.getCreatedAt(),
+        report.getLastEditedBy(),
         report.getContents());
   }
 

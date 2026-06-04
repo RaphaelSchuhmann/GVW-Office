@@ -9,4 +9,6 @@ public record FullReportResponseDTO(
     String author,
     String rev,
     int readingTimeInMinutes,
+    String createdAt,
+    String lastEditedBy,
     List<TextEditorBlock> content) {}
