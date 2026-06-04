@@ -8,7 +8,6 @@ import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.*;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
@@ -25,7 +24,6 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import tools.jackson.databind.ObjectMapper;
@@ -91,6 +89,7 @@ public class ReportService {
     report.setDescription(request.description());
     report.setType(request.type());
     report.setCreatedAt(Instant.now().toString());
+    report.setLastEditedBy(request.author());
 
     TextEditorBlock startBlock = new TextEditorBlock();
     startBlock.setId(UUID.randomUUID().toString());
@@ -119,16 +118,23 @@ public class ReportService {
     }
 
     String contents = getContentsAsString(report);
-    List<String> words = Arrays.stream(contents.split("\\s+")).toList();
+    String plainText = Jsoup.parse(contents).text();
+
+    List<String> words = Arrays.stream(plainText.split("\\s+"))
+            .filter(word -> !word.isEmpty())
+            .toList();
 
     return new FullReportResponseDTO(
         report.getId(),
         report.getTitle(),
         report.getAuthor(),
         report.getRev(),
+        report.getDescription(),
         words.size() / 200,
+        words.size(),
         report.getCreatedAt(),
         report.getLastEditedBy(),
+        report.getType(),
         report.getContents());
   }
 
