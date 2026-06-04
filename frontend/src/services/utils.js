@@ -36,9 +36,9 @@ export function determineChoirType(str) {
 export function sanitize(text) {
     if (!text) return "";
     return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replaceAll(/&/g, "&amp;")
+        .replaceAll(/</g, "&lt;")
+        .replaceAll(/>/g, "&gt;")
+        .replaceAll(/"/g, "&quot;")
+        .replaceAll(/'/g, "&#039;");
 }

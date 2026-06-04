@@ -122,6 +122,8 @@ export async function getDocumentImage(reportId, imageId) {
 
     if (pendingDocumentImages.has(imageId)) return;
 
+    pendingDocumentImages.add(imageId);
+
     isFetching.getImage = true;
 
     try {

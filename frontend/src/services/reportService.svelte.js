@@ -3,7 +3,7 @@ import {
     apiCheckReport,
     apiDeleteReport,
     apiGetReport,
-    apiGetReportImage, apiUpdateDescription
+    apiUpdateDescription
 } from "../api/apiReports.svelte.js";
 import { normalizeResponse } from "../api/http.svelte.js";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
