@@ -45,6 +45,7 @@ public class ReportService {
     this.sseService = sseService;
   }
 
+  // METHOD ID: 01
   public ReportsResponseDTO getReports() {
     List<Map<String, Object>> rawReports = dbService.findAll("reports");
 
@@ -71,17 +72,19 @@ public class ReportService {
     return new ReportsResponseDTO(responseDTOS);
   }
 
+  // METHOD ID: 02
   public void checkReport(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(2, 400)));
     }
 
     Report report = dbService.findById("reports", id, Report.class);
     if (report == null) {
-      throw new NotFoundException("ReportNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(2, 404)));
     }
   }
 
+  // METHOD ID: 03
   public void createReport(AddReportRequestDTO request) {
     Report report = new Report();
     report.setTitle(request.title());
@@ -106,15 +109,16 @@ public class ReportService {
     }
   }
 
+  // METHOD ID: 04
   public FullReportResponseDTO getReport(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(4, 400)));
     }
 
     Report report = dbService.findById("reports", id, Report.class);
 
     if (report == null) {
-      throw new NotFoundException("ReportNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(4, 404)));
     }
 
     String contents = getContentsAsString(report);
@@ -138,20 +142,21 @@ public class ReportService {
         report.getContents());
   }
 
+  // METHOD ID: 05
   public AttachmentResource getReportImage(String reportId, String filename) {
     if (reportId == null || reportId.isBlank() || filename == null || filename.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(5, 400)));
     }
 
     if (filename.contains("..") || filename.contains("/")) {
-      throw new BadRequestException("InvalidFileName");
+      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(5, 400)));
     }
 
     Path filePath = Paths.get(filesDir, filename);
     File file = filePath.toFile();
 
     if (!file.exists()) {
-      throw new NotFoundException("ImageNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(5, 404)));
     }
 
     try {
@@ -163,24 +168,25 @@ public class ReportService {
 
       return new AttachmentResource(file, contentType);
     } catch (IOException exception) {
-      throw new RuntimeException("ErrorLoadingImage", exception);
+      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(5, 500)), exception);
     }
   }
 
+  // METHOD ID: 06
   public AttachmentResource getReportFile(String reportId, String filename) {
     if (reportId == null || reportId.isBlank() || filename == null || filename.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(6, 400)));
     }
 
     if (filename.contains("..") || filename.contains("/")) {
-      throw new BadRequestException("InvalidFileName");
+      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(6, 400)));
     }
 
     Path filePath = Paths.get(filesDir, filename);
     File file = filePath.toFile();
 
     if (!file.exists()) {
-      throw new NotFoundException("FileNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(6, 404)));
     }
 
     try {
@@ -192,18 +198,19 @@ public class ReportService {
 
       return new AttachmentResource(file, contentType);
     } catch (IOException exception) {
-      throw new RuntimeException("ErrorLoadingFile", exception);
+      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(6, 500)), exception);
     }
   }
 
+  // METHOD ID: 07
   public void deleteReport(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(7, 400)));
     }
 
     Report report = dbService.findById("reports", id, Report.class);
     if (report == null) {
-      throw new NotFoundException("ReportNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(7, 404)));
     }
 
     List<String> files = getFilenames(report);
@@ -229,6 +236,7 @@ public class ReportService {
     }
   }
 
+  // METHOD ID: 08
   public ReportsSearchResponseDTO reportDeepSearch(String input) {
     if (input == null || input.isBlank()) {
       return new ReportsSearchResponseDTO(List.of());
@@ -278,30 +286,31 @@ public class ReportService {
     return new ReportsSearchResponseDTO(responseDTOS);
   }
 
+  // METHOD ID: 09
   public LinkMetadataResponseDTO resolveUrl(String url) {
     try {
       URI uri = new URI(url);
 
       if (!"https".equalsIgnoreCase(uri.getScheme())) {
-        throw new BadRequestException("InvalidScheme");
+        throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(9, 400)));
       }
 
       String host = uri.getHost();
       if (host == null) {
-        throw new BadRequestException("InvalidHost");
+        throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(9, 400)));
       }
 
       InetAddress[] addresses = InetAddress.getAllByName(host);
 
       for (InetAddress address : addresses) {
         if (isBlockedAddress(address)) {
-          throw new BadRequestException("BlockedIPRange");
+          throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(9, 400)));
         }
       }
 
       InetAddress[] addresses2 = InetAddress.getAllByName(host);
       if (addresses.length != addresses2.length) {
-        throw new IllegalArgumentException("DNS rebind detected");
+        throw new IllegalArgumentException("0000500"); // DNS rebind detected, note entirely sure what code to return here
       }
 
       Document doc =
@@ -331,10 +340,11 @@ public class ReportService {
     }
   }
 
+  // METHOD ID: 10
   public String updateReport(UpdateReportRequestDTO request, List<MultipartFile> files) {
     Report report = dbService.findById("reports", request.id(), Report.class);
     if (report == null) {
-      throw new NotFoundException("ReportNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(10, 400)));
     }
 
     Map<String, String> newlyUploadedFiles = new HashMap<>();
@@ -356,7 +366,7 @@ public class ReportService {
             block.setData(realId);
           } else {
             log.error("Missing file for temp ID: {}", tempId);
-            throw new BadRequestException("MissingFileForTempID");
+            throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(10, 400)));
           }
         }
       }
@@ -374,7 +384,7 @@ public class ReportService {
       Map<String, Object> resp = dbService.update("reports", report.getId(), report);
 
       if (resp == null || !resp.containsKey("rev")) {
-        throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+        throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(10, 500)));
       }
 
       if (!removedFiles.isEmpty()) {
@@ -397,11 +407,12 @@ public class ReportService {
         deleteFile(newFile);
       }
 
-      if (e instanceof RuntimeException) throw (RuntimeException) e;
-      throw new RuntimeException("UpdateOperationFailed", e);
+      if (e instanceof RuntimeException) throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(10, 500)));
+      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(10, 500)), e);
     }
   }
 
+  // METHOD ID: 11
   public String updateReportDescription(UpdateReportDescriptionRequestDTO request) {
     String description = request.description();
 
@@ -411,7 +422,7 @@ public class ReportService {
 
     Report report = dbService.findById("reports", request.id(), Report.class);
     if (report == null) {
-      throw new NotFoundException("ReportNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(11, 404)));
     }
 
     report.setDescription(description);
@@ -420,7 +431,7 @@ public class ReportService {
     Map<String, Object> resp = dbService.update("reports", report.getId(), report);
 
     if (resp == null || !resp.containsKey("rev")) {
-      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(11, 500)));
     }
 
     try {
@@ -432,6 +443,7 @@ public class ReportService {
     return (String) resp.get("rev");
   }
 
+  // METHOD ID: 12
   private String getContentsAsString(Report report) {
     if (report == null) return "";
 
@@ -459,6 +471,7 @@ public class ReportService {
     return sb.toString();
   }
 
+  // METHOD ID: 13
   private List<String> getFilenames(Report report) {
     if (report == null) {
       return List.of();
@@ -479,6 +492,7 @@ public class ReportService {
     return filenames;
   }
 
+  // METHOD ID: 14
   private void deleteFile(String fileName) {
     Path filePath = Paths.get(filesDir, fileName);
 
@@ -490,10 +504,11 @@ public class ReportService {
     try {
       Files.deleteIfExists(filePath);
     } catch (IOException e) {
-      throw new RuntimeException("FileSystemError", e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(14, 500)), e);
     }
   }
 
+  // METHOD ID: 15
   private Map<String, String> storeFiles(List<MultipartFile> files) throws IOException {
     if (files == null || files.isEmpty()) return Map.of();
 
@@ -506,7 +521,7 @@ public class ReportService {
 
       for (MultipartFile file : files) {
         if (file.getSize() > MAX_FILE_SIZE) {
-          throw new BadRequestException("FileSizeTooLarge");
+          throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(15, 400)));
         }
 
         String originalName = file.getOriginalFilename();
@@ -533,14 +548,15 @@ public class ReportService {
         }
       }
 
-      if (e instanceof BadRequestException) throw (BadRequestException) e;
+      if (e instanceof BadRequestException) throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(15, 400)));
 
-      throw new RuntimeException("FileSystemError", e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(15, 500)), e);
     }
 
     return filenames;
   }
 
+  // METHOD ID: 16
   private String extractSnippet(String content, int hitStart, int hitEnd) {
     int start;
     int end;
@@ -556,6 +572,7 @@ public class ReportService {
     return content.substring(start, end);
   }
 
+  // METHOD ID: 17
   private Set<String> extractFileIds(List<TextEditorBlock> content) {
     Set<String> ids = new HashSet<>();
 
@@ -579,6 +596,7 @@ public class ReportService {
     return ids;
   }
 
+  // METHOD ID: 18
   private boolean isBlockedAddress(InetAddress addr) {
     return addr.isAnyLocalAddress()
             || addr.isLoopbackAddress()

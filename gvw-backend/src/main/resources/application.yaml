@@ -31,3 +31,15 @@ couchdb:
 jwt:
   secret: "${GVW_JWT_SECRET}"
   expiration-days: 7
+
+logging:
+  level:
+    org:
+      apache:
+        catalina:
+          core:
+            ContainerBase:
+              "[Tomcat]":
+                "[localhost]":
+                  "[/]":
+                    "[dispatcherServlet]": FATAL

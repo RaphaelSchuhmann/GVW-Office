@@ -4,6 +4,7 @@ import com.gvw.gvwbackend.dto.request.AddMemberRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateMemberRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateMemberStatusRequestDTO;
 import com.gvw.gvwbackend.dto.response.MembersResponseDTO;
+import com.gvw.gvwbackend.exception.handler.ErrorContext;
 import com.gvw.gvwbackend.service.MemberService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -37,6 +38,7 @@ public class MemberController {
   @PostMapping("/add")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
+  @ErrorContext(domain = 80, method = 3)
   public void addMember(@Valid @RequestBody AddMemberRequestDTO requestDTO) {
     memberService.addMember(requestDTO);
   }
@@ -51,6 +53,7 @@ public class MemberController {
   @PatchMapping("/update")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
+  @ErrorContext(domain = 80, method = 5)
   public Map<String, Object> updateMember(@Valid @RequestBody UpdateMemberRequestDTO requestDTO) {
     List<String> revisions = memberService.updateMember(requestDTO);
     return Map.of("rev_member", revisions.get(0), "rev_user", revisions.get(1));
@@ -59,6 +62,7 @@ public class MemberController {
   @PatchMapping("/update/status/{id}")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
+  @ErrorContext(domain = 80, method = 6)
   public Map<String, Object> updateMemberStatus(
       @PathVariable String id, @Valid @RequestBody UpdateMemberStatusRequestDTO request) {
     String rev = memberService.updateMemberStatus(id, request.rev());

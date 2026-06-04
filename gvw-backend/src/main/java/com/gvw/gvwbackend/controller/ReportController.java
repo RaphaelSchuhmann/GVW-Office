@@ -8,6 +8,7 @@ import com.gvw.gvwbackend.dto.response.LinkMetadataResponseDTO;
 import com.gvw.gvwbackend.dto.response.ReportsResponseDTO;
 import com.gvw.gvwbackend.dto.response.ReportsSearchResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
+import com.gvw.gvwbackend.exception.handler.ErrorContext;
 import com.gvw.gvwbackend.model.AttachmentResource;
 import com.gvw.gvwbackend.service.FileValidator;
 import com.gvw.gvwbackend.service.ReportService;
@@ -48,6 +49,7 @@ public class ReportController {
 
   @PostMapping("/add")
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
+  @ErrorContext(domain = 70, method = 3)
   @ResponseStatus(HttpStatus.OK)
   public void addReport(@Valid @RequestBody AddReportRequestDTO request) {
     reportService.createReport(request);
@@ -90,6 +92,7 @@ public class ReportController {
 
   @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
+  @ErrorContext(domain = 70, method = 10)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   public Map<String, Object> updateReport(
       @RequestPart("reportData") @Valid UpdateReportRequestDTO request,
@@ -97,7 +100,7 @@ public class ReportController {
     if (files != null) {
       for (MultipartFile file : files) {
         if (!fileValidator.isSafe(file)) {
-          throw new BadRequestException("InvalidFileExtension");
+          throw new BadRequestException("1301400");
         }
       }
     }
@@ -108,6 +111,7 @@ public class ReportController {
   @PatchMapping("/update/description")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
+  @ErrorContext(domain = 70, method = 11)
   public Map<String, Object> updateReportDescription(
       @Valid @RequestBody UpdateReportDescriptionRequestDTO request) {
     String rev = reportService.updateReportDescription(request);

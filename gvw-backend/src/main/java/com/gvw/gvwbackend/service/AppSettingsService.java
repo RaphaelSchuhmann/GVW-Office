@@ -10,6 +10,8 @@ import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.AppSettings;
 import java.util.Map;
 import java.util.Set;
+
+import com.gvw.gvwbackend.model.ErrorDomain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class AppSettingsService {
     this.sseService = sseService;
   }
 
+  // METHOD ID: 01
   public AppSettingsResponseDTO getAppSettings() {
     AppSettings settings = appSettings();
 
@@ -37,6 +40,7 @@ public class AppSettingsService {
         appSettings().getRev());
   }
 
+  // METHOD ID: 02
   public String updateMaxMembers(UpdateMaxMembersRequestDTO requestDTO) {
     AppSettings settings = appSettings();
     settings.setMaxMembers(requestDTO.maxMembers());
@@ -46,7 +50,7 @@ public class AppSettingsService {
 
     Object revObj = resp != null ? resp.get("rev") : null;
     if (!(revObj instanceof String) || ((String) revObj).isBlank()) {
-      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+      throw new RuntimeException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(2, 500)));
     }
 
     String rev = (String) revObj;
@@ -58,12 +62,13 @@ public class AppSettingsService {
     return rev;
   }
 
+  // METHOD ID: 03
   public String addCategory(AddCategoryRequestDTO requestDTO) {
     if (requestDTO.type() == null
         || requestDTO.displayName() == null
         || BLOCKED_KEYS.contains(requestDTO.type())
         || BLOCKED_KEYS.contains(requestDTO.displayName())) {
-      throw new BadRequestException("InvalidCategory");
+      throw new BadRequestException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(3, 400)));
     }
 
     AppSettings settings = appSettings();
@@ -71,7 +76,7 @@ public class AppSettingsService {
 
     if (categories.containsKey(requestDTO.type())
         || categories.containsKey(requestDTO.displayName())) {
-      throw new ConflictException("CategoryAlreadyExists");
+      throw new ConflictException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(3, 409)));
     }
 
     categories.put(requestDTO.type(), requestDTO.displayName());
@@ -91,13 +96,14 @@ public class AppSettingsService {
       return (String) resp.get("rev");
     }
 
-    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    throw new RuntimeException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(3, 500)));
   }
 
+  // METHOD ID: 04
   public String removeCategory(RemoveCategoryRequestDTO requestDTO) {
     String type = requestDTO.type();
     if (type == null) {
-      throw new BadRequestException("CategoryEmpty");
+      throw new BadRequestException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(4, 400)));
     }
 
     AppSettings settings = appSettings();
@@ -121,15 +127,16 @@ public class AppSettingsService {
       return (String) resp.get("rev");
     }
 
-    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    throw new RuntimeException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(4, 500)));
   }
 
+  // METHOD ID: 05
   private AppSettings appSettings() {
     AppSettings settings = dbService.findById("app_settings", "general", AppSettings.class);
 
     if (settings == null) {
       log.error("App settings not found");
-      throw new NotFoundException("AppSettingsNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(5, 404)));
     }
 
     return settings;

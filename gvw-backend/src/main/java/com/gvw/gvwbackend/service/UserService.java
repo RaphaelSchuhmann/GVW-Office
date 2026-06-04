@@ -10,6 +10,7 @@ import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.InvalidCredentialsException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.mapper.UserMapper;
+import com.gvw.gvwbackend.model.ErrorDomain;
 import com.gvw.gvwbackend.model.Member;
 import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.model.User;
@@ -47,9 +48,10 @@ public class UserService {
     this.userMapper = userMapper;
   }
 
+  // METHOD ID: 01
   public UserResponseDTO getUser(String userId) {
     if (userId == null || userId.isEmpty()) {
-      throw new InvalidCredentialsException("Unauthorized");
+      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.USER.createCode(1, 401)));
     }
 
     User user = getUserByUserId(userId);
@@ -63,9 +65,10 @@ public class UserService {
         user.getRev());
   }
 
+  // METHOD ID: 02
   public String resetPasswordUsingMemberId(String memberId) {
     if (memberId == null || memberId.isEmpty()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(2, 400)));
     }
 
     User user = getUserByMemberId(memberId);
@@ -77,7 +80,7 @@ public class UserService {
     Map<String, Object> resp = dbService.update("users", user.getId(), user);
 
     if (resp == null || !resp.containsKey("rev")) {
-      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+      throw new RuntimeException(String.valueOf(ErrorDomain.USER.createCode(2, 500)));
     }
 
     mailService.sendMail(
@@ -89,6 +92,7 @@ public class UserService {
     return (String) resp.get("rev");
   }
 
+  // METHOD ID: 03
   public UserManagerResponsesDTO getUsers() {
     List<Map<String, Object>> usersRaw = dbService.findAll("users");
     List<User> users = usersRaw.stream().map(map -> mapper.convertValue(map, User.class)).toList();
@@ -134,21 +138,23 @@ public class UserService {
     return new UserManagerResponsesDTO(dtos);
   }
 
+  // METHOD ID: 04
   public void checkUser(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(4, 400)));
     }
 
     User user = getUserByID(id);
   }
 
+  // METHOD ID: 05
   public void addUser(AddUserAdminRequestDTO request) {
     List<User> usersWithRequestMail =
         dbService.findByQuery(
             "users", Map.of("selector", Map.of("email", request.email())), User.class);
 
     if (!usersWithRequestMail.isEmpty()) {
-      throw new ConflictException("EmailAlreadyInUse");
+      throw new ConflictException(String.valueOf(ErrorDomain.USER.createCode(5, 409)));
     }
 
     User user = createUserFromRequest(request);
@@ -172,9 +178,10 @@ public class UserService {
     }
   }
 
+  // METHOD ID: 06
   public String resetPasswordUsingUserId(String id) {
     if (id == null || id.isEmpty()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(6, 400)));
     }
 
     User user = getUserByID(id);
@@ -186,7 +193,7 @@ public class UserService {
     Map<String, Object> resp = dbService.update("users", user.getId(), user);
 
     if (resp == null || !resp.containsKey("rev")) {
-      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+      throw new RuntimeException(String.valueOf(ErrorDomain.USER.createCode(6, 500)));
     }
 
     mailService.sendMail(
@@ -198,11 +205,12 @@ public class UserService {
     return (String) resp.get("rev");
   }
 
+  // METHOD ID: 07
   public String updateUser(UpdateUserAdminRequestDTO request) {
     User user = getUserByID(request.id());
 
     if (!isOrphan(user.getMemberId())) {
-      throw new BadRequestException("InvalidAction");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(7, 400)));
     }
 
     if (!user.getEmail().equalsIgnoreCase(request.email())) {
@@ -210,7 +218,7 @@ public class UserService {
           dbService.findByQuery(
               "users", Map.of("selector", Map.of("email", request.email())), User.class);
       if (conflicts.stream().anyMatch(u -> !u.getId().equals(user.getId()))) {
-        throw new ConflictException("EmailAlreadyInUse");
+        throw new ConflictException(String.valueOf(ErrorDomain.USER.createCode(7, 409)));
       }
     }
 
@@ -230,18 +238,19 @@ public class UserService {
       return (String) userResult.get("rev");
     }
 
-    throw new RuntimeException("FailedToRetrieveNewRevFromDB");
+    throw new RuntimeException(String.valueOf(ErrorDomain.USER.createCode(7, 500)));
   }
 
+  // METHOD ID: 08
   public void deleteUser(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(8, 400)));
     }
 
     User user = getUserByID(id);
 
     if (!isOrphan(user.getMemberId())) {
-      throw new BadRequestException("InvalidAction");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(8, 400)));
     }
 
     dbService.delete("users", user.getId(), user.getRev());
@@ -253,32 +262,36 @@ public class UserService {
     }
   }
 
+  // METHOD ID: 09
   private User getUserByMemberId(String memberId) {
     Map<String, Object> query = Map.of("selector", Map.of("memberId", memberId), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
-    if (users == null || users.isEmpty()) throw new NotFoundException("UserNotFound");
+    if (users == null || users.isEmpty()) throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(9, 404)));
 
     return users.getFirst();
   }
 
+  // METHOD ID: 10
   private User getUserByUserId(String userId) {
     Map<String, Object> query = Map.of("selector", Map.of("userId", userId), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
-    if (users == null || users.isEmpty()) throw new NotFoundException("UserNotFound");
+    if (users == null || users.isEmpty()) throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(10, 404)));
 
     return users.getFirst();
   }
 
+  // METHOD ID: 11
   private User getUserByID(String id) {
     User user = dbService.findById("users", id, User.class);
 
-    if (user == null) throw new NotFoundException("UserNotFound");
+    if (user == null) throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(11, 404)));
 
     return user;
   }
 
+  // METHOD ID: 12
   public String resolveUserIdToEmail(String id) {
     if (id == null || id.isBlank()) {
       return "";
@@ -295,6 +308,7 @@ public class UserService {
     return email == null ? "" : email;
   }
 
+  // METHOD ID: 13
   private boolean isOrphan(String memberId) {
     if (memberId == null || memberId.isBlank()) return true;
 
@@ -304,6 +318,7 @@ public class UserService {
     return members == null || members.isEmpty();
   }
 
+  // METHOD ID: 14
   private User createUserFromRequest(AddUserAdminRequestDTO request) {
     User user = new User();
     user.setEmail(request.email());

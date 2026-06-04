@@ -4,6 +4,7 @@ import com.gvw.gvwbackend.dto.request.AddEventRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateEventRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateEventStatusRequestDTO;
 import com.gvw.gvwbackend.dto.response.EventsResponseDTO;
+import com.gvw.gvwbackend.exception.handler.ErrorContext;
 import com.gvw.gvwbackend.service.EventService;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -28,6 +29,7 @@ public class EventController {
   @PostMapping("/add")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
+  @ErrorContext(domain = 60, method = 3)
   public void addEvent(@Valid @RequestBody AddEventRequestDTO request) {
     eventService.addEvent(request);
   }
@@ -48,6 +50,7 @@ public class EventController {
   @PatchMapping("/update/status/{id}")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
+  @ErrorContext(domain = 60, method = 5)
   public Map<String, Object> updateEventStatus(
       @PathVariable String id, @Valid @RequestBody UpdateEventStatusRequestDTO request) {
     String rev = eventService.updateEventStatus(id, request.rev());
@@ -57,6 +60,7 @@ public class EventController {
   @PatchMapping("/update")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
+  @ErrorContext(domain = 60, method = 6)
   public Map<String, Object> updateEvent(@Valid @RequestBody UpdateEventRequestDTO request) {
     String rev = eventService.updateEvent(request);
     return Map.of("rev", rev);

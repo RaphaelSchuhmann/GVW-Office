@@ -9,6 +9,8 @@ import com.gvw.gvwbackend.model.Changelog;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+
+import com.gvw.gvwbackend.model.ErrorDomain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ public class ChangelogService {
     this.sseService = sseService;
   }
 
+  // METHOD ID: 01
   public ChangelogsResponseDTO getChangelogs() {
     List<Map<String, Object>> changelogsRaw = dbService.findAll("changelogs");
 
@@ -50,6 +53,7 @@ public class ChangelogService {
     return new ChangelogsResponseDTO(responseChangelogs);
   }
 
+  // METHOD ID: 02
   public void addChangelog(AddChangelogRequestDTO request) {
     Changelog changelog = new Changelog();
     changelog.setVersion(request.version());
@@ -66,6 +70,7 @@ public class ChangelogService {
     }
   }
 
+  // METHOD ID: 03
   public void deleteChangelog(String id) {
     if (id == null || id.isBlank()) {
       throw new BadRequestException("InvalidData");
@@ -73,7 +78,7 @@ public class ChangelogService {
 
     Changelog changelog = dbService.findById("changelogs", id, Changelog.class);
     if (changelog == null) {
-      throw new NotFoundException("ChangelogNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.CHANGELOG.createCode(3, 404)));
     }
 
     dbService.delete("changelogs", changelog.getId(), changelog.getRev());

@@ -2,27 +2,37 @@ package com.gvw.gvwbackend.exception.handler;
 
 import com.gvw.gvwbackend.dto.response.ErrorResponseDTO;
 import com.gvw.gvwbackend.exception.*;
+
+import java.util.List;
 import java.util.Map;
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.HandlerMethod;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.HandlerExecutionChain;
+import org.springframework.web.servlet.HandlerMapping;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
   @ExceptionHandler(DatabaseConnectionException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ErrorResponseDTO handleDatabaseConnection(DatabaseConnectionException ex) {
-    return new ErrorResponseDTO("Database connection failed", null);
+    return new ErrorResponseDTO("0000500", null);
   }
 
   @ExceptionHandler(DatabaseMappingException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ErrorResponseDTO handleDatabaseMapping(DatabaseMappingException ex) {
-    return new ErrorResponseDTO("Data could not be retrieved from database", null);
+    return new ErrorResponseDTO("0000500", null);
   }
 
   @ExceptionHandler(BadRequestException.class)
@@ -34,7 +44,24 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ErrorResponseDTO handleBadRequestFromValidation(MethodArgumentNotValidException ex) {
-    return new ErrorResponseDTO(ex.getMessage(), null);
+    int domain = 0;
+    int method = 0;
+
+    java.lang.reflect.Method executable = (java.lang.reflect.Method) ex.getParameter().getExecutable();
+
+    ErrorContext context = executable.getAnnotation(ErrorContext.class);
+
+    if (context == null) {
+      context = executable.getDeclaringClass().getAnnotation(ErrorContext.class);
+    }
+
+    if (context != null) {
+      domain = context.domain();
+      method = context.method();
+    }
+
+    String formattedCode = String.format("%02d%02d%03d", domain, method, 400);
+    return new ErrorResponseDTO(formattedCode, null);
   }
 
   @ExceptionHandler(InvalidCredentialsException.class)
@@ -70,6 +97,6 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ErrorResponseDTO handleGeneric(Exception ex) {
-    return new ErrorResponseDTO("Internal Server Error", null);
+    return new ErrorResponseDTO("0000500", null);
   }
 }

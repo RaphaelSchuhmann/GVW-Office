@@ -4,6 +4,7 @@ import com.gvw.gvwbackend.dto.request.AddUserAdminRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateUserAdminRequestDTO;
 import com.gvw.gvwbackend.dto.response.UserManagerResponsesDTO;
 import com.gvw.gvwbackend.dto.response.UserResponseDTO;
+import com.gvw.gvwbackend.exception.handler.ErrorContext;
 import com.gvw.gvwbackend.service.UserService;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -42,6 +43,7 @@ public class UserController {
   @PostMapping("/admin/addUser")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN')")
+  @ErrorContext(domain = 30, method = 5)
   public void addUser(@Valid @RequestBody AddUserAdminRequestDTO request) {
     userService.addUser(request);
   }
@@ -71,6 +73,7 @@ public class UserController {
   @PatchMapping("/admin/update")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN')")
+  @ErrorContext(domain = 30, method = 7)
   public Map<String, Object> updateUser(@Valid @RequestBody UpdateUserAdminRequestDTO requestDTO) {
     String rev = userService.updateUser(requestDTO);
     return Map.of("rev", rev);

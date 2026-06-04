@@ -1,5 +1,6 @@
 package com.gvw.gvwbackend.middleware;
 
+import com.gvw.gvwbackend.model.ErrorDomain;
 import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.service.JwtService;
 import io.jsonwebtoken.Claims;
@@ -51,7 +52,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
     String authHeader = request.getHeader("Authorization");
 
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "InvalidToken");
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, String.valueOf(ErrorDomain.AUTH.createCode(4, 401)));
       return;
     }
 
@@ -64,7 +65,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
       String roleName = claims.get("role", String.class);
 
       if (roleName == null) {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "InvalidToken");
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, String.valueOf(ErrorDomain.AUTH.createCode(4, 401)));
       }
 
       Role role = Role.fromString(roleName);
@@ -78,10 +79,8 @@ public class AuthMiddleware extends OncePerRequestFilter {
 
       request.setAttribute("userId", userId);
       filterChain.doFilter(request, response);
-    } catch (io.jsonwebtoken.ExpiredJwtException e) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "TokenExpired");
     } catch (Exception e) {
-      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "InvalidToken");
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, String.valueOf(ErrorDomain.AUTH.createCode(4, 401)));
     }
   }
 }

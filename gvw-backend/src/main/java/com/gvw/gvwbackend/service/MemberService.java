@@ -8,6 +8,7 @@ import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.mapper.MemberMapper;
+import com.gvw.gvwbackend.model.ErrorDomain;
 import com.gvw.gvwbackend.model.Member;
 import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.model.User;
@@ -43,6 +44,7 @@ public class MemberService {
     this.sseService = sseService;
   }
 
+  // METHOD ID: 01
   public MembersResponseDTO getMembers() {
     List<Map<String, Object>> membersRaw = dbService.findAll("members");
 
@@ -75,20 +77,22 @@ public class MemberService {
     return new MembersResponseDTO(responseMembers);
   }
 
+  // METHOD ID: 02
   public void checkMember(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.MEMBER.createCode(2, 400)));
     }
 
     Member member = dbService.findById("members", id, Member.class);
     if (member == null) {
-      throw new NotFoundException("MemberNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(2, 404)));
     }
   }
 
+  // METHOD ID: 03
   public void addMember(AddMemberRequestDTO request) {
     if (emailExists(request.email())) {
-      throw new ConflictException("EmailAlreadyInUse");
+      throw new ConflictException(String.valueOf(ErrorDomain.MEMBER.createCode(3, 409)));
     }
 
     Member member = createMemberFromRequest(request);
@@ -101,7 +105,7 @@ public class MemberService {
       List<Member> members = dbService.findByQuery("members", query, Member.class);
 
       if (members.isEmpty()) {
-        throw new NotFoundException("MemberNotFound");
+        throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(3, 404)));
       }
 
       String temporaryPassword = AuthService.generatePassword(3, 2);
@@ -144,13 +148,14 @@ public class MemberService {
             request.email());
       }
 
-      throw new RuntimeException("RegistrationFailed", e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.MEMBER.createCode(3, 500)), e);
     }
   }
 
+  // METHOD ID: 04
   public void deleteMember(String id) {
     if (id == null || id.isEmpty()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.MEMBER.createCode(4, 400)));
     }
 
     Member member = getMemberById(id);
@@ -162,6 +167,7 @@ public class MemberService {
     sseService.broadcastRefresh("MEMBERS");
   }
 
+  // METHOD ID: 05
   public List<String> updateMember(UpdateMemberRequestDTO request) {
     Member member = getMemberById(request.id());
     User user = getUserByMemberId(request.id());
@@ -187,12 +193,13 @@ public class MemberService {
       return List.of((String) memberResult.get("rev"), (String) userResult.get("rev"));
     }
 
-    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    throw new RuntimeException(String.valueOf(ErrorDomain.MEMBER.createCode(5, 500)));
   }
 
+  // METHOD ID: 06
   public String updateMemberStatus(String id, String _rev) {
     if (id == null || id.isEmpty()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.MEMBER.createCode(6, 400)));
     }
 
     Member member = getMemberById(id);
@@ -212,9 +219,10 @@ public class MemberService {
       return (String) memberResult.get("rev");
     }
 
-    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    throw new RuntimeException(String.valueOf(ErrorDomain.MEMBER.createCode(6, 500)));
   }
 
+  // METHOD ID: 07
   private boolean emailExists(String email) {
     Map<String, Object> query = Map.of("selector", Map.of("email", email), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
@@ -222,6 +230,7 @@ public class MemberService {
     return !users.isEmpty();
   }
 
+  // METHOD ID: 08
   private User createUserFromRequest(AddMemberRequestDTO request) {
     User user = new User();
     user.setEmail(request.email());
@@ -238,6 +247,7 @@ public class MemberService {
     return user;
   }
 
+  // METHOD ID: 09
   private Member createMemberFromRequest(AddMemberRequestDTO request) {
     Member member = new Member();
     member.setName(request.name());
@@ -254,19 +264,21 @@ public class MemberService {
     return member;
   }
 
+  // METHOD ID: 10
   public Member getMemberById(String id) {
     Member member = dbService.findById("members", id, Member.class);
 
-    if (member == null) throw new NotFoundException("MemberNotFound");
+    if (member == null) throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(10, 404)));
 
     return member;
   }
 
+  // METHOD ID: 11
   private User getUserByMemberId(String memberId) {
     Map<String, Object> query = Map.of("selector", Map.of("memberId", memberId), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
-    if (users == null || users.isEmpty()) throw new NotFoundException("UserNotFound");
+    if (users == null || users.isEmpty()) throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(11, 404)));
 
     return users.getFirst();
   }

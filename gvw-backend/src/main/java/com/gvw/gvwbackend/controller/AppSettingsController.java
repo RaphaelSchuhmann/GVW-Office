@@ -4,6 +4,7 @@ import com.gvw.gvwbackend.dto.request.AddCategoryRequestDTO;
 import com.gvw.gvwbackend.dto.request.RemoveCategoryRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateMaxMembersRequestDTO;
 import com.gvw.gvwbackend.dto.response.AppSettingsResponseDTO;
+import com.gvw.gvwbackend.exception.handler.ErrorContext;
 import com.gvw.gvwbackend.service.AppSettingsService;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -28,6 +29,7 @@ public class AppSettingsController {
   @PatchMapping("/update/max-members")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
+  @ErrorContext(domain = 20, method = 2)
   public Map<String, Object> updateMaxMembers(
       @Valid @RequestBody UpdateMaxMembersRequestDTO requestDTO) {
     String rev = appSettingsService.updateMaxMembers(requestDTO);
@@ -37,6 +39,7 @@ public class AppSettingsController {
   @PostMapping("/add/category")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN', 'CONDUCTOR')")
+  @ErrorContext(domain = 20, method = 3)
   public Map<String, Object> addCategory(@Valid @RequestBody AddCategoryRequestDTO requestDTO) {
     String rev = appSettingsService.addCategory(requestDTO);
     return Map.of("rev", rev);
@@ -45,6 +48,7 @@ public class AppSettingsController {
   @PostMapping("/remove/category")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN', 'CONDUCTOR')")
+  @ErrorContext(domain = 20, method = 4)
   public Map<String, Object> removeCategory(
       @Valid @RequestBody RemoveCategoryRequestDTO requestDTO) {
     String rev = appSettingsService.removeCategory(requestDTO);
