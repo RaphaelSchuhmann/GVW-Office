@@ -46,14 +46,14 @@
 
     /**
      * Reference to the "Add Event" modal.
-     * Controls visibility and lifecycle of the member creation dialog.
+     * Controls visibility and lifecycle of the event creation dialog.
      * @type {import("../../components/Modal.svelte").default}
      */
     let addEventModal = $state();
 
     /**
      * Reference to the delete confirmation modal.
-     * Used to initiate and confirm member deletion flow.
+     * Used to initiate and confirm event deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
     let confirmDeleteEventModal = $state();
@@ -98,9 +98,9 @@
      *
      * Workflow:
      * 1. Map dropdown and recurrence display values to backend enum values.
-     * 2. Send member payload to API.
+     * 2. Send event payload to API.
      * 3. Close the modal.
-     * 4. Refresh member list from backend.
+     * 4. Refresh event list from backend.
      *
      * @async
      * @returns {Promise<void>}
@@ -205,16 +205,16 @@
     // CONTEXT MENU STATE
     // ==================
     /**
-     * Reactive context menu instance for member actions.
-     * Stores open state, position, and currently active member ID.
+     * Reactive context menu instance for event actions.
+     * Stores open state, position, and currently active event ID.
      */
     let menu = createContextMenu();
 
     /**
-     * Toggles the status of the currently selected member.
+     * Toggles the status of the currently selected event.
      *
-     * If no active member is selected, the function exits early.
-     * After updating, the member list is refreshed.
+     * If no active event is selected, the function exits early.
+     * After updating, the event list is refreshed.
      *
      * @async
      * @returns {Promise<void>}

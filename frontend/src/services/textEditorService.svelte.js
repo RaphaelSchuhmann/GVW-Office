@@ -1,7 +1,7 @@
-export const blockTypes = new Set(["text", "image", "file", "blockquote", "h1", "h2", "h3", "h4"]);
+import { apiGetReportImage } from "../api/apiReports.svelte.js";
+import { normalizeResponse } from "../api/http.svelte.js";
 
-// TODO: Implement metadata view + editing of metadata
-// TODO: Implement file attachments in metadata
+export const blockTypes = new Set(["text", "image", "file", "blockquote", "h1", "h2", "h3", "h4"]);
 
 // k: image name / temp id, v: file
 export const pendingImages = new Map();
@@ -111,6 +111,31 @@ export function bulkInsertImageBlocks(images, items, insertAfterIndex) {
     items.splice(insertAfterIndex + 1, 0, ...newBlocks);
 }
 
-export function updateStylesInDOM(content, action) {
+let isFetching = {
+    getImage: false
+}
 
+const pendingDocumentImages = new Set();
+
+export async function getDocumentImage(reportId, imageId) {
+    if (!reportId || !imageId) return;
+
+    if (pendingDocumentImages.has(imageId)) return;
+
+    isFetching.getImage = true;
+
+    try {
+        // TODO: Refactor this later to call a generic endpoint
+        const { resp, blob } = await apiGetReportImage(reportId, imageId);
+        const normalizedResp = normalizeResponse(resp);
+
+        if (!normalizedResp.ok) return null;
+
+        return URL.createObjectURL(blob);
+    } catch (e) {
+        return null;
+    } finally {
+        isFetching.getImage = false;
+        pendingDocumentImages.delete(imageId);
+    }
 }

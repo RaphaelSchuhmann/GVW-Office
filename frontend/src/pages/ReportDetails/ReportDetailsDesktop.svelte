@@ -5,11 +5,20 @@
     import { push } from "svelte-spa-router";
     import Spinner from "../../components/Spinner.svelte";
     import TextEditor from "../../components/TextEditor/TextEditor.svelte";
+    import InfoViewer from "../../components/TextEditor/InfoViewer.svelte";
+    import { reportTypeMap, updateDescription } from "../../services/reportService.svelte.js";
 
     let {
         reportData,
         ...restProps
     } = $props();
+
+    /**
+     * Reference to the text editor info viewer.
+     * Controls visibility and lifecycle of the viewer dialog.
+     * @type {import("../../components/TextEditor/InfoViewer.svelte").default}
+     */
+    let infoViewerRef = $state(null);
 
     let isEditing = $state(false);
     let isSubmitting = $state(false);
@@ -25,6 +34,7 @@
     function startEditing() {
         draft = JSON.parse(JSON.stringify(reportData));
         isEditing = true;
+        infoViewerRef?.closeViewer();
     }
 
     /**
@@ -37,21 +47,30 @@
         draft = null;
         isEditing = false;
     }
+
+    function toggleInfoViewer() {
+        if (infoViewerRef.isOpen.value) {
+            infoViewerRef.closeViewer();
+        } else {
+            infoViewerRef.openViewer();
+        }
+    }
 </script>
 
 <ToastStack />
 
 <main class="flex overflow-hidden">
     <DesktopSidebar currentPage="reports" />
-    <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0 gap-7">
-        <div class="flex w-full items-center">
+    <div class="flex flex-col w-full h-dvh overflow-hidden p-8 min-h-0 gap-7">
+        <div class="flex w-full items-center p-2">
             <div class="flex items-center justify-start gap-4 max-w-2/5">
                 <p class="text-gv-dark-text text-dt-3 text-nowrap truncate">{reportData?.title}</p>
-                <button
-                    class="flex items-center gap-2 p-1.5 pl-3 pr-3 border-2 border-gv-border rounded-2 cursor-pointer hover:bg-gv-input-bg">
-                    <span class="material-symbols-rounded text-gv-dark-text text-icon-dt-6">download</span>
-                    <span class="text-gv-dark-text text-dt-7 font-semibold">PDF</span>
-                </button>
+                    <!--TODO: Implement in 1.1-->
+                    <!--<button-->
+                    <!--    class="flex items-center gap-2 p-1.5 pl-3 pr-3 border-2 border-gv-border rounded-2 cursor-pointer hover:bg-gv-input-bg">-->
+                    <!--    <span class="material-symbols-rounded text-gv-dark-text text-icon-dt-6">download</span>-->
+                    <!--    <span class="text-gv-dark-text text-dt-7 font-semibold">PDF</span>-->
+                    <!--</button>-->
             </div>
             <div class="flex items-center justify-start gap-2 ml-auto">
                 {#if !isEditing}
@@ -64,7 +83,8 @@
                         <p class="text-dt-6 ml-2">Bearbeiten</p>
                     </Button>
                     <button
-                        class="bg-gv-primary p-3.5 pl-4 pr-4 text-white cursor-pointer hover:bg-gv-primary-hover rounded-1 flex items-center justify-center">
+                        class="bg-gv-primary p-3.5 pl-4 pr-4 text-white cursor-pointer hover:bg-gv-primary-hover rounded-1 flex items-center justify-center"
+                        onclick={toggleInfoViewer}>
                         <span class="material-symbols-rounded text-icon-dt-6">info</span>
                     </button>
                 {:else}
@@ -82,6 +102,9 @@
                 {/if}
             </div>
         </div>
-        <TextEditor isEditing={isEditing} itemData={reportData} draft={draft} page="reportEditor" />
+        <div class="flex items-start w-full h-full overflow-hidden gap-4 p-2">
+            <TextEditor isEditing={isEditing} itemData={reportData} draft={draft} page="reportEditor" />
+            <InfoViewer bind:this={infoViewerRef} bind:data={reportData} categoryMap={reportTypeMap} updateDescription={updateDescription} />
+        </div>
     </div>
 </main>

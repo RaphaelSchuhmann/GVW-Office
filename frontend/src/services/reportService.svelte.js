@@ -3,7 +3,7 @@ import {
     apiCheckReport,
     apiDeleteReport,
     apiGetReport,
-    apiGetReportImage
+    apiGetReportImage, apiUpdateDescription
 } from "../api/apiReports.svelte.js";
 import { normalizeResponse } from "../api/http.svelte.js";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
@@ -20,7 +20,7 @@ export const reportTypeMap = {
     "protocol": "Protokoll",
     "gatheringReport": "Versammlungsbericht",
     "other": "Sonstigerbericht"
-}
+};
 
 export const reportTypeFilterMap = {
     "": "all",
@@ -34,17 +34,16 @@ export const reportTypeFilterMap = {
     "protocol": "Protokoll",
     "gatheringReport": "Versammlungsbericht",
     "other": "Sonstigerbericht"
-}
+};
 
 let isFetching = {
     add: false,
     delete: false,
     check: false,
     getReport: false,
-    getImage: false
-}
+    updateDescription: false
+};
 
-const pendingImages = new Set();
 const pendingChecks = new Map();
 
 /**
@@ -221,7 +220,7 @@ function handleError(errorType, context) {
         GET_DEFAULT: {
             title: "Fehler beim Laden",
             subTitle: "Beim Laden des Berichts ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-        }
+        },
     };
 
     const config = errorConfigs[errorType] || context === "DELETE" ? errorConfigs.DELETE_DEFAULT : errorConfigs.GET_DEFAULT;
@@ -245,30 +244,46 @@ export function highlight(text, term) {
 
     const safeTerm = sanitize(term.trim());
 
-    const escapedTerm = safeTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(`(${escapedTerm})`, 'gi');
+    const escapedTerm = safeTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escapedTerm})`, "gi");
 
-    return safeText.replace(regex, '<mark class="highlight">$1</mark>');
+    return safeText.replace(regex, "<mark class=\"highlight\">$1</mark>");
 }
 
-export async function getReportImage(reportId, imageId) {
-    if (!reportId || !imageId) return;
-
-    if (pendingImages.has(imageId)) return;
-
-    isFetching.getImage = true;
+export async function updateDescription(reportId, rev, description) {
+    if (isFetching.updateDescription || !reportId || !rev || !description) return { success: false, rev: null };
+    isFetching.updateDescription = true;
 
     try {
-        const { resp, blob } = await apiGetReportImage(reportId, imageId);
+        const { resp, body } = await apiUpdateDescription(reportId, rev, description);
         const normalizedResp = normalizeResponse(resp);
 
-        if (!normalizedResp.ok) return null;
+        if (!normalizedResp.ok) {
+            // NOTE: SonarQube issues can be ignored as error handling will be
+            //       refactored in the next task!
+            if (normalizedResp.errorType === "BADREQUEST") {
+                addToast({
+                    title: "Ungültige Beschreibung",
+                    subTitle: "Die angegebene Beschreibung ist ungültig. Bitte versuchen Sie es später erneut.",
+                    type: "error"
+                });
+            } else if (normalizedResp.errorType === "NOTFOUND") {
+                addToast({
+                    title: "Bericht nicht gefunden",
+                    subTitle: "Der angegebene Bericht konnte nicht gefunden werden. Bitte versuchen Sie es später erneut.",
+                    type: "error"
+                });
+            } else {
+                addToast({
+                    title: "Fehler beim Speichern",
+                    subTitle: "Beim Speichern des Berichts ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
+                    type: "error"
+                });
+            }
+        }
 
-        return URL.createObjectURL(blob);
-    } catch (e) {
-        return null;
+        return { success: true, rev: body.rev };
     } finally {
-        isFetching.getImage = false;
-        pendingImages.delete(imageId);
+        isFetching.updateDescription = false;
     }
 }

@@ -1,4 +1,4 @@
-import { httpDelete, httpGet, httpPost, parseBodySafe } from "./http.svelte";
+import { httpDelete, httpGet, httpPatch, httpPost, parseBodySafe } from "./http.svelte";
 
 const apiUrl = __API_URL__;
 
@@ -134,4 +134,11 @@ export async function apiGetReportImage(reportId, imageId){
     if (!resp) return { resp: null, blob: null };
     const blob = await resp.blob();
     return { resp, blob };
+}
+
+export async function apiUpdateDescription(reportId, rev, description) {
+    const resp = await httpPatch(`${apiUrl}/report/update/description`, {id: reportId, rev: rev, description: description});
+    if (!resp) return { resp: null, blob: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
 }

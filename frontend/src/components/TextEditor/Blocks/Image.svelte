@@ -1,6 +1,5 @@
 <script>
-    import { getReportImage } from "../../../services/reportService.svelte.js";
-    import { deleteBlock, previewUrls } from "../../../services/textEditorService.svelte.js";
+    import { deleteBlock, getDocumentImage, previewUrls } from "../../../services/textEditorService.svelte.js";
     import Spinner from "../../Spinner.svelte";
 
     let {
@@ -27,7 +26,7 @@
                     isLoading = false;
                 }
             } else {
-                const url = await getReportImage(reportId, imageId);
+                const url = await getDocumentImage(reportId, imageId);
                 if (active) {
                     srcUrl = url;
                     isLoading = false;
