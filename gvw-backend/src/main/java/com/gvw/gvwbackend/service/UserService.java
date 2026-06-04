@@ -267,7 +267,8 @@ public class UserService {
     Map<String, Object> query = Map.of("selector", Map.of("memberId", memberId), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
-    if (users == null || users.isEmpty()) throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(9, 404)));
+    if (users == null || users.isEmpty())
+      throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(9, 404)));
 
     return users.getFirst();
   }
@@ -277,7 +278,8 @@ public class UserService {
     Map<String, Object> query = Map.of("selector", Map.of("userId", userId), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
-    if (users == null || users.isEmpty()) throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(10, 404)));
+    if (users == null || users.isEmpty())
+      throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(10, 404)));
 
     return users.getFirst();
   }
@@ -286,7 +288,8 @@ public class UserService {
   private User getUserByID(String id) {
     User user = dbService.findById("users", id, User.class);
 
-    if (user == null) throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(11, 404)));
+    if (user == null)
+      throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(11, 404)));
 
     return user;
   }

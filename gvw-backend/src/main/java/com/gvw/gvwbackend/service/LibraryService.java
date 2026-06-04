@@ -117,7 +117,8 @@ public class LibraryService {
         deleteFile(orphan.getId() + "." + orphan.getExtension());
       }
 
-      if (e instanceof ConflictException) throw new ConflictException(String.valueOf(ErrorDomain.LIBRARY.createCode(4, 409)));
+      if (e instanceof ConflictException)
+        throw new ConflictException(String.valueOf(ErrorDomain.LIBRARY.createCode(4, 409)));
       throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(4, 500)), e);
     }
   }
@@ -246,7 +247,8 @@ public class LibraryService {
         deleteFile(newFile.getId() + "." + newFile.getExtension());
       }
 
-      if (e instanceof RuntimeException) throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(7, 500)), e);
+      if (e instanceof RuntimeException)
+        throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(7, 500)), e);
       throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(7, 500)), e);
     }
   }

@@ -268,7 +268,8 @@ public class MemberService {
   public Member getMemberById(String id) {
     Member member = dbService.findById("members", id, Member.class);
 
-    if (member == null) throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(10, 404)));
+    if (member == null)
+      throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(10, 404)));
 
     return member;
   }
@@ -278,7 +279,8 @@ public class MemberService {
     Map<String, Object> query = Map.of("selector", Map.of("memberId", memberId), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
-    if (users == null || users.isEmpty()) throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(11, 404)));
+    if (users == null || users.isEmpty())
+      throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(11, 404)));
 
     return users.getFirst();
   }

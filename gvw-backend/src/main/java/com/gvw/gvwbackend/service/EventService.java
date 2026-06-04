@@ -133,7 +133,7 @@ public class EventService {
   // METHOD ID: 04
   public void deleteEvent(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.EVENTS.createCode(4,  400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.EVENTS.createCode(4, 400)));
     }
 
     Event event = dbService.findById("events", id, Event.class);

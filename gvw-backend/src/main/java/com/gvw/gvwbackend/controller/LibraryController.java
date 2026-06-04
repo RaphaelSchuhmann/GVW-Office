@@ -73,11 +73,12 @@ public class LibraryController {
     libraryService.deleteScore(id);
   }
 
-  // METHOD ID: 01  
+  // METHOD ID: 01
   @GetMapping("/{id}/files")
   public ResponseEntity<StreamingResponseBody> downloadScoreFiles(@PathVariable String id) {
     Score score = dbService.findById("library", id, Score.class);
-    if (score == null) throw new NotFoundException(String.valueOf(ErrorDomain.LIBRARY.createCode(1, 404)));
+    if (score == null)
+      throw new NotFoundException(String.valueOf(ErrorDomain.LIBRARY.createCode(1, 404)));
     if (score.getFiles() == null || score.getFiles().isEmpty()) {
       throw new NotFoundException(String.valueOf(ErrorDomain.LIBRARY.createCode(1, 404)));
     }

@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ErrorContext {
   int domain() default 0;
+
   int method() default 0;
 }

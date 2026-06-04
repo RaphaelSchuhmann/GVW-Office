@@ -12,7 +12,8 @@ public enum ErrorDomain {
   FEEDBACK(90),
   BUG_REPORT(11),
   CHANGELOG(12),
-  FILE_VALIDATOR(13), // Technically not needed as its id is hard coded in the responses for invalid files
+  FILE_VALIDATOR(
+      13), // Technically not needed as its id is hard coded in the responses for invalid files
   TEXT_EDITOR(14);
 
   private final int id;

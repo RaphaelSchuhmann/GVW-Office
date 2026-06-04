@@ -2,24 +2,14 @@ package com.gvw.gvwbackend.exception.handler;
 
 import com.gvw.gvwbackend.dto.response.ErrorResponseDTO;
 import com.gvw.gvwbackend.exception.*;
-
-import java.util.List;
 import java.util.Map;
-
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.HandlerMethod;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.context.request.ServletWebRequest;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.HandlerExecutionChain;
-import org.springframework.web.servlet.HandlerMapping;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -47,7 +37,8 @@ public class GlobalExceptionHandler {
     int domain = 0;
     int method = 0;
 
-    java.lang.reflect.Method executable = (java.lang.reflect.Method) ex.getParameter().getExecutable();
+    java.lang.reflect.Method executable =
+        (java.lang.reflect.Method) ex.getParameter().getExecutable();
 
     ErrorContext context = executable.getAnnotation(ErrorContext.class);
 

@@ -124,9 +124,8 @@ public class ReportService {
     String contents = getContentsAsString(report);
     String plainText = Jsoup.parse(contents).text();
 
-    List<String> words = Arrays.stream(plainText.split("\\s+"))
-            .filter(word -> !word.isEmpty())
-            .toList();
+    List<String> words =
+        Arrays.stream(plainText.split("\\s+")).filter(word -> !word.isEmpty()).toList();
 
     return new FullReportResponseDTO(
         report.getId(),
@@ -310,14 +309,15 @@ public class ReportService {
 
       InetAddress[] addresses2 = InetAddress.getAllByName(host);
       if (addresses.length != addresses2.length) {
-        throw new IllegalArgumentException("0000500"); // DNS rebind detected, note entirely sure what code to return here
+        throw new IllegalArgumentException(
+            "0000500"); // DNS rebind detected, note entirely sure what code to return here
       }
 
       Document doc =
-              Jsoup.connect(uri.toString())
-                      .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-                      .timeout(5000)
-                      .get();
+          Jsoup.connect(uri.toString())
+              .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+              .timeout(5000)
+              .get();
 
       String title = doc.title();
       if (title.isBlank()) {
@@ -326,7 +326,7 @@ public class ReportService {
 
       String favicon;
       Element iconElement =
-              doc.head().select("link[rel~=(?i)^(shortcut|icon|apple-touch-icon)$]").first();
+          doc.head().select("link[rel~=(?i)^(shortcut|icon|apple-touch-icon)$]").first();
 
       if (iconElement != null) {
         favicon = iconElement.attr("abs:href");
@@ -407,7 +407,8 @@ public class ReportService {
         deleteFile(newFile);
       }
 
-      if (e instanceof RuntimeException) throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(10, 500)));
+      if (e instanceof RuntimeException)
+        throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(10, 500)));
       throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(10, 500)), e);
     }
   }
@@ -548,7 +549,8 @@ public class ReportService {
         }
       }
 
-      if (e instanceof BadRequestException) throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(15, 400)));
+      if (e instanceof BadRequestException)
+        throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(15, 400)));
 
       throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(15, 500)), e);
     }
@@ -599,8 +601,8 @@ public class ReportService {
   // METHOD ID: 18
   private boolean isBlockedAddress(InetAddress addr) {
     return addr.isAnyLocalAddress()
-            || addr.isLoopbackAddress()
-            || addr.isLinkLocalAddress()
-            || addr.isSiteLocalAddress();
+        || addr.isLoopbackAddress()
+        || addr.isLinkLocalAddress()
+        || addr.isSiteLocalAddress();
   }
 }

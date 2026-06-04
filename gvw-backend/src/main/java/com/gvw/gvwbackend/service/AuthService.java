@@ -10,11 +10,9 @@ import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.exception.TooManyRequestsException;
 import com.gvw.gvwbackend.model.ErrorDomain;
 import com.gvw.gvwbackend.model.User;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,19 +23,19 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private static final List<String> words =
-          List.of(
-                  "apple",
-                  "banana",
-                  "chorus",
-                  "melody",
-                  "note",
-                  "voice",
-                  "sing",
-                  "harmony",
-                  "music",
-                  "choir",
-                  "pineapple",
-                  "gvw");
+      List.of(
+          "apple",
+          "banana",
+          "chorus",
+          "melody",
+          "note",
+          "voice",
+          "sing",
+          "harmony",
+          "music",
+          "choir",
+          "pineapple",
+          "gvw");
 
   public AuthService(DbService dbService, PasswordEncoder passwordEncoder, JwtService jwtService) {
     this.dbService = dbService;
@@ -50,13 +48,15 @@ public class AuthService {
     Map<String, Object> query = Map.of("selector", Map.of("email", requestDTO.email()), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
-    if (users.isEmpty()) throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(1, 401)));
+    if (users.isEmpty())
+      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(1, 401)));
 
     User user = users.getFirst();
     Instant now = Instant.now();
 
     if (user.getLockUntil() != null && now.isBefore(user.getLockUntil())) {
-      throw new TooManyRequestsException(String.valueOf(ErrorDomain.AUTH.createCode(1, 429)), user.getLockUntil().toEpochMilli());
+      throw new TooManyRequestsException(
+          String.valueOf(ErrorDomain.AUTH.createCode(1, 429)), user.getLockUntil().toEpochMilli());
     }
 
     String rev;
@@ -67,7 +67,9 @@ public class AuthService {
         user.setLockUntil(Instant.now().plus(Duration.ofMinutes(15)));
         dbService.update("users", user.getId(), user);
 
-        throw new TooManyRequestsException(String.valueOf(ErrorDomain.AUTH.createCode(1, 429)), user.getLockUntil().toEpochMilli());
+        throw new TooManyRequestsException(
+            String.valueOf(ErrorDomain.AUTH.createCode(1, 429)),
+            user.getLockUntil().toEpochMilli());
       } else {
         user.setFailedLoginAttempts(failedAttempts + 1);
         dbService.update("users", user.getId(), user);
@@ -87,13 +89,13 @@ public class AuthService {
     }
 
     String token =
-            jwtService.generateToken(user.getUserId(), Map.of("role", user.getRole().getValue()));
+        jwtService.generateToken(user.getUserId(), Map.of("role", user.getRole().getValue()));
 
     return new LoginResponseDTO(
-            token,
-            Boolean.TRUE.equals(user.getChangePassword()),
-            Boolean.TRUE.equals(user.getFirstLogin()),
-            rev);
+        token,
+        Boolean.TRUE.equals(user.getChangePassword()),
+        Boolean.TRUE.equals(user.getFirstLogin()),
+        rev);
   }
 
   // METHOD ID: 02
@@ -101,7 +103,8 @@ public class AuthService {
     Map<String, Object> query = Map.of("selector", Map.of("email", requestDTO.email()), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
-    if (users.isEmpty()) throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(2, 401)));
+    if (users.isEmpty())
+      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(2, 401)));
 
     User user = users.getFirst();
 
@@ -144,9 +147,9 @@ public class AuthService {
     User user = users.getFirst();
 
     return new AutoLoginResponseDTO(
-            user.getEmail(),
-            Boolean.TRUE.equals(user.getChangePassword()),
-            Boolean.TRUE.equals(user.getFirstLogin()));
+        user.getEmail(),
+        Boolean.TRUE.equals(user.getChangePassword()),
+        Boolean.TRUE.equals(user.getFirstLogin()));
   }
 
   public static String generatePassword(int wordCount, int numberCount) {

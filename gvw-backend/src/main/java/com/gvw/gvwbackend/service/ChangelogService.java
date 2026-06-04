@@ -6,11 +6,10 @@ import com.gvw.gvwbackend.dto.response.ChangelogsResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.Changelog;
+import com.gvw.gvwbackend.model.ErrorDomain;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-
-import com.gvw.gvwbackend.model.ErrorDomain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
