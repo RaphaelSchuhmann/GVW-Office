@@ -37,6 +37,9 @@ public class ReportService {
 
   private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+  // TODO: When separating generic text editor logic, make sure to refactor some stuff here...
+  //       a and make sure to either update method ids in frontend or keep them as they are in backend!
+
   @Value("${reports.directory:./api-data/reports}")
   private String filesDir;
 
@@ -141,21 +144,21 @@ public class ReportService {
         report.getContents());
   }
 
-  // METHOD ID: 05
-  public AttachmentResource getReportImage(String reportId, String filename) {
+  // METHOD ID: 05 - TEXT_EDITOR
+  public AttachmentResource getDocumentImage(String reportId, String filename) {
     if (reportId == null || reportId.isBlank() || filename == null || filename.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(5, 400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(5, 400)));
     }
 
     if (filename.contains("..") || filename.contains("/")) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(5, 400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(5, 400)));
     }
 
     Path filePath = Paths.get(filesDir, filename);
     File file = filePath.toFile();
 
     if (!file.exists()) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(5, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(5, 404)));
     }
 
     try {
@@ -167,37 +170,7 @@ public class ReportService {
 
       return new AttachmentResource(file, contentType);
     } catch (IOException exception) {
-      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(5, 500)), exception);
-    }
-  }
-
-  // METHOD ID: 06
-  public AttachmentResource getReportFile(String reportId, String filename) {
-    if (reportId == null || reportId.isBlank() || filename == null || filename.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(6, 400)));
-    }
-
-    if (filename.contains("..") || filename.contains("/")) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(6, 400)));
-    }
-
-    Path filePath = Paths.get(filesDir, filename);
-    File file = filePath.toFile();
-
-    if (!file.exists()) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(6, 404)));
-    }
-
-    try {
-      String contentType = Files.probeContentType(filePath);
-
-      if (contentType == null || contentType.isBlank()) {
-        contentType = "application/octet-stream";
-      }
-
-      return new AttachmentResource(file, contentType);
-    } catch (IOException exception) {
-      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(6, 500)), exception);
+      throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(5, 500)), exception);
     }
   }
 
@@ -235,7 +208,7 @@ public class ReportService {
     }
   }
 
-  // METHOD ID: 08
+  // METHOD ID: 08 - TEXT_EDITOR
   public ReportsSearchResponseDTO reportDeepSearch(String input) {
     if (input == null || input.isBlank()) {
       return new ReportsSearchResponseDTO(List.of());
@@ -285,25 +258,25 @@ public class ReportService {
     return new ReportsSearchResponseDTO(responseDTOS);
   }
 
-  // METHOD ID: 09
+  // METHOD ID: 09 - TEXT_EDITOR
   public LinkMetadataResponseDTO resolveUrl(String url) {
     try {
       URI uri = new URI(url);
 
       if (!"https".equalsIgnoreCase(uri.getScheme())) {
-        throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(9, 400)));
+        throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(9, 400)));
       }
 
       String host = uri.getHost();
       if (host == null) {
-        throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(9, 400)));
+        throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(9, 400)));
       }
 
       InetAddress[] addresses = InetAddress.getAllByName(host);
 
       for (InetAddress address : addresses) {
         if (isBlockedAddress(address)) {
-          throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(9, 400)));
+          throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(9, 400)));
         }
       }
 
@@ -340,11 +313,11 @@ public class ReportService {
     }
   }
 
-  // METHOD ID: 10
+  // METHOD ID: 10 - TEXT_EDITOR
   public String updateReport(UpdateReportRequestDTO request, List<MultipartFile> files) {
     Report report = dbService.findById("reports", request.id(), Report.class);
     if (report == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(10, 400)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(10, 404)));
     }
 
     Map<String, String> newlyUploadedFiles = new HashMap<>();
@@ -366,7 +339,7 @@ public class ReportService {
             block.setData(realId);
           } else {
             log.error("Missing file for temp ID: {}", tempId);
-            throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(10, 400)));
+            throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(10, 400)));
           }
         }
       }
@@ -384,7 +357,7 @@ public class ReportService {
       Map<String, Object> resp = dbService.update("reports", report.getId(), report);
 
       if (resp == null || !resp.containsKey("rev")) {
-        throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(10, 500)));
+        throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(10, 500)));
       }
 
       if (!removedFiles.isEmpty()) {
@@ -408,12 +381,12 @@ public class ReportService {
       }
 
       if (e instanceof RuntimeException)
-        throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(10, 500)));
-      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(10, 500)), e);
+        throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(10, 500)));
+      throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(10, 500)), e);
     }
   }
 
-  // METHOD ID: 11
+  // METHOD ID: 11 - TEXT_EDITOR
   public String updateReportDescription(UpdateReportDescriptionRequestDTO request) {
     String description = request.description();
 
@@ -423,7 +396,7 @@ public class ReportService {
 
     Report report = dbService.findById("reports", request.id(), Report.class);
     if (report == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(11, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(11, 404)));
     }
 
     report.setDescription(description);
@@ -432,7 +405,7 @@ public class ReportService {
     Map<String, Object> resp = dbService.update("reports", report.getId(), report);
 
     if (resp == null || !resp.containsKey("rev")) {
-      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(11, 500)));
+      throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(11, 500)));
     }
 
     try {
@@ -444,7 +417,7 @@ public class ReportService {
     return (String) resp.get("rev");
   }
 
-  // METHOD ID: 12
+  // METHOD ID: 12 - TEXT_EDITOR
   private String getContentsAsString(Report report) {
     if (report == null) return "";
 
@@ -472,7 +445,7 @@ public class ReportService {
     return sb.toString();
   }
 
-  // METHOD ID: 13
+  // METHOD ID: 13 - TEXT_EDITOR
   private List<String> getFilenames(Report report) {
     if (report == null) {
       return List.of();
@@ -493,7 +466,7 @@ public class ReportService {
     return filenames;
   }
 
-  // METHOD ID: 14
+  // METHOD ID: 14 - TEXT_EDITOR
   private void deleteFile(String fileName) {
     Path filePath = Paths.get(filesDir, fileName);
 
@@ -505,11 +478,11 @@ public class ReportService {
     try {
       Files.deleteIfExists(filePath);
     } catch (IOException e) {
-      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(14, 500)), e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(14, 500)), e);
     }
   }
 
-  // METHOD ID: 15
+  // METHOD ID: 15 - TEXT_EDITOR
   private Map<String, String> storeFiles(List<MultipartFile> files) throws IOException {
     if (files == null || files.isEmpty()) return Map.of();
 
@@ -522,7 +495,7 @@ public class ReportService {
 
       for (MultipartFile file : files) {
         if (file.getSize() > MAX_FILE_SIZE) {
-          throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(15, 400)));
+          throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(15, 400)));
         }
 
         String originalName = file.getOriginalFilename();
@@ -550,9 +523,9 @@ public class ReportService {
       }
 
       if (e instanceof BadRequestException)
-        throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(15, 400)));
+        throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(15, 400)));
 
-      throw new RuntimeException(String.valueOf(ErrorDomain.REPORT.createCode(15, 500)), e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(15, 500)), e);
     }
 
     return filenames;
@@ -574,7 +547,7 @@ public class ReportService {
     return content.substring(start, end);
   }
 
-  // METHOD ID: 17
+  // METHOD ID: 17 - TEXT_EDITOR
   private Set<String> extractFileIds(List<TextEditorBlock> content) {
     Set<String> ids = new HashSet<>();
 
@@ -598,7 +571,7 @@ public class ReportService {
     return ids;
   }
 
-  // METHOD ID: 18
+  // METHOD ID: 18 - TEXT_EDITOR
   private boolean isBlockedAddress(InetAddress addr) {
     return addr.isAnyLocalAddress()
         || addr.isLoopbackAddress()

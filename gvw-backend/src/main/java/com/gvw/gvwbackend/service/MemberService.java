@@ -169,6 +169,7 @@ public class MemberService {
 
   // METHOD ID: 05
   public List<String> updateMember(UpdateMemberRequestDTO request) {
+    // Can throw not found
     Member member = getMemberById(request.id());
     User user = getUserByMemberId(request.id());
 

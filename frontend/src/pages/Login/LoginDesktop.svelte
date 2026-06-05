@@ -82,18 +82,6 @@
                         subTitle: `Konto gesperrt. Versuchen Sie es in ${remainingMinutes} Minute${remainingMinutes !== 1 ? "n" : ""} erneut.`,
                         type: "warning",
                     });
-                } else if (normalizedResponse.errorType === "NOTFOUND") {
-                    addToast({
-                        title: "Benutzer nicht gefunden",
-                        subTitle: "Es wurde kein Konto mit dieser E-Mail gefunden.",
-                        type: "error"
-                    });
-                } else if (normalizedResponse.errorType === "UNAUTHORIZED") {
-                    addToast({
-                        title: "E-Mail oder Passwort falsch",
-                        subTitle: "Die E-Mail oder das Passwort ist falsch.",
-                        type: "error"
-                    });
                     return;
                 }
 

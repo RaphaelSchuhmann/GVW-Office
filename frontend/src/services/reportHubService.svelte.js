@@ -36,65 +36,6 @@ let isFetching = {
 }
 
 /**
- * Handles API errors for report hub operations and displays user-facing toast messages.
- *
- * Responsibilities:
- * - Maps API error types to user-friendly messages based on context
- * - Displays localized toast notifications
- * - Adjusts message detail depending on viewport (mobile vs desktop)
- *
- * Behavior:
- * - Falls back to a default message if no specific mapping exists
- * - Does nothing if no configuration is found for the given context
- *
- * @function handleReportHubError
- * @param {string} errorType - API error type (e.g. BADREQUEST, NOTFOUND)
- * @param {string} context - Operation context (e.g. ADD_FEEDBACK, DELETE_BUG)
- */
-function handleReportHubError(errorType, context) {
-    const errorConfigs = {
-        ADD_FEEDBACK: {
-            BADREQUEST: { title: "Ungültige Daten", sub: "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte." },
-            DEFAULT: { title: "Fehler beim Hinzufügen", sub: "Beim Hinzufügen des neuen Mitglieds ist ein Fehler aufgetreten." },
-        },
-        ADD_BUG: {
-            BADREQUEST: { title: "Ungültige Daten", sub: "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte." },
-            DEFAULT: { title: "Fehler beim Hinzufügen", sub: "Beim Hinzufügen des neuen Mitglieds ist ein Fehler aufgetreten." },
-        },
-        DELETE_FEEDBACK: {
-            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
-            NOTFOUND: { title: "Feedback nicht gefunden", sub: "Das gewählte Feedback wurde im System nicht gefunden." },
-            DEFAULT: { title: "Fehler beim Entfernen", sub: "Beim Entfernen des Feedbacks ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
-        },
-        DELETE_BUG: {
-            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
-            NOTFOUND: { title: "Bug Report nicht gefunden", sub: "Der gewählte Bug Report wurde im System nicht gefunden." },
-            DEFAULT: { title: "Fehler beim Entfernen", sub: "Beim Entfernen des Bug Reports ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
-        },
-        DETAILS_FEEDBACK: {
-            BADREQUEST: { title: "Ungültige Daten", sub: "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte." },
-            NOTFOUND: { title: "Feedback nicht gefunden", sub: "Das gewhälte Feedback wurde im System nicht gefunden." },
-            DEFAULT: { title: "Fehler beim Laden", sub: "Beim Laden des Feedbacks ist ein unerwarteter Fehler aufgetreten." }
-        },
-        DETAILS_BUG: {
-            BADREQUEST: { title: "Ungültige Daten", sub: "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte." },
-            NOTFOUND: { title: "Bug Report nicht gefunden", sub: "Der gewhälte Bug Report wurde im System nicht gefunden." },
-            DEFAULT: { title: "Fehler beim Laden", sub: "Beim Laden des Bug Reports ist ein unerwarteter Fehler aufgetreten." }
-        },
-    };
-
-    const config = errorConfigs[context]?.[errorType] ?? errorConfigs[context]?.DEFAULT;
-
-    if (!config) return;
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.sub,
-        type: "error"
-    });
-}
-
-/**
  * Extracts displayable dropdown items from a bidirectional mapping object.
  *
  * Responsibilities:
@@ -140,15 +81,6 @@ export async function getAllFeedbacks() {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            addToast({
-                title: "Fehler beim Laden",
-                subTitle: "Beim Laden der Feedbackliste ist ein unerwarteter Fehler aufgetreten.",
-                type: "error"
-            });
-            return;
-        }
         
         Object.assign(feedbackStore, { data: body.feedbacks });
     } finally {
@@ -181,15 +113,6 @@ export async function getAllBugReports() {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            addToast({
-                title: "Fehler beim Laden",
-                subTitle: "Beim Laden der Bugreportliste ist ein unerwarteter Fehler aufgetreten.",
-                type: "error"
-            });
-            return;
-        }
         
         Object.assign(bugReportStore, { data: body.reports });
     } finally {
@@ -282,11 +205,6 @@ async function addFeedback(feedback) {
 
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            handleReportHubError(normalizedResponse.errorType, "ADD_FEEDBACK");
-            return;
-        }
-
         addToast({
             title: "Feedback abgeschickt",
             subTitle: viewport.isMobile ? "" : "Ihr Feedback wurde erfolgreich abgeschickt.",
@@ -322,11 +240,6 @@ async function addBugReport(bugReport) {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            handleReportHubError(normalizedResponse.errorType, "ADD_BUG");
-            return;
-        }
 
         addToast({
             title: "Fehler gemeldet",
@@ -419,11 +332,6 @@ export async function deleteFeedback(id) {
 
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            handleReportHubError(normalizedResponse.errorType, "DELETE_FEEDBACK");
-            return;
-        }
-
         addToast({
             title: "User Feedback entfernt",
             subTitle: viewport.isMobile ? "" : "Das User Feedback wurde erfolgreich aus dem System entfernt.",
@@ -459,11 +367,6 @@ export async function deleteBugReport(id) {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            handleReportHubError(normalizedResponse.errorType, "DELETE_BUG");
-            return;
-        }
 
         addToast({
             title: "User Feedback entfernt",
@@ -525,11 +428,6 @@ async function getFeedbackDetails(id) {
 
     if (handleGlobalApiError(normalizedResponse)) return;
 
-    if (!normalizedResponse.ok) {
-        handleReportHubError(normalizedResponse.errorType, "DETAILS_FEEDBACK");
-        return;
-    }
-
     return body;
 }
 
@@ -552,11 +450,6 @@ async function getBugReportDetails(id) {
     const normalizedResponse = normalizeResponse(resp);
 
     if (handleGlobalApiError(normalizedResponse)) return;
-
-    if (!normalizedResponse.ok) {
-        handleReportHubError(normalizedResponse.errorType, "DETAILS_BUG");
-        return;
-    }
 
     return body;
 }

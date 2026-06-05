@@ -11,7 +11,6 @@
     import { changePassword } from "../../services/changePasswordService.svelte";
     import { normalizeResponse } from "../../api/http.svelte";
     import { handleGlobalApiError } from "../../api/globalErrorHandler.svelte";
-    import Spinner from "../../components/Spinner.svelte";
 
     let { message = "" } = $props();
 
@@ -95,25 +94,6 @@
             const normalizedResponse = normalizeResponse(resp);
 
             if (handleGlobalApiError(normalizedResponse)) return;
-
-            if (!normalizedResponse.ok) {
-                if (normalizedResponse.errorType === "NOTFOUND") {
-                    addToast({
-                        title: "Sitzung ungültig",
-                        subTitle: "Ihre E-Mail-Adresse konnte nicht zugeordnet werden.",
-                        type: "error"
-                    });
-                    await push("/");
-                }
-                if (normalizedResponse.errorType === "CONFLICT") {
-                    addToast({
-                        title: "Ungültiges Passwort",
-                        subTitle: "Das neue Passwort darf nicht mit dem aktuellen übereinstimmen.",
-                        type: "error"
-                    });
-                }
-                return;
-            }
 
             let authToken = getValue("authToken_BCPW");
             if (!authToken) {

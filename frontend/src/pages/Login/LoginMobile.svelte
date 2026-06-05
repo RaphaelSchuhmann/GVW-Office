@@ -78,16 +78,6 @@
                         title: "Zu viele Anmeldeversuche",
                         type: "warning",
                     });
-                } else if (normalizedResponse.errorType === "NOTFOUND") {
-                    addToast({
-                        title: "Benutzer nicht gefunden",
-                        type: "error"
-                    });
-                }  else if (normalizedResponse.errorType === "UNAUTHORIZED") {
-                    addToast({
-                        title: "E-Mail oder Passwort falsch",
-                        type: "error"
-                    });
                     return;
                 }
 

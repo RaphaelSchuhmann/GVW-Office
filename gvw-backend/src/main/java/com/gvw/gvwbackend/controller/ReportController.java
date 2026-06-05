@@ -64,7 +64,7 @@ public class ReportController {
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   public ResponseEntity<Resource> getReportImage(
       @PathVariable String id, @PathVariable String filename) {
-    AttachmentResource attachment = reportService.getReportImage(id, filename);
+    AttachmentResource attachment = reportService.getDocumentImage(id, filename);
     return ResponseEntity.ok()
         .contentType(MediaType.parseMediaType(attachment.getContentType()))
         .body(attachment.getResource());
@@ -91,7 +91,7 @@ public class ReportController {
 
   @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  @ErrorContext(domain = 70, method = 10)
+  @ErrorContext(domain = 14, method = 10)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   public Map<String, Object> updateReport(
       @RequestPart("reportData") @Valid UpdateReportRequestDTO request,
@@ -110,30 +110,10 @@ public class ReportController {
   @PatchMapping("/update/description")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
-  @ErrorContext(domain = 70, method = 11)
+  @ErrorContext(domain = 14, method = 11)
   public Map<String, Object> updateReportDescription(
       @Valid @RequestBody UpdateReportDescriptionRequestDTO request) {
     String rev = reportService.updateReportDescription(request);
     return Map.of("rev", rev);
-  }
-
-  @GetMapping("/{id}/files/{internalName}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
-  public ResponseEntity<Resource> downloadReportFile(
-      @PathVariable String id,
-      @PathVariable String internalName,
-      @RequestParam("name") String originalName) {
-
-    AttachmentResource attachment = reportService.getReportFile(id, internalName);
-
-    return ResponseEntity.ok()
-        .contentType(MediaType.parseMediaType(attachment.getContentType()))
-        .header(
-            HttpHeaders.CONTENT_DISPOSITION,
-            ContentDisposition.attachment()
-                .filename(originalName, StandardCharsets.UTF_8)
-                .build()
-                .toString())
-        .body(attachment.getResource());
   }
 }

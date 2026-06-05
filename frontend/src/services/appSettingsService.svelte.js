@@ -25,11 +25,6 @@ export async function tryUpdateMaxMembers(value) {
     const normalizedResponse = normalizeResponse(resp);
     if (handleGlobalApiError(normalizedResponse)) return;
 
-    if (!normalizedResponse.ok) {
-        handleUpdateErrors(normalizedResponse.errorType);
-        return;
-    }
-
     Object.assign(appSettings, { maxMembers: value, rev: body.rev });
 
     addToast({
@@ -38,44 +33,6 @@ export async function tryUpdateMaxMembers(value) {
             ? ""
             : "Die maximale Anzahl an Mitgliedern pro Stimme wurde erfolgreich aktualisiert und gespeichert.",
         type: "success"
-    });
-}
-
-/**
- * Maps API error types to user-facing toast messages for event updates.
- *
- * Supported error types:
- * - BADREQUEST -> malformed request
- * - CONFLICT -> revision conflict
- * - DEFAULT -> fallback for unknown errors
- *
- * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
- *
- * @param {string} errorType - Error identifier returned from API
- * @returns {void}
- */
-function handleUpdateErrors(errorType) {
-    const errorConfigs = {
-        BADREQUEST: {
-            title: "Ungültige Eingabe",
-            subTitle: "Die von Ihnen angegebenen Daten sind nicht gültig."
-        },
-        CONFLICT: {
-            title: "Speicher-Konflikt",
-            subTitle: "Jemand anderes hat diese Veranstaltung bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen.",
-        },
-        DEFAULT: {
-            title: "Fehler beim Aktualisieren",
-            subTitle: "Beim Aktualisieren der App Einstellungen ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-        }
-    };
-
-    const config = errorConfigs[errorType] || errorConfigs.DEFAULT;
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.subTitle,
-        type: "error"
     });
 }
 
@@ -119,23 +76,6 @@ export async function addScoreCategory(category) {
 
     const normalizedResponse = normalizeResponse(resp);
     if (handleGlobalApiError(normalizedResponse)) return false;
-
-    if (!normalizedResponse.ok) {
-        if (normalizedResponse.errorType === "BADREQUEST") {
-            addToast({
-                title: "Ungültige Eingabe",
-                subTitle: viewport.isMobile ? "" : "Der von Ihnen eingegebene Name ist kein gültiger Name!",
-                type: "error"
-            });
-        } else {
-            addToast({
-                title: "Kategorie konnte nicht hinzugefügt werden",
-                subTitle: viewport.isMobile ? "" : "Beim Hinzufügen der Kategorie ist ein unerwarteter Fehler aufgetreten.",
-                type: "error"
-            });
-        }
-        return false;
-    }
 
     addToast({
         title: "Kategorie hinzugefügt",
@@ -185,15 +125,6 @@ export async function deleteScoreCategory(category) {
 
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            addToast({
-                title: "Kategorie konnte nicht gelöscht werden",
-                subTitle: viewport.isMobile ? "" : "Beim Löschen der Kategorie ist ein unerwarteter Fehler aufgetreten.",
-                type: "error"
-            });
-            return;
-        }
 
         addToast({
             title: "Kategorie gelöscht",

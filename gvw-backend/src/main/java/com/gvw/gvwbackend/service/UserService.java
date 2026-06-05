@@ -51,7 +51,8 @@ public class UserService {
   // METHOD ID: 01
   public UserResponseDTO getUser(String userId) {
     if (userId == null || userId.isEmpty()) {
-      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.USER.createCode(1, 401)));
+      // This is invalid credentials aka invalid token so logout should be handled via 1004401 (Auth Middleware error)
+      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(4, 401)));
     }
 
     User user = getUserByUserId(userId);

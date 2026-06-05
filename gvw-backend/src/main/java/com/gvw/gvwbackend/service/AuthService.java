@@ -135,13 +135,13 @@ public class AuthService {
   // METHOD ID: 03
   public AutoLoginResponseDTO autoLogin(String id) {
     if (id == null || id.isBlank()) {
-      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(3, 401)));
+      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(4, 401)));
     }
 
     Map<String, Object> query = Map.of("selector", Map.of("userId", id), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
     if (users == null || users.isEmpty()) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.AUTH.createCode(3, 404)));
+      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(4, 401)));
     }
 
     User user = users.getFirst();

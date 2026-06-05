@@ -13,51 +13,6 @@ let isFetching = {
 };
 
 /**
- * Centralized handler for changelog-related API errors.
- *
- * @param {string} errorType - Backend error type (e.g., BADREQUEST, NOTFOUND)
- * @param {string} context - Operation context ("ADD", "DELETE")
- */
-function handleApiErrors(errorType, context) {
-    const errorConfigs = {
-        ADD: {
-            BADREQUEST: {
-                title: "Ungültige Daten",
-                sub: "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte."
-            },
-            DEFAULT: {
-                title: "Fehler beim Hinzufügen",
-                sub: "Beim Hinzufügen des neuen Changelogs ist ein Fehler aufgetreten."
-            }
-        },
-        DELETE: {
-            BADREQUEST: {
-                title: "Unvollständige Daten",
-                sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut."
-            },
-            NOTFOUND: {
-                title: "Changelog nicht gefunden",
-                sub: "Der gewählte Changelog wurde im System nicht gefunden."
-            },
-            DEFAULT: {
-                title: "Fehler beim Entfernen",
-                sub: "Beim Entfernen des Changelogs ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut."
-            }
-        }
-    };
-
-    const config = errorConfigs[context]?.[errorType] ?? errorConfigs[context]?.DEFAULT;
-
-    if (!config) return;
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.sub,
-        type: "error"
-    });
-}
-
-/**
  * Fetches all changelogs from the backend and stores them in `changelogsStore`.
  *
  * Responsibilities:
@@ -87,15 +42,6 @@ export async function getChangelogs() {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            addToast({
-                title: "Fehler beim laden der Changelogs",
-                subTitle: viewport.isMobile ? "" : "Während dem Laden der Changelogs ist ein unerwarteter Fehler aufgetreten",
-                type: "error"
-            });
-            return;
-        }
 
         if (!Array.isArray(body?.changelogs)) {
             addToast({
@@ -146,11 +92,6 @@ export async function addChangelog(changelog) {
 
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            handleApiErrors(normalizedResponse.errorType, "ADD");
-            return;
-        }
-
         addToast({
             title: "Changelog hinzugefügt",
             subTitle: viewport.isMobile ? "" : "Der neue Changelog wurde erfolgreich im System hinzugefügt.",
@@ -190,11 +131,6 @@ export async function deleteChangelog(changelogId) {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            handleApiErrors(normalizedResponse.errorType, "DELETE");
-            return;
-        }
 
         addToast({
             title: "Changelog gelöscht",

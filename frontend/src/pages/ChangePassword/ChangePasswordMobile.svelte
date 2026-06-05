@@ -10,7 +10,6 @@
     import { changePassword } from "../../services/changePasswordService.svelte";
     import { normalizeResponse } from "../../api/http.svelte";
     import { handleGlobalApiError } from "../../api/globalErrorHandler.svelte";
-    import Spinner from "../../components/Spinner.svelte";
 
     let { message = "" } = $props();
 
@@ -74,17 +73,6 @@
             const normalizedResponse = normalizeResponse(resp);
 
             if (handleGlobalApiError(normalizedResponse)) return;
-
-            if (!normalizedResponse.ok) {
-                if (normalizedResponse.errorType === "NOTFOUND") {
-                    addToast({ title: "Ungültige E-Mail verwendet", type: "error" });
-                    await push("/");
-                }
-                if (normalizedResponse.errorType === "CONFLICT") {
-                    addToast({ title: "Neues Passwort ist identisch", type: "error" });
-                }
-                return;
-            }
 
             let authToken = getValue("authToken_BCPW");
             if (!authToken) {

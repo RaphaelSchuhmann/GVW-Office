@@ -45,6 +45,9 @@ export const filterRegistry = {
             },
             tab: {
                 contents: ["Bevorstehend", "Abgeschlossen"]
+            },
+            search: {
+                deepSearch: false,
             }
         }
     },

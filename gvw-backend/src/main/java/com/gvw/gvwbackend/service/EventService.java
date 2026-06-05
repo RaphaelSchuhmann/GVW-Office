@@ -186,10 +186,6 @@ public class EventService {
 
   // METHOD ID: 06
   public String updateEvent(UpdateEventRequestDTO request) {
-    if (request.id() == null || request.id().isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.EVENTS.createCode(6, 400)));
-    }
-
     Event event = dbService.findById("events", request.id(), Event.class);
 
     if (event == null) {

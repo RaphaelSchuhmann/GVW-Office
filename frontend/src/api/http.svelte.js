@@ -15,13 +15,13 @@ import { auth } from "../stores/auth.svelte.js";
  * if (!normalized.ok) console.error(normalized.errorType);
  */
 export function normalizeResponse(response) {
-    if (!response) return { ok: false, errorType: "NETWORK" };
-    if (response.status === 400) return { ok: false, errorType: "BADREQUEST", status: 400 };
-    if (response.status === 401) return { ok: false, errorType: "UNAUTHORIZED", status: 401 };
-    if (response.status === 404) return { ok: false, errorType: "NOTFOUND", status: 404 };
-    if (response.status === 409) return { ok: false, errorType: "CONFLICT", status: 409 };
-    if (response.status === 429) return { ok: false, errorType: "REQUESTTIMEOUT", status: 429 };
-    if (response.status >= 500) return { ok: false, errorType: "SERVER", status: response.status };
+    if (!response) return { ok: false, errorType: "NETWORK", message: "0000000" };
+    if (response.status === 400) return { ok: false, errorType: "BAD_REQUEST", status: 400, message: response.message };
+    if (response.status === 401) return { ok: false, errorType: "UNAUTHORIZED", status: 401, message: response.message };
+    if (response.status === 404) return { ok: false, errorType: "NOTFOUND", status: 404, message: response.message };
+    if (response.status === 409) return { ok: false, errorType: "CONFLICT", status: 409, message: response.message };
+    if (response.status === 429) return { ok: false, errorType: "REQUEST_TIMEOUT", status: 429, message: response.message };
+    if (response.status >= 500) return { ok: false, errorType: "SERVER", status: response.status, message: response.message };
 
     return { ok: true, status: response.status };
 }
