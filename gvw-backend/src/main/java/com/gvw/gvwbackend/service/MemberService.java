@@ -75,18 +75,21 @@ public class MemberService {
 
   public void checkMember(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CHECK, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CHECK, 400)));
     }
 
     Member member = dbService.findById("members", id, Member.class);
     if (member == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CHECK, 404)));
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CHECK, 404)));
     }
   }
 
   public void addMember(AddMemberRequestDTO request) {
     if (emailExists(request.email())) {
-      throw new ConflictException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CREATE, 409)));
+      throw new ConflictException(
+          String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CREATE, 409)));
     }
 
     Member member = createMemberFromRequest(request);
@@ -99,7 +102,8 @@ public class MemberService {
       List<Member> members = dbService.findByQuery("members", query, Member.class);
 
       if (members.isEmpty()) {
-        throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CREATE, 404)));
+        throw new NotFoundException(
+            String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CREATE, 404)));
       }
 
       String temporaryPassword = AuthService.generatePassword(3, 2);
@@ -142,13 +146,15 @@ public class MemberService {
             request.email());
       }
 
-      throw new RuntimeException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CREATE, 500)), e);
+      throw new RuntimeException(
+          String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CREATE, 500)), e);
     }
   }
 
   public void deleteMember(String id) {
     if (id == null || id.isEmpty()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.DELETE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.DELETE, 400)));
     }
 
     Member member = getMemberById(id, ErrorAction.DELETE);
@@ -186,12 +192,14 @@ public class MemberService {
       return List.of((String) memberResult.get("rev"), (String) userResult.get("rev"));
     }
 
-    throw new RuntimeException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.UPDATE, 500)));
+    throw new RuntimeException(
+        String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.UPDATE, 500)));
   }
 
   public String updateMemberStatus(String id, String _rev) {
     if (id == null || id.isEmpty()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.UPDATE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.UPDATE, 400)));
     }
 
     Member member = getMemberById(id, ErrorAction.UPDATE);
@@ -211,7 +219,8 @@ public class MemberService {
       return (String) memberResult.get("rev");
     }
 
-    throw new RuntimeException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.UPDATE, 500)));
+    throw new RuntimeException(
+        String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.UPDATE, 500)));
   }
 
   private boolean emailExists(String email) {

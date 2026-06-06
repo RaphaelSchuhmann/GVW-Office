@@ -9,10 +9,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.List;
-
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,7 +26,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
   private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
   private final List<String> EXCLUDED_PATHS =
-          List.of("/auth/login", "/dev/**", "/emergency/**", "/settings/get", "/auth/changePw");
+      List.of("/auth/login", "/dev/**", "/emergency/**", "/settings/get", "/auth/changePw");
 
   public AuthMiddleware(JwtService jwtService) {
     this.jwtService = jwtService;
@@ -50,10 +48,10 @@ public class AuthMiddleware extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(
-          HttpServletRequest request,
-          @NonNull HttpServletResponse response,
-          @NonNull FilterChain filterChain)
-          throws IOException, ServletException {
+      HttpServletRequest request,
+      @NonNull HttpServletResponse response,
+      @NonNull FilterChain filterChain)
+      throws IOException, ServletException {
 
     if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
       filterChain.doFilter(request, response);
@@ -83,7 +81,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
       Role role = Role.fromString(roleName);
 
       List<SimpleGrantedAuthority> authorities =
-              List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+          List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 
       var authToken = new UsernamePasswordAuthenticationToken(userId, null, authorities);
 

@@ -129,13 +129,6 @@ export async function apiDeleteReport(reportId) {
     return { resp, body };
 }
 
-export async function apiGetReportImage(reportId, imageId){
-    const resp = await httpGet(`${apiUrl}/report/${reportId}/images/${imageId}`);
-    if (!resp) return { resp: null, blob: null };
-    const blob = await resp.blob();
-    return { resp, blob };
-}
-
 export async function apiUpdateDescription(reportId, rev, description) {
     const resp = await httpPatch(`${apiUrl}/report/update/description`, {id: reportId, rev: rev, description: description});
     if (!resp) return { resp: null, blob: null };

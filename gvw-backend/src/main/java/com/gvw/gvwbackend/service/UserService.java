@@ -46,8 +46,10 @@ public class UserService {
 
   public UserResponseDTO getUser(String userId) {
     if (userId == null || userId.isEmpty()) {
-      // This is invalid credentials aka invalid token so logout should be handled via 1004401 (Auth Middleware error)
-      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
+      // This is invalid credentials aka invalid token so logout should be handled via 1004401 (Auth
+      // Middleware error)
+      throw new InvalidCredentialsException(
+          String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
     }
 
     User user = getUserByUserId(userId, ErrorAction.READ_ONE);
@@ -63,7 +65,8 @@ public class UserService {
 
   public String resetPasswordUsingMemberId(String memberId) {
     if (memberId == null || memberId.isEmpty()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 400)));
     }
 
     User user = getUserByMemberId(memberId, ErrorAction.UPDATE);
@@ -75,7 +78,8 @@ public class UserService {
     Map<String, Object> resp = dbService.update("users", user.getId(), user);
 
     if (resp == null || !resp.containsKey("rev")) {
-      throw new RuntimeException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 500)));
+      throw new RuntimeException(
+          String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 500)));
     }
 
     mailService.sendMail(
@@ -134,7 +138,8 @@ public class UserService {
 
   public void checkUser(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.CHECK, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.USER.createCode(ErrorAction.CHECK, 400)));
     }
 
     getUserByID(id, ErrorAction.CHECK);
@@ -146,7 +151,8 @@ public class UserService {
             "users", Map.of("selector", Map.of("email", request.email())), User.class);
 
     if (!usersWithRequestMail.isEmpty()) {
-      throw new ConflictException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.CREATE, 409)));
+      throw new ConflictException(
+          String.valueOf(ErrorDomain.USER.createCode(ErrorAction.CREATE, 409)));
     }
 
     User user = createUserFromRequest(request);
@@ -172,7 +178,8 @@ public class UserService {
 
   public String resetPasswordUsingUserId(String id) {
     if (id == null || id.isEmpty()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 400)));
     }
 
     User user = getUserByID(id, ErrorAction.UPDATE);
@@ -184,7 +191,8 @@ public class UserService {
     Map<String, Object> resp = dbService.update("users", user.getId(), user);
 
     if (resp == null || !resp.containsKey("rev")) {
-      throw new RuntimeException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 500)));
+      throw new RuntimeException(
+          String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 500)));
     }
 
     mailService.sendMail(
@@ -200,7 +208,8 @@ public class UserService {
     User user = getUserByID(request.id(), ErrorAction.UPDATE);
 
     if (!isOrphan(user.getMemberId())) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 400)));
     }
 
     if (!user.getEmail().equalsIgnoreCase(request.email())) {
@@ -208,7 +217,8 @@ public class UserService {
           dbService.findByQuery(
               "users", Map.of("selector", Map.of("email", request.email())), User.class);
       if (conflicts.stream().anyMatch(u -> !u.getId().equals(user.getId()))) {
-        throw new ConflictException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 409)));
+        throw new ConflictException(
+            String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 409)));
       }
     }
 
@@ -228,18 +238,21 @@ public class UserService {
       return (String) userResult.get("rev");
     }
 
-    throw new RuntimeException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 500)));
+    throw new RuntimeException(
+        String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 500)));
   }
 
   public void deleteUser(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.DELETE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.USER.createCode(ErrorAction.DELETE, 400)));
     }
 
     User user = getUserByID(id, ErrorAction.DELETE);
 
     if (!isOrphan(user.getMemberId())) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.DELETE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.USER.createCode(ErrorAction.DELETE, 400)));
     }
 
     dbService.delete("users", user.getId(), user.getRev());

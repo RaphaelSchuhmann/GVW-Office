@@ -44,14 +44,16 @@ public class AuthService {
     List<User> users = dbService.findByQuery("users", query, User.class);
 
     if (users.isEmpty())
-      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
+      throw new InvalidCredentialsException(
+          String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
 
     User user = users.getFirst();
     Instant now = Instant.now();
 
     if (user.getLockUntil() != null && now.isBefore(user.getLockUntil())) {
       throw new TooManyRequestsException(
-          String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 429)), user.getLockUntil().toEpochMilli());
+          String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 429)),
+          user.getLockUntil().toEpochMilli());
     }
 
     String rev;
@@ -69,7 +71,8 @@ public class AuthService {
         user.setFailedLoginAttempts(failedAttempts + 1);
         dbService.update("users", user.getId(), user);
 
-        throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
+        throw new InvalidCredentialsException(
+            String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
       }
     } else {
       user.setFailedLoginAttempts(0);
@@ -79,7 +82,8 @@ public class AuthService {
       if (resp != null && resp.containsKey("rev")) {
         rev = (String) resp.get("rev");
       } else {
-        throw new RuntimeException(String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 500)));
+        throw new RuntimeException(
+            String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 500)));
       }
     }
 
@@ -98,18 +102,21 @@ public class AuthService {
     List<User> users = dbService.findByQuery("users", query, User.class);
 
     if (users.isEmpty())
-      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.UPDATE, 401)));
+      throw new InvalidCredentialsException(
+          String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.UPDATE, 401)));
 
     User user = users.getFirst();
 
     // Ensure new password is not the same as old password
     if (passwordEncoder.matches(requestDTO.newPassword(), user.getPassword())) {
-      throw new ConflictException(String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.UPDATE, 409)));
+      throw new ConflictException(
+          String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.UPDATE, 409)));
     }
 
     // Authenticate user
     if (!passwordEncoder.matches(requestDTO.oldPassword(), user.getPassword())) {
-      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.UPDATE, 401)));
+      throw new InvalidCredentialsException(
+          String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.UPDATE, 401)));
     }
 
     String hashedPassword = passwordEncoder.encode(requestDTO.newPassword());
@@ -123,18 +130,21 @@ public class AuthService {
       return (String) resp.get("rev");
     }
 
-    throw new RuntimeException(String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.UPDATE, 500)));
+    throw new RuntimeException(
+        String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.UPDATE, 500)));
   }
 
   public AutoLoginResponseDTO autoLogin(String id) {
     if (id == null || id.isBlank()) {
-      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
+      throw new InvalidCredentialsException(
+          String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
     }
 
     Map<String, Object> query = Map.of("selector", Map.of("userId", id), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
     if (users == null || users.isEmpty()) {
-      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
+      throw new InvalidCredentialsException(
+          String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
     }
 
     User user = users.getFirst();

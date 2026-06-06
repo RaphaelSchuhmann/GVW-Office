@@ -4,21 +4,17 @@ import com.gvw.gvwbackend.dto.request.AddReportRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateReportDescriptionRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateReportRequestDTO;
 import com.gvw.gvwbackend.dto.response.FullReportResponseDTO;
-import com.gvw.gvwbackend.dto.response.LinkMetadataResponseDTO;
 import com.gvw.gvwbackend.dto.response.ReportsResponseDTO;
 import com.gvw.gvwbackend.dto.response.ReportsSearchResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.ErrorAction;
 import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.exception.handler.ErrorContext;
-import com.gvw.gvwbackend.model.AttachmentResource;
 import com.gvw.gvwbackend.service.FileValidator;
 import com.gvw.gvwbackend.service.ReportService;
 import jakarta.validation.Valid;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
-import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -62,16 +58,6 @@ public class ReportController {
     return reportService.getReport(id);
   }
 
-  @GetMapping("/{id}/images/{filename}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
-  public ResponseEntity<Resource> getReportImage(
-      @PathVariable String id, @PathVariable String filename) {
-    AttachmentResource attachment = reportService.getDocumentImage(id, filename);
-    return ResponseEntity.ok()
-        .contentType(MediaType.parseMediaType(attachment.getContentType()))
-        .body(attachment.getResource());
-  }
-
   @GetMapping("/search")
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   public ReportsSearchResponseDTO reportsDeepSearch(@RequestParam("q") String input) {
@@ -85,12 +71,6 @@ public class ReportController {
     reportService.deleteReport(id);
   }
 
-  @GetMapping("/resolve")
-  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
-  public LinkMetadataResponseDTO resolveLink(@RequestParam("url") String url) {
-    return reportService.resolveUrl(url);
-  }
-
   @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
   @ErrorContext(domain = ErrorDomain.TEXT_EDITOR, action = ErrorAction.UPDATE)
@@ -101,7 +81,8 @@ public class ReportController {
     if (files != null) {
       for (MultipartFile file : files) {
         if (!fileValidator.isSafe(file)) {
-          throw new BadRequestException(String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
+          throw new BadRequestException(
+              String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
         }
       }
     }

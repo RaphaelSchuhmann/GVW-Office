@@ -9,3 +9,7 @@ export const editorSelectionStore = $state({
         blockType: "text",
     }
 });
+
+export const editorMetadataStore = $state({
+    activeFeature: "",
+})
