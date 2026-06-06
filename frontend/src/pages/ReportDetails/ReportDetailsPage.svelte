@@ -10,6 +10,7 @@
     import { push } from "svelte-spa-router";
     import { getReport, reportExists } from "../../services/reportService.svelte.js";
     import { addToast } from "../../stores/toasts.svelte.js";
+    import { editorMetadataStore } from "../../stores/textEditorStore.svelte.js";
 
     let isGlobalLoading = $derived(user.name.length === 0);
 
@@ -51,6 +52,8 @@
                     }
                 }
             });
+
+            editorMetadataStore.activeFeature = "reports";
 
             ready = true;
 

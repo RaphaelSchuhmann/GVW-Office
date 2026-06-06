@@ -1,5 +1,6 @@
-import { apiGetReportImage } from "../api/apiReports.svelte.js";
 import { normalizeResponse } from "../api/http.svelte.js";
+import { apiGetDocumentImage } from "../api/apiTextEditor.svelte.js";
+import { editorMetadataStore } from "../stores/textEditorStore.svelte.js";
 
 export const blockTypes = new Set(["text", "image", "file", "blockquote", "h1", "h2", "h3", "h4"]);
 
@@ -117,8 +118,8 @@ let isFetching = {
 
 const pendingDocumentImages = new Set();
 
-export async function getDocumentImage(reportId, imageId) {
-    if (!reportId || !imageId) return;
+export async function getDocumentImage(documentId, imageId) {
+    if (!documentId || !imageId) return;
 
     if (pendingDocumentImages.has(imageId)) return;
 
@@ -127,8 +128,7 @@ export async function getDocumentImage(reportId, imageId) {
     isFetching.getImage = true;
 
     try {
-        // TODO: Refactor this later to call a generic endpoint
-        const { resp, blob } = await apiGetReportImage(reportId, imageId);
+        const { resp, blob } = await apiGetDocumentImage(editorMetadataStore.activeFeature, documentId, imageId);
         const normalizedResp = normalizeResponse(resp);
 
         if (!normalizedResp.ok) return null;
