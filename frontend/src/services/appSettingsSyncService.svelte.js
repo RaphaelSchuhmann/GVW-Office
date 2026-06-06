@@ -1,8 +1,6 @@
 import { apiGetSettings } from "../api/apiAppSettings.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
-import { addToast } from "../stores/toasts.svelte";
-import { viewport } from "../stores/viewport.svelte";
 import { appSettings } from "../stores/appSettings.svelte.js";
 import { lastRefresh } from "../stores/sseStore.svelte.js";
 import { untrack } from "svelte";
