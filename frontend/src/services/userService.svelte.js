@@ -1,10 +1,9 @@
 import { viewport } from "../stores/viewport.svelte";
 import { addToast } from "../stores/toasts.svelte";
-import { push } from "svelte-spa-router";
 import { auth } from "../stores/auth.svelte.js";
 import { clearValue } from "./store";
 import { user } from "../stores/user.svelte";
-import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import {
     apiAddUserAD,
     apiCheckUserAD,
@@ -85,20 +84,6 @@ export async function ensureUserData() {
         const { resp, body } = await apiGetUserData();
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            if (normalizedResponse.status === 404) {
-                addToast({
-                    title: "Benutzer nicht gefunden",
-                    subTitle: viewport.isMobile ? "" : "Es wurde kein Benutzer unter den angegebenen Daten gefunden.",
-                    type: "error"
-                });
-                logout();
-                await push("/?cpwErr=false");
-                return;
-            }
-            return;
-        }
 
         Object.assign(user, { ...body, loaded: true, lastFetched: Date.now() });
     }
@@ -190,7 +175,7 @@ export async function userExists(id) {
 
             if (normalized.status === 404) return false;
 
-            if (handleGlobalApiError(normalized)) return true;
+            if (handleGenericErrors(normalized)) return true;
 
             return true;
         } catch (e) {
@@ -233,23 +218,6 @@ export async function addUser(user) {
 
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "CONFLICT") {
-                addToast({
-                    title: "E-Mail-Adresse bereits verwendet",
-                    subTitle: viewport.isMobile ? "" : "Die E-Mail-Adresse ist bereits einem anderen Mitglied oder Benutzer zugeordnet.",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Hinzufügen",
-                    subTitle: viewport.isMobile ? "" : "Beim Hinzufügen des neuen Mitglieds ist ein Fehler aufgetreten.",
-                    type: "error"
-                });
-            }
-            return;
-        }
-
         addToast({
             title: "Benutzer hinzugefügt",
             subTitle: viewport.isMobile ? "" : "Der neue Benutzer wurde erfolgreich im System hinzugefügt.",
@@ -286,11 +254,6 @@ export async function deleteUser(id) {
 
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            handleApiErrors(normalizedResponse.errorType, "delete");
-            return;
-        }
-
         addToast({
             title: "Benutzer gelöscht",
             subTitle: viewport.isMobile ? "" : "Der Benutzer wurde erfolgreich gelöscht.",
@@ -326,11 +289,6 @@ export async function updateUser(data) {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            handleApiErrors(normalizedResponse.errorType, "update");
-            return;
-        }
 
         const index = userManagerStore.raw.findIndex(e => e.id === data.id);
         if (index !== -1) {
@@ -377,11 +335,6 @@ export async function resetPassword(id) {
 
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            handleApiErrors(normalizedResponse.errorType, "resetPw");
-            return;
-        }
-
         addToast({
             title: "Passwort zurückgesetzt",
             subTitle: viewport.isMobile ? "" : "Das Passwort wurde erfolgreich auf ein temporäres Passwort zurückgesetzt.",
@@ -390,59 +343,4 @@ export async function resetPassword(id) {
     } finally {
         isFetching.resetPw = false;
     }
-}
-
-/**
- * Handles API errors for user management operations and displays toast messages.
- *
- * Responsibilities:
- * - Maps API error types to user-friendly messages
- * - Selects context-specific default messages
- * - Displays localized toast notifications
- *
- * Behavior:
- * - Falls back to context-based defaults if error type is unknown
- * - Adjusts message detail depending on viewport (mobile vs desktop)
- *
- * @function handleApiErrors
- * @param {string} errorType - API error type (e.g. NOTFOUND, BADREQUEST)
- * @param {string} context - Operation context ("delete", "update", "resetPw")
- */
-function handleApiErrors(errorType, context) {
-    const errors = {
-        NOTFOUND: {
-            title: "Benutzer nicht gefunden",
-            subTitle: "Der angegebene Benutzer konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
-        },
-        BADREQUEST: {
-            title: "Ungültiger Benutzer",
-            subTitle: "Der angegebene Benutzer ist ungültig. Bitte versuchen Sie es später erneut."
-        },
-        DEFAULT_DELETE: {
-            title: "Fehler beim Löschen",
-            subTitle: "Beim Löschen des Benutzers ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-        },
-        DEFAULT_UPDATE: {
-            title: "Fehler beim Aktualisieren",
-            subTitle: "Beim Aktualisieren des Benutzers ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-        },
-        DEFAULT_RESET_PASSWORD: {
-            title: "Fehler beim Passwort zurücksetzen",
-            subTitle: "Beim Zurücksetzen des Passworts ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-        }
-    };
-
-    const defaults = {
-        delete: errors.DEFAULT_DELETE,
-        update: errors.DEFAULT_UPDATE,
-        resetPw: errors.DEFAULT_RESET_PASSWORD
-    };
-
-    const toastData = errors[errorType] ?? defaults[context] ?? errors.DEFAULT_UPDATE;
-
-    addToast({
-        title: toastData.title,
-        subTitle: viewport.isMobile ? "" : toastData.subTitle,
-        type: "error"
-    });
 }

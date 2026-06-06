@@ -8,11 +8,13 @@ import com.gvw.gvwbackend.dto.response.LinkMetadataResponseDTO;
 import com.gvw.gvwbackend.dto.response.ReportsResponseDTO;
 import com.gvw.gvwbackend.dto.response.ReportsSearchResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
+import com.gvw.gvwbackend.exception.ErrorAction;
+import com.gvw.gvwbackend.exception.ErrorDomain;
+import com.gvw.gvwbackend.exception.handler.ErrorContext;
 import com.gvw.gvwbackend.model.AttachmentResource;
 import com.gvw.gvwbackend.service.FileValidator;
 import com.gvw.gvwbackend.service.ReportService;
 import jakarta.validation.Valid;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +50,7 @@ public class ReportController {
 
   @PostMapping("/add")
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
+  @ErrorContext(domain = ErrorDomain.REPORT, action = ErrorAction.CREATE)
   @ResponseStatus(HttpStatus.OK)
   public void addReport(@Valid @RequestBody AddReportRequestDTO request) {
     reportService.createReport(request);
@@ -63,7 +66,7 @@ public class ReportController {
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   public ResponseEntity<Resource> getReportImage(
       @PathVariable String id, @PathVariable String filename) {
-    AttachmentResource attachment = reportService.getReportImage(id, filename);
+    AttachmentResource attachment = reportService.getDocumentImage(id, filename);
     return ResponseEntity.ok()
         .contentType(MediaType.parseMediaType(attachment.getContentType()))
         .body(attachment.getResource());
@@ -90,6 +93,7 @@ public class ReportController {
 
   @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
+  @ErrorContext(domain = ErrorDomain.TEXT_EDITOR, action = ErrorAction.UPDATE)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   public Map<String, Object> updateReport(
       @RequestPart("reportData") @Valid UpdateReportRequestDTO request,
@@ -97,7 +101,7 @@ public class ReportController {
     if (files != null) {
       for (MultipartFile file : files) {
         if (!fileValidator.isSafe(file)) {
-          throw new BadRequestException("InvalidFileExtension");
+          throw new BadRequestException(String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
         }
       }
     }
@@ -108,29 +112,10 @@ public class ReportController {
   @PatchMapping("/update/description")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
+  @ErrorContext(domain = ErrorDomain.TEXT_EDITOR, action = ErrorAction.UPDATE)
   public Map<String, Object> updateReportDescription(
       @Valid @RequestBody UpdateReportDescriptionRequestDTO request) {
     String rev = reportService.updateReportDescription(request);
     return Map.of("rev", rev);
-  }
-
-  @GetMapping("/{id}/files/{internalName}")
-  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
-  public ResponseEntity<Resource> downloadReportFile(
-      @PathVariable String id,
-      @PathVariable String internalName,
-      @RequestParam("name") String originalName) {
-
-    AttachmentResource attachment = reportService.getReportFile(id, internalName);
-
-    return ResponseEntity.ok()
-        .contentType(MediaType.parseMediaType(attachment.getContentType()))
-        .header(
-            HttpHeaders.CONTENT_DISPOSITION,
-            ContentDisposition.attachment()
-                .filename(originalName, StandardCharsets.UTF_8)
-                .build()
-                .toString())
-        .body(attachment.getResource());
   }
 }

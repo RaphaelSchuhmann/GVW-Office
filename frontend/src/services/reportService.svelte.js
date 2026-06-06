@@ -6,7 +6,7 @@ import {
     apiUpdateDescription
 } from "../api/apiReports.svelte.js";
 import { normalizeResponse } from "../api/http.svelte.js";
-import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
+import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
 import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
 import { sanitize } from "./utils.js";
@@ -89,7 +89,7 @@ export async function reportExists(id) {
 
             if (normalized.status === 404) return false;
 
-            if (handleGlobalApiError(normalized)) return true;
+            if (handleGenericErrors(normalized)) return true;
 
             return true;
         } catch (e) {
@@ -116,11 +116,6 @@ export async function getReport(id) {
 
         if (handleGlobalApiError(normalized)) return null;
 
-        if (!normalized.ok) {
-            handleError(normalized.errorType, "GET");
-            return null;
-        }
-
         return body;
     } finally {
         isFetching.getReport = false;
@@ -136,23 +131,6 @@ export async function addReport(report) {
         const normalizedResp = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResp)) return;
-
-        if (!normalizedResp.ok) {
-            if (normalizedResp.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Ungültige Daten",
-                    subTitle: viewport.isMobile ? "" : "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben.",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Erstellen",
-                    subTitle: viewport.isMobile ? "" : "Beim Erstellen des Berichts ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-                    type: "error"
-                });
-            }
-            return;
-        }
 
         addToast({
             title: "Bericht erstellt",
@@ -174,11 +152,6 @@ export async function deleteReport(reportId) {
 
         if (handleGlobalApiError(normalizedResp)) return;
 
-        if (!normalizedResp.ok) {
-            handleError(normalizedResp.errorType, "DELETE");
-            return;
-        }
-
         addToast({
             title: "Bericht gelöscht",
             subTitle: viewport.isMobile ? "" : "Der Bericht wurde erfolgreich gelöscht.",
@@ -187,49 +160,6 @@ export async function deleteReport(reportId) {
     } finally {
         isFetching.delete = false;
     }
-}
-
-/**
- * Maps API error types to user-facing toast messages for report deletion.
- *
- * Supported error types:
- * - NOTFOUND → report does not exist
- * - BADREQUEST → invalid report ID or malformed request
- * - DEFAULT → fallback for unknown errors
- *
- * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
- *
- * @param {string} errorType - Error identifier returned from API
- * @param {string} context - Action performed before the error (DELETE, GET)
- * @returns {void}
- */
-function handleError(errorType, context) {
-    const errorConfigs = {
-        NOTFOUND: {
-            title: "Bericht nicht gefunden",
-            subTitle: "Der angegebene Bericht konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
-        },
-        BADREQUEST: {
-            title: "Ungültiger Bericht",
-            subTitle: "Der angegebene Bericht ist ungültig. Bitte versuchen Sie es später erneut."
-        },
-        DELETE_DEFAULT: {
-            title: "Fehler beim Löschen",
-            subTitle: "Beim Löschen des Berichts ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-        },
-        GET_DEFAULT: {
-            title: "Fehler beim Laden",
-            subTitle: "Beim Laden des Berichts ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-        },
-    };
-
-    const config = errorConfigs[errorType] || context === "DELETE" ? errorConfigs.DELETE_DEFAULT : errorConfigs.GET_DEFAULT;
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.subTitle,
-        type: "error"
-    });
 }
 
 /**

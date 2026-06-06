@@ -4,9 +4,7 @@ import com.gvw.gvwbackend.dto.request.AddMemberRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateMemberRequestDTO;
 import com.gvw.gvwbackend.dto.response.MemberResponseDTO;
 import com.gvw.gvwbackend.dto.response.MembersResponseDTO;
-import com.gvw.gvwbackend.exception.BadRequestException;
-import com.gvw.gvwbackend.exception.ConflictException;
-import com.gvw.gvwbackend.exception.NotFoundException;
+import com.gvw.gvwbackend.exception.*;
 import com.gvw.gvwbackend.mapper.MemberMapper;
 import com.gvw.gvwbackend.model.Member;
 import com.gvw.gvwbackend.model.Role;
@@ -77,18 +75,18 @@ public class MemberService {
 
   public void checkMember(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CHECK, 400)));
     }
 
     Member member = dbService.findById("members", id, Member.class);
     if (member == null) {
-      throw new NotFoundException("MemberNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CHECK, 404)));
     }
   }
 
   public void addMember(AddMemberRequestDTO request) {
     if (emailExists(request.email())) {
-      throw new ConflictException("EmailAlreadyInUse");
+      throw new ConflictException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CREATE, 409)));
     }
 
     Member member = createMemberFromRequest(request);
@@ -101,7 +99,7 @@ public class MemberService {
       List<Member> members = dbService.findByQuery("members", query, Member.class);
 
       if (members.isEmpty()) {
-        throw new NotFoundException("MemberNotFound");
+        throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CREATE, 404)));
       }
 
       String temporaryPassword = AuthService.generatePassword(3, 2);
@@ -144,17 +142,17 @@ public class MemberService {
             request.email());
       }
 
-      throw new RuntimeException("RegistrationFailed", e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.CREATE, 500)), e);
     }
   }
 
   public void deleteMember(String id) {
     if (id == null || id.isEmpty()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.DELETE, 400)));
     }
 
-    Member member = getMemberById(id);
-    User user = getUserByMemberId(id);
+    Member member = getMemberById(id, ErrorAction.DELETE);
+    User user = getUserByMemberId(id, ErrorAction.DELETE);
 
     dbService.delete("members", member.getId(), member.getRev());
     dbService.delete("users", user.getId(), user.getRev());
@@ -163,8 +161,9 @@ public class MemberService {
   }
 
   public List<String> updateMember(UpdateMemberRequestDTO request) {
-    Member member = getMemberById(request.id());
-    User user = getUserByMemberId(request.id());
+    // Can throw not found
+    Member member = getMemberById(request.id(), ErrorAction.UPDATE);
+    User user = getUserByMemberId(request.id(), ErrorAction.UPDATE);
 
     memberMapper.updateMemberFromDto(request, member);
     memberMapper.updateUserFromDto(request, user);
@@ -187,15 +186,15 @@ public class MemberService {
       return List.of((String) memberResult.get("rev"), (String) userResult.get("rev"));
     }
 
-    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    throw new RuntimeException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.UPDATE, 500)));
   }
 
   public String updateMemberStatus(String id, String _rev) {
     if (id == null || id.isEmpty()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.UPDATE, 400)));
     }
 
-    Member member = getMemberById(id);
+    Member member = getMemberById(id, ErrorAction.UPDATE);
 
     member.setRev(_rev);
     member.setStatus("active".equals(member.getStatus()) ? "inactive" : "active");
@@ -212,7 +211,7 @@ public class MemberService {
       return (String) memberResult.get("rev");
     }
 
-    throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+    throw new RuntimeException(String.valueOf(ErrorDomain.MEMBER.createCode(ErrorAction.UPDATE, 500)));
   }
 
   private boolean emailExists(String email) {
@@ -254,19 +253,21 @@ public class MemberService {
     return member;
   }
 
-  public Member getMemberById(String id) {
+  private Member getMemberById(String id, ErrorAction action) {
     Member member = dbService.findById("members", id, Member.class);
 
-    if (member == null) throw new NotFoundException("MemberNotFound");
+    if (member == null)
+      throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(action, 404)));
 
     return member;
   }
 
-  private User getUserByMemberId(String memberId) {
+  private User getUserByMemberId(String memberId, ErrorAction action) {
     Map<String, Object> query = Map.of("selector", Map.of("memberId", memberId), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
-    if (users == null || users.isEmpty()) throw new NotFoundException("UserNotFound");
+    if (users == null || users.isEmpty())
+      throw new NotFoundException(String.valueOf(ErrorDomain.MEMBER.createCode(action, 404)));
 
     return users.getFirst();
   }

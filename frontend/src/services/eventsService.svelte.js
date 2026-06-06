@@ -5,7 +5,7 @@ import {
     apiUpdateEvent,
     apiUpdateEventStatus
 } from "../api/apiEvents.svelte";
-import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
@@ -302,7 +302,7 @@ export async function eventExists(id) {
 
             if (normalized.status === 404) return false;
 
-            if (handleGlobalApiError(normalized)) return true;
+            if (handleGenericErrors(normalized)) return true;
 
             return true;
         } catch (e) {
@@ -350,23 +350,6 @@ export async function addEvent(event) {
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            if (normalizedResponse.errorType === "BADREQUEST") {
-                addToast({
-                    title: "Ungültige Daten",
-                    subTitle: viewport.isMobile ? "" : "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben.",
-                    type: "error"
-                });
-            } else {
-                addToast({
-                    title: "Fehler beim Erstellen",
-                    subTitle: viewport.isMobile ? "" : "Beim Erstellen der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.",
-                    type: "error"
-                });
-            }
-            return;
-        }
-
         addToast({
             title: "Veranstaltung erstellt",
             subTitle: viewport.isMobile ? "" : "Die Veranstaltung wurde erfolgreich erstellt.",
@@ -398,11 +381,6 @@ export async function deleteEvent(id) {
 
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            handleDeleteError(normalizedResponse.errorType);
-            return;
-        }
-
         addToast({
             title: "Veranstaltung gelöscht",
             subTitle: viewport.isMobile ? "" : "Die Veranstaltung wurde erfolgreich gelöscht.",
@@ -411,44 +389,6 @@ export async function deleteEvent(id) {
     } finally {
         isFetching.deleteEvent = false;
     }
-}
-
-/**
- * Maps API error types to user-facing toast messages for event deletion.
- *
- * Supported error types:
- * - NOTFOUND → event does not exist
- * - BADREQUEST → invalid event ID or malformed request
- * - DEFAULT → fallback for unknown errors
- *
- * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
- *
- * @param {string} errorType - Error identifier returned from API
- * @returns {void}
- */
-function handleDeleteError(errorType) {
-    const errorConfigs = {
-        NOTFOUND: {
-            title: "Veranstaltung nicht gefunden",
-            subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
-        },
-        BADREQUEST: {
-            title: "Ungültige Veranstaltung",
-            subTitle: "Die angegebene Veranstaltung ist ungültig. Bitte versuchen Sie es später erneut."
-        },
-        DEFAULT: {
-            title: "Fehler beim Löschen",
-            subTitle: "Beim Löschen der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-        }
-    };
-
-    const config = errorConfigs[errorType] || errorConfigs.DEFAULT;
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.subTitle,
-        type: "error"
-    });
 }
 
 /**
@@ -487,11 +427,6 @@ export async function updateStatus(id) {
 
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            handleUpdateError(normalizedResponse.errorType, "STATUS");
-            return;
-        }
 
         const index = eventsStore.raw.findIndex(e => e.id === id);
         if (index !== -1) {
@@ -543,11 +478,6 @@ export async function updateEvent(event) {
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            handleUpdateError(normalizedResponse.errorType, "FULL");
-            return;
-        }
-
         const index = eventsStore.raw.findIndex(e => e.id === event.id);
         if (index !== -1) {
             eventsStore.raw[index] = {
@@ -565,49 +495,4 @@ export async function updateEvent(event) {
     } finally {
         isFetching.updateEvent = false;
     }
-}
-
-/**
- * Maps API error types to user-facing toast messages for event updates.
- *
- * Supported error types:
- * - NOTFOUND → event does not exist
- * - BADREQUEST → malformed request
- * - DEFAULT → fallback for unknown errors
- *
- * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
- *
- * @param {string} errorType - Error identifier returned from API
- * @param {string} updateType - The kind of update that was performed (`FULL` or `STATUS`)
- * @returns {void}
- */
-function handleUpdateError(errorType, updateType) {
-    const errorConfigs = {
-        NOTFOUND: {
-            title: "Veranstaltung nicht gefunden",
-            subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
-        },
-        BADREQUEST: {
-            title: "Ungültige Daten",
-            subTitle: updateType === "FULL"
-                ? "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben."
-                : "Die angegebene Veranstaltung ist ungültig. Bitte versuchen Sie es später erneut."
-        },
-        CONFLICT: {
-            title: "Speicher-Konflikt",
-            subTitle: "Jemand anderes hat diese Veranstaltung bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen."
-        },
-        DEFAULT: {
-            title: "Fehler beim Aktualisieren",
-            subTitle: "Beim Aktualisieren der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-        }
-    };
-
-    const config = errorConfigs[errorType] || errorConfigs.DEFAULT;
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.subTitle,
-        type: "error"
-    });
 }

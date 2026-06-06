@@ -5,10 +5,7 @@ import com.gvw.gvwbackend.dto.request.UpdateUserAdminRequestDTO;
 import com.gvw.gvwbackend.dto.response.UserManagerResponseDTO;
 import com.gvw.gvwbackend.dto.response.UserManagerResponsesDTO;
 import com.gvw.gvwbackend.dto.response.UserResponseDTO;
-import com.gvw.gvwbackend.exception.BadRequestException;
-import com.gvw.gvwbackend.exception.ConflictException;
-import com.gvw.gvwbackend.exception.InvalidCredentialsException;
-import com.gvw.gvwbackend.exception.NotFoundException;
+import com.gvw.gvwbackend.exception.*;
 import com.gvw.gvwbackend.mapper.UserMapper;
 import com.gvw.gvwbackend.model.Member;
 import com.gvw.gvwbackend.model.Role;
@@ -49,10 +46,11 @@ public class UserService {
 
   public UserResponseDTO getUser(String userId) {
     if (userId == null || userId.isEmpty()) {
-      throw new InvalidCredentialsException("Unauthorized");
+      // This is invalid credentials aka invalid token so logout should be handled via 1004401 (Auth Middleware error)
+      throw new InvalidCredentialsException(String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
     }
 
-    User user = getUserByUserId(userId);
+    User user = getUserByUserId(userId, ErrorAction.READ_ONE);
 
     return new UserResponseDTO(
         user.getEmail(),
@@ -65,10 +63,10 @@ public class UserService {
 
   public String resetPasswordUsingMemberId(String memberId) {
     if (memberId == null || memberId.isEmpty()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 400)));
     }
 
-    User user = getUserByMemberId(memberId);
+    User user = getUserByMemberId(memberId, ErrorAction.UPDATE);
 
     String temporaryPassword = AuthService.generatePassword(3, 2);
 
@@ -77,7 +75,7 @@ public class UserService {
     Map<String, Object> resp = dbService.update("users", user.getId(), user);
 
     if (resp == null || !resp.containsKey("rev")) {
-      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+      throw new RuntimeException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 500)));
     }
 
     mailService.sendMail(
@@ -136,10 +134,10 @@ public class UserService {
 
   public void checkUser(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.CHECK, 400)));
     }
 
-    User user = getUserByID(id);
+    getUserByID(id, ErrorAction.CHECK);
   }
 
   public void addUser(AddUserAdminRequestDTO request) {
@@ -148,7 +146,7 @@ public class UserService {
             "users", Map.of("selector", Map.of("email", request.email())), User.class);
 
     if (!usersWithRequestMail.isEmpty()) {
-      throw new ConflictException("EmailAlreadyInUse");
+      throw new ConflictException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.CREATE, 409)));
     }
 
     User user = createUserFromRequest(request);
@@ -174,10 +172,10 @@ public class UserService {
 
   public String resetPasswordUsingUserId(String id) {
     if (id == null || id.isEmpty()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 400)));
     }
 
-    User user = getUserByID(id);
+    User user = getUserByID(id, ErrorAction.UPDATE);
 
     String temporaryPassword = AuthService.generatePassword(3, 2);
 
@@ -186,7 +184,7 @@ public class UserService {
     Map<String, Object> resp = dbService.update("users", user.getId(), user);
 
     if (resp == null || !resp.containsKey("rev")) {
-      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+      throw new RuntimeException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 500)));
     }
 
     mailService.sendMail(
@@ -199,10 +197,10 @@ public class UserService {
   }
 
   public String updateUser(UpdateUserAdminRequestDTO request) {
-    User user = getUserByID(request.id());
+    User user = getUserByID(request.id(), ErrorAction.UPDATE);
 
     if (!isOrphan(user.getMemberId())) {
-      throw new BadRequestException("InvalidAction");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 400)));
     }
 
     if (!user.getEmail().equalsIgnoreCase(request.email())) {
@@ -210,7 +208,7 @@ public class UserService {
           dbService.findByQuery(
               "users", Map.of("selector", Map.of("email", request.email())), User.class);
       if (conflicts.stream().anyMatch(u -> !u.getId().equals(user.getId()))) {
-        throw new ConflictException("EmailAlreadyInUse");
+        throw new ConflictException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 409)));
       }
     }
 
@@ -230,18 +228,18 @@ public class UserService {
       return (String) userResult.get("rev");
     }
 
-    throw new RuntimeException("FailedToRetrieveNewRevFromDB");
+    throw new RuntimeException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.UPDATE, 500)));
   }
 
   public void deleteUser(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.DELETE, 400)));
     }
 
-    User user = getUserByID(id);
+    User user = getUserByID(id, ErrorAction.DELETE);
 
     if (!isOrphan(user.getMemberId())) {
-      throw new BadRequestException("InvalidAction");
+      throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.DELETE, 400)));
     }
 
     dbService.delete("users", user.getId(), user.getRev());
@@ -253,28 +251,31 @@ public class UserService {
     }
   }
 
-  private User getUserByMemberId(String memberId) {
+  private User getUserByMemberId(String memberId, ErrorAction action) {
     Map<String, Object> query = Map.of("selector", Map.of("memberId", memberId), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
-    if (users == null || users.isEmpty()) throw new NotFoundException("UserNotFound");
+    if (users == null || users.isEmpty())
+      throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(action, 404)));
 
     return users.getFirst();
   }
 
-  private User getUserByUserId(String userId) {
+  private User getUserByUserId(String userId, ErrorAction action) {
     Map<String, Object> query = Map.of("selector", Map.of("userId", userId), "limit", 1);
     List<User> users = dbService.findByQuery("users", query, User.class);
 
-    if (users == null || users.isEmpty()) throw new NotFoundException("UserNotFound");
+    if (users == null || users.isEmpty())
+      throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(action, 404)));
 
     return users.getFirst();
   }
 
-  private User getUserByID(String id) {
+  private User getUserByID(String id, ErrorAction action) {
     User user = dbService.findById("users", id, User.class);
 
-    if (user == null) throw new NotFoundException("UserNotFound");
+    if (user == null)
+      throw new NotFoundException(String.valueOf(ErrorDomain.USER.createCode(action, 404)));
 
     return user;
   }

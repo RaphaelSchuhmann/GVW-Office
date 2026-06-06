@@ -1,9 +1,8 @@
 package com.gvw.gvwbackend.model;
 
-import java.util.Arrays;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.Arrays;
 import lombok.Getter;
 
 @Getter

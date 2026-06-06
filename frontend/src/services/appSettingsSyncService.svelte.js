@@ -1,8 +1,6 @@
 import { apiGetSettings } from "../api/apiAppSettings.svelte";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
-import { addToast } from "../stores/toasts.svelte";
-import { viewport } from "../stores/viewport.svelte";
 import { appSettings } from "../stores/appSettings.svelte.js";
 import { lastRefresh } from "../stores/sseStore.svelte.js";
 import { untrack } from "svelte";
@@ -65,16 +63,6 @@ export async function loadAppSettings() {
 
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!resp.ok) {
-            addToast({
-                title: "App Einstellungen nicht verfügbar",
-                subTitle: viewport.isMobile ? "" : "Beim Laden der globalen App Einstellungen ist ein unerwarteter Fehler aufgetreten.",
-                type: "error"
-            });
-            console.error("Unable to load app settings");
-            return;
-        }
 
         Object.assign(appSettings, body);
     } catch (err) {

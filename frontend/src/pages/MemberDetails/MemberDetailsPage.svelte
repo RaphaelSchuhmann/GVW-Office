@@ -58,8 +58,8 @@
             const exists = await memberExists(memberId);
             if (!exists) {
                 addToast({
-                    title: "Mitglied wurde gelöscht",
-                    subTitle: "Dieses Mitglied wurde gelöscht und ist nicht mehr verfügbar.",
+                    title: "Mitglied nicht mehr verfügbar",
+                    subTitle: viewport.isMobile ? "" : "Dieses Mitglied wurde gelöscht und ist nicht mehr verfügbar.",
                     type: "error"
                 });
 

@@ -5,7 +5,7 @@ import {
     apiUpdateMember,
     apiUpdateMemberStatus
 } from "../api/apiMembers.svelte";
-import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
@@ -38,57 +38,6 @@ const isFetching = {
     deleteMember: false,
     resetPassword: false
 };
-
-/**
- * Centralized handler for member-related API errors.
- *
- * @param {string} errorType - Backend error type (e.g., BADREQUEST, NOTFOUND, CONFLICT)
- * @param {string} context - Operation context ("ADD", "UPDATE", "DELETE", "RESET", "STATUS")
- */
-function handleMemberError(errorType, context) {
-    const errorConfigs = {
-        ADD: {
-            CONFLICT: { title: "E-Mail-Adresse bereits verwendet", sub: "Die E-Mail-Adresse ist bereits einem anderen Mitglied zugeordnet." },
-            BADREQUEST: { title: "Ungültige Daten", sub: "Bitte überprüfen Sie Ihre Eingaben. Einige Felder enthalten ungültige Werte." },
-            DEFAULT: { title: "Fehler beim Hinzufügen", sub: "Beim Hinzufügen des neuen Mitglieds ist ein Fehler aufgetreten." },
-        },
-        UPDATE: {
-            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
-            NOTFOUND: { title: "Mitglied nicht gefunden", sub: "Das gewählte Mitglied wurde im System nicht gefunden." },
-            CONFLICT: { title: "Speicher-Konflikt", sub: "Jemand anderes hat dieses Mitglied bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen." },
-            DEFAULT: { title: "Fehler beim Bearbeiten", sub: "Beim Bearbeiten der Mitgliedsdaten ist ein Fehler aufgetreten." }
-        },
-        DELETE: {
-            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
-            NOTFOUND: { title: "Mitglied nicht gefunden", sub: "Das gewählte Mitglied wurde im System nicht gefunden." },
-            DEFAULT: { title: "Fehler beim Entfernen", sub: "Beim Entfernen des Mitglieds ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
-        },
-        RESET: {
-            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
-            NOTFOUND: { title: "Mitglied nicht gefunden", sub: "Das gewählte Mitglied wurde im System nicht gefunden." },
-            DEFAULT: { title: "Fehler beim Zurücksetzen", sub: "Beim Zurücksetzen des Passworts ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
-        },
-        STATUS: {
-            BADREQUEST: { title: "Unvollständige Daten", sub: "Es wurden unvollständige Daten übermittelt. Bitte versuchen Sie es erneut." },
-            NOTFOUND: { title: "Mitglied nicht gefunden", sub: "Das gewählte Mitglied wurde im System nicht gefunden." },
-            CONFLICT: { title: "Speicher-Konflikt", sub: "Jemand anderes hat den Status des Mitglieds bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen." },
-            DEFAULT: { title: "Fehler beim Aktualisieren", sub: "Beim Aktualisieren des Mitglieds ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut." }
-        },
-        CHECK: {
-            DEFAULT: { title: "Mitglied wurde gelöscht", sub: "Dieses Mitglied wurde gelöscht und ist nicht mehr verfügbar." },
-        }
-    };
-
-    const config = errorConfigs[context]?.[errorType] ?? errorConfigs[context]?.DEFAULT;
-
-    if (!config) return;
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.sub,
-        type: "error"
-    });
-}
 
 const pendingChecks = new Map();
 
@@ -135,7 +84,7 @@ export async function memberExists(id) {
 
             if (normalized.status === 404) return false;
 
-            if (handleGlobalApiError(normalized)) return true;
+            if (handleGenericErrors(normalized)) return true;
 
             return true;
         } catch (e) {
@@ -174,11 +123,6 @@ export async function newMember(member) {
 
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!resp.ok) {
-            handleMemberError(normalizedResponse.errorType, "ADD");
-            return;
-        }
-
         addToast({
             title: "Mitglied hinzugefügt",
             subTitle: viewport.isMobile ? "" : "Das neue Mitglied wurde erfolgreich im System hinzugefügt.",
@@ -210,11 +154,6 @@ export async function removeMember(id) {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            handleMemberError(normalizedResponse.errorType, "DELETE");
-            return;
-        }
 
         addToast({
             title: "Mitglied gelöscht",
@@ -253,11 +192,6 @@ export async function switchMemberStatus(id) {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            handleMemberError(normalizedResponse.errorType, "STATUS");
-            return;
-        }
 
         const index = membersStore.raw.findIndex(m => m.id === id);
         if (index !== -1) {
@@ -299,11 +233,6 @@ export async function resetMemberPassword(id) {
 
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            handleMemberError(normalizedResponse.errorType, "RESET");
-            return;
-        }
-
         addToast({
             title: "Passwort zurückgesetzt",
             subTitle: viewport.isMobile ? "" : "Das Passwort wurde erfolgreich auf ein temporäres Passwort zurückgesetzt.",
@@ -335,11 +264,6 @@ export async function updateMember(member) {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            handleMemberError(normalizedResponse.errorType, "UPDATE");
-            return;
-        }
 
         Object.assign(user, { rev: body.rev_user });
 

@@ -54,8 +54,8 @@
             const exists = await eventExists(eventId);
             if (!exists) {
                 addToast({
-                    title: "Veranstaltung wurde gelöscht",
-                    subTitle: "Diese Veranstaltung wurde gelöscht und ist nicht mehr verfügbar.",
+                    title: "Veranstaltung nicht mehr verfügbar",
+                    subTitle: viewport.isMobile ? "" : "Diese Veranstaltung wurde gelöscht und ist nicht mehr verfügbar.",
                     type: "error"
                 });
 

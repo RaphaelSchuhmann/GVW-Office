@@ -8,7 +8,7 @@ import {
     apiUpdateScore
 } from "../api/apiLibrary.svelte";
 import { normalizeResponse } from "../api/http.svelte";
-import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
 
@@ -152,7 +152,7 @@ export async function scoreExists(id) {
 
             if (normalized.status === 404) return false;
 
-            if (handleGlobalApiError(normalized)) return true;
+            if (handleGenericErrors(normalized)) return true;
 
             return true;
         } catch (e) {
@@ -196,11 +196,6 @@ export async function deleteScore(id) {
         const normalizedResponse = normalizeResponse(resp);
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            handleDeleteError(normalizedResponse.errorType);
-            return;
-        }
-
         addToast({
             title: "Eintrag gelöscht",
             subTitle: viewport.isMobile ? "" : "Der Eintrag wurde erfolgreich gelöscht.",
@@ -209,44 +204,6 @@ export async function deleteScore(id) {
     } finally {
         isFetching.deleteScore = false;
     }
-}
-
-/**
- * Maps API error types to user-facing toast messages for score deletion.
- *
- * Supported error types:
- * - NOTFOUND → score does not exist
- * - BADREQUEST → invalid score ID or malformed request
- * - DEFAULT → fallback for unknown errors
- *
- * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
- *
- * @param {string} errorType - Error identifier returned from API
- * @returns {void}
- */
-function handleDeleteError(errorType) {
-    const errorConfigs = {
-        NOTFOUND: {
-            title: "Noten nicht gefunden",
-            subTitle: "Die Noten die Sie löschen möchten wurden nicht gefunden."
-        },
-        BADREQUEST: {
-            title: "Ungültige Daten",
-            subTitle: "Die übergebenen Daten sind ungültig. Bitte überprüfen Sie Ihre Eingaben."
-        },
-        DEFAULT: {
-            title: "Fehler beim Löschen",
-            subTitle: "Beim Löschen des Eintrags ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-        }
-    };
-
-    const config = errorConfigs[errorType] || errorConfigs.DEFAULT;
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.subTitle,
-        type: "error"
-    });
 }
 
 /**
@@ -271,11 +228,6 @@ export async function downloadScoreFiles(id) {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            handleDownloadError(normalizedResponse, body);
-            return;
-        }
 
         triggerFileDownload(body, id);
 
@@ -315,66 +267,6 @@ function triggerFileDownload(blob, id) {
 }
 
 /**
- * Handles API error responses specific to score file downloads.
- *
- * Distinguishes between:
- * - NOTFOUND errors with detailed backend messages (e.g. missing score or files)
- * - Generic failures for all other error types
- *
- * Error mapping:
- * - ScoreNotFound → score entry does not exist
- * - NoFilesFound → no files attached to the score
- * - DEFAULT_NOT_FOUND → fallback for unknown NOTFOUND cases
- * - GENERIC_FAILURE → fallback for all other errors
- *
- * Displays a toast message adjusted for viewport (mobile vs desktop).
- *
- * @param {Object} response - Normalized API response
- * @param {string} response.errorType - High-level error type (e.g. NOTFOUND)
- * @param {Object} [body] - Optional response body containing detailed error info
- * @param {string} [body.errorMessage] - Specific backend error identifier
- *
- * @returns {void}
- */
-function handleDownloadError(response, body) {
-    const errorMap = {
-        ScoreNotFound: {
-            title: "Noten nicht gefunden",
-            subTitle: "Die Noten wurden in der Notenbibliothek nicht gefunden.",
-            type: "error"
-        },
-        NoFilesFound: {
-            title: "Keine Dateien gefunden",
-            subTitle: "Es sind keine Dateien für diese Noten hinterlegt.",
-            type: "info"
-        },
-        DEFAULT_NOT_FOUND: {
-            title: "Unerwarteter Fehler",
-            subTitle: "Es ist ein unerwarteter Fehler aufgetreten.",
-            type: "error"
-        },
-        GENERIC_FAILURE: {
-            title: "Fehler beim Download",
-            subTitle: "Beim Download der Noten ist ein Fehler aufgetreten.",
-            type: "error"
-        }
-    };
-
-    let config;
-    if (response.errorType === "NOTFOUND") {
-        config = errorMap[body?.errorMessage] || errorMap.DEFAULT_NOT_FOUND;
-    } else {
-        config = errorMap.GENERIC_FAILURE;
-    }
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.subTitle,
-        type: config.type
-    });
-}
-
-/**
  * Creates a new score entry in the library, including file uploads.
  *
  * Features:
@@ -400,11 +292,6 @@ export async function addScore(score) {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            showScoreErrorToast(normalizedResponse.errorType, "ADD", "");
-            return;
-        }
 
         addToast({
             title: "Eintrag hinzugefügt",
@@ -455,11 +342,6 @@ export async function updateScore(score) {
         const normalizedResponse = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResponse)) return;
-
-        if (!normalizedResponse.ok) {
-            showScoreErrorToast(normalizedResponse.errorType, "UPDATE", body.message);
-            return;
-        }
 
         const index = libraryStore.raw.findIndex(s => s.id === score.id);
         if (index !== -1) {
@@ -514,47 +396,4 @@ function prepareScoreFormData(score) {
     }));
 
     return formData;
-}
-
-/**
- * Displays error toasts for score-related operations (add/update).
- *
- * Error handling:
- * - CONFLICT → duplicate score entry
- * - BADREQUEST → invalid or malformed input
- * - NOTFOUND → score not found (update case)
- * - DEFAULT → fallback for unknown errors
- *
- * The displayed message may vary slightly depending on the context (ADD vs UPDATE).
- * Subtitle visibility is adjusted based on viewport (mobile vs desktop).
- *
- * @param {string} errorType - Error identifier from API
- * @param {"ADD"|"UPDATE"} context - Operation context
- * @param {string} details - Error details
- *
- * @returns {void}
- */
-function showScoreErrorToast(errorType, context, details) {
-    const configs = {
-        CONFLICT: {
-            title: details === "RevisionMismatch" ? "Speicher-Konflikt" : "Eintrag bereits vorhanden",
-            sub: details === "RevisionMismatch"
-                ? "Jemand anderes hat diese Veranstaltung bereits bearbeitet. Bitte Seite aktualisieren, um die neuesten Daten zu sehen."
-                : "Ein Eintrag mit diesem Titel und Künstler existiert bereits."
-        },
-        BADREQUEST: {
-            title: context === "ADD" ? "Ungültige Daten" : "Ungültige Eingabe",
-            sub: "Die übergebenen Daten sind ungültig. Bitte prüfen Sie Ihre Eingaben."
-        },
-        NOTFOUND: { title: "Noten nicht gefunden", sub: "Die Noten wurden in der Notenbibliothek nicht gefunden." },
-        DEFAULT: { title: "Fehler beim Speichern", sub: "Beim Speichern ist ein unerwarteter Fehler aufgetreten." }
-    };
-
-    const config = configs[errorType] || configs.DEFAULT;
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.sub,
-        type: "error"
-    });
 }

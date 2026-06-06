@@ -38,15 +38,6 @@ export async function loadDashboardData() {
 
         if (handleGlobalApiError(normalizedResponse)) return;
 
-        if (!normalizedResponse.ok) {
-            addToast({
-                title: "Fehler beim laden",
-                subTitle: viewport.isMobile ? "" : "Beim Laden der Dashboard Daten ist ein Fehler aufgetreten.",
-                type: "warning"
-            });
-            return;
-        }
-
         if (
             !Array.isArray(body?.members) ||
             !Number.isFinite(body?.totalEvents) ||

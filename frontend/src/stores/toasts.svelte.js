@@ -10,11 +10,12 @@ export const toasts = $state([]);
  * @param {string} [options.subTitle] - Toast subtitle/message
  * @param {string} [options.type="info"] - Toast type (info, success, error, warning)
  * @param {number} [options.timeout=5000] - Auto-dismiss timeout in milliseconds
+ * @param {string} [options.typeId] - An optional id that determines the toast type for generic errors
  */
-export function addToast({ title, subTitle = "", type = "info", timeout = 5000 }) {
+export function addToast({ title, subTitle = "", type = "info", timeout = 5000, typeId = "" }) {
     const id = crypto.randomUUID();
 
-    toasts.push({ id, title, subTitle, type });
+    toasts.push({ id, title, subTitle, type, typeId });
 
     setTimeout(() => {
         removeToast(id);

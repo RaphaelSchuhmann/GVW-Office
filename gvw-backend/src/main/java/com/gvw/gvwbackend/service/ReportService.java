@@ -5,6 +5,8 @@ import com.gvw.gvwbackend.dto.request.UpdateReportDescriptionRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateReportRequestDTO;
 import com.gvw.gvwbackend.dto.response.*;
 import com.gvw.gvwbackend.exception.BadRequestException;
+import com.gvw.gvwbackend.exception.ErrorAction;
+import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.*;
 import java.io.File;
@@ -36,6 +38,9 @@ public class ReportService {
   private static final Logger log = LoggerFactory.getLogger(ReportService.class);
 
   private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
+
+  // TODO: When separating generic text editor logic, make sure to refactor some stuff here...
+  //       a and make sure to either update method ids in frontend or keep them as they are in backend!
 
   @Value("${reports.directory:./api-data/reports}")
   private String filesDir;
@@ -73,12 +78,12 @@ public class ReportService {
 
   public void checkReport(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.CHECK, 400)));
     }
 
     Report report = dbService.findById("reports", id, Report.class);
     if (report == null) {
-      throw new NotFoundException("ReportNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.CHECK, 404)));
     }
   }
 
@@ -108,21 +113,20 @@ public class ReportService {
 
   public FullReportResponseDTO getReport(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.READ_ONE, 400)));
     }
 
     Report report = dbService.findById("reports", id, Report.class);
 
     if (report == null) {
-      throw new NotFoundException("ReportNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.READ_ONE, 404)));
     }
 
     String contents = getContentsAsString(report);
     String plainText = Jsoup.parse(contents).text();
 
-    List<String> words = Arrays.stream(plainText.split("\\s+"))
-            .filter(word -> !word.isEmpty())
-            .toList();
+    List<String> words =
+        Arrays.stream(plainText.split("\\s+")).filter(word -> !word.isEmpty()).toList();
 
     return new FullReportResponseDTO(
         report.getId(),
@@ -138,20 +142,21 @@ public class ReportService {
         report.getContents());
   }
 
-  public AttachmentResource getReportImage(String reportId, String filename) {
+  // TEXT_EDITOR
+  public AttachmentResource getDocumentImage(String reportId, String filename) {
     if (reportId == null || reportId.isBlank() || filename == null || filename.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400)));
     }
 
     if (filename.contains("..") || filename.contains("/")) {
-      throw new BadRequestException("InvalidFileName");
+      throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400)));
     }
 
     Path filePath = Paths.get(filesDir, filename);
     File file = filePath.toFile();
 
     if (!file.exists()) {
-      throw new NotFoundException("ImageNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 404)));
     }
 
     try {
@@ -163,47 +168,18 @@ public class ReportService {
 
       return new AttachmentResource(file, contentType);
     } catch (IOException exception) {
-      throw new RuntimeException("ErrorLoadingImage", exception);
-    }
-  }
-
-  public AttachmentResource getReportFile(String reportId, String filename) {
-    if (reportId == null || reportId.isBlank() || filename == null || filename.isBlank()) {
-      throw new BadRequestException("InvalidData");
-    }
-
-    if (filename.contains("..") || filename.contains("/")) {
-      throw new BadRequestException("InvalidFileName");
-    }
-
-    Path filePath = Paths.get(filesDir, filename);
-    File file = filePath.toFile();
-
-    if (!file.exists()) {
-      throw new NotFoundException("FileNotFound");
-    }
-
-    try {
-      String contentType = Files.probeContentType(filePath);
-
-      if (contentType == null || contentType.isBlank()) {
-        contentType = "application/octet-stream";
-      }
-
-      return new AttachmentResource(file, contentType);
-    } catch (IOException exception) {
-      throw new RuntimeException("ErrorLoadingFile", exception);
+      throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 500)), exception);
     }
   }
 
   public void deleteReport(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException("InvalidData");
+      throw new BadRequestException(String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.DELETE, 400)));
     }
 
     Report report = dbService.findById("reports", id, Report.class);
     if (report == null) {
-      throw new NotFoundException("ReportNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.DELETE, 404)));
     }
 
     List<String> files = getFilenames(report);
@@ -218,7 +194,7 @@ public class ReportService {
           file = file.substring(index + 1);
         }
 
-        deleteFile(file);
+        deleteFile(file, ErrorAction.DELETE);
       }
     }
 
@@ -278,37 +254,39 @@ public class ReportService {
     return new ReportsSearchResponseDTO(responseDTOS);
   }
 
+  // TEXT_EDITOR
   public LinkMetadataResponseDTO resolveUrl(String url) {
     try {
       URI uri = new URI(url);
 
       if (!"https".equalsIgnoreCase(uri.getScheme())) {
-        throw new BadRequestException("InvalidScheme");
+        throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400)));
       }
 
       String host = uri.getHost();
       if (host == null) {
-        throw new BadRequestException("InvalidHost");
+        throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400)));
       }
 
       InetAddress[] addresses = InetAddress.getAllByName(host);
 
       for (InetAddress address : addresses) {
         if (isBlockedAddress(address)) {
-          throw new BadRequestException("BlockedIPRange");
+          throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400)));
         }
       }
 
       InetAddress[] addresses2 = InetAddress.getAllByName(host);
       if (addresses.length != addresses2.length) {
-        throw new IllegalArgumentException("DNS rebind detected");
+        throw new IllegalArgumentException(
+            "0000500"); // DNS rebind detected, note entirely sure what code to return here
       }
 
       Document doc =
-              Jsoup.connect(uri.toString())
-                      .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-                      .timeout(5000)
-                      .get();
+          Jsoup.connect(uri.toString())
+              .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+              .timeout(5000)
+              .get();
 
       String title = doc.title();
       if (title.isBlank()) {
@@ -317,7 +295,7 @@ public class ReportService {
 
       String favicon;
       Element iconElement =
-              doc.head().select("link[rel~=(?i)^(shortcut|icon|apple-touch-icon)$]").first();
+          doc.head().select("link[rel~=(?i)^(shortcut|icon|apple-touch-icon)$]").first();
 
       if (iconElement != null) {
         favicon = iconElement.attr("abs:href");
@@ -331,17 +309,18 @@ public class ReportService {
     }
   }
 
+  // TEXT_EDITOR
   public String updateReport(UpdateReportRequestDTO request, List<MultipartFile> files) {
     Report report = dbService.findById("reports", request.id(), Report.class);
     if (report == null) {
-      throw new NotFoundException("ReportNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UPDATE, 404)));
     }
 
     Map<String, String> newlyUploadedFiles = new HashMap<>();
 
     try {
       if (files != null && !files.isEmpty()) {
-        newlyUploadedFiles = storeFiles(files);
+        newlyUploadedFiles = storeFiles(files, ErrorAction.UPDATE);
       }
 
       // Update Image block data to permanent internal filenames
@@ -356,7 +335,7 @@ public class ReportService {
             block.setData(realId);
           } else {
             log.error("Missing file for temp ID: {}", tempId);
-            throw new BadRequestException("MissingFileForTempID");
+            throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UPDATE, 400)));
           }
         }
       }
@@ -374,12 +353,12 @@ public class ReportService {
       Map<String, Object> resp = dbService.update("reports", report.getId(), report);
 
       if (resp == null || !resp.containsKey("rev")) {
-        throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+        throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UPDATE, 500)));
       }
 
       if (!removedFiles.isEmpty()) {
         for (String file : removedFiles) {
-          deleteFile(file);
+          deleteFile(file, ErrorAction.UPDATE);
         }
       }
 
@@ -394,14 +373,16 @@ public class ReportService {
       log.error("Update failed. Rolling back new uploads.", e);
 
       for (String newFile : newlyUploadedFiles.values()) {
-        deleteFile(newFile);
+        deleteFile(newFile, ErrorAction.UPDATE);
       }
 
-      if (e instanceof RuntimeException) throw (RuntimeException) e;
-      throw new RuntimeException("UpdateOperationFailed", e);
+      if (e instanceof RuntimeException)
+        throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UPDATE, 500)));
+      throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UPDATE, 500)), e);
     }
   }
 
+  // TEXT_EDITOR
   public String updateReportDescription(UpdateReportDescriptionRequestDTO request) {
     String description = request.description();
 
@@ -411,7 +392,7 @@ public class ReportService {
 
     Report report = dbService.findById("reports", request.id(), Report.class);
     if (report == null) {
-      throw new NotFoundException("ReportNotFound");
+      throw new NotFoundException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UPDATE, 404)));
     }
 
     report.setDescription(description);
@@ -420,7 +401,7 @@ public class ReportService {
     Map<String, Object> resp = dbService.update("reports", report.getId(), report);
 
     if (resp == null || !resp.containsKey("rev")) {
-      throw new RuntimeException("FailedToRetrieveNewRevsFromDB");
+      throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UPDATE, 500)));
     }
 
     try {
@@ -432,6 +413,7 @@ public class ReportService {
     return (String) resp.get("rev");
   }
 
+  // TEXT_EDITOR
   private String getContentsAsString(Report report) {
     if (report == null) return "";
 
@@ -459,6 +441,7 @@ public class ReportService {
     return sb.toString();
   }
 
+  // TEXT_EDITOR
   private List<String> getFilenames(Report report) {
     if (report == null) {
       return List.of();
@@ -479,7 +462,8 @@ public class ReportService {
     return filenames;
   }
 
-  private void deleteFile(String fileName) {
+  // TEXT_EDITOR
+  private void deleteFile(String fileName, ErrorAction action) {
     Path filePath = Paths.get(filesDir, fileName);
 
     if (!Files.exists(filePath)) {
@@ -490,11 +474,12 @@ public class ReportService {
     try {
       Files.deleteIfExists(filePath);
     } catch (IOException e) {
-      throw new RuntimeException("FileSystemError", e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(action, 500)), e);
     }
   }
 
-  private Map<String, String> storeFiles(List<MultipartFile> files) throws IOException {
+  // TEXT_EDITOR
+  private Map<String, String> storeFiles(List<MultipartFile> files, ErrorAction action) throws IOException {
     if (files == null || files.isEmpty()) return Map.of();
 
     Map<String, String> filenames = new HashMap<>();
@@ -506,7 +491,7 @@ public class ReportService {
 
       for (MultipartFile file : files) {
         if (file.getSize() > MAX_FILE_SIZE) {
-          throw new BadRequestException("FileSizeTooLarge");
+          throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(action, 400)));
         }
 
         String originalName = file.getOriginalFilename();
@@ -533,9 +518,10 @@ public class ReportService {
         }
       }
 
-      if (e instanceof BadRequestException) throw (BadRequestException) e;
+      if (e instanceof BadRequestException)
+        throw new BadRequestException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(action, 400)));
 
-      throw new RuntimeException("FileSystemError", e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(action, 500)), e);
     }
 
     return filenames;
@@ -556,6 +542,7 @@ public class ReportService {
     return content.substring(start, end);
   }
 
+  // TEXT_EDITOR
   private Set<String> extractFileIds(List<TextEditorBlock> content) {
     Set<String> ids = new HashSet<>();
 
@@ -579,10 +566,11 @@ public class ReportService {
     return ids;
   }
 
+  // TEXT_EDITOR
   private boolean isBlockedAddress(InetAddress addr) {
     return addr.isAnyLocalAddress()
-            || addr.isLoopbackAddress()
-            || addr.isLinkLocalAddress()
-            || addr.isSiteLocalAddress();
+        || addr.isLoopbackAddress()
+        || addr.isLinkLocalAddress()
+        || addr.isSiteLocalAddress();
   }
 }
