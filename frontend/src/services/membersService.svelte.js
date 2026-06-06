@@ -5,7 +5,7 @@ import {
     apiUpdateMember,
     apiUpdateMemberStatus
 } from "../api/apiMembers.svelte";
-import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
@@ -84,7 +84,7 @@ export async function memberExists(id) {
 
             if (normalized.status === 404) return false;
 
-            if (handleGlobalApiError(normalized)) return true;
+            if (handleGenericErrors(normalized)) return true;
 
             return true;
         } catch (e) {

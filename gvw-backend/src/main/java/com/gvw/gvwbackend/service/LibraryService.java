@@ -4,10 +4,7 @@ import com.gvw.gvwbackend.dto.request.AddScoreRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateScoreRequestDTO;
 import com.gvw.gvwbackend.dto.response.ScoreResponseDTO;
 import com.gvw.gvwbackend.dto.response.ScoresResponseDTO;
-import com.gvw.gvwbackend.exception.BadRequestException;
-import com.gvw.gvwbackend.exception.ConflictException;
-import com.gvw.gvwbackend.exception.NotFoundException;
-import com.gvw.gvwbackend.model.ErrorDomain;
+import com.gvw.gvwbackend.exception.*;
 import com.gvw.gvwbackend.model.Score;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -40,7 +37,6 @@ public class LibraryService {
     this.sseService = sseService;
   }
 
-  // METHOD ID: 02
   public ScoresResponseDTO getAllScores() {
     List<Map<String, Object>> scoresRaw = dbService.findAll("library");
 
@@ -72,27 +68,25 @@ public class LibraryService {
     return new ScoresResponseDTO(responseScores);
   }
 
-  // METHOD ID: 03
   public void checkScore(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.LIBRARY.createCode(3, 400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.CHECK, 400)));
     }
 
     Score score = dbService.findById("library", id, Score.class);
     if (score == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.LIBRARY.createCode(3, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.CHECK, 404)));
     }
   }
 
-  // METHOD ID: 04
   public void createScore(AddScoreRequestDTO request, List<MultipartFile> files) {
     if (existsInLibrary(request.scoreId(), request.title(), request.artist())) {
-      throw new ConflictException(String.valueOf(ErrorDomain.LIBRARY.createCode(4, 409)));
+      throw new ConflictException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.CREATE, 409)));
     }
 
     List<Score.File> metaList = new ArrayList<>();
     try {
-      metaList = storeFiles(files);
+      metaList = storeFiles(files, ErrorAction.CREATE);
 
       Score score =
           Score.builder()
@@ -114,29 +108,28 @@ public class LibraryService {
       }
     } catch (Exception e) {
       for (Score.File orphan : metaList) {
-        deleteFile(orphan.getId() + "." + orphan.getExtension());
+        deleteFile(orphan.getId() + "." + orphan.getExtension(), ErrorAction.CREATE);
       }
 
       if (e instanceof ConflictException)
-        throw new ConflictException(String.valueOf(ErrorDomain.LIBRARY.createCode(4, 409)));
-      throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(4, 500)), e);
+        throw new ConflictException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.CREATE, 409)));
+      throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.CREATE, 500)), e);
     }
   }
 
-  // METHOD ID: 05
   public void deleteScore(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.LIBRARY.createCode(5, 400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.DELETE, 400)));
     }
 
     Score score = dbService.findById("library", id, Score.class);
     if (score == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.LIBRARY.createCode(5, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.DELETE, 404)));
     }
 
     if (score.getFiles() != null) {
       for (Score.File file : score.getFiles()) {
-        deleteFile(file.getId() + "." + file.getExtension());
+        deleteFile(file.getId() + "." + file.getExtension(), ErrorAction.DELETE);
       }
     }
 
@@ -149,7 +142,6 @@ public class LibraryService {
     }
   }
 
-  // METHOD ID: 06
   public void streamFilesAsZip(List<Score.File> files, OutputStream out) {
     Path root = Paths.get(scoresDir);
 
@@ -178,7 +170,7 @@ public class LibraryService {
       zip.finish();
     } catch (IOException e) {
       log.error("Error creating ZIP archive", e);
-      throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(6, 500)), e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.UTILITY, 500)), e);
     }
   }
 
@@ -189,7 +181,7 @@ public class LibraryService {
       List<String> requestRemovedFiles) {
     Score score = dbService.findById("library", request.id(), Score.class);
     if (score == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.LIBRARY.createCode(7, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.UPDATE, 404)));
     }
 
     List<Score.File> newlyStoredFiles = new ArrayList<>();
@@ -211,7 +203,7 @@ public class LibraryService {
       }
 
       if (newFiles != null && !newFiles.isEmpty()) {
-        newlyStoredFiles = storeFiles(newFiles);
+        newlyStoredFiles = storeFiles(newFiles, ErrorAction.UPDATE);
         updatedFileList.addAll(newlyStoredFiles);
       }
 
@@ -227,11 +219,11 @@ public class LibraryService {
       Map<String, Object> resp = dbService.update("library", score.getId(), score);
 
       if (resp == null || !resp.containsKey("rev")) {
-        throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(7, 500)));
+        throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.UPDATE, 500)));
       }
 
       for (Score.File oldFile : filesToPhysicallyDelete) {
-        deleteFile(oldFile.getId() + "." + oldFile.getExtension());
+        deleteFile(oldFile.getId() + "." + oldFile.getExtension(), ErrorAction.UPDATE);
       }
 
       try {
@@ -244,17 +236,16 @@ public class LibraryService {
     } catch (Exception e) {
       log.error("Update failed. Rolling back new uploads.", e);
       for (Score.File newFile : newlyStoredFiles) {
-        deleteFile(newFile.getId() + "." + newFile.getExtension());
+        deleteFile(newFile.getId() + "." + newFile.getExtension(), ErrorAction.UPDATE);
       }
 
       if (e instanceof RuntimeException)
-        throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(7, 500)), e);
-      throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(7, 500)), e);
+        throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.UPDATE, 500)), e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.UPDATE, 500)), e);
     }
   }
 
-  // METHOD ID: 08
-  private List<Score.File> storeFiles(List<MultipartFile> files) throws IOException {
+  private List<Score.File> storeFiles(List<MultipartFile> files, ErrorAction action) throws IOException {
     if (files == null || files.isEmpty()) return List.of();
 
     List<Score.File> storedFiles = new ArrayList<>();
@@ -266,7 +257,7 @@ public class LibraryService {
 
       for (MultipartFile file : files) {
         if (file.getSize() > MAX_FILE_SIZE) {
-          throw new BadRequestException(String.valueOf(ErrorDomain.LIBRARY.createCode(8, 400)));
+          throw new BadRequestException(String.valueOf(ErrorDomain.LIBRARY.createCode(action, 400)));
         }
 
         String originalName = file.getOriginalFilename();
@@ -295,13 +286,12 @@ public class LibraryService {
         }
       }
 
-      throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(8, 500)), e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(action, 500)), e);
     }
     return storedFiles;
   }
 
-  // METHOD ID: 09
-  private void deleteFile(String fileName) {
+  private void deleteFile(String fileName,  ErrorAction action) {
     Path filePath = Paths.get(scoresDir, fileName);
 
     if (!Files.exists(filePath)) {
@@ -312,11 +302,10 @@ public class LibraryService {
     try {
       Files.deleteIfExists(filePath);
     } catch (IOException e) {
-      throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(9, 500)), e);
+      throw new RuntimeException(String.valueOf(ErrorDomain.LIBRARY.createCode(action, 500)), e);
     }
   }
 
-  // METHOD ID: 10
   private boolean existsInLibrary(String scoreId, String title, String artist) {
     Map<String, Object> query =
         Map.of("selector", Map.of("scoreId", scoreId, "title", title, "artist", artist));

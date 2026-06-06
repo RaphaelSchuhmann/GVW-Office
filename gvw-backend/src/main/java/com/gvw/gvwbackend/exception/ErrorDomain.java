@@ -1,4 +1,4 @@
-package com.gvw.gvwbackend.model;
+package com.gvw.gvwbackend.exception;
 
 public enum ErrorDomain {
   AUTH(10),
@@ -22,8 +22,8 @@ public enum ErrorDomain {
     this.id = id;
   }
 
-  public int createCode(int method, int httpStatus) {
-    String formattedCode = String.format("%02d%02d%03d", this.id, method, httpStatus);
+  public int createCode(ErrorAction action, int httpStatus) {
+    String formattedCode = String.format("%02d%02d%03d", this.id, action.getId(), httpStatus);
     return Integer.parseInt(formattedCode);
   }
 }

@@ -5,9 +5,10 @@ import com.gvw.gvwbackend.dto.response.BugReportDetailsResponseDTO;
 import com.gvw.gvwbackend.dto.response.BugReportResponseDTO;
 import com.gvw.gvwbackend.dto.response.BugReportsResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
+import com.gvw.gvwbackend.exception.ErrorAction;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.BugReport;
-import com.gvw.gvwbackend.model.ErrorDomain;
+import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.model.UserReportMetaData;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,7 +38,6 @@ public class BugReportService {
     this.mailService = mailService;
   }
 
-  // METHOD ID: 01
   public BugReportsResponseDTO getBugReports() {
     List<Map<String, Object>> rawBugReports = dbService.findAll("bug_reports");
 
@@ -56,15 +56,14 @@ public class BugReportService {
     return new BugReportsResponseDTO(bugReportResponseDTOS);
   }
 
-  // METHOD ID: 02
   public BugReportDetailsResponseDTO getBugReportDetails(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(2, 400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(ErrorAction.READ_ONE, 400)));
     }
 
     BugReport bugReport = dbService.findById("bug_reports", id, BugReport.class);
     if (bugReport == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(2, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(ErrorAction.READ_ONE, 404)));
     }
 
     return new BugReportDetailsResponseDTO(
@@ -80,10 +79,9 @@ public class BugReportService {
         bugReport.getMetaData().getViewport());
   }
 
-  // METHOD ID: 03
   public void addBugReport(AddBugReportRequestDTO request, String userId) {
     if (userId == null || userId.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(3, 400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(ErrorAction.CREATE, 400)));
     }
 
     BugReport bugReport = new BugReport();
@@ -121,20 +119,19 @@ public class BugReportService {
     }
   }
 
-  // METHOD ID: 04
   public void deleteBugReport(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(4, 400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(ErrorAction.DELETE, 400)));
     }
 
     BugReport bugReport = dbService.findById("bug_reports", id, BugReport.class);
     if (bugReport == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(4, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(ErrorAction.DELETE, 404)));
     }
 
     boolean deleted = dbService.delete("bug_reports", bugReport.getId(), bugReport.getRev());
     if (!deleted) {
-      throw new RuntimeException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(4, 500)));
+      throw new RuntimeException(String.valueOf(ErrorDomain.BUG_REPORT.createCode(ErrorAction.DELETE, 500)));
     }
 
     try {

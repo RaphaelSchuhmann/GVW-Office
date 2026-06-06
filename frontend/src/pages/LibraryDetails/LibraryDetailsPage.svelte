@@ -56,8 +56,8 @@
             const exists = await scoreExists(scoreId);
             if (!exists) {
                 addToast({
-                    title: "Noteneintrag wurde gelöscht",
-                    subTitle: "Dieser Noteneintrag wurde gelöscht und ist nicht mehr verfügbar.",
+                    title: "Noteneintrag nicht mehr verfügbar",
+                    subTitle: viewport.isMobile ? "" : "Dieser Noteneintrag wurde gelöscht und ist nicht mehr verfügbar.",
                     type: "error"
                 });
 

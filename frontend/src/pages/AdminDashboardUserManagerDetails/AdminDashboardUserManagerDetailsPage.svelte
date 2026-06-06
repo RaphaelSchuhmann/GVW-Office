@@ -66,8 +66,8 @@
             const exists = await userExists(userId);
             if (!exists) {
                 addToast({
-                    title: "Benutzer wurde gelöscht",
-                    subTitle: "Dieser Benutzer wurde gelöscht und ist nicht mehr verfügbar.",
+                    title: "Benutzer nicht mehr verfügbar",
+                    subTitle: viewport.isMobile ? "" : "Dieser Benutzer wurde gelöscht und ist nicht mehr verfügbar.",
                     type: "error"
                 });
 

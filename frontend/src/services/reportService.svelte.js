@@ -6,7 +6,7 @@ import {
     apiUpdateDescription
 } from "../api/apiReports.svelte.js";
 import { normalizeResponse } from "../api/http.svelte.js";
-import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
+import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
 import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
 import { sanitize } from "./utils.js";
@@ -89,7 +89,7 @@ export async function reportExists(id) {
 
             if (normalized.status === 404) return false;
 
-            if (handleGlobalApiError(normalized)) return true;
+            if (handleGenericErrors(normalized)) return true;
 
             return true;
         } catch (e) {

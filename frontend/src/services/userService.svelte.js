@@ -3,7 +3,7 @@ import { addToast } from "../stores/toasts.svelte";
 import { auth } from "../stores/auth.svelte.js";
 import { clearValue } from "./store";
 import { user } from "../stores/user.svelte";
-import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import {
     apiAddUserAD,
     apiCheckUserAD,
@@ -175,7 +175,7 @@ export async function userExists(id) {
 
             if (normalized.status === 404) return false;
 
-            if (handleGlobalApiError(normalized)) return true;
+            if (handleGenericErrors(normalized)) return true;
 
             return true;
         } catch (e) {

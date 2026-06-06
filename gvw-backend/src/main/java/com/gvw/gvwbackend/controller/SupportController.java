@@ -6,6 +6,8 @@ import com.gvw.gvwbackend.dto.response.BugReportDetailsResponseDTO;
 import com.gvw.gvwbackend.dto.response.BugReportsResponseDTO;
 import com.gvw.gvwbackend.dto.response.FeedbackDetailsResponseDTO;
 import com.gvw.gvwbackend.dto.response.FeedbacksResponseDTO;
+import com.gvw.gvwbackend.exception.ErrorAction;
+import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.exception.handler.ErrorContext;
 import com.gvw.gvwbackend.service.BugReportService;
 import com.gvw.gvwbackend.service.FeedbackService;
@@ -51,7 +53,7 @@ public class SupportController {
 
   @PostMapping("/feedback/add")
   @ResponseStatus(HttpStatus.OK)
-  @ErrorContext(domain = 90, method = 3)
+  @ErrorContext(domain = ErrorDomain.FEEDBACK, action = ErrorAction.CREATE)
   public void addFeedback(
       @Valid @RequestBody AddFeedbackRequestDTO request,
       @RequestAttribute("userId") String userId) {
@@ -60,7 +62,7 @@ public class SupportController {
 
   @PostMapping("/bugs/add")
   @ResponseStatus(HttpStatus.OK)
-  @ErrorContext(domain = 11, method = 3)
+  @ErrorContext(domain = ErrorDomain.BUG_REPORT, action = ErrorAction.CREATE)
   public void addBugReport(
       @Valid @RequestBody AddBugReportRequestDTO request,
       @RequestAttribute("userId") String userId) {

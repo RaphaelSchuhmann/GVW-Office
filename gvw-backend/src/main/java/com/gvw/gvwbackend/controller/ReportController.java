@@ -8,6 +8,8 @@ import com.gvw.gvwbackend.dto.response.LinkMetadataResponseDTO;
 import com.gvw.gvwbackend.dto.response.ReportsResponseDTO;
 import com.gvw.gvwbackend.dto.response.ReportsSearchResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
+import com.gvw.gvwbackend.exception.ErrorAction;
+import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.exception.handler.ErrorContext;
 import com.gvw.gvwbackend.model.AttachmentResource;
 import com.gvw.gvwbackend.service.FileValidator;
@@ -48,7 +50,7 @@ public class ReportController {
 
   @PostMapping("/add")
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
-  @ErrorContext(domain = 70, method = 3)
+  @ErrorContext(domain = ErrorDomain.REPORT, action = ErrorAction.CREATE)
   @ResponseStatus(HttpStatus.OK)
   public void addReport(@Valid @RequestBody AddReportRequestDTO request) {
     reportService.createReport(request);
@@ -91,7 +93,7 @@ public class ReportController {
 
   @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  @ErrorContext(domain = 14, method = 10)
+  @ErrorContext(domain = ErrorDomain.TEXT_EDITOR, action = ErrorAction.UPDATE)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   public Map<String, Object> updateReport(
       @RequestPart("reportData") @Valid UpdateReportRequestDTO request,
@@ -99,7 +101,7 @@ public class ReportController {
     if (files != null) {
       for (MultipartFile file : files) {
         if (!fileValidator.isSafe(file)) {
-          throw new BadRequestException("1301400");
+          throw new BadRequestException("1399400");
         }
       }
     }
@@ -110,7 +112,7 @@ public class ReportController {
   @PatchMapping("/update/description")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
-  @ErrorContext(domain = 14, method = 11)
+  @ErrorContext(domain = ErrorDomain.TEXT_EDITOR, action = ErrorAction.UPDATE)
   public Map<String, Object> updateReportDescription(
       @Valid @RequestBody UpdateReportDescriptionRequestDTO request) {
     String rev = reportService.updateReportDescription(request);

@@ -71,8 +71,8 @@
             const exists = await reportExists(reportId);
             if (!exists) {
                 addToast({
-                    title: "Bericht wurde gelöscht",
-                    subTitle: "Dieser Bericht wurde gelöscht und ist nicht mehr verfügbar.",
+                    title: "Bericht nicht mehr verfügbar",
+                    subTitle: viewport.isMobile ? "" : "Dieser Bericht wurde gelöscht und ist nicht mehr verfügbar.",
                     type: "error"
                 });
 

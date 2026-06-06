@@ -5,9 +5,10 @@ import com.gvw.gvwbackend.dto.request.UpdateEventRequestDTO;
 import com.gvw.gvwbackend.dto.response.EventResponseDTO;
 import com.gvw.gvwbackend.dto.response.EventsResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
+import com.gvw.gvwbackend.exception.ErrorAction;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.mapper.EventMapper;
-import com.gvw.gvwbackend.model.ErrorDomain;
+import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.model.Event;
 import java.time.Instant;
 import java.util.List;
@@ -31,7 +32,6 @@ public class EventService {
     this.sseService = sseService;
   }
 
-  // METHOD ID: 01
   public EventsResponseDTO allEvents() {
     List<Map<String, Object>> eventsRaw = dbService.findAll("events");
     boolean changed = false;
@@ -53,7 +53,7 @@ public class EventService {
         eventDate = Instant.parse(event.getDate());
       } catch (Exception ex) {
         log.error("Error converting event date string: {}", event.getDate(), ex);
-        throw new RuntimeException(String.valueOf(ErrorDomain.EVENTS.createCode(1, 500)), ex);
+        throw new RuntimeException(String.valueOf(ErrorDomain.EVENTS.createCode(ErrorAction.READ_ALL, 500)), ex);
       }
 
       if (eventDate.isBefore(Instant.now())
@@ -101,22 +101,20 @@ public class EventService {
     return new EventsResponseDTO(responseEvents);
   }
 
-  // METHOD ID: 02
   public void checkEvent(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.EVENTS.createCode(2, 400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.EVENTS.createCode(ErrorAction.CHECK, 400)));
     }
 
     Event event = dbService.findById("events", id, Event.class);
     if (event == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.EVENTS.createCode(2, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.EVENTS.createCode(ErrorAction.CHECK, 404)));
     }
   }
 
-  // METHOD ID: 03
   public void addEvent(AddEventRequestDTO request) {
     if (!validateRecurrence(request.mode(), request.recurrence())) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.EVENTS.createCode(3, 400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.EVENTS.createCode(ErrorAction.CREATE, 400)));
     }
 
     Event event = createEventFromRequest(request);
@@ -130,15 +128,14 @@ public class EventService {
     }
   }
 
-  // METHOD ID: 04
   public void deleteEvent(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.EVENTS.createCode(4, 400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.EVENTS.createCode(ErrorAction.DELETE, 400)));
     }
 
     Event event = dbService.findById("events", id, Event.class);
     if (event == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.EVENTS.createCode(4, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.EVENTS.createCode(ErrorAction.DELETE, 404)));
     }
 
     dbService.delete("events", event.getId(), event.getRev());
@@ -150,15 +147,14 @@ public class EventService {
     }
   }
 
-  // METHOD ID: 05
   public String updateEventStatus(String id, String _rev) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.EVENTS.createCode(5, 400)));
+      throw new BadRequestException(String.valueOf(ErrorDomain.EVENTS.createCode(ErrorAction.UPDATE, 400)));
     }
 
     Event event = dbService.findById("events", id, Event.class);
     if (event == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.EVENTS.createCode(5, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.EVENTS.createCode(ErrorAction.UPDATE, 404)));
     }
 
     event.setRev(_rev);
@@ -181,15 +177,14 @@ public class EventService {
       return (String) resp.get("rev");
     }
 
-    throw new RuntimeException(String.valueOf(ErrorDomain.EVENTS.createCode(5, 500)));
+    throw new RuntimeException(String.valueOf(ErrorDomain.EVENTS.createCode(ErrorAction.UPDATE, 500)));
   }
 
-  // METHOD ID: 06
   public String updateEvent(UpdateEventRequestDTO request) {
     Event event = dbService.findById("events", request.id(), Event.class);
 
     if (event == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.EVENTS.createCode(6, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.EVENTS.createCode(ErrorAction.UPDATE, 404)));
     }
 
     eventMapper.updateEventFromDto(request, event);
@@ -208,10 +203,9 @@ public class EventService {
       return (String) resp.get("rev");
     }
 
-    throw new RuntimeException(String.valueOf(ErrorDomain.EVENTS.createCode(6, 500)));
+    throw new RuntimeException(String.valueOf(ErrorDomain.EVENTS.createCode(ErrorAction.UPDATE, 500)));
   }
 
-  // METHOD ID: 07
   private boolean validateRecurrence(String mode, Event.Recurrence recurrence) {
     if (mode.equalsIgnoreCase("single") || mode.equalsIgnoreCase("weekly")) return true;
 
@@ -234,7 +228,6 @@ public class EventService {
     return false;
   }
 
-  // METHOD ID: 08
   private Event createEventFromRequest(AddEventRequestDTO request) {
     Event event = new Event();
     event.setTitle(request.title());

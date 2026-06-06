@@ -5,7 +5,7 @@ import {
     apiUpdateEvent,
     apiUpdateEventStatus
 } from "../api/apiEvents.svelte";
-import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { normalizeResponse } from "../api/http.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
@@ -302,7 +302,7 @@ export async function eventExists(id) {
 
             if (normalized.status === 404) return false;
 
-            if (handleGlobalApiError(normalized)) return true;
+            if (handleGenericErrors(normalized)) return true;
 
             return true;
         } catch (e) {
@@ -389,44 +389,6 @@ export async function deleteEvent(id) {
     } finally {
         isFetching.deleteEvent = false;
     }
-}
-
-/**
- * Maps API error types to user-facing toast messages for event deletion.
- *
- * Supported error types:
- * - NOTFOUND → event does not exist
- * - BADREQUEST → invalid event ID or malformed request
- * - DEFAULT → fallback for unknown errors
- *
- * Adjusts subtitle visibility depending on viewport (mobile vs desktop).
- *
- * @param {string} errorType - Error identifier returned from API
- * @returns {void}
- */
-function handleDeleteError(errorType) {
-    const errorConfigs = {
-        NOTFOUND: {
-            title: "Veranstaltung nicht gefunden",
-            subTitle: "Die angegebene Veranstaltung konnte nicht gefunden werden. Bitte versuchen Sie es später erneut."
-        },
-        BADREQUEST: {
-            title: "Ungültige Veranstaltung",
-            subTitle: "Die angegebene Veranstaltung ist ungültig. Bitte versuchen Sie es später erneut."
-        },
-        DEFAULT: {
-            title: "Fehler beim Löschen",
-            subTitle: "Beim Löschen der Veranstaltung ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut."
-        }
-    };
-
-    const config = errorConfigs[errorType] || errorConfigs.DEFAULT;
-
-    addToast({
-        title: config.title,
-        subTitle: viewport.isMobile ? "" : config.subTitle,
-        type: "error"
-    });
 }
 
 /**

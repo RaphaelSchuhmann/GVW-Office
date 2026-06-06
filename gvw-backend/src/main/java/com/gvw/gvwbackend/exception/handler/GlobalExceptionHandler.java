@@ -3,6 +3,11 @@ package com.gvw.gvwbackend.exception.handler;
 import com.gvw.gvwbackend.dto.response.ErrorResponseDTO;
 import com.gvw.gvwbackend.exception.*;
 import java.util.Map;
+
+import com.gvw.gvwbackend.service.EventService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,29 +18,31 @@ import org.springframework.web.client.HttpStatusCodeException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+  private static final Logger log = LoggerFactory.getLogger(EventService.class);
+
   @ExceptionHandler(DatabaseConnectionException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ErrorResponseDTO handleDatabaseConnection(DatabaseConnectionException ex) {
-    return new ErrorResponseDTO("0000500", null);
+  public ResponseEntity<ErrorResponseDTO> handleDatabaseConnection(DatabaseConnectionException ex) {
+    return generateResponse("0000500", null, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   @ExceptionHandler(DatabaseMappingException.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ErrorResponseDTO handleDatabaseMapping(DatabaseMappingException ex) {
-    return new ErrorResponseDTO("0000500", null);
+  public ResponseEntity<ErrorResponseDTO> handleDatabaseMapping(DatabaseMappingException ex) {
+    return generateResponse("0000500", null, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   @ExceptionHandler(BadRequestException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ErrorResponseDTO handleBadRequest(BadRequestException ex) {
-    return new ErrorResponseDTO(ex.getMessage(), null);
+  public ResponseEntity<ErrorResponseDTO> handleBadRequest(BadRequestException ex) {
+    return generateResponse(ex.getMessage(), null, HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ErrorResponseDTO handleBadRequestFromValidation(MethodArgumentNotValidException ex) {
-    int domain = 0;
-    int method = 0;
+  public ResponseEntity<ErrorResponseDTO> handleBadRequestFromValidation(MethodArgumentNotValidException ex) {
+    ErrorDomain domain;
+    ErrorAction action;
 
     java.lang.reflect.Method executable =
         (java.lang.reflect.Method) ex.getParameter().getExecutable();
@@ -48,46 +55,61 @@ public class GlobalExceptionHandler {
 
     if (context != null) {
       domain = context.domain();
-      method = context.method();
-    }
+      action = context.action();
 
-    String formattedCode = String.format("%02d%02d%03d", domain, method, 400);
-    return new ErrorResponseDTO(formattedCode, null);
+      int code = domain.createCode(action, 400);
+
+      return generateResponse(String.valueOf(code), null, HttpStatus.BAD_REQUEST);
+    } else {
+      log.warn("Missing @ErrorContext annotation");;
+      return generateResponse("0000400", null, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @ExceptionHandler(InvalidCredentialsException.class)
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
-  public ErrorResponseDTO handleInvalidCredentials(InvalidCredentialsException ex) {
-    return new ErrorResponseDTO(ex.getMessage(), null);
+  public ResponseEntity<ErrorResponseDTO> handleInvalidCredentials(InvalidCredentialsException ex) {
+    return generateResponse(ex.getMessage(), null, HttpStatus.UNAUTHORIZED);
   }
 
   @ExceptionHandler(NotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ErrorResponseDTO handleNotFound(NotFoundException ex) {
-    return new ErrorResponseDTO(ex.getMessage(), null);
+  public ResponseEntity<ErrorResponseDTO> handleNotFound(NotFoundException ex) {
+    return generateResponse(ex.getMessage(), null, HttpStatus.NOT_FOUND);
   }
 
   @ExceptionHandler(HttpStatusCodeException.class)
   public ResponseEntity<ErrorResponseDTO> handleNotFoundFromDB(HttpStatusCodeException ex) {
-    return ResponseEntity.status(ex.getStatusCode())
-        .body(new ErrorResponseDTO(ex.getMessage(), null));
+    // This should be handled as a generic 500 error by the frontend!
+    return generateResponse("0000500", null, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   @ExceptionHandler(ConflictException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
-  public ErrorResponseDTO handleConflict(ConflictException ex) {
-    return new ErrorResponseDTO(ex.getMessage(), null);
+  public ResponseEntity<ErrorResponseDTO> handleConflict(ConflictException ex) {
+    return generateResponse(ex.getMessage(), null, HttpStatus.CONFLICT);
   }
 
   @ExceptionHandler(TooManyRequestsException.class)
   @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
-  public ErrorResponseDTO handleTooManyRequests(TooManyRequestsException ex) {
-    return new ErrorResponseDTO(ex.getMessage(), Map.of("retryAfter", ex.getRetryAfterSeconds()));
+  public ResponseEntity<ErrorResponseDTO> handleTooManyRequests(TooManyRequestsException ex) {
+    return generateResponse(ex.getMessage(), Map.of("retryAfter", ex.getRetryAfterSeconds()), HttpStatus.BAD_REQUEST);
   }
 
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  public ErrorResponseDTO handleGeneric(Exception ex) {
-    return new ErrorResponseDTO("0000500", null);
+  public ResponseEntity<ErrorResponseDTO> handleGeneric(Exception ex) {
+    return generateResponse("0000500", null, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  private ResponseEntity<ErrorResponseDTO> generateResponse(String code, Map<String, Object> details, HttpStatus status) {
+    ErrorResponseDTO dto = new ErrorResponseDTO(code, details);
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("X-GVW-Error-Code", code);
+
+    headers.add(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "X-GVW-Error-Code");
+
+    return new ResponseEntity<>(dto, headers, status);
   }
 }

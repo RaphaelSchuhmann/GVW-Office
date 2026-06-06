@@ -8,7 +8,7 @@ import {
     apiUpdateScore
 } from "../api/apiLibrary.svelte";
 import { normalizeResponse } from "../api/http.svelte";
-import { handleGlobalApiError } from "../api/globalErrorHandler.svelte";
+import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte";
 import { addToast } from "../stores/toasts.svelte";
 import { viewport } from "../stores/viewport.svelte";
 
@@ -152,7 +152,7 @@ export async function scoreExists(id) {
 
             if (normalized.status === 404) return false;
 
-            if (handleGlobalApiError(normalized)) return true;
+            if (handleGenericErrors(normalized)) return true;
 
             return true;
         } catch (e) {

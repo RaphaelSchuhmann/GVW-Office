@@ -2,6 +2,8 @@ package com.gvw.gvwbackend.controller;
 
 import com.gvw.gvwbackend.dto.request.AddChangelogRequestDTO;
 import com.gvw.gvwbackend.dto.response.ChangelogsResponseDTO;
+import com.gvw.gvwbackend.exception.ErrorAction;
+import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.exception.handler.ErrorContext;
 import com.gvw.gvwbackend.service.ChangelogService;
 import jakarta.validation.Valid;
@@ -26,7 +28,7 @@ public class ChangelogController {
   @PostMapping("/add")
   @PreAuthorize("hasAnyRole('ADMIN')")
   @ResponseStatus(HttpStatus.OK)
-  @ErrorContext(domain = 12, method = 2)
+  @ErrorContext(domain = ErrorDomain.CHANGELOG, action = ErrorAction.CREATE)
   public void addChangelog(@Valid @RequestBody AddChangelogRequestDTO request) {
     changelogService.addChangelog(request);
   }

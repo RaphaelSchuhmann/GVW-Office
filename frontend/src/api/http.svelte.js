@@ -16,12 +16,19 @@ import { auth } from "../stores/auth.svelte.js";
  */
 export function normalizeResponse(response) {
     if (!response) return { ok: false, errorType: "NETWORK", message: "0000000" };
-    if (response.status === 400) return { ok: false, errorType: "BAD_REQUEST", status: 400, message: response.message };
-    if (response.status === 401) return { ok: false, errorType: "UNAUTHORIZED", status: 401, message: response.message };
-    if (response.status === 404) return { ok: false, errorType: "NOTFOUND", status: 404, message: response.message };
-    if (response.status === 409) return { ok: false, errorType: "CONFLICT", status: 409, message: response.message };
-    if (response.status === 429) return { ok: false, errorType: "REQUEST_TIMEOUT", status: 429, message: response.message };
-    if (response.status >= 500) return { ok: false, errorType: "SERVER", status: response.status, message: response.message };
+
+    let errorCode = response.headers.get("X-GVW-Error-Code");
+
+    if (!errorCode) {
+        errorCode = response.status >= 500 ? "0000500" : "0000400";
+    }
+
+    if (response.status === 400) return { ok: false, errorType: "BAD_REQUEST", status: 400, message: errorCode };
+    if (response.status === 401) return { ok: false, errorType: "UNAUTHORIZED", status: 401, message: errorCode };
+    if (response.status === 404) return { ok: false, errorType: "NOTFOUND", status: 404, message: errorCode };
+    if (response.status === 409) return { ok: false, errorType: "CONFLICT", status: 409, message: errorCode };
+    if (response.status === 429) return { ok: false, errorType: "REQUEST_TIMEOUT", status: 429, message: errorCode };
+    if (response.status >= 500) return { ok: false, errorType: "SERVER", status: response.status, message: errorCode };
 
     return { ok: true, status: response.status };
 }

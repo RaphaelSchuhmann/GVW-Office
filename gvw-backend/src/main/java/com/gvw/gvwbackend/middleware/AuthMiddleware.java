@@ -1,6 +1,7 @@
 package com.gvw.gvwbackend.middleware;
 
-import com.gvw.gvwbackend.model.ErrorDomain;
+import com.gvw.gvwbackend.exception.ErrorAction;
+import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.model.Role;
 import com.gvw.gvwbackend.service.JwtService;
 import io.jsonwebtoken.Claims;
@@ -53,7 +54,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
 
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
       response.sendError(
-          HttpServletResponse.SC_UNAUTHORIZED, String.valueOf(ErrorDomain.AUTH.createCode(4, 401)));
+          HttpServletResponse.SC_UNAUTHORIZED, String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
       return;
     }
 
@@ -68,7 +69,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
       if (roleName == null) {
         response.sendError(
             HttpServletResponse.SC_UNAUTHORIZED,
-            String.valueOf(ErrorDomain.AUTH.createCode(4, 401)));
+            String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
       }
 
       Role role = Role.fromString(roleName);
@@ -84,7 +85,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
       filterChain.doFilter(request, response);
     } catch (Exception e) {
       response.sendError(
-          HttpServletResponse.SC_UNAUTHORIZED, String.valueOf(ErrorDomain.AUTH.createCode(4, 401)));
+          HttpServletResponse.SC_UNAUTHORIZED, String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
     }
   }
 }
