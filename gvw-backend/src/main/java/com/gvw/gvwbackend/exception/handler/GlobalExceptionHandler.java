@@ -2,9 +2,8 @@ package com.gvw.gvwbackend.exception.handler;
 
 import com.gvw.gvwbackend.dto.response.ErrorResponseDTO;
 import com.gvw.gvwbackend.exception.*;
-import java.util.Map;
-
 import com.gvw.gvwbackend.service.EventService;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -40,7 +39,8 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ResponseEntity<ErrorResponseDTO> handleBadRequestFromValidation(MethodArgumentNotValidException ex) {
+  public ResponseEntity<ErrorResponseDTO> handleBadRequestFromValidation(
+      MethodArgumentNotValidException ex) {
     ErrorDomain domain;
     ErrorAction action;
 
@@ -61,7 +61,8 @@ public class GlobalExceptionHandler {
 
       return generateResponse(String.valueOf(code), null, HttpStatus.BAD_REQUEST);
     } else {
-      log.warn("Missing @ErrorContext annotation");;
+      log.warn("Missing @ErrorContext annotation");
+      ;
       return generateResponse("0000400", null, HttpStatus.BAD_REQUEST);
     }
   }
@@ -93,7 +94,10 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(TooManyRequestsException.class)
   @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
   public ResponseEntity<ErrorResponseDTO> handleTooManyRequests(TooManyRequestsException ex) {
-    return generateResponse(ex.getMessage(), Map.of("retryAfter", ex.getRetryAfterSeconds()), HttpStatus.TOO_MANY_REQUESTS);
+    return generateResponse(
+        ex.getMessage(),
+        Map.of("retryAfter", ex.getRetryAfterSeconds()),
+        HttpStatus.TOO_MANY_REQUESTS);
   }
 
   @ExceptionHandler(Exception.class)
@@ -102,7 +106,8 @@ public class GlobalExceptionHandler {
     return generateResponse("0000500", null, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
-  private ResponseEntity<ErrorResponseDTO> generateResponse(String code, Map<String, Object> details, HttpStatus status) {
+  private ResponseEntity<ErrorResponseDTO> generateResponse(
+      String code, Map<String, Object> details, HttpStatus status) {
     ErrorResponseDTO dto = new ErrorResponseDTO(code, details);
 
     HttpHeaders headers = new HttpHeaders();

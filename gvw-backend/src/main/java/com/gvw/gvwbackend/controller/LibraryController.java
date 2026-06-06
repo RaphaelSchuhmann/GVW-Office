@@ -5,9 +5,9 @@ import com.gvw.gvwbackend.dto.request.UpdateScoreRequestDTO;
 import com.gvw.gvwbackend.dto.response.ScoresResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.ErrorAction;
+import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.exception.handler.ErrorContext;
-import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.model.Score;
 import com.gvw.gvwbackend.service.DbService;
 import com.gvw.gvwbackend.service.FileValidator;
@@ -60,7 +60,8 @@ public class LibraryController {
       for (MultipartFile file : files) {
         if (!fileValidator.isSafe(file)) {
           // 1399400
-          throw new BadRequestException(String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
+          throw new BadRequestException(
+              String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
         }
       }
     }
@@ -79,9 +80,11 @@ public class LibraryController {
   public ResponseEntity<StreamingResponseBody> downloadScoreFiles(@PathVariable String id) {
     Score score = dbService.findById("library", id, Score.class);
     if (score == null)
-      throw new NotFoundException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.UTILITY, 404)));
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.UTILITY, 404)));
     if (score.getFiles() == null || score.getFiles().isEmpty()) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.UTILITY, 404)));
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.UTILITY, 404)));
     }
 
     String sanitizedTitle = score.getTitle().replaceAll("[\"\r\n]", "_");
@@ -104,7 +107,8 @@ public class LibraryController {
     if (newFiles != null) {
       for (MultipartFile file : newFiles) {
         if (!fileValidator.isSafe(file)) {
-          throw new BadRequestException(String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
+          throw new BadRequestException(
+              String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
         }
       }
     }

@@ -6,8 +6,8 @@ import com.gvw.gvwbackend.dto.response.FeedbackResponseDTO;
 import com.gvw.gvwbackend.dto.response.FeedbacksResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.ErrorAction;
-import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.exception.ErrorDomain;
+import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.UserFeedback;
 import com.gvw.gvwbackend.model.UserReportMetaData;
 import java.time.LocalDateTime;
@@ -52,12 +52,14 @@ public class FeedbackService {
 
   public FeedbackDetailsResponseDTO getFeedbackDetails(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.READ_ONE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.READ_ONE, 400)));
     }
 
     UserFeedback feedback = dbService.findById("feedbacks", id, UserFeedback.class);
     if (feedback == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.READ_ONE, 404)));
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.READ_ONE, 404)));
     }
 
     return new FeedbackDetailsResponseDTO(
@@ -73,7 +75,8 @@ public class FeedbackService {
 
   public void addFeedback(AddFeedbackRequestDTO request, String userId) {
     if (userId == null || userId.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.CREATE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.CREATE, 400)));
     }
 
     UserFeedback feedback = new UserFeedback();
@@ -101,17 +104,20 @@ public class FeedbackService {
 
   public void deleteFeedback(String id) {
     if (id == null || id.isBlank()) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.DELETE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.DELETE, 400)));
     }
 
     UserFeedback feedback = dbService.findById("feedbacks", id, UserFeedback.class);
     if (feedback == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.DELETE, 404)));
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.DELETE, 404)));
     }
 
     boolean deleted = dbService.delete("feedbacks", feedback.getId(), feedback.getRev());
     if (!deleted) {
-      throw new RuntimeException(String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.DELETE, 500)));
+      throw new RuntimeException(
+          String.valueOf(ErrorDomain.FEEDBACK.createCode(ErrorAction.DELETE, 500)));
     }
 
     try {

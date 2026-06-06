@@ -6,7 +6,6 @@ import com.gvw.gvwbackend.dto.request.UpdateMaxMembersRequestDTO;
 import com.gvw.gvwbackend.dto.response.AppSettingsResponseDTO;
 import com.gvw.gvwbackend.exception.*;
 import com.gvw.gvwbackend.model.AppSettings;
-
 import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -45,7 +44,8 @@ public class AppSettingsService {
 
     Object revObj = resp != null ? resp.get("rev") : null;
     if (!(revObj instanceof String) || ((String) revObj).isBlank()) {
-      throw new RuntimeException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 500)));
+      throw new RuntimeException(
+          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 500)));
     }
 
     String rev = (String) revObj;
@@ -62,7 +62,8 @@ public class AppSettingsService {
         || requestDTO.displayName() == null
         || BLOCKED_KEYS.contains(requestDTO.type())
         || BLOCKED_KEYS.contains(requestDTO.displayName())) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 400)));
     }
 
     AppSettings settings = appSettings(ErrorAction.UPDATE);
@@ -70,7 +71,8 @@ public class AppSettingsService {
 
     if (categories.containsKey(requestDTO.type())
         || categories.containsKey(requestDTO.displayName())) {
-      throw new ConflictException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 409)));
+      throw new ConflictException(
+          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 409)));
     }
 
     categories.put(requestDTO.type(), requestDTO.displayName());
@@ -90,13 +92,15 @@ public class AppSettingsService {
       return (String) resp.get("rev");
     }
 
-    throw new RuntimeException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 500)));
+    throw new RuntimeException(
+        String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 500)));
   }
 
   public String removeCategory(RemoveCategoryRequestDTO requestDTO) {
     String type = requestDTO.type();
     if (type == null) {
-      throw new BadRequestException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.DELETE, 400)));
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.DELETE, 400)));
     }
 
     AppSettings settings = appSettings(ErrorAction.DELETE);
@@ -120,7 +124,8 @@ public class AppSettingsService {
       return (String) resp.get("rev");
     }
 
-    throw new RuntimeException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.DELETE, 500)));
+    throw new RuntimeException(
+        String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.DELETE, 500)));
   }
 
   private AppSettings appSettings(ErrorAction action) {

@@ -5,9 +5,9 @@ import com.gvw.gvwbackend.dto.response.ChangelogResponseDTO;
 import com.gvw.gvwbackend.dto.response.ChangelogsResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.ErrorAction;
+import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.Changelog;
-import com.gvw.gvwbackend.exception.ErrorDomain;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -75,7 +75,8 @@ public class ChangelogService {
 
     Changelog changelog = dbService.findById("changelogs", id, Changelog.class);
     if (changelog == null) {
-      throw new NotFoundException(String.valueOf(ErrorDomain.CHANGELOG.createCode(ErrorAction.DELETE, 404)));
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.CHANGELOG.createCode(ErrorAction.DELETE, 404)));
     }
 
     dbService.delete("changelogs", changelog.getId(), changelog.getRev());
