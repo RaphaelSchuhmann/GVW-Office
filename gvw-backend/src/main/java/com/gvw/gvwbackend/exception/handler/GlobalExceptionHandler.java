@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(TooManyRequestsException.class)
   @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
   public ResponseEntity<ErrorResponseDTO> handleTooManyRequests(TooManyRequestsException ex) {
-    return generateResponse(ex.getMessage(), Map.of("retryAfter", ex.getRetryAfterSeconds()), HttpStatus.BAD_REQUEST);
+    return generateResponse(ex.getMessage(), Map.of("retryAfter", ex.getRetryAfterSeconds()), HttpStatus.TOO_MANY_REQUESTS);
   }
 
   @ExceptionHandler(Exception.class)

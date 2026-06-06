@@ -101,7 +101,7 @@ public class ReportController {
     if (files != null) {
       for (MultipartFile file : files) {
         if (!fileValidator.isSafe(file)) {
-          throw new BadRequestException("1399400");
+          throw new BadRequestException(String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
         }
       }
     }

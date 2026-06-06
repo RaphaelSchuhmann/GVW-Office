@@ -16,6 +16,7 @@ import { auth } from "../stores/auth.svelte.js";
  */
 export function normalizeResponse(response) {
     if (!response) return { ok: false, errorType: "NETWORK", message: "0000000" };
+    if (response.ok) return { ok: true, status: response.status };
 
     let errorCode = response.headers.get("X-GVW-Error-Code");
 
@@ -30,7 +31,7 @@ export function normalizeResponse(response) {
     if (response.status === 429) return { ok: false, errorType: "REQUEST_TIMEOUT", status: 429, message: errorCode };
     if (response.status >= 500) return { ok: false, errorType: "SERVER", status: response.status, message: errorCode };
 
-    return { ok: true, status: response.status };
+    return { ok: false, errorType: "HTTP_ERROR", status: response.status, message: errorCode };
 }
 
 /**

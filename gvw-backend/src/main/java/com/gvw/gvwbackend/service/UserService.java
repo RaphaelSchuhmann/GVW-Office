@@ -137,7 +137,7 @@ public class UserService {
       throw new BadRequestException(String.valueOf(ErrorDomain.USER.createCode(ErrorAction.CHECK, 400)));
     }
 
-    User user = getUserByID(id, ErrorAction.CHECK);
+    getUserByID(id, ErrorAction.CHECK);
   }
 
   public void addUser(AddUserAdminRequestDTO request) {

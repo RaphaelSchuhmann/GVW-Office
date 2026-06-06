@@ -9,9 +9,12 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.List;
+
 import org.jspecify.annotations.NonNull;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,10 +28,17 @@ public class AuthMiddleware extends OncePerRequestFilter {
   private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
   private final List<String> EXCLUDED_PATHS =
-      List.of("/auth/login", "/dev/**", "/emergency/**", "/settings/get", "/auth/changePw");
+          List.of("/auth/login", "/dev/**", "/emergency/**", "/settings/get", "/auth/changePw");
 
   public AuthMiddleware(JwtService jwtService) {
     this.jwtService = jwtService;
+  }
+
+  private void sendUnauthorized(HttpServletResponse response) throws IOException {
+    String code = String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401));
+    response.setHeader("X-GVW-Error-Code", code);
+    response.addHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "X-GVW-Error-Code");
+    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, code);
   }
 
   @Override
@@ -40,10 +50,10 @@ public class AuthMiddleware extends OncePerRequestFilter {
 
   @Override
   protected void doFilterInternal(
-      HttpServletRequest request,
-      @NonNull HttpServletResponse response,
-      @NonNull FilterChain filterChain)
-      throws IOException, ServletException {
+          HttpServletRequest request,
+          @NonNull HttpServletResponse response,
+          @NonNull FilterChain filterChain)
+          throws IOException, ServletException {
 
     if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
       filterChain.doFilter(request, response);
@@ -53,8 +63,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
     String authHeader = request.getHeader("Authorization");
 
     if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-      response.sendError(
-          HttpServletResponse.SC_UNAUTHORIZED, String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
+      sendUnauthorized(response);
       return;
     }
 
@@ -67,15 +76,14 @@ public class AuthMiddleware extends OncePerRequestFilter {
       String roleName = claims.get("role", String.class);
 
       if (roleName == null) {
-        response.sendError(
-            HttpServletResponse.SC_UNAUTHORIZED,
-            String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
+        sendUnauthorized(response);
+        return;
       }
 
       Role role = Role.fromString(roleName);
 
       List<SimpleGrantedAuthority> authorities =
-          List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+              List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
 
       var authToken = new UsernamePasswordAuthenticationToken(userId, null, authorities);
 
@@ -84,8 +92,7 @@ public class AuthMiddleware extends OncePerRequestFilter {
       request.setAttribute("userId", userId);
       filterChain.doFilter(request, response);
     } catch (Exception e) {
-      response.sendError(
-          HttpServletResponse.SC_UNAUTHORIZED, String.valueOf(ErrorDomain.AUTH.createCode(ErrorAction.AUTH, 401)));
+      sendUnauthorized(response);
     }
   }
 }

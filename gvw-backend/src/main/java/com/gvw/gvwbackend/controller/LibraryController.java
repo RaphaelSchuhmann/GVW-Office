@@ -59,7 +59,8 @@ public class LibraryController {
     if (files != null) {
       for (MultipartFile file : files) {
         if (!fileValidator.isSafe(file)) {
-          throw new BadRequestException("1399400");
+          // 1399400
+          throw new BadRequestException(String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
         }
       }
     }
@@ -103,7 +104,7 @@ public class LibraryController {
     if (newFiles != null) {
       for (MultipartFile file : newFiles) {
         if (!fileValidator.isSafe(file)) {
-          throw new BadRequestException("1399400");
+          throw new BadRequestException(String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
         }
       }
     }
