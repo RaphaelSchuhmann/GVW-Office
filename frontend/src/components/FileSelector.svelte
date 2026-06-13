@@ -10,6 +10,7 @@
         validTypes = [],
         files = $bindable([]),
         disabled = false,
+        wrapContent = false,
         ...restProps
     } = $props();
 
@@ -53,6 +54,7 @@
 
     /**
      * Removes a file from the list
+     * @param {File} file - The file to remove
      */
     function removeFile(file) {
         files = files.filter((f) => f !== file);
@@ -60,9 +62,11 @@
 </script>
 
 <div class={`flex flex-col items-start justify-start gap-1 w-full ${marginMap[marginTop]}`} {...restProps}>
-    <p class="text-dt-6 font-medium">{title}</p>
+    {#if title}
+        <p class="text-dt-6 font-medium">{title}</p>
+    {/if}
     <div class="flex-1 min-w-0 overflow-x-auto w-full">
-        <div class="flex items-center justify-start gap-2 flex-nowrap">
+        <div class={`flex items-center justify-start gap-2 ${wrapContent ? "flex-wrap" : "flex-nowrap"}`}>
             {#if !disabled}
                 <button
                     type="button"

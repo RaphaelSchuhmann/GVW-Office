@@ -48,6 +48,8 @@
     });
 
     $effect(() => {
+        if (!data.content) return;
+
         // Extra save guard if user ends up having no blocks it automatically
         // adds a new empty text block
         if (data.content.length === 0 && isEditing) {
