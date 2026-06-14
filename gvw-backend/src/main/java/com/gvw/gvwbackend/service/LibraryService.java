@@ -5,6 +5,7 @@ import com.gvw.gvwbackend.dto.request.UpdateScoreRequestDTO;
 import com.gvw.gvwbackend.dto.response.ScoreResponseDTO;
 import com.gvw.gvwbackend.dto.response.ScoresResponseDTO;
 import com.gvw.gvwbackend.exception.*;
+import com.gvw.gvwbackend.model.File;
 import com.gvw.gvwbackend.model.Score;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -61,7 +62,7 @@ public class LibraryService {
                         m.getVoices(),
                         m.getVoiceCount(),
                         m.getFiles() != null
-                            ? m.getFiles().stream().map(Score.File::getOriginalName).toList()
+                            ? m.getFiles().stream().map(File::getOriginalName).toList()
                             : List.of()))
             .toList();
 
@@ -87,7 +88,7 @@ public class LibraryService {
           String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.CREATE, 409)));
     }
 
-    List<Score.File> metaList = new ArrayList<>();
+    List<File> metaList = new ArrayList<>();
     try {
       metaList = storeFiles(files, ErrorAction.CREATE);
 
@@ -110,7 +111,7 @@ public class LibraryService {
         log.warn("Failed to broadcast SCORES refresh: ", ex);
       }
     } catch (Exception e) {
-      for (Score.File orphan : metaList) {
+      for (File orphan : metaList) {
         deleteFile(orphan.getId() + "." + orphan.getExtension(), ErrorAction.CREATE);
       }
 
@@ -135,7 +136,7 @@ public class LibraryService {
     }
 
     if (score.getFiles() != null) {
-      for (Score.File file : score.getFiles()) {
+      for (File file : score.getFiles()) {
         deleteFile(file.getId() + "." + file.getExtension(), ErrorAction.DELETE);
       }
     }
@@ -149,11 +150,11 @@ public class LibraryService {
     }
   }
 
-  public void streamFilesAsZip(List<Score.File> files, OutputStream out) {
+  public void streamFilesAsZip(List<File> files, OutputStream out) {
     Path root = Paths.get(scoresDir);
 
     try (ZipOutputStream zip = new ZipOutputStream(out)) {
-      for (Score.File file : files) {
+      for (File file : files) {
         Path filePath = root.resolve(file.getId() + "." + file.getExtension());
 
         if (Files.exists(filePath)) {
@@ -193,17 +194,17 @@ public class LibraryService {
           String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.UPDATE, 404)));
     }
 
-    List<Score.File> newlyStoredFiles = new ArrayList<>();
-    List<Score.File> filesToPhysicallyDelete = new ArrayList<>();
+    List<File> newlyStoredFiles = new ArrayList<>();
+    List<File> filesToPhysicallyDelete = new ArrayList<>();
 
-    List<Score.File> updatedFileList =
+    List<File> updatedFileList =
         new ArrayList<>(score.getFiles() != null ? score.getFiles() : List.of());
 
     try {
       if (requestRemovedFiles != null && !requestRemovedFiles.isEmpty()) {
-        Iterator<Score.File> iterator = updatedFileList.iterator();
+        Iterator<File> iterator = updatedFileList.iterator();
         while (iterator.hasNext()) {
-          Score.File file = iterator.next();
+          File file = iterator.next();
           if (requestRemovedFiles.contains(file.getOriginalName())) {
             filesToPhysicallyDelete.add(file);
             iterator.remove();
@@ -232,7 +233,7 @@ public class LibraryService {
             String.valueOf(ErrorDomain.LIBRARY.createCode(ErrorAction.UPDATE, 500)));
       }
 
-      for (Score.File oldFile : filesToPhysicallyDelete) {
+      for (File oldFile : filesToPhysicallyDelete) {
         deleteFile(oldFile.getId() + "." + oldFile.getExtension(), ErrorAction.UPDATE);
       }
 
@@ -245,7 +246,7 @@ public class LibraryService {
       return (String) resp.get("rev");
     } catch (Exception e) {
       log.error("Update failed. Rolling back new uploads.", e);
-      for (Score.File newFile : newlyStoredFiles) {
+      for (File newFile : newlyStoredFiles) {
         deleteFile(newFile.getId() + "." + newFile.getExtension(), ErrorAction.UPDATE);
       }
 
@@ -257,11 +258,10 @@ public class LibraryService {
     }
   }
 
-  private List<Score.File> storeFiles(List<MultipartFile> files, ErrorAction action)
-      throws IOException {
+  private List<File> storeFiles(List<MultipartFile> files, ErrorAction action) throws IOException {
     if (files == null || files.isEmpty()) return List.of();
 
-    List<Score.File> storedFiles = new ArrayList<>();
+    List<File> storedFiles = new ArrayList<>();
     List<Path> physicalPaths = new ArrayList<>();
     Path root = Paths.get(scoresDir);
 
@@ -288,7 +288,13 @@ public class LibraryService {
         physicalPaths.add(targetPath);
 
         storedFiles.add(
-            new Score.File(id, originalName, file.getContentType(), file.getSize(), extensionOnly));
+            File.builder()
+                .id(id)
+                .originalName(originalName)
+                .mimeType(file.getContentType())
+                .size(file.getSize())
+                .extension(extensionOnly)
+                .build());
       }
     } catch (Exception e) {
       log.error("Internal file storage failed. Cleaning up partial uploads...", e);

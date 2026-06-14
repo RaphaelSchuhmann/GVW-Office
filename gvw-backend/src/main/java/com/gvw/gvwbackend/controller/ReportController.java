@@ -1,6 +1,7 @@
 package com.gvw.gvwbackend.controller;
 
 import com.gvw.gvwbackend.dto.request.AddReportRequestDTO;
+import com.gvw.gvwbackend.dto.request.UpdateDocumentAttachmentsDTO;
 import com.gvw.gvwbackend.dto.request.UpdateReportDescriptionRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateReportRequestDTO;
 import com.gvw.gvwbackend.dto.response.FullReportResponseDTO;

@@ -11,6 +11,7 @@ import com.gvw.gvwbackend.dto.request.UpdateScoreRequestDTO;
 import com.gvw.gvwbackend.dto.response.ScoresResponseDTO;
 import com.gvw.gvwbackend.exception.ConflictException;
 import com.gvw.gvwbackend.exception.NotFoundException;
+import com.gvw.gvwbackend.model.File;
 import com.gvw.gvwbackend.model.Score;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -136,7 +137,14 @@ public class LibraryServiceTest {
     Path file = tempDir.resolve("file1.pdf");
     Files.write(file, "content".getBytes());
 
-    Score.File f = new Score.File("file1", "file1.pdf", "application/pdf", 10, "pdf");
+    File f =
+        File.builder()
+            .id("file1")
+            .originalName("file1.pdf")
+            .mimeType("application/pdf")
+            .size(10)
+            .extension("pdf")
+            .build();
 
     ByteArrayOutputStream out = new ByteArrayOutputStream();
 

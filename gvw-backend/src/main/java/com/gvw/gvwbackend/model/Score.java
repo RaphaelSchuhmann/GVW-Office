@@ -28,18 +28,6 @@ public class Score {
   private int voiceCount;
   private List<File> files;
 
-  @Data
-  @Builder
-  @NoArgsConstructor
-  @AllArgsConstructor
-  public static class File {
-    private String id;
-    private String originalName;
-    private String mimeType;
-    private long size;
-    private String extension;
-  }
-
   @Builder.Default
   @JsonProperty("doc_type")
   private final String docType = "score";
