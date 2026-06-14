@@ -11,6 +11,7 @@
         files = $bindable([]),
         disabled = false,
         wrapContent = false,
+        onChange = (val) => {},
         ...restProps
     } = $props();
 
@@ -38,6 +39,7 @@
 
             if (!duplicate) {
                 files = [...files, file];
+                onChange?.(files);
             } else {
                 addToast({
                     title: "Datei wird schon verwendet",

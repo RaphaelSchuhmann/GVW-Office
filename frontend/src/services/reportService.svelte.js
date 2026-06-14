@@ -3,7 +3,7 @@ import {
     apiCheckReport,
     apiDeleteReport,
     apiGetReport,
-    apiUpdateDescription
+    apiUpdateReportDescription, apiUploadReportAttachments
 } from "../api/apiReports.svelte.js";
 import { normalizeResponse } from "../api/http.svelte.js";
 import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
@@ -41,10 +41,29 @@ let isFetching = {
     delete: false,
     check: false,
     getReport: false,
-    updateDescription: false
+    updateDescription: false,
+    uploadAttachment: false
 };
 
 const pendingChecks = new Map();
+
+/**
+ * Wraps matches in <mark> tags
+ * @param {string} text - The full text to search in
+ * @param {string} term - The word to highlight
+ */
+export function highlight(text, term) {
+    let safeText = sanitize(text);
+
+    if (!term || term.length < 2) return safeText;
+
+    const safeTerm = sanitize(term.trim());
+
+    const escapedTerm = safeTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(`(${escapedTerm})`, "gi");
+
+    return safeText.replace(regex, "<mark class=\"highlight\">$1</mark>");
+}
 
 /**
  * Checks whether an event with the given ID exists in the system.
@@ -162,30 +181,12 @@ export async function deleteReport(reportId) {
     }
 }
 
-/**
- * Wraps matches in <mark> tags
- * @param {string} text - The full text to search in
- * @param {string} term - The word to highlight
- */
-export function highlight(text, term) {
-    let safeText = sanitize(text);
-
-    if (!term || term.length < 2) return safeText;
-
-    const safeTerm = sanitize(term.trim());
-
-    const escapedTerm = safeTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const regex = new RegExp(`(${escapedTerm})`, "gi");
-
-    return safeText.replace(regex, "<mark class=\"highlight\">$1</mark>");
-}
-
 export async function updateDescription(reportId, rev, description) {
     if (isFetching.updateDescription || !reportId || !rev || !description) return { success: false, rev: null };
     isFetching.updateDescription = true;
 
     try {
-        const { resp, body } = await apiUpdateDescription(reportId, rev, description);
+        const { resp, body } = await apiUpdateReportDescription(reportId, rev, description);
         const normalizedResp = normalizeResponse(resp);
 
         if (!normalizedResp.ok) {
@@ -215,5 +216,52 @@ export async function updateDescription(reportId, rev, description) {
         return { success: true, rev: body.rev };
     } finally {
         isFetching.updateDescription = false;
+    }
+}
+
+export async function updateAttachments(reportId, rev, attachments) {
+    if (!reportId || !rev || isFetching.uploadAttachment) return { success: false, rev: null };
+
+    isFetching.uploadAttachment = true;
+
+    try {
+        const formData = new FormData();
+
+        const attachmentIds = [];
+
+        for (const item of attachments) {
+            if (item instanceof File) {
+                formData.append("files", item, item.name);
+            } else {
+                attachmentIds.push(item);
+            }
+        }
+
+        formData.append("metadata",
+            new Blob([
+                JSON.stringify({
+                    rev,
+                    attachments: attachmentIds
+                })
+            ], {
+                type: "application/json"
+            })
+        );
+
+        const { resp, body } = await apiUploadReportAttachments(formData, reportId);
+        const normalized = normalizeResponse(resp);
+
+        if (handleGlobalApiError(normalized)) return { success: false, rev: null };
+
+        if (!body?.rev) {
+            handleGenericErrors({ ok: false, errorType: "SERVER", message: "0000500" });
+            return { success: false, rev: null };
+        }
+
+        return { success: true, rev: body.rev };
+    } catch (e) {
+        return { success: false, rev: null };
+    } finally {
+        isFetching.updateAttachment = false;
     }
 }
