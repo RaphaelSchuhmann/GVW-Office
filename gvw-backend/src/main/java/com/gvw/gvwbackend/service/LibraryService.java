@@ -183,7 +183,6 @@ public class LibraryService {
     }
   }
 
-  // METHOD ID: 07
   public String updateScore(
       UpdateScoreRequestDTO request,
       List<MultipartFile> newFiles,
