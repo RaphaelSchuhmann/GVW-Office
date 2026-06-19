@@ -10,10 +10,17 @@ import com.gvw.gvwbackend.exception.ErrorAction;
 import com.gvw.gvwbackend.exception.ErrorDomain;
 import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.model.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -361,9 +368,7 @@ public class ReportService {
 
       List<File> finalAttachmentList = new ArrayList<>();
 
-      if (request.attachments() == null || request.attachments().isEmpty()) {
-        finalAttachmentList.addAll(newlyWrittenFilesToDisk);
-      } else {
+      if (request.attachments() != null && !request.attachments().isEmpty()) {
         for (String name : request.attachments()) {
           File matchedFile =
               oldAttachments.stream()
@@ -382,6 +387,12 @@ public class ReportService {
           if (matchedFile != null) {
             finalAttachmentList.add(matchedFile);
           }
+        }
+      }
+
+      for (File newFile : newlyWrittenFilesToDisk) {
+        if (!finalAttachmentList.contains(newFile)) {
+          finalAttachmentList.add(newFile);
         }
       }
 
@@ -434,7 +445,40 @@ public class ReportService {
 
       if (e instanceof BadRequestException) throw (BadRequestException) e;
       throw new RuntimeException(
-              String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UPDATE, 500)), e);
+          String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UPDATE, 500)), e);
+    }
+  }
+
+  public void streamFilesAsZip(List<File> files, OutputStream out) {
+    Path root = Paths.get(editorService.getFilesDir());
+
+    try (ZipOutputStream zip = new ZipOutputStream(out)) {
+      for (File file : files) {
+        Path filePath = root.resolve(file.getId() + "." + file.getExtension());
+
+        if (Files.exists(filePath)) {
+          String entryName =
+              file.getOriginalName()
+                  .replaceAll("[\r\n]", "_")
+                  .replaceAll("\\.\\./", "")
+                  .replaceAll("\\.\\.\\\\", "");
+          entryName = Paths.get(entryName).getFileName().toString();
+
+          ZipEntry entry = new ZipEntry(entryName);
+          zip.putNextEntry(entry);
+
+          Files.copy(filePath, zip);
+
+          zip.closeEntry();
+        } else {
+          log.warn("File not found on disk, skipping: {}", filePath);
+        }
+      }
+      zip.finish();
+    } catch (IOException e) {
+      log.error("Error creating ZIP archive", e);
+      throw new RuntimeException(
+          String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UTILITY, 500)), e);
     }
   }
 

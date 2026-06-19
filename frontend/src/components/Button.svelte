@@ -50,7 +50,7 @@
         primary: `bg-gv-primary pl-4 pr-4 text-white hover:bg-gv-primary-hover ${paddingMap[padding]} ${width} ${marginMap[marginTop]}`,
         contextMenu: `bg-transparent w-full pl-4 p-1 pr-4 hover:bg-gv-hover-effect ${fontColorMap[fontColor]}`,
         delete: `bg-gv-delete pl-4 pr-4 text-white hover:bg-gv-delete-hover disabled:hover:bg-gv-delete ${paddingMap[padding]} ${width} ${marginMap[marginTop]}`,
-        secondary: `bg-white border-2 border-gv-border pl-4 pr-4 hover:bg-gv-input-bg ${paddingMap[padding]} ${width} ${marginMap[marginTop]} ${fontColorMap[fontColor]}`
+        secondary: `bg-white border-2 border-gv-border pl-4 pr-4 hover:bg-gv-hover-effect ${paddingMap[padding]} ${width} ${marginMap[marginTop]} ${fontColorMap[fontColor]}`
     };
 </script>
 
