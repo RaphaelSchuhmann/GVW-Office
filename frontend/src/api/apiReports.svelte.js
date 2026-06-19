@@ -62,7 +62,7 @@ export async function apiGetReport(id) {
     return { resp, body };
 }
 
-export async function apiDeepSearchReport(query, signal){
+export async function apiDeepSearchReport(query, signal) {
     const resp = await httpGet(`${apiUrl}/report/search?q=${query}`, "", true, signal);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
@@ -97,7 +97,7 @@ export async function apiAddReport(report) {
         title: report.title,
         author: report.author,
         type: report.type,
-        description: report.description,
+        description: report.description
     });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
@@ -129,9 +129,20 @@ export async function apiDeleteReport(reportId) {
     return { resp, body };
 }
 
-export async function apiUpdateDescription(reportId, rev, description) {
-    const resp = await httpPatch(`${apiUrl}/report/update/description`, {id: reportId, rev: rev, description: description});
-    if (!resp) return { resp: null, blob: null };
+export async function apiUpdateReportDescription(reportId, rev, description) {
+    const resp = await httpPatch(`${apiUrl}/report/update/description`, {
+        id: reportId,
+        rev: rev,
+        description: description
+    });
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+export async function apiUploadReportAttachments(formData, reportId) {
+    const resp = await httpPatch(`${apiUrl}/report/${reportId}/update/attachments`, formData, "", true, true);
+    if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
 }

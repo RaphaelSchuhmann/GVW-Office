@@ -28,6 +28,7 @@ public class Report {
   private String lastEditedBy;
 
   private List<TextEditorBlock> contents;
+  private List<File> attachments;
 
   @Builder.Default
   @JsonProperty("doc_type")

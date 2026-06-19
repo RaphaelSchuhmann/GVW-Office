@@ -1,6 +1,7 @@
 package com.gvw.gvwbackend.controller;
 
 import com.gvw.gvwbackend.dto.request.AddReportRequestDTO;
+import com.gvw.gvwbackend.dto.request.UpdateDocumentAttachmentsDTO;
 import com.gvw.gvwbackend.dto.request.UpdateReportDescriptionRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateReportRequestDTO;
 import com.gvw.gvwbackend.dto.response.FullReportResponseDTO;
@@ -97,6 +98,27 @@ public class ReportController {
   public Map<String, Object> updateReportDescription(
       @Valid @RequestBody UpdateReportDescriptionRequestDTO request) {
     String rev = reportService.updateReportDescription(request);
+    return Map.of("rev", rev);
+  }
+
+  @PatchMapping(value = "/{reportId}/update/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
+  @ErrorContext(domain = ErrorDomain.REPORT, action = ErrorAction.UPDATE)
+  public Map<String, Object> updateReportAttachments(
+      @PathVariable String reportId,
+      @RequestPart("metadata") @Valid UpdateDocumentAttachmentsDTO request,
+      @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+    if (files != null) {
+      for (MultipartFile file : files) {
+        if (!fileValidator.isSafe(file)) {
+          throw new BadRequestException(
+              String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
+        }
+      }
+    }
+
+    String rev = reportService.updateAttachments(request, files, reportId);
     return Map.of("rev", rev);
   }
 }

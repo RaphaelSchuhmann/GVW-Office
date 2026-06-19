@@ -14,4 +14,5 @@ public record FullReportResponseDTO(
     String createdAt,
     String lastEditedBy,
     String type,
-    List<TextEditorBlock> content) {}
+    List<TextEditorBlock> content,
+    List<String> attachments) {}

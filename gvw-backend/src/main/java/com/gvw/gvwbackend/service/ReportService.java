@@ -1,6 +1,7 @@
 package com.gvw.gvwbackend.service;
 
 import com.gvw.gvwbackend.dto.request.AddReportRequestDTO;
+import com.gvw.gvwbackend.dto.request.UpdateDocumentAttachmentsDTO;
 import com.gvw.gvwbackend.dto.request.UpdateReportDescriptionRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateReportRequestDTO;
 import com.gvw.gvwbackend.dto.response.*;
@@ -115,6 +116,14 @@ public class ReportService {
     List<String> words =
         Arrays.stream(plainText.split("\\s+")).filter(word -> !word.isEmpty()).toList();
 
+    List<String> filenames = new ArrayList<>();
+
+    if (report.getAttachments() != null) {
+      for (File file : report.getAttachments()) {
+        filenames.add(file.getOriginalName());
+      }
+    }
+
     return new FullReportResponseDTO(
         report.getId(),
         report.getTitle(),
@@ -126,7 +135,8 @@ public class ReportService {
         report.getCreatedAt(),
         report.getLastEditedBy(),
         report.getType(),
-        report.getContents());
+        report.getContents(),
+        filenames);
   }
 
   public void verifyAssetOwnership(String documentId, String filename) {
@@ -316,6 +326,116 @@ public class ReportService {
     }
 
     return (String) resp.get("rev");
+  }
+
+  public String updateAttachments(
+      UpdateDocumentAttachmentsDTO request, List<MultipartFile> files, String reportId) {
+    if (reportId == null || reportId.isBlank()) {
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UPDATE, 400)));
+    }
+
+    Report report = dbService.findById("reports", reportId, Report.class);
+    if (report == null) {
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UPDATE, 404)));
+    }
+
+    if (!report.getRev().equals(request.rev())) {
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UPDATE, 409)));
+    }
+
+    List<File> oldAttachments =
+        report.getAttachments() != null ? report.getAttachments() : new ArrayList<>();
+
+    List<File> filesToPurgeFromDisk =
+        oldAttachments.stream()
+            .filter(file -> !request.attachments().contains(file.getOriginalName()))
+            .toList();
+
+    List<File> newlyWrittenFilesToDisk = new ArrayList<>();
+
+    try {
+      newlyWrittenFilesToDisk = editorService.storeFiles(files, ErrorAction.UPDATE);
+
+      List<File> finalAttachmentList = new ArrayList<>();
+
+      if (request.attachments() == null || request.attachments().isEmpty()) {
+        finalAttachmentList.addAll(newlyWrittenFilesToDisk);
+      } else {
+        for (String name : request.attachments()) {
+          File matchedFile =
+              oldAttachments.stream()
+                  .filter(old -> old.getOriginalName().equals(name))
+                  .findFirst()
+                  .orElse(null);
+
+          if (matchedFile == null) {
+            matchedFile =
+                newlyWrittenFilesToDisk.stream()
+                    .filter(newFile -> newFile.getOriginalName().equals(name))
+                    .findFirst()
+                    .orElse(null);
+          }
+
+          if (matchedFile != null) {
+            finalAttachmentList.add(matchedFile);
+          }
+        }
+      }
+
+      report.setAttachments(finalAttachmentList);
+      report.setRev(request.rev());
+
+      Map<String, Object> resp = dbService.update("reports", report.getId(), report);
+
+      if (resp == null || !resp.containsKey("rev") || resp.get("rev").toString().isEmpty()) {
+        throw new RuntimeException(
+            String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UPDATE, 500)));
+      }
+
+      for (File deadFile : filesToPurgeFromDisk) {
+        try {
+          editorService.deleteAssetFromDisk(
+              deadFile.getId() + "." + deadFile.getExtension(), ErrorAction.UPDATE);
+        } catch (Exception ex) {
+          log.error(
+              "Failed to purge unlinked attachment asset from file system: {}",
+              deadFile.getId() + "." + deadFile.getExtension(),
+              ex);
+        }
+      }
+
+      try {
+        sseService.broadcastRefresh("REPORTS");
+      } catch (RuntimeException ex) {
+        log.warn("Failed to broadcast REPORTS refresh message: ", ex);
+      }
+
+      return (String) resp.get("rev");
+    } catch (Exception e) {
+      log.error(
+          "Attachment update transaction failed for report ID: {}. Triggering system rollback",
+          reportId,
+          e);
+
+      for (File failedFile : newlyWrittenFilesToDisk) {
+        try {
+          editorService.deleteAssetFromDisk(
+              failedFile.getId() + "." + failedFile.getExtension(), ErrorAction.UPDATE);
+        } catch (Exception rollbackEx) {
+          log.error(
+              "Critical: Failed to remove orphaned file during transaction rollback: {}",
+              failedFile.getId() + "." + failedFile.getExtension(),
+              rollbackEx);
+        }
+      }
+
+      if (e instanceof BadRequestException) throw (BadRequestException) e;
+      throw new RuntimeException(
+              String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UPDATE, 500)), e);
+    }
   }
 
   private String extractSnippet(String content, int hitStart, int hitEnd) {
