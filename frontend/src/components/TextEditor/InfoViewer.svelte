@@ -22,9 +22,15 @@
     let descriptionDraft = $state("");
     let descriptionTextAreaRef = $state(null);
 
-    let savedState = $state(data?.attachments ? [...data.attachments] : []);
-    let workingState = $state([...savedState]);
+    let savedState = $state([]);
+    let workingState = $state([]);
     let isSavingAttachments = $state(false);
+
+    $effect(() => {
+        const attachments = data?.attachments ? [...data.attachments] : [];
+        savedState = attachments;
+        workingState = [...attachments];
+    });
 
     export const isOpen = {
         get value() {
@@ -90,6 +96,7 @@
                 workingState = [...savedState];
 
                 data.rev = resp.rev;
+                data.attachments = savedState;
             } else {
                 workingState = [...savedState];
             }

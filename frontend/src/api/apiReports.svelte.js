@@ -135,7 +135,7 @@ export async function apiUpdateReportDescription(reportId, rev, description) {
         rev: rev,
         description: description
     });
-    if (!resp) return { resp: null, blob: null };
+    if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
 }

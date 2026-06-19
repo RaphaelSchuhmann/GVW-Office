@@ -220,7 +220,7 @@ export async function updateDescription(reportId, rev, description) {
 }
 
 export async function updateAttachments(reportId, rev, attachments) {
-    if (!reportId || !rev || isFetching.uploadAttachment) return { success: false, rev: null };
+    if (!reportId || !rev || !attachments || isFetching.uploadAttachment) return { success: false, rev: null };
 
     isFetching.uploadAttachment = true;
 
