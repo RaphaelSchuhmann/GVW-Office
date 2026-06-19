@@ -10,7 +10,10 @@ import com.gvw.gvwbackend.dto.response.ReportsSearchResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.ErrorAction;
 import com.gvw.gvwbackend.exception.ErrorDomain;
+import com.gvw.gvwbackend.exception.NotFoundException;
 import com.gvw.gvwbackend.exception.handler.ErrorContext;
+import com.gvw.gvwbackend.model.Report;
+import com.gvw.gvwbackend.service.DbService;
 import com.gvw.gvwbackend.service.FileValidator;
 import com.gvw.gvwbackend.service.ReportService;
 import jakarta.validation.Valid;
@@ -20,16 +23,20 @@ import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 @RestController
 @RequestMapping("/report")
 public class ReportController {
   private final ReportService reportService;
   private final FileValidator fileValidator;
+  private final DbService dbService;
 
-  public ReportController(ReportService reportService, FileValidator fileValidator) {
+  public ReportController(
+      ReportService reportService, FileValidator fileValidator, DbService dbService) {
     this.reportService = reportService;
     this.fileValidator = fileValidator;
+    this.dbService = dbService;
   }
 
   @GetMapping("/all")
@@ -101,7 +108,9 @@ public class ReportController {
     return Map.of("rev", rev);
   }
 
-  @PatchMapping(value = "/{reportId}/update/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @PatchMapping(
+      value = "/{reportId}/update/attachments",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   @ErrorContext(domain = ErrorDomain.REPORT, action = ErrorAction.UPDATE)
@@ -120,5 +129,24 @@ public class ReportController {
 
     String rev = reportService.updateAttachments(request, files, reportId);
     return Map.of("rev", rev);
+  }
+
+  @GetMapping("/{id}/attachments")
+  public ResponseEntity<StreamingResponseBody> downloadScoreFiles(@PathVariable String id) {
+    Report report = dbService.findById("reports", id, Report.class);
+    if (report == null)
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UTILITY, 404)));
+    if (report.getAttachments() == null || report.getAttachments().isEmpty()) {
+      return ResponseEntity.noContent().build();
+    }
+
+    String sanitizedTitle = report.getTitle().replaceAll("[\"\r\n]", "_");
+
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_TYPE, "application/zip")
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + sanitizedTitle + ".zip\"")
+        .body(out -> reportService.streamFilesAsZip(report.getAttachments(), out));
   }
 }

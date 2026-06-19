@@ -42,3 +42,30 @@ export function sanitize(text) {
         .replaceAll(/"/g, "&quot;")
         .replaceAll(/'/g, "&#039;");
 }
+
+/**
+ * Triggers a browser download for the provided Blob.
+ *
+ * A temporary object URL is created and assigned to a dynamically
+ * generated anchor element to initiate the download. The resulting
+ * file is saved as a ZIP archive using the supplied name.
+ *
+ * The created object URL is automatically revoked after the download
+ * has been triggered to prevent memory leaks.
+ *
+ * @param {Blob} blob - ZIP archive data to download.
+ * @param {string} zipName - Base filename used for the downloaded ZIP file.
+ *
+ * @returns {void}
+ */
+export function triggerFileDownload(blob, zipName) {
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${zipName}.zip`;
+    a.click();
+
+    // Cleanup URL reference in the next event loop tick
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+}

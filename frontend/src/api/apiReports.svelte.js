@@ -55,6 +55,17 @@ export async function apiCheckReport(id) {
     return { resp, body };
 }
 
+/**
+ * Retrieves a report by its unique identifier.
+ *
+ * Sends a GET request to the report endpoint and returns both
+ * the raw response object and the parsed response body.
+ *
+ * @param {string} id - Unique report identifier.
+ *
+ * @returns {Promise<{resp: Response|null, body: Object|null}>}
+ * The raw response and parsed response body.
+ */
 export async function apiGetReport(id) {
     const resp = await httpGet(`${apiUrl}/report/${id}`);
     if (!resp) return { resp: null, body: null };
@@ -62,6 +73,20 @@ export async function apiGetReport(id) {
     return { resp, body };
 }
 
+/**
+ * Performs a deep search across reports.
+ *
+ * The request can be cancelled using the provided AbortSignal,
+ * making this function suitable for live-search and autocomplete
+ * scenarios where previous requests should be aborted when a new
+ * query is entered.
+ *
+ * @param {string} query - Search query.
+ * @param {AbortSignal} [signal] - Optional abort signal used to cancel the request.
+ *
+ * @returns {Promise<{resp: Response|null, body: Object|null}>}
+ * The raw response and parsed response body.
+ */
 export async function apiDeepSearchReport(query, signal) {
     const resp = await httpGet(`${apiUrl}/report/search?q=${query}`, "", true, signal);
     if (!resp) return { resp: null, body: null };
@@ -129,6 +154,19 @@ export async function apiDeleteReport(reportId) {
     return { resp, body };
 }
 
+/**
+ * Updates the description of an existing report.
+ *
+ * Sends a PATCH request containing the report identifier,
+ * the current revision number and the new description.
+ *
+ * @param {string} reportId - Unique report identifier.
+ * @param {number} rev - Current report revision used for optimistic locking.
+ * @param {string} description - New report description.
+ *
+ * @returns {Promise<{resp: Response|null, body: Object|null}>}
+ * The raw response and parsed response body.
+ */
 export async function apiUpdateReportDescription(reportId, rev, description) {
     const resp = await httpPatch(`${apiUrl}/report/update/description`, {
         id: reportId,
@@ -140,9 +178,57 @@ export async function apiUpdateReportDescription(reportId, rev, description) {
     return { resp, body };
 }
 
+/**
+ * Uploads and updates the attachment set of an existing report.
+ *
+ * The provided FormData may contain:
+ * - New files to upload
+ * - References to existing attachments that should be retained
+ * - Additional metadata required by the backend
+ *
+ * @param {FormData} formData - Multipart form data containing attachment information.
+ * @param {string} reportId - Unique report identifier.
+ *
+ * @returns {Promise<{resp: Response|null, body: Object|null}>}
+ * The raw response and parsed response body.
+ */
 export async function apiUploadReportAttachments(formData, reportId) {
     const resp = await httpPatch(`${apiUrl}/report/${reportId}/update/attachments`, formData, "", true, true);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+/**
+ * Downloads the report attachments associated with a specific report.
+ *
+ * Sends a GET request to the backend endpoint responsible for providing
+ * the attachments of a report. If the request succeeds,
+ * the response body is returned as a {@link Blob} so it can be handled as
+ * a downloadable file or processed further in the client.
+ *
+ * If the response indicates an error, the body is safely parsed using
+ * {@link parseBodySafe} to extract any available error information.
+ *
+ * If the HTTP request itself fails (e.g., network error), the function
+ * returns `{ resp: null, body: null }`.
+ *
+ * @param {string} id - The unique identifier of the report whose attachments should be downloaded.
+ * @returns {Promise<{resp: Response|null, body: Blob|any|null}>}
+ * An object containing:
+ * - `resp`: The original {@link Response} object or `null` if the request failed.
+ * - `body`: A {@link Blob} containing the file data on success, or the parsed error body on failure.
+ */
+export async function apiDownloadReportAttachments(id) {
+    const resp = await httpGet(`${apiUrl}/report/${id}/attachments`);
+    if (!resp) return { resp: null, body: null };
+
+    let body;
+    if (resp.ok) {
+        body = await resp.blob();
+    } else {
+        body = await parseBodySafe(resp);
+    }
+
     return { resp, body };
 }

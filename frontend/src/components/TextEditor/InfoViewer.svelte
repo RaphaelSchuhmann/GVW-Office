@@ -4,6 +4,8 @@
     import { tick } from "svelte";
     import FileSelector from "../FileSelector.svelte";
     import Spinner from "../Spinner.svelte";
+    import Button from "../Button.svelte";
+    import { downloadAttachments } from "../../services/reportService.svelte.js";
 
     let {
         data = $bindable({
@@ -170,7 +172,7 @@
                     <p class="text-gv-dark-text text-dt-5">{data.description}</p>
                 {/if}
                 <button
-                    class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-1 rounded-2"
+                    class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-1 rounded-2 duration-200"
                     onclick={toggleEditDescription}>
                     <span
                         class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">{isEditingDescription ? "check" : "edit"}</span>
@@ -179,16 +181,26 @@
         </div>
         {#if enableAttachments}
             <div class="flex flex-col items-start justify-start w-full pl-4 pr-4 p-2 gap-4">
-                <p class="text-gv-dark-text text-dt-4 font-bold">Anhänge</p>
+                <div class="flex items-center justify-start w-full gap-2">
+                    <p class="text-gv-dark-text text-dt-4 font-bold">Anhänge</p>
+                    <button
+                        class="flex items-center justify-center border-2 border-gv-border rounded-2 cursor-pointer bg-white hover:bg-gv-hover-effect p-1.5 duration-200"
+                        onclick={() => downloadAttachments(data.id)}
+                    >
+                        <span class="material-symbols-rounded text-gv-dark-text text-icon-dt-6">download</span>
+                    </button>
+                </div>
                 <div class="relative flex items-center justify-start w-full rounded-2">
                     {#if isSavingAttachments}
-                        <div class="absolute w-full h-full flex items-center justify-center bg-gv-overlay-blocker rounded-2">
-                            <Spinner width="2/5"/>
+                        <div
+                            class="absolute w-full h-full flex items-center justify-center bg-gv-overlay-blocker rounded-2">
+                            <Spinner width="2/5" />
                         </div>
                     {/if}
                     <FileSelector
                         validTypes={["pdf", "png", "jpg", "jpeg", "gif", "mp3", "wav", "midi", "mid", "xml", "musicxml", "mxl", "mscz", "mscx", "sib", "musx", "cap", "capx", "gp", "gp5", "gp3", "gp4", "gpx"]}
-                        bind:files={workingState} disabled={isSavingAttachments} onChange={(files) => saveAttachmentChanges()}
+                        bind:files={workingState} disabled={isSavingAttachments} wrapContent={true}
+                        onChange={(files) => saveAttachmentChanges()}
                     />
                 </div>
             </div>

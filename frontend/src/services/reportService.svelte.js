@@ -1,7 +1,7 @@
 import {
     apiAddReport,
     apiCheckReport,
-    apiDeleteReport,
+    apiDeleteReport, apiDownloadReportAttachments,
     apiGetReport,
     apiUpdateReportDescription, apiUploadReportAttachments
 } from "../api/apiReports.svelte.js";
@@ -10,6 +10,8 @@ import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHan
 import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
 import { sanitize } from "./utils.js";
+import { triggerFileDownload } from "./utils.js";
+import { reportsStore } from "../stores/report.svelte.js";
 
 export const reportTypeMap = {
     "Jahresbericht": "annualReport",
@@ -42,7 +44,8 @@ let isFetching = {
     check: false,
     getReport: false,
     updateDescription: false,
-    uploadAttachment: false
+    uploadAttachment: false,
+    downloadAttachments: false,
 };
 
 const pendingChecks = new Map();
@@ -125,6 +128,17 @@ export async function reportExists(id) {
     return await request;
 }
 
+/**
+ * Retrieves a report by its identifier.
+ *
+ * The request is executed through the API layer and all global
+ * API errors are handled automatically.
+ *
+ * @param {string} id - Unique report identifier.
+ *
+ * @returns {Promise<Object|null>}
+ * The report data or `null` if the request failed.
+ */
 export async function getReport(id) {
     if (!id) return null;
     isFetching.getReport = true;
@@ -141,6 +155,17 @@ export async function getReport(id) {
     }
 }
 
+/**
+ * Creates a new report.
+ *
+ * Concurrent create operations are prevented while a request
+ * is already in progress. A success toast is displayed when
+ * the report was created successfully.
+ *
+ * @param {Object} report - Report creation payload.
+ *
+ * @returns {Promise<void>}
+ */
 export async function addReport(report) {
     if (isFetching.add) return;
     isFetching.add = true;
@@ -161,6 +186,17 @@ export async function addReport(report) {
     }
 }
 
+/**
+ * Deletes an existing report.
+ *
+ * Concurrent delete operations are prevented while a request
+ * is already in progress. A success toast is displayed when
+ * the report was deleted successfully.
+ *
+ * @param {string} reportId - Unique report identifier.
+ *
+ * @returns {Promise<void>}
+ */
 export async function deleteReport(reportId) {
     if (isFetching.delete) return;
     isFetching.delete = true;
@@ -181,6 +217,20 @@ export async function deleteReport(reportId) {
     }
 }
 
+/**
+ * Updates the description of an existing report.
+ *
+ * Uses optimistic locking via the report revision number.
+ * Validation and API errors are reported to the user through
+ * toast notifications.
+ *
+ * @param {string} reportId - Unique report identifier.
+ * @param {number} rev - Current report revision.
+ * @param {string} description - New report description.
+ *
+ * @returns {Promise<{success: boolean, rev: number|null}>}
+ * Whether the update succeeded and the latest revision number.
+ */
 export async function updateDescription(reportId, rev, description) {
     if (isFetching.updateDescription || !reportId || !rev || !description) return { success: false, rev: null };
     isFetching.updateDescription = true;
@@ -219,6 +269,20 @@ export async function updateDescription(reportId, rev, description) {
     }
 }
 
+/**
+ * Updates the attachment set of an existing report.
+ *
+ * Existing attachment identifiers are preserved while newly
+ * added File instances are uploaded as multipart data.
+ * The operation uses optimistic locking via the report revision.
+ *
+ * @param {string} reportId - Unique report identifier.
+ * @param {number} rev - Current report revision.
+ * @param {(string|File)[]} attachments - Attachment identifiers and/or new files.
+ *
+ * @returns {Promise<{success: boolean, rev: number|null}>}
+ * Whether the update succeeded and the latest revision number.
+ */
 export async function updateAttachments(reportId, rev, attachments) {
     if (!reportId || !rev || !attachments || isFetching.uploadAttachment) return { success: false, rev: null };
 
@@ -263,5 +327,49 @@ export async function updateAttachments(reportId, rev, attachments) {
         return { success: false, rev: null };
     } finally {
         isFetching.uploadAttachment = false;
+    }
+}
+
+/**
+ * Downloads all attachments associated with a report.
+ *
+ * If the report has no attachments, an informational toast is
+ * displayed. Successful downloads are automatically triggered
+ * in the browser and acknowledged with a success toast.
+ *
+ * @param {string} reportId - Unique report identifier.
+ *
+ * @returns {Promise<void>}
+ */
+export async function downloadAttachments(reportId) {
+    if (!reportId || isFetching.downloadAttachments) return;
+
+    isFetching.downloadAttachments = true;
+
+    try {
+        const { resp, body } = await apiDownloadReportAttachments(reportId);
+        const normalized = normalizeResponse(resp);
+
+        if (resp.status === 204) {
+            addToast({
+                title: "Keine Anhänge",
+                subTitle: viewport.isMobile ? "" : "Dieser Bericht besitzt keine Anhänge.",
+                type: "info"
+            });
+            return;
+        }
+
+        if (handleGlobalApiError(normalized)) return;
+
+        const reportName = reportsStore.raw.find(i => i.id === reportId).title || "Bericht";
+        triggerFileDownload(body, `${reportName} - Anhänge`);
+
+        addToast({
+            title: "Download erfolgreich",
+            subTitle: viewport.isMobile ? "" : "Die Anhänge wurden erfolgreich heruntergeladen.",
+            type: "success"
+        });
+    } finally {
+        isFetching.downloadAttachments = false;
     }
 }
