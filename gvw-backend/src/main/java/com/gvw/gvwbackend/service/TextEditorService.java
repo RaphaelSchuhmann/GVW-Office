@@ -202,7 +202,7 @@ public class TextEditorService {
   }
 
   public List<com.gvw.gvwbackend.model.File> storeFiles(
-      List<MultipartFile> files, ErrorAction action) throws IOException {
+      List<MultipartFile> files, ErrorAction action) {
     if (files == null || files.isEmpty()) return List.of();
 
     List<com.gvw.gvwbackend.model.File> storedFiles = new ArrayList<>();

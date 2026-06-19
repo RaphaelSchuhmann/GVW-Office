@@ -101,7 +101,7 @@ public class ReportController {
     return Map.of("rev", rev);
   }
 
-  @PatchMapping("/{reportId}/update/attachments")
+  @PatchMapping(value = "/{reportId}/update/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   @ErrorContext(domain = ErrorDomain.REPORT, action = ErrorAction.UPDATE)
@@ -117,8 +117,6 @@ public class ReportController {
         }
       }
     }
-
-    System.out.println(request);
 
     String rev = reportService.updateAttachments(request, files, reportId);
     return Map.of("rev", rev);

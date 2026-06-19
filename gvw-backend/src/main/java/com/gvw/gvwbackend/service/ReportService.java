@@ -118,8 +118,10 @@ public class ReportService {
 
     List<String> filenames = new ArrayList<>();
 
-    for (File file : report.getAttachments()) {
-      filenames.add(file.getOriginalName());
+    if (report.getAttachments() != null) {
+      for (File file : report.getAttachments()) {
+        filenames.add(file.getOriginalName());
+      }
     }
 
     return new FullReportResponseDTO(
@@ -383,8 +385,6 @@ public class ReportService {
         }
       }
 
-      System.out.println(finalAttachmentList);
-
       report.setAttachments(finalAttachmentList);
       report.setRev(request.rev());
 
@@ -434,7 +434,7 @@ public class ReportService {
 
       if (e instanceof BadRequestException) throw (BadRequestException) e;
       throw new RuntimeException(
-          String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UPDATE, 500)));
+              String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UPDATE, 500)), e);
     }
   }
 
