@@ -22,8 +22,7 @@
     let descriptionDraft = $state("");
     let descriptionTextAreaRef = $state(null);
 
-    // TODO: Note, if a file is selected in the attachments it should be instantly uploaded
-    let savedState = $state(data?.files ? [...data.files] : []);
+    let savedState = $state(data?.attachments ? [...data.attachments] : []);
     let workingState = $state([...savedState]);
     let isSavingAttachments = $state(false);
 

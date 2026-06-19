@@ -100,4 +100,27 @@ public class ReportController {
     String rev = reportService.updateReportDescription(request);
     return Map.of("rev", rev);
   }
+
+  @PatchMapping("/{reportId}/update/attachments")
+  @ResponseStatus(HttpStatus.OK)
+  @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
+  @ErrorContext(domain = ErrorDomain.REPORT, action = ErrorAction.UPDATE)
+  public Map<String, Object> updateReportAttachments(
+      @PathVariable String reportId,
+      @RequestPart("metadata") @Valid UpdateDocumentAttachmentsDTO request,
+      @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+    if (files != null) {
+      for (MultipartFile file : files) {
+        if (!fileValidator.isSafe(file)) {
+          throw new BadRequestException(
+              String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
+        }
+      }
+    }
+
+    System.out.println(request);
+
+    String rev = reportService.updateAttachments(request, files, reportId);
+    return Map.of("rev", rev);
+  }
 }

@@ -16,7 +16,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-
 import lombok.Getter;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -200,5 +199,60 @@ public class TextEditorService {
         || addr.isLoopbackAddress()
         || addr.isLinkLocalAddress()
         || addr.isSiteLocalAddress();
+  }
+
+  public List<com.gvw.gvwbackend.model.File> storeFiles(
+      List<MultipartFile> files, ErrorAction action) throws IOException {
+    if (files == null || files.isEmpty()) return List.of();
+
+    List<com.gvw.gvwbackend.model.File> storedFiles = new ArrayList<>();
+    List<Path> physicalPaths = new ArrayList<>();
+    Path root = Paths.get(filesDir);
+
+    try {
+      Files.createDirectories(root);
+
+      for (MultipartFile file : files) {
+        if (file.getSize() > MAX_FILE_SIZE) {
+          throw new BadRequestException(
+              String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(action, 400)));
+        }
+
+        String originalName = file.getOriginalFilename();
+        if (originalName == null || originalName.isBlank()) continue;
+
+        String id = UUID.randomUUID().toString();
+        int dotIndex = originalName.lastIndexOf('.');
+        String extensionWithDot = (dotIndex == -1) ? "" : originalName.substring(dotIndex);
+        String extensionOnly = extensionWithDot.replace(".", "");
+
+        Path targetPath = root.resolve(id + extensionWithDot);
+
+        Files.copy(file.getInputStream(), targetPath);
+        physicalPaths.add(targetPath);
+
+        storedFiles.add(
+            com.gvw.gvwbackend.model.File.builder()
+                .id(id)
+                .originalName(originalName)
+                .mimeType(file.getContentType())
+                .size(file.getSize())
+                .extension(extensionOnly)
+                .build());
+      }
+    } catch (Exception e) {
+      log.error("Internal file storage failed. Cleaning up partial uploads...", e);
+      for (Path path : physicalPaths) {
+        try {
+          Files.deleteIfExists(path);
+        } catch (IOException cleanupEx) {
+          log.warn("Failed to clean up partial upload: {}", path, cleanupEx);
+        }
+      }
+
+      throw new RuntimeException(
+          String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(action, 500)), e);
+    }
+    return storedFiles;
   }
 }

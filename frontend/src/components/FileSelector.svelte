@@ -60,6 +60,7 @@
      */
     function removeFile(file) {
         files = files.filter((f) => f !== file);
+        onChange?.(files);
     }
 </script>
 

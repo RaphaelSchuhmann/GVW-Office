@@ -57,7 +57,7 @@ const INFRA_ERRORS = {
     "SERVER": {
         typeId: "4",
         title: "Interner Serverfehler",
-        subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten. (Code: 0000500)"
+        subTitle: "Beim Verarbeiten Ihrer Anfrage ist ein Fehler aufgetreten."
     },
     "BAD_INPUT": {
         typeId: "5",

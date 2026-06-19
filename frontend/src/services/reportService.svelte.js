@@ -240,7 +240,7 @@ export async function updateAttachments(reportId, rev, attachments) {
         formData.append("metadata",
             new Blob([
                 JSON.stringify({
-                    rev,
+                    rev: rev,
                     attachments: attachmentIds
                 })
             ], {
@@ -262,6 +262,6 @@ export async function updateAttachments(reportId, rev, attachments) {
     } catch (e) {
         return { success: false, rev: null };
     } finally {
-        isFetching.updateAttachment = false;
+        isFetching.uploadAttachment = false;
     }
 }

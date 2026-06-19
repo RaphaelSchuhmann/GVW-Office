@@ -141,7 +141,7 @@ export async function apiUpdateReportDescription(reportId, rev, description) {
 }
 
 export async function apiUploadReportAttachments(formData, reportId) {
-    const resp = await httpPost(`${apiUrl}/report/${reportId}/update/attachments`, formData, "", true, true);
+    const resp = await httpPatch(`${apiUrl}/report/${reportId}/update/attachments`, formData, "", true, true);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };
