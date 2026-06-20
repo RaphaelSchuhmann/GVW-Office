@@ -34,7 +34,13 @@
 >
     <div class="flex flex-col items-start justify-around">
         <p class="text-dt-5 text-gv-dark-text text-nowrap truncate">{title}</p>
-        <p class="text-dt-6 text-gv-light-text text-nowrap truncate">{time}</p>
+        <p class="text-dt-6 text-gv-light-text">
+            {#if time.includes(' - ')}
+                {time.split(' - ')[0]} - <span style="white-space: nowrap;">{time.split(' - ')[1]}</span>
+            {:else}
+                {time}
+            {/if}
+        </p>
         <p class="text-dt-6 text-gv-light-text">{location}</p>
     </div>
     <div class={`${isMobile ? "mt-2" : "ml-auto"}`}>

@@ -7,7 +7,7 @@
         modeMap,
         statusMap,
         typeMap,
-        getEventOccurrence,
+        getEventOccurrenceById,
         addEvent,
         getOrdinalFromDateString,
         getWeekDayFromDateStringMondayFirst
@@ -289,7 +289,7 @@
                                 <div class="flex items-stretch gap-2">
                                     <span
                                         class="material-symbols-rounded text-icon-dt-8 text-gv-light-text">calendar_today</span>
-                                    <p class="text-dt-6 text-gv-light-text text-left">{getEventOccurrence(event.id)}</p>
+                                    <p class="text-dt-6 text-gv-light-text text-left">{getEventOccurrenceById(event.id)}</p>
                                 </div>
                                 <div class="flex items-stretch gap-2">
                                     <span
