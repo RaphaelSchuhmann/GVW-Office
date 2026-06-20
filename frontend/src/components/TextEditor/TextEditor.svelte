@@ -6,7 +6,7 @@
     import { textEditorConfigs } from "../../lib/textEditorConfig.svelte.js";
     import ContentDisplay from "./ContentDisplay.svelte";
     import { editorSelectionStore } from "../../stores/textEditorStore.svelte.js";
-    import { addBlock, updateBlockType } from "../../services/textEditorService.svelte";
+    import { addBlock, applyStyleInDOM, updateBlockType } from "../../services/textEditorService.svelte";
     import { tick } from "svelte";
 
     let {
@@ -69,10 +69,6 @@
         });
     }
 
-    function updateStyle(action) {
-
-    }
-
     function changeBlockType(type) {
         // updateBlockType() returns the activeBlock id again as it can happen
         // that the activeBlock is already set to null after the function
@@ -110,13 +106,13 @@
             <div class="flex items-center gap-1">
                 <StyleButton icon="format_bold" disabled={activeBlock === null}
                              bind:isToggled={editorSelectionStore.activeStyles.isBold}
-                             onmousedown={(e) => {e.preventDefault(); updateStyle(`bold:${!editorSelectionStore.activeStyles.isBold}`);}} />
+                             onMouseDown={(e) => {e.preventDefault(); applyStyleInDOM("strong");}} />
                 <StyleButton icon="format_underlined" disabled={activeBlock === null}
                              bind:isToggled={editorSelectionStore.activeStyles.isUnderline}
-                             onmousedown={(e) => {e.preventDefault(); updateStyle(`underline:${!editorSelectionStore.activeStyles.isUnderline}`);}} />
+                             onMouseDown={(e) => {e.preventDefault(); applyStyleInDOM("u");}} />
                 <StyleButton icon="format_italic" disabled={activeBlock === null}
                              bind:isToggled={editorSelectionStore.activeStyles.isItalic}
-                             onmousedown={(e) => {e.preventDefault(); updateStyle(`bold:${!editorSelectionStore.activeStyles.isItalic}`);}} />
+                             onMouseDown={(e) => {e.preventDefault(); applyStyleInDOM("em");}} />
             </div>
 
             <div class="w-0.75 bg-gv-separator h-full rounded-1"></div>

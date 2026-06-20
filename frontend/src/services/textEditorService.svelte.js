@@ -141,3 +141,18 @@ export async function getDocumentImage(documentId, imageId) {
         pendingDocumentImages.delete(imageId);
     }
 }
+
+export function applyStyleInDOM(action) {
+    if (!action) return;
+
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    if (action === "strong" || action === "b") {
+        document.execCommand("bold", false, null);
+    } else if (action === "em" || action === "i") {
+        document.execCommand("italic", false, null);
+    } else if (action === "u") {
+        document.execCommand("underline", false, null);
+    }
+}

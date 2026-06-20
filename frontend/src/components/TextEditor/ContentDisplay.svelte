@@ -270,28 +270,65 @@
     });
 
     function getActiveStylesInRange(range) {
-        if (!range) return { isBold: false, isItalic: false, isUnderline: false };
-
-        let container = range.commonAncestorContainer;
-        if (container.nodeType === Node.TEXT_NODE) {
-            container = container.parentNode;
+        if (range.collapsed) {
+            return getStylesAtCaret(range);
         }
+
+        const start = getStylesAtNode(range.startContainer);
+        const end = getStylesAtNode(range.endContainer);
+
+        let isBold = start.isBold || end.isBold;
+        let isItalic = start.isItalic || end.isItalic;
+        let isUnderline = start.isUnderline || end.isUnderline;
+
+        let ancestor = range.commonAncestorContainer;
+        let checkEl = ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentElement : ancestor;
+
+        while (checkEl) {
+            if (checkEl.matches?.("strong, b")) isBold = true;
+            if (checkEl.matches?.("em, i")) isItalic = true;
+            if (checkEl.matches?.("u")) isUnderline = true;
+            if (checkEl.getAttribute?.("contenteditable") === "true") break;
+            checkEl = checkEl.parentElement;
+        }
+
+        if (ancestor instanceof HTMLElement || ancestor.nodeType === Node.TEXT_NODE) {
+            const parentNode = ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentElement : ancestor;
+
+            // Grab only formatting elements inside the parent container
+            const subNodes = parentNode.querySelectorAll("strong, b, em, i, u");
+            subNodes.forEach(node => {
+                // Check if this specific formatting node intersects the user's selection range
+                if (range.intersectsNode(node)) {
+                    if (node.matches("strong, b")) isBold = true;
+                    if (node.matches("em, i")) isItalic = true;
+                    if (node.matches("u")) isUnderline = true;
+                }
+            });
+        }
+
+        return { isBold, isItalic, isUnderline };
+    }
+
+    function getStylesAtCaret(range) {
+        return getStylesAtNode(range.startContainer);
+    }
+
+    function getStylesAtNode(node) {
+        let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
 
         let isBold = false;
         let isItalic = false;
         let isUnderline = false;
-        let current = container;
 
-        while (current) {
-            const tagName = current.tagName;
+        while (el) {
+            if (el.matches?.("strong, b")) isBold = true;
+            if (el.matches?.("em, i")) isItalic = true;
+            if (el.matches?.("u")) isUnderline = true;
 
-            if (tagName === "STRONG" || tagName === "B") isBold = true;
-            if (tagName === "EM" || tagName === "I") isItalic = true;
-            if (tagName === "U") isUnderline = true;
+            if (el.getAttribute?.("contenteditable") === "true") break;
 
-            if (current.getAttribute("contenteditable") === "true") break;
-
-            current = current.parentElement;
+            el = el.parentElement;
         }
 
         return { isBold, isItalic, isUnderline };
