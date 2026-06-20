@@ -29,6 +29,32 @@ const ALLOWED_TAGS = new Set([
     "img",
 ]);
 
+/**
+ * Sanitizes HTML input by normalizing whitespace and removing disallowed tags.
+ *
+ * This function is designed for contenteditable/editor use cases where the
+ * input originates from `innerHTML` and may contain browser-inserted artifacts
+ * such as `&nbsp;`, excessive whitespace, or unwanted HTML elements.
+ *
+ * Processing steps:
+ * - Converts `&nbsp;` and non-breaking spaces to normal spaces
+ * - Normalizes newline-related whitespace artifacts
+ * - Parses the HTML string into a DOM structure
+ * - Removes all HTML tags except those explicitly allowed in `ALLOWED_TAGS`
+ * - Preserves text content inside disallowed tags
+ * - Returns cleaned HTML as a string
+ *
+ * Allowed tags (via `ALLOWED_TAGS`):
+ * - b, i, u, strong, em
+ *
+ * Note:
+ * This is not a full security sanitizer against malicious HTML injection.
+ * It is intended for controlled editor content where the input source is trusted
+ * (e.g. contenteditable blocks), not arbitrary user-generated HTML from external sources.
+ *
+ * @param {string} html - Raw HTML string (typically from `innerHTML`)
+ * @returns {string} Cleaned and normalized HTML string
+ */
 export function sanitize(html) {
     if (!html) return "";
 

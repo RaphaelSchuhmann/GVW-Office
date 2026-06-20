@@ -62,10 +62,28 @@
         isEditing = false;
     }
 
+    /**
+     * Saves the current report state to the backend and refreshes local data afterward.
+     *
+     * This function:
+     * - Collects the latest editor state and draft content
+     * - Sends an update request including optimistic revision control (`rev`)
+     * - Updates the local revision number after a successful save
+     * - Resets editing state and UI flags
+     * - Reloads the full report from the backend to ensure consistency
+     * - Clears temporary caches (pending images and preview URLs)
+     *
+     * Important behavior:
+     * - Always reloads the report after saving to avoid stale state drift
+     * - Resets editor state (`isEditing`, `draft`) regardless of success or failure
+     * - Clears in-memory image caches after save
+     *
+     * @async
+     * @function saveReport
+     * @returns {Promise<void>}
+     */
     async function saveReport() {
         editorRef.getContent();
-
-        console.log(draft.content);
 
         const data = {
             id: reportData.id,
@@ -88,6 +106,18 @@
         }
     }
 
+    /**
+     * Toggles the visibility state of the information viewer panel.
+     *
+     * If the viewer is currently open, it will be closed.
+     * If it is currently closed, it will be opened.
+     *
+     * This function acts as a simple UI toggle wrapper around the
+     * `infoViewerRef` controller.
+     *
+     * @function toggleInfoViewer
+     * @returns {void}
+     */
     function toggleInfoViewer() {
         if (infoViewerRef.isOpen.value) {
             infoViewerRef.closeViewer();

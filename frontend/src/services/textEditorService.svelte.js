@@ -4,13 +4,55 @@ import { editorMetadataStore } from "../stores/textEditorStore.svelte.js";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
 import { renameFile, sanitize } from "./utils.js";
 
+/**
+ * Set of valid block types supported by the editor.
+ *
+ * Used to validate block creation and type switching operations.
+ *
+ * @type {Set<string>}
+ */
 export const blockTypes = new Set(["text", "image", "file", "blockquote", "h1", "h2", "h3", "h4"]);
 
-// k: image name / temp id, v: file
+/**
+ * Temporary in-memory registry for image files that are not yet uploaded.
+ *
+ * Key: temporary image ID (temp_* UUID filename)
+ * Value: File object
+ *
+ * Used during editing before server persistence.
+ *
+ * @type {Map<string, File>}
+ */
 export const pendingImages = new Map();
-// k: image name / temp id, v: blobUrl
+
+/**
+ * In-memory cache of preview URLs for locally created or uploaded images.
+ *
+ * Key: image ID (temp or persisted)
+ * Value: object URL created via URL.createObjectURL
+ *
+ * Used to render images before or without server availability.
+ *
+ * @type {Map<string, string>}
+ */
 export const previewUrls = new Map();
 
+/**
+ * Inserts a new block into the document structure.
+ *
+ * Creates a block with a generated UUID and inserts it either:
+ * - at the end of the list
+ * - or relative to a given index
+ *
+ * Validates block type against `blockTypes`.
+ *
+ * @param {Array<Object>} items - Current block array
+ * @param {number} index - Reference index for insertion
+ * @param {string} content - Initial block content (HTML or data payload)
+ * @param {string} type - Block type (must exist in blockTypes)
+ * @param {boolean} [insertAtIndex=false] - Whether to insert at exact index
+ * @returns {string|undefined} Generated block ID if successful
+ */
 export function addBlock(items, index, content, type, insertAtIndex = false) {
     if (index < 0 && items.length > 0 || index === -1) return;
 
@@ -34,6 +76,17 @@ export function addBlock(items, index, content, type, insertAtIndex = false) {
     return id;
 }
 
+/**
+ * Updates the type of an existing block.
+ *
+ * Supports toggling behavior for blockquotes:
+ * - If block is already "blockquote", it is reverted to "text"
+ *
+ * @param {string} blockId - Target block ID
+ * @param {string} type - New block type
+ * @param {Array<Object>} items - Block array
+ * @returns {string|undefined} Updated block ID if successful
+ */
 export function updateBlockType(blockId, type, items) {
     if (!type || !blockTypes.has(type) || !blockId || items.length === 0) return;
 
@@ -52,6 +105,17 @@ export function updateBlockType(blockId, type, items) {
     return blockId;
 }
 
+/**
+ * Deletes a block from the editor state.
+ *
+ * If the block represents an image, associated preview and pending
+ * image references are also removed from in-memory caches.
+ *
+ * @param {Array<Object>} items - Block array
+ * @param {string} blockId - ID of block to delete
+ * @param {boolean} [isImage=false] - Whether block is an image block
+ * @returns {void}
+ */
 export function deleteBlock(items, blockId, isImage = false) {
     if (!blockId) return;
 
@@ -74,6 +138,19 @@ export function deleteBlock(items, blockId, isImage = false) {
     items.splice(index, 1);
 }
 
+/**
+ * Inserts a single image block into the editor.
+ *
+ * Creates a temporary image ID and stores:
+ * - File in pendingImages
+ * - Object URL in previewUrls
+ *
+ * The block references the temp ID until server upload replaces it.
+ *
+ * @param {File} file - Image file to insert
+ * @param {Array<Object>} items - Block array
+ * @param {number} insertAfterIndex - Index after which to insert block
+ */
 export function insertImageBlock(file, items, insertAfterIndex) {
     const tempId = `temp_${crypto.randomUUID()}.${file.name.split('.').pop()}`;
 
@@ -96,6 +173,19 @@ export function insertImageBlock(file, items, insertAfterIndex) {
     items.splice(insertAfterIndex + 1, 0, block);
 }
 
+/**
+ * Inserts multiple image blocks in bulk.
+ *
+ * Each image is assigned a temporary ID and stored in:
+ * - pendingImages (file reference)
+ * - previewUrls (object URL for rendering)
+ *
+ * Blocks are inserted sequentially after the given index.
+ *
+ * @param {File[]} images - Array of image files
+ * @param {Array<Object>} items - Block array
+ * @param {number} insertAfterIndex - Insertion index
+ */
 export function bulkInsertImageBlocks(images, items, insertAfterIndex) {
     const newBlocks = [];
 
@@ -116,12 +206,24 @@ export function bulkInsertImageBlocks(images, items, insertAfterIndex) {
     items.splice(insertAfterIndex + 1, 0, ...newBlocks);
 }
 
-let isFetching = {
-    getImage: false
-}
-
 const pendingDocumentImages = new Set();
 
+/**
+ * Fetches a persisted image from the backend and returns a blob URL.
+ *
+ * Prevents duplicate requests using an in-memory request tracker.
+ *
+ * Steps:
+ * - Prevents duplicate fetch per imageId
+ * - Requests image blob from backend
+ * - Validates response
+ * - Returns object URL for rendering
+ *
+ * @async
+ * @param {string} documentId - Parent document ID
+ * @param {string} imageId - Image identifier
+ * @returns {Promise<string|null>} Object URL or null if failed
+ */
 export async function getDocumentImage(documentId, imageId) {
     if (!documentId || !imageId) return null;
 
@@ -150,6 +252,16 @@ export async function getDocumentImage(documentId, imageId) {
     }
 }
 
+/**
+ * Applies inline text styling using browser execCommand API.
+ *
+ * Supports:
+ * - bold (strong / b)
+ * - italic (em / i)
+ * - underline (u)
+ *
+ * @param {"strong"|"b"|"em"|"i"|"u"} action - Formatting action
+ */
 export function applyStyleInDOM(action) {
     if (!action) return;
 
@@ -165,6 +277,23 @@ export function applyStyleInDOM(action) {
     }
 }
 
+/**
+ * Detects URLs during typing and converts them into rich link elements.
+ *
+ * Triggered on space or enter key events.
+ *
+ * Behavior:
+ * - Detects last word in current text node
+ * - Validates URL format
+ * - Resolves metadata (title + favicon)
+ * - Replaces plain URL with rich link HTML element
+ * - Syncs sanitized block content back to state
+ *
+ * @async
+ * @param {KeyboardEvent} e - Keyboard event
+ * @param {HTMLElement} currentBlock - Active editor block
+ * @param {(html: string) => void} onDataSync - Callback for syncing content
+ */
 export async function handleAutoLink(e, currentBlock, onDataSync) {
     if (e.key !== " " && e.key !== "Enter") return;
 
@@ -216,6 +345,17 @@ export async function handleAutoLink(e, currentBlock, onDataSync) {
     }
 }
 
+/**
+ * Resolves metadata for a URL (title and favicon).
+ *
+ * Calls backend endpoint to extract metadata from the target page.
+ *
+ * Falls back to raw URL if resolution fails or backend errors occur.
+ *
+ * @async
+ * @param {string} url - URL to resolve
+ * @returns {Promise<{title: string, favicon: string}>}
+ */
 export async function resolveURL(url) {
     if (!url) return { title: url, favicon: "icon" };
 

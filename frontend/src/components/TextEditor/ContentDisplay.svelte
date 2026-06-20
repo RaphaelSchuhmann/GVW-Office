@@ -9,6 +9,7 @@
     import H4Block from "./Blocks/H4Block.svelte";
     import Image from "./Blocks/Image.svelte";
     import BlockQuote from "./Blocks/BlockQuote.svelte";
+    import { sanitize } from "../../services/utils.js";
 
     let {
         reportId,
@@ -23,12 +24,30 @@
 
     let draggedIndex = $state(null);
 
+    /**
+     * Sets the drag source index when starting a drag operation.
+     *
+     * Only works in editing mode. Stores the index of the dragged block
+     * and configures the DataTransfer object for a move operation.
+     *
+     * @param {DragEvent} event - The drag start event
+     * @param {number} index - Index of the dragged item in the content array
+     */
     function handleDragStart(event, index) {
         if (!isEditing) return;
         draggedIndex = index;
         event.dataTransfer.effectAllowed = "move";
     }
 
+    /**
+     * Sets the drag source index when starting a drag operation.
+     *
+     * Only works in editing mode. Stores the index of the dragged block
+     * and configures the DataTransfer object for a move operation.
+     *
+     * @param {DragEvent} event - The drag start event
+     * @param {number} index - Index of the dragged item in the content array
+     */
     function handleDragEnter(event, index) {
         if (!isEditing || draggedIndex === null || draggedIndex === index) return;
 
@@ -40,12 +59,32 @@
         content = updatedItems;
     }
 
+    /**
+     * Resets drag state after a drag operation completes.
+     *
+     * Clears the internal dragged index reference.
+     *
+     * @returns {void}
+     */
     function handleDragEnd() {
         draggedIndex = null;
     }
 
+    /**
+     * Initializes a contenteditable block with its HTML content.
+     *
+     * Sets the initial DOM content and optionally focuses the first block
+     * in the editor for improved UX.
+     *
+     * @param {HTMLElement} node - The DOM node representing the block
+     * @param {Object} item - The block data object
+     * @param {string} item.id - Unique block identifier
+     * @param {string} item.data - HTML content of the block
+     *
+     * @returns {{ update: Function, destroy: Function }}
+     */
     function setup(node, item) {
-        node.innerHTML = item.data;
+        node.innerHTML = sanitize(item.data);
         const contentEntryIndex = content.findIndex(i => i.id === item.id);
         if (contentEntryIndex !== -1 && contentEntryIndex === 0) {
             node.focus();
@@ -58,8 +97,23 @@
         };
     }
 
+    /**
+     * Handles keyboard interactions inside an editor block.
+     *
+     * Supports:
+     * - Auto-link detection on space/enter
+     * - Enter key block splitting
+     * - Backspace rich-link deletion handling
+     * - Arrow key navigation between blocks
+     *
+     * Updates the internal `content` array to stay in sync with DOM changes.
+     *
+     * @param {KeyboardEvent} e - The keyboard event
+     * @returns {void}
+     */
     function handleKeyDown(e) {
         const currentBlock = e.currentTarget;
+        // @ts-ignore
         const index = content.findIndex(i => i.id === currentBlock.dataset.id);
 
         handleAutoLink(e, currentBlock, (updatedHtml) => {
@@ -76,10 +130,12 @@
 
             const splitRange = document.createRange();
             splitRange.setStart(range.startContainer, range.startOffset);
-            splitRange.setEndAfter(currentBlock.lastChild || currentBlock);
+            splitRange.selectNodeContents(currentBlock);
+            splitRange.setStart(range.startContainer, range.startOffset);
 
             const docFragment = splitRange.extractContents();
 
+            // @ts-ignore
             const id = currentBlock.dataset.id;
 
             const tempDiv = document.createElement("div");
@@ -88,7 +144,7 @@
 
             // Update internal data
             const index = content.findIndex(i => i.id === id);
-            content[index].data = currentBlock.innerHTML;
+            content[index].data = sanitize(currentBlock.innerHTML);
 
             // Create new block
             const newBlockId = addBlock(content, index, newHTML, "text");
@@ -126,10 +182,11 @@
                     targetNode.parentNode.removeChild(targetNode);
 
                     // Sync current state to the Svelte array index item
+                    // @ts-ignore
                     const id = currentBlock.dataset.id;
                     const index = content.findIndex(i => i.id === id);
                     if (index !== -1) {
-                        content[index].data = currentBlock.innerHTML;
+                        content[index].data = sanitize(currentBlock.innerHTML);
                     }
                     return;
                 }
@@ -142,6 +199,7 @@
                     if (content.length > 1) {
                         e.preventDefault();
 
+                        // @ts-ignore
                         const id = currentBlock.dataset.id;
                         const index = content.findIndex(i => i.id === id);
 
@@ -176,6 +234,7 @@
         if (e.key === "ArrowUp") {
             if (isCaretAtBoundary(currentBlock, "top")) {
                 e.preventDefault();
+                // @ts-ignore
                 const index = content.findIndex(i => i.id === currentBlock.dataset.id);
                 if (index > 0) {
                     const block = document.querySelector(`[data-id="${content[index - 1].id}"]`);
@@ -198,6 +257,7 @@
         if (e.key === "ArrowDown") {
             if (isCaretAtBoundary(currentBlock, "bottom")) {
                 e.preventDefault();
+                // @ts-ignore
                 const index = content.findIndex(i => i.id === currentBlock.dataset.id);
                 if (index > -1) {
                     tick().then(() => {
@@ -220,6 +280,17 @@
         }
     }
 
+    /**
+     * Handles image paste events inside the editor.
+     *
+     * Extracts image files from clipboard data and inserts them as
+     * new image blocks at the current cursor position.
+     *
+     * Prevents default paste behavior when images are detected.
+     *
+     * @param {ClipboardEvent} e - The paste event
+     * @returns {void}
+     */
     function handlePaste(e) {
         const items = Array.from(e.clipboardData.items);
         const files = items.filter(item => item.type.startsWith("image/")).map(item => item.getAsFile());
@@ -234,6 +305,17 @@
         bulkInsertImageBlocks(files, content, currentIndex);
     }
 
+    /**
+     * Handles drag-and-drop image uploads into the editor.
+     *
+     * Extracts image files from the drop event and inserts them
+     * into the document at the active block position.
+     *
+     * Prevents default browser drop behavior.
+     *
+     * @param {DragEvent} e - The drop event
+     * @returns {void}
+     */
     function handleDrop(e) {
         e.preventDefault();
 
@@ -258,6 +340,15 @@
         }
     }
 
+    /**
+     * Determines whether the caret is near the top or bottom boundary of a block.
+     *
+     * Used for handling arrow key navigation between blocks.
+     *
+     * @param {HTMLElement} el - The block element
+     * @param {"top"|"bottom"} side - Boundary to check
+     * @returns {boolean}
+     */
     function isCaretAtBoundary(el, side) {
         const selection = window.getSelection();
         if (selection.rangeCount === 0) return false;
@@ -275,6 +366,17 @@
         }
     }
 
+    /**
+     * Tracks the current text selection and updates the editor selection store.
+     *
+     * Runs on every `selectionchange` event and determines:
+     * - Active block ID
+     * - Current selection range
+     * - Active formatting styles (bold, italic, underline)
+     * - Block type context
+     *
+     * Keeps toolbar state in sync with the user's selection.
+     */
     $effect(() => {
         const handleSelection = () => {
             const sel = window.getSelection();
@@ -305,6 +407,15 @@
         return () => document.removeEventListener("selectionchange", handleSelection);
     });
 
+    /**
+     * Determines active text formatting styles within a selection range.
+     *
+     * Combines caret-based and range-based detection to infer whether
+     * bold, italic, or underline formatting is active.
+     *
+     * @param {Range} range - The current selection range
+     * @returns {{ isBold: boolean, isItalic: boolean, isUnderline: boolean }}
+     */
     function getActiveStylesInRange(range) {
         if (range.collapsed) {
             return getStylesAtCaret(range);
@@ -346,10 +457,25 @@
         return { isBold, isItalic, isUnderline };
     }
 
+    /**
+     * Retrieves formatting styles at the caret position.
+     *
+     * @param {Range} range - Selection range collapsed at caret
+     * @returns {{ isBold: boolean, isItalic: boolean, isUnderline: boolean }}
+     */
     function getStylesAtCaret(range) {
         return getStylesAtNode(range.startContainer);
     }
 
+    /**
+     * Traverses DOM ancestors to detect active text formatting styles.
+     *
+     * Checks for <b>, <strong>, <i>, <em>, and <u> tags up the DOM tree
+     * until reaching a contenteditable boundary.
+     *
+     * @param {Node} node - DOM node inside selection
+     * @returns {{ isBold: boolean, isItalic: boolean, isUnderline: boolean }}
+     */
     function getStylesAtNode(node) {
         let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
 
