@@ -59,10 +59,10 @@ export function sanitize(html) {
     if (!html) return "";
 
     html = html
-        .replace(/&nbsp;/g, " ")
-        .replace(/\u00A0/g, " ")
-        .replace(/\s+\n/g, "\n")
-        .replace(/\n\s+/g, "\n");
+        .replaceAll(/&nbsp;/g, " ")
+        .replaceAll(/\u00A0/g, " ")
+        .replaceAll(/[ \t]+(\r?\n)/g, "$1")
+        .replaceAll(/\n\s+/g, "\n");
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
