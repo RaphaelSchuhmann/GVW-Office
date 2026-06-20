@@ -232,3 +232,10 @@ export async function apiDownloadReportAttachments(id) {
 
     return { resp, body };
 }
+
+export async function apiUpdateReport(formData) {
+    const resp = await httpPatch(`${apiUrl}/report/update`, formData, "", true, true);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}

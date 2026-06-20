@@ -91,13 +91,23 @@
             }
         });
     }
+
+    export function getContent() {
+        if (isEditing) {
+            draft.title = data.title;
+            draft.content = data.content;
+        }
+    }
+
+    let isBlockquote = $derived(!!draft.content.find(i => i.id === activeBlock && i.type === "blockquote"));
+    let activeBlockType = $derived(config?.optionMap[editorSelectionStore.activeStyles.blockType] || config?.optionMap["text"]);
 </script>
 
 <div class="w-full h-full flex-1 flex flex-col items-start justify-start rounded-1 bg-white drop-shadow-md min-h-0">
     {#if isEditing}
         <div class="w-full flex items-center justify-start gap-2 border-b-2 border-gv-border p-2">
             <ButtonSelect
-                selected={config?.optionMap[editorSelectionStore.activeStyles.blockType] || config?.optionMap["text"]}
+                bind:selected={activeBlockType}
                 optionMap={config?.optionMap} options={config?.options} fillHeight={true}
                 disabled={activeBlock === null} onChange={(val) => {changeBlockType(val)}} />
 
@@ -122,8 +132,8 @@
                 <ImageUpload disabled={activeBlock === null} activeBlock={activeBlock}
                              items={data.content} />
                 <!--<LinkItem id={itemData.id} page={page} disabled={true}/> TODO: Coming 1.2-->
-                <StyleButton icon="format_quote" disabled={activeBlock === null}
-                             onmousedown={(e) => {e.preventDefault(); changeBlockType("blockquote");}} />
+                <StyleButton icon="format_quote" disabled={activeBlock === null} bind:isToggled={isBlockquote}
+                             onMouseDown={(e) => {e.preventDefault(); changeBlockType("blockquote");}} />
             </div>
 
             <div class="w-0.75 bg-gv-separator h-full rounded-1"></div>

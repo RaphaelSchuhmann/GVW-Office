@@ -69,3 +69,8 @@ export function triggerFileDownload(blob, zipName) {
     // Cleanup URL reference in the next event loop tick
     setTimeout(() => URL.revokeObjectURL(url), 0);
 }
+
+export function renameFile(originalFile, newName) {
+    const fileOptions = { type: originalFile.type };
+    return new File([originalFile], newName, fileOptions);
+}

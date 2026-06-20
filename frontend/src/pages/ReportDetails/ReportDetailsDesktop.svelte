@@ -6,7 +6,15 @@
     import Spinner from "../../components/Spinner.svelte";
     import TextEditor from "../../components/TextEditor/TextEditor.svelte";
     import InfoViewer from "../../components/TextEditor/InfoViewer.svelte";
-    import { reportTypeMap, updateAttachments, updateDescription } from "../../services/reportService.svelte.js";
+    import {
+        getReport,
+        reportTypeMap,
+        updateAttachments,
+        updateDescription,
+        updateReport
+    } from "../../services/reportService.svelte.js";
+    import { user } from "../../stores/user.svelte.js";
+    import { pendingImages, previewUrls } from "../../services/textEditorService.svelte.js";
 
     let {
         reportData,
@@ -19,6 +27,12 @@
      * @type {import("../../components/TextEditor/InfoViewer.svelte").default}
      */
     let infoViewerRef = $state(null);
+
+    /**
+     * Reference to the text editor.
+     * @type {import("../../components/TextEditor/TextEditor.svelte").default}
+     */
+    let editorRef = $state(null);
 
     let isEditing = $state(false);
     let isSubmitting = $state(false);
@@ -48,6 +62,32 @@
         isEditing = false;
     }
 
+    async function saveReport() {
+        editorRef.getContent();
+
+        console.log(draft.content);
+
+        const data = {
+            id: reportData.id,
+            rev: reportData.rev,
+            title: draft.title,
+            editor: user.name,
+            content: draft.content,
+        };
+
+        try {
+            reportData.rev = await updateReport(data);
+        } finally {
+            isSubmitting = false;
+            isEditing = false;
+            draft = null;
+
+            reportData = await getReport(reportData.id);
+            pendingImages.clear();
+            previewUrls.clear();
+        }
+    }
+
     function toggleInfoViewer() {
         if (infoViewerRef.isOpen.value) {
             infoViewerRef.closeViewer();
@@ -61,7 +101,7 @@
 
 <main class="flex overflow-hidden">
     <DesktopSidebar currentPage="reports" />
-    <div class="flex flex-col w-full h-dvh overflow-hidden p-8 min-h-0 gap-7">
+    <div class="flex flex-col w-full h-dvh overflow-hidden p-8 min-h-0 gap-2">
         <div class="flex w-full items-center p-2">
             <div class="flex items-center justify-start gap-4 max-w-2/5">
                 <p class="text-gv-dark-text text-dt-3 text-nowrap truncate">{reportData?.title}</p>
@@ -88,7 +128,7 @@
                         <span class="material-symbols-rounded text-icon-dt-6">info</span>
                     </button>
                 {:else}
-                    <Button type="primary">
+                    <Button type="primary" onclick={saveReport}>
                         {#if isSubmitting}
                             <Spinner light={true} />
                             <p>Speichern...</p>
@@ -103,7 +143,7 @@
             </div>
         </div>
         <div class="flex items-start w-full h-full overflow-hidden gap-4 p-2">
-            <TextEditor isEditing={isEditing} itemData={reportData} draft={draft} page="reportEditor" />
+            <TextEditor bind:this={editorRef} isEditing={isEditing} itemData={reportData} draft={draft} page="reportEditor" />
             <InfoViewer bind:this={infoViewerRef} bind:data={reportData} categoryMap={reportTypeMap}
                         updateDescription={updateDescription} updateAttachments={updateAttachments} enableAttachments={true} />
         </div>

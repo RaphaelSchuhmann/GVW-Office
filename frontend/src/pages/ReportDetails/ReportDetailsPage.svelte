@@ -32,7 +32,7 @@
             }
 
             // Note that this editor is intended for desktop only!
-            if (viewport.width < 800) {
+            if (viewport.isMobile) {
                 await push("/reports");
                 return;
             } else if (!reportId) {

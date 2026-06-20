@@ -434,7 +434,8 @@
             {:else if item.type === "image"}
                 <!-- Pointer events none prevents the raw image from stealing the drag target focus -->
                 <div class="select-none flex justify-start w-full">
-                    <Image reportId={reportId} imageId={item.data} content={content} blockId={item.id} />
+                    <Image reportId={reportId} imageId={item.data} content={content} blockId={item.id}
+                           isEditing={isEditing} />
                 </div>
             {/if}
         </div>

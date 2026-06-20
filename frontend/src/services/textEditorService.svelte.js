@@ -2,6 +2,7 @@ import { normalizeResponse } from "../api/http.svelte.js";
 import { apiGetDocumentImage, apiResolveURl } from "../api/apiTextEditor.svelte.js";
 import { editorMetadataStore } from "../stores/textEditorStore.svelte.js";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
+import { renameFile } from "./utils.js";
 
 export const blockTypes = new Set(["text", "image", "file", "blockquote", "h1", "h2", "h3", "h4"]);
 
@@ -76,8 +77,10 @@ export function deleteBlock(items, blockId, isImage = false) {
 export function insertImageBlock(file, items, insertAfterIndex) {
     const tempId = `temp_${crypto.randomUUID()}.${file.name.split('.').pop()}`;
 
-    pendingImages.set(tempId, file);
-    previewUrls.set(tempId, URL.createObjectURL(file));
+    const renamedFile = renameFile(file, tempId);
+    console.log(renamedFile);
+    pendingImages.set(tempId, renamedFile);
+    previewUrls.set(tempId, URL.createObjectURL(renamedFile));
 
     const block = {
         id: crypto.randomUUID(),
@@ -120,25 +123,42 @@ let isFetching = {
 const pendingDocumentImages = new Set();
 
 export async function getDocumentImage(documentId, imageId) {
-    if (!documentId || !imageId) return;
+    console.log("getDocumentImage start", imageId);
 
-    if (pendingDocumentImages.has(imageId)) return;
+    if (!documentId || !imageId) return null;
+
+    if (pendingDocumentImages.has(imageId)) {
+        console.log("deduped", imageId);
+        return null;
+    }
 
     pendingDocumentImages.add(imageId);
 
-    isFetching.getImage = true;
-
     try {
-        const { resp, blob } = await apiGetDocumentImage(editorMetadataStore.activeFeature, documentId, imageId);
+        const { resp, blob } = await apiGetDocumentImage(
+            editorMetadataStore.activeFeature,
+            documentId,
+            imageId
+        );
+
+        console.log("api returned", {
+            status: resp?.status,
+            hasBlob: !!blob
+        });
+
         const normalizedResp = normalizeResponse(resp);
 
-        if (!normalizedResp.ok) return null;
+        if (!normalizedResp.ok) {
+            console.log("normalized not ok");
+            return null;
+        }
 
-        return URL.createObjectURL(blob);
-    } catch (e) {
-        return null;
+        const url = URL.createObjectURL(blob);
+
+        console.log("returning url", url);
+
+        return url;
     } finally {
-        isFetching.getImage = false;
         pendingDocumentImages.delete(imageId);
     }
 }

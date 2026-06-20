@@ -9,11 +9,6 @@
         handleDrop,
         ...restProps
     } = $props();
-
-    function handleLinkPaste(e) {
-        const items = Array.from(e.clipboardData.items);
-
-    }
 </script>
 
 {#if isEditing}
