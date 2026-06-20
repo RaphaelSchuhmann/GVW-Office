@@ -72,11 +72,11 @@ export function sanitize(html) {
             if (child.nodeType === Node.ELEMENT_NODE) {
                 const tag = child.tagName.toLowerCase();
 
-                if (!ALLOWED_TAGS.has(tag)) {
+                if (ALLOWED_TAGS.has(tag)) {
+                    clean(child);
+                } else {
                     // replace disallowed tag with its text content
                     child.replaceWith(...child.childNodes);
-                } else {
-                    clean(child);
                 }
             }
         });
