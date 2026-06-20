@@ -9,8 +9,7 @@ import { normalizeResponse } from "../api/http.svelte.js";
 import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
 import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
-import { sanitize } from "./utils.js";
-import { triggerFileDownload } from "./utils.js";
+import { sanitize, triggerFileDownload } from "./utils.js";
 import { reportsStore } from "../stores/report.svelte.js";
 
 export const reportTypeMap = {
