@@ -2,7 +2,7 @@ import { normalizeResponse } from "../api/http.svelte.js";
 import { apiGetDocumentImage, apiResolveURl } from "../api/apiTextEditor.svelte.js";
 import { editorMetadataStore } from "../stores/textEditorStore.svelte.js";
 import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
-import { renameFile } from "./utils.js";
+import { renameFile, sanitize } from "./utils.js";
 
 export const blockTypes = new Set(["text", "image", "file", "blockquote", "h1", "h2", "h3", "h4"]);
 
@@ -123,12 +123,9 @@ let isFetching = {
 const pendingDocumentImages = new Set();
 
 export async function getDocumentImage(documentId, imageId) {
-    console.log("getDocumentImage start", imageId);
-
     if (!documentId || !imageId) return null;
 
     if (pendingDocumentImages.has(imageId)) {
-        console.log("deduped", imageId);
         return null;
     }
 
@@ -141,23 +138,13 @@ export async function getDocumentImage(documentId, imageId) {
             imageId
         );
 
-        console.log("api returned", {
-            status: resp?.status,
-            hasBlob: !!blob
-        });
-
         const normalizedResp = normalizeResponse(resp);
 
         if (!normalizedResp.ok) {
-            console.log("normalized not ok");
             return null;
         }
 
-        const url = URL.createObjectURL(blob);
-
-        console.log("returning url", url);
-
-        return url;
+        return URL.createObjectURL(blob);
     } finally {
         pendingDocumentImages.delete(imageId);
     }
@@ -215,10 +202,17 @@ export async function handleAutoLink(e, currentBlock, onDataSync) {
             <a href="${completeUrl}" target="_blank" contenteditable="false" class="inline-flex items-center gap-2 bg-gv-light-bg border border-gv-border px-3 py-1 rounded-md text-gv-toast-info select-all mx-1 my-0.5 pointer-events-auto hover:underline" data-rich-link="true">
                 ${urlData.favicon === "icon" ? `<span class=\"material-symbols-rounded text-sm\">link</span>` : `<img src="${urlData.favicon}" class=\"w-5 h-5 object-contain\" alt=\"\"/>`} 
                 <span class="text-dt-7 font-medium">${urlData.title}</span>
-            </a>&nbsp;`;
+            </a>`;
 
         document.execCommand("insertHTML", false, richLinkHtml);
-        onDataSync(currentBlock.innerHTML);
+
+        const sel = window.getSelection();
+        if (sel?.rangeCount) {
+            const range = sel.getRangeAt(0);
+            range.collapse(false);
+        }
+
+        onDataSync(sanitize(currentBlock.innerHTML));
     }
 }
 

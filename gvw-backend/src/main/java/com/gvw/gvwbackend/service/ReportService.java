@@ -183,15 +183,17 @@ public class ReportService {
     editorService.purgeAllBlockAssets(report.getContents(), ErrorAction.DELETE);
 
     List<File> attachments = report.getAttachments();
-    for (File file : attachments) {
-      try {
-        editorService.deleteAssetFromDisk(
-            file.getId() + "." + file.getExtension(), ErrorAction.UPDATE);
-      } catch (Exception ex) {
-        log.error(
-            "Failed to purge unlinked attachment asset from file system: {}",
-            file.getId() + "." + file.getExtension(),
-            ex);
+    if (!attachments.isEmpty()) {
+      for (File file : attachments) {
+        try {
+          editorService.deleteAssetFromDisk(
+                  file.getId() + "." + file.getExtension(), ErrorAction.UPDATE);
+        } catch (Exception ex) {
+          log.error(
+                  "Failed to purge unlinked attachment asset from file system: {}",
+                  file.getId() + "." + file.getExtension(),
+                  ex);
+        }
       }
     }
 

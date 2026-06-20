@@ -18,29 +18,47 @@ export function determineChoirType(str) {
     return /\d/.test(str);
 }
 
-/**
- * Escapes special HTML characters in a string to help prevent HTML injection/XSS.
- *
- * Replaces the following characters with their HTML entity equivalents:
- * - `&` → `&amp;`
- * - `<` → `&lt;`
- * - `>` → `&gt;`
- * - `"` → `&quot;`
- * - `'` → `&#039;`
- *
- * If the input is null, undefined, or otherwise falsy, an empty string is returned.
- *
- * @param {string} text - The text to sanitize.
- * @returns {string} The sanitized string with escaped HTML characters.
- */
-export function sanitize(text) {
-    if (!text) return "";
-    return text
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll("\"", "&quot;")
-        .replaceAll("'", "&#039;");
+const ALLOWED_TAGS = new Set([
+    "b",
+    "i",
+    "u",
+    "strong",
+    "em",
+    "a",
+    "span",
+    "img",
+]);
+
+export function sanitize(html) {
+    if (!html) return "";
+
+    html = html
+        .replace(/&nbsp;/g, " ")
+        .replace(/\u00A0/g, " ")
+        .replace(/\s+\n/g, "\n")
+        .replace(/\n\s+/g, "\n");
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    function clean(node) {
+        [...node.childNodes].forEach(child => {
+            if (child.nodeType === Node.ELEMENT_NODE) {
+                const tag = child.tagName.toLowerCase();
+
+                if (!ALLOWED_TAGS.has(tag)) {
+                    // replace disallowed tag with its text content
+                    child.replaceWith(...child.childNodes);
+                } else {
+                    clean(child);
+                }
+            }
+        });
+    }
+
+    clean(doc.body);
+
+    return doc.body.innerHTML.trim();
 }
 
 /**

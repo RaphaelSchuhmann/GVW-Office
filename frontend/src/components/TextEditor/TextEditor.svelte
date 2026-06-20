@@ -8,6 +8,7 @@
     import { editorSelectionStore } from "../../stores/textEditorStore.svelte.js";
     import { addBlock, applyStyleInDOM, updateBlockType } from "../../services/textEditorService.svelte";
     import { tick } from "svelte";
+    import { sanitize } from "../../services/utils.js";
 
     let {
         itemData = $bindable({}),
@@ -94,8 +95,12 @@
 
     export function getContent() {
         if (isEditing) {
-            draft.title = data.title;
+            draft.title = data.title.trim();
             draft.content = data.content;
+            for (const item of draft.content) {
+                if (item.type === "image") continue;
+                item.data = sanitize(item.data);
+            }
         }
     }
 
