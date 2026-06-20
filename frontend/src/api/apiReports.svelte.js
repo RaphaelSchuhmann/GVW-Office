@@ -232,3 +232,29 @@ export async function apiDownloadReportAttachments(id) {
 
     return { resp, body };
 }
+
+/**
+ * Sends a multipart/form-data request to update a report.
+ *
+ * This API call is used for updates that include structured data and/or
+ * file uploads, depending on the contents of the provided FormData.
+ *
+ * The request is sent as a PATCH operation and expects a structured response
+ * body that is safely parsed using `parseBodySafe`.
+ *
+ * Behavior:
+ * - Sends FormData directly without JSON serialization
+ * - Uses HTTP PATCH against the report update endpoint
+ * - Returns both raw response and parsed body
+ * - Returns `{ resp: null, body: null }` if the request fails early
+ *
+ * @async
+ * @param {FormData} formData - Payload containing report update data (and optionally files)
+ * @returns {Promise<{resp: Response|null, body: any|null}>}
+ */
+export async function apiUpdateReport(formData) {
+    const resp = await httpPatch(`${apiUrl}/report/update`, formData, "", true, true);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}

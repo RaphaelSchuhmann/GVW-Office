@@ -18,29 +18,73 @@ export function determineChoirType(str) {
     return /\d/.test(str);
 }
 
+const ALLOWED_TAGS = new Set([
+    "b",
+    "i",
+    "u",
+    "strong",
+    "em",
+    "a",
+    "span",
+    "img",
+]);
+
 /**
- * Escapes special HTML characters in a string to help prevent HTML injection/XSS.
+ * Sanitizes HTML input by normalizing whitespace and removing disallowed tags.
  *
- * Replaces the following characters with their HTML entity equivalents:
- * - `&` → `&amp;`
- * - `<` → `&lt;`
- * - `>` → `&gt;`
- * - `"` → `&quot;`
- * - `'` → `&#039;`
+ * This function is designed for contenteditable/editor use cases where the
+ * input originates from `innerHTML` and may contain browser-inserted artifacts
+ * such as `&nbsp;`, excessive whitespace, or unwanted HTML elements.
  *
- * If the input is null, undefined, or otherwise falsy, an empty string is returned.
+ * Processing steps:
+ * - Converts `&nbsp;` and non-breaking spaces to normal spaces
+ * - Normalizes newline-related whitespace artifacts
+ * - Parses the HTML string into a DOM structure
+ * - Removes all HTML tags except those explicitly allowed in `ALLOWED_TAGS`
+ * - Preserves text content inside disallowed tags
+ * - Returns cleaned HTML as a string
  *
- * @param {string} text - The text to sanitize.
- * @returns {string} The sanitized string with escaped HTML characters.
+ * Allowed tags (via `ALLOWED_TAGS`):
+ * - b, i, u, strong, em
+ *
+ * Note:
+ * This is not a full security sanitizer against malicious HTML injection.
+ * It is intended for controlled editor content where the input source is trusted
+ * (e.g. contenteditable blocks), not arbitrary user-generated HTML from external sources.
+ *
+ * @param {string} html - Raw HTML string (typically from `innerHTML`)
+ * @returns {string} Cleaned and normalized HTML string
  */
-export function sanitize(text) {
-    if (!text) return "";
-    return text
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll("\"", "&quot;")
-        .replaceAll("'", "&#039;");
+export function sanitize(html) {
+    if (!html) return "";
+
+    html = html
+        .replaceAll("&nbsp;", " ")
+        .replaceAll("\u00A0", " ")
+        .replaceAll(/[ \t]+(\r?\n)/g, "$1")
+        .replaceAll(/\n\s+/g, "\n");
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    function clean(node) {
+        [...node.childNodes].forEach(child => {
+            if (child.nodeType === Node.ELEMENT_NODE) {
+                const tag = child.tagName.toLowerCase();
+
+                if (ALLOWED_TAGS.has(tag)) {
+                    clean(child);
+                } else {
+                    // replace disallowed tag with its text content
+                    child.replaceWith(...child.childNodes);
+                }
+            }
+        });
+    }
+
+    clean(doc.body);
+
+    return doc.body.innerHTML.trim();
 }
 
 /**
@@ -68,4 +112,9 @@ export function triggerFileDownload(blob, zipName) {
 
     // Cleanup URL reference in the next event loop tick
     setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+export function renameFile(originalFile, newName) {
+    const fileOptions = { type: originalFile.type };
+    return new File([originalFile], newName, fileOptions);
 }

@@ -30,7 +30,7 @@
         ondrop={handleDrop}
     ></div>
 {:else}
-    <div class="select-none border-l-2 border-gv-border-bar pl-2">
+    <div class="w-full text-base text-gv-dark-text outline-none whitespace-normal break-all overflow-wrap-anywhere border-l-2 border-gv-border-bar pl-2">
         {@html item.data}
     </div>
 {/if}

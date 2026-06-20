@@ -12,7 +12,8 @@ public enum TextEditorBlockType {
   BLOCKQUOTE("blockquote"),
   HEADING_T1("h1"),
   HEADING_T2("h2"),
-  HEADING_T3("h3");
+  HEADING_T3("h3"),
+  HEADING_T4("h4");
 
   private final String value;
 

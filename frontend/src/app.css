@@ -156,3 +156,7 @@ body.no-scroll {
     padding: 0 1px;
     border-radius: 2px;
 }
+
+a[data-rich-link] {
+    margin-right: 0.25rem;
+}

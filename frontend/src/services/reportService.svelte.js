@@ -2,7 +2,7 @@ import {
     apiAddReport,
     apiCheckReport,
     apiDeleteReport, apiDownloadReportAttachments,
-    apiGetReport,
+    apiGetReport, apiUpdateReport,
     apiUpdateReportDescription, apiUploadReportAttachments
 } from "../api/apiReports.svelte.js";
 import { normalizeResponse } from "../api/http.svelte.js";
@@ -11,6 +11,7 @@ import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
 import { sanitize, triggerFileDownload } from "./utils.js";
 import { reportsStore } from "../stores/report.svelte.js";
+import { pendingImages } from "./textEditorService.svelte.js";
 
 export const reportTypeMap = {
     "Jahresbericht": "annualReport",
@@ -45,6 +46,7 @@ let isFetching = {
     updateDescription: false,
     uploadAttachment: false,
     downloadAttachments: false,
+    updateReport: false,
 };
 
 const pendingChecks = new Map();
@@ -370,5 +372,49 @@ export async function downloadAttachments(reportId) {
         });
     } finally {
         isFetching.downloadAttachments = false;
+    }
+}
+
+export async function updateReport(reportData) {
+    if (isFetching.updateReport) return reportData.rev || "";
+
+    isFetching.updateReport = true;
+
+    try {
+        const formData = new FormData();
+
+        formData.append("reportData", new Blob([
+            JSON.stringify({
+                id: reportData.id,
+                rev: reportData.rev,
+                title: reportData.title,
+                editor: reportData.editor,
+                content: reportData.content,
+            })
+        ], {
+            type: "application/json"
+        }));
+
+        const images = pendingImages.values();
+
+        for (const item of images) {
+            formData.append("files", item, item.name);
+        }
+
+        const { resp, body } = await apiUpdateReport(formData);
+        const normalized = normalizeResponse(resp);
+
+        if (handleGlobalApiError(normalized)) return reportData.rev;
+        if (!body.rev || body.rev === "") return reportData.rev;
+
+        addToast({
+            title: "Bericht aktualisiert",
+            subTitle: viewport.isMobile ? "" : "Der Bericht wurde erfolgreich aktualisiert.",
+            type: "success"
+        });
+
+        return body.rev;
+    } finally {
+        isFetching.updateReport = false;
     }
 }

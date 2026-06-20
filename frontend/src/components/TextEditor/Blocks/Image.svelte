@@ -8,6 +8,7 @@
         blockId,
         content,
         alt = "Bericht bild",
+        isEditing = false,
         ...restProps
     } = $props();
 
@@ -15,31 +16,32 @@
     let isLoading = $state(true);
 
     $effect(() => {
-        let active = true;
         isLoading = true;
 
         async function loadImage() {
+            if (!imageId) {
+                isLoading = false;
+                return;
+            }
+
             if (imageId.startsWith("temp_")) {
                 const url = previewUrls.get(imageId);
-                if (active) {
-                    srcUrl = url;
-                    isLoading = false;
-                }
-            } else {
-                const url = await getDocumentImage(reportId, imageId);
-                if (active) {
-                    srcUrl = url;
-                    isLoading = false;
-                }
+
+                srcUrl = url ?? null;
+                isLoading = false;
+                return;
             }
+
+            if (!reportId) return;
+
+            const url = await getDocumentImage(reportId, imageId);
+            if (!url) return;
+
+            srcUrl = url ?? null;
+            isLoading = false;
         }
 
         loadImage();
-
-        return () => {
-            active = false;
-            if (srcUrl) URL.revokeObjectURL(srcUrl);
-        };
     });
 </script>
 
@@ -49,12 +51,14 @@
     </div>
 {:else}
     <div class="relative group rounded-2 border-2 border-gv-border hover:border-gv-border-bar">
-        <button
-            class="absolute top-2 right-2 hidden group-hover:flex items-center justify-center cursor-pointer bg-gv-primary/20 rounded-2 border border-gv-primary p-2 text-gv-dark-text hover:text-gv-delete-hover"
-            onclick={() => deleteBlock(content, blockId, true)}
-        >
-            <span class="material-symbols-rounded">delete</span>
-        </button>
+        {#if isEditing}
+            <button
+                class="absolute top-2 right-2 hidden group-hover:flex items-center justify-center cursor-pointer bg-gv-primary/20 rounded-2 border border-gv-primary p-2 text-gv-dark-text hover:text-gv-delete-hover"
+                onclick={() => deleteBlock(content, blockId, true)}
+            >
+                <span class="material-symbols-rounded">delete</span>
+            </button>
+        {/if}
         <img src={srcUrl} alt={alt} class="rounded-2" />
     </div>
 {/if}

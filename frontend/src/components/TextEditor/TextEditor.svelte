@@ -6,8 +6,9 @@
     import { textEditorConfigs } from "../../lib/textEditorConfig.svelte.js";
     import ContentDisplay from "./ContentDisplay.svelte";
     import { editorSelectionStore } from "../../stores/textEditorStore.svelte.js";
-    import { addBlock, updateBlockType } from "../../services/textEditorService.svelte";
+    import { addBlock, applyStyleInDOM, updateBlockType } from "../../services/textEditorService.svelte";
     import { tick } from "svelte";
+    import { sanitize } from "../../services/utils.js";
 
     let {
         itemData = $bindable({}),
@@ -69,10 +70,6 @@
         });
     }
 
-    function updateStyle(action) {
-
-    }
-
     function changeBlockType(type) {
         // updateBlockType() returns the activeBlock id again as it can happen
         // that the activeBlock is already set to null after the function
@@ -95,13 +92,27 @@
             }
         });
     }
+
+    export function getContent() {
+        if (isEditing) {
+            draft.title = data.title.trim();
+            draft.content = data.content;
+            for (const item of draft.content) {
+                if (item.type === "image") continue;
+                item.data = sanitize(item.data);
+            }
+        }
+    }
+
+    let isBlockquote = $derived(!!draft.content.find(i => i.id === activeBlock && i.type === "blockquote"));
+    let activeBlockType = $derived(config?.optionMap[editorSelectionStore.activeStyles.blockType] || config?.optionMap["text"]);
 </script>
 
 <div class="w-full h-full flex-1 flex flex-col items-start justify-start rounded-1 bg-white drop-shadow-md min-h-0">
     {#if isEditing}
         <div class="w-full flex items-center justify-start gap-2 border-b-2 border-gv-border p-2">
             <ButtonSelect
-                selected={config?.optionMap[editorSelectionStore.activeStyles.blockType] || config?.optionMap["text"]}
+                bind:selected={activeBlockType}
                 optionMap={config?.optionMap} options={config?.options} fillHeight={true}
                 disabled={activeBlock === null} onChange={(val) => {changeBlockType(val)}} />
 
@@ -110,13 +121,13 @@
             <div class="flex items-center gap-1">
                 <StyleButton icon="format_bold" disabled={activeBlock === null}
                              bind:isToggled={editorSelectionStore.activeStyles.isBold}
-                             onmousedown={(e) => {e.preventDefault(); updateStyle(`bold:${!editorSelectionStore.activeStyles.isBold}`);}} />
+                             onMouseDown={(e) => {e.preventDefault(); applyStyleInDOM("strong");}} />
                 <StyleButton icon="format_underlined" disabled={activeBlock === null}
                              bind:isToggled={editorSelectionStore.activeStyles.isUnderline}
-                             onmousedown={(e) => {e.preventDefault(); updateStyle(`underline:${!editorSelectionStore.activeStyles.isUnderline}`);}} />
+                             onMouseDown={(e) => {e.preventDefault(); applyStyleInDOM("u");}} />
                 <StyleButton icon="format_italic" disabled={activeBlock === null}
                              bind:isToggled={editorSelectionStore.activeStyles.isItalic}
-                             onmousedown={(e) => {e.preventDefault(); updateStyle(`bold:${!editorSelectionStore.activeStyles.isItalic}`);}} />
+                             onMouseDown={(e) => {e.preventDefault(); applyStyleInDOM("em");}} />
             </div>
 
             <div class="w-0.75 bg-gv-separator h-full rounded-1"></div>
@@ -126,8 +137,8 @@
                 <ImageUpload disabled={activeBlock === null} activeBlock={activeBlock}
                              items={data.content} />
                 <!--<LinkItem id={itemData.id} page={page} disabled={true}/> TODO: Coming 1.2-->
-                <StyleButton icon="format_quote" disabled={activeBlock === null}
-                             onmousedown={(e) => {e.preventDefault(); changeBlockType("blockquote");}} />
+                <StyleButton icon="format_quote" disabled={activeBlock === null} bind:isToggled={isBlockquote}
+                             onMouseDown={(e) => {e.preventDefault(); changeBlockType("blockquote");}} />
             </div>
 
             <div class="w-0.75 bg-gv-separator h-full rounded-1"></div>
