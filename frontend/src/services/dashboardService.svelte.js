@@ -5,7 +5,7 @@ import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
 import { dashboardStore } from "../stores/dashboard.svelte.js";
 import { formatISODateString } from "./dateTimeUtils.js";
-import { getEventOccurrenceByEvent, getEventOccurrenceById } from "./eventsService.svelte.js";
+import { getEventOccurrenceByEvent } from "./eventsService.svelte.js";
 
 let isFetching = false;
 
