@@ -1,5 +1,5 @@
 <script>
-    import { addBlock, bulkInsertImageBlocks } from "../../services/textEditorService.svelte";
+    import { addBlock, bulkInsertImageBlocks, handleAutoLink } from "../../services/textEditorService.svelte";
     import { tick } from "svelte";
     import { editorSelectionStore } from "../../stores/textEditorStore.svelte";
     import TextBlock from "./Blocks/TextBlock.svelte";
@@ -60,6 +60,11 @@
 
     function handleKeyDown(e) {
         const currentBlock = e.currentTarget;
+        const index = content.findIndex(i => i.id === currentBlock.dataset.id);
+
+        handleAutoLink(e, currentBlock, (updatedHtml) => {
+            content[index].data = updatedHtml;
+        });
 
         if (e.key === "Enter") {
             if (e.shiftKey) return;
@@ -101,38 +106,69 @@
             return;
         }
 
-        if (e.key === "Backspace" && currentBlock.textContent.trim().length === 0) {
-            const hasMedia = currentBlock.querySelector("img") !== null;
+        if (e.key === "Backspace") {
+            const selection = window.getSelection();
 
-            if (!hasMedia) {
-                if (content.length > 1) {
+            if (selection && selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                let targetNode = range.startContainer;
+
+                if (targetNode.nodeType === Node.TEXT_NODE && range.startOffset === 0) {
+                    targetNode = targetNode.previousSibling;
+                } else if (targetNode.nodeType === Node.ELEMENT_NODE) {
+                    targetNode = targetNode.childNodes[range.startOffset - 1];
+                }
+
+                // If the element right behind the cursor is a rich link, blow it up entirely
+                // @ts-ignore
+                if (targetNode && targetNode.nodeType === Node.ELEMENT_NODE && targetNode.getAttribute?.("data-rich-link") === "true") {
                     e.preventDefault();
+                    targetNode.parentNode.removeChild(targetNode);
 
+                    // Sync current state to the Svelte array index item
                     const id = currentBlock.dataset.id;
                     const index = content.findIndex(i => i.id === id);
-
-                    const previousIndex = index > 0 ? index - 1 : 0;
-                    const previousId = content[previousIndex].id;
-
-                    content.splice(index, 1);
-
-                    tick().then(() => {
-                        const prevEl = document.querySelector(`[data-id="${previousId}"]`);
-                        if (prevEl) {
-                            // @ts-ignore
-                            // can be ignored as only contenteditable divs have the data-id attribute
-                            prevEl.focus();
-
-                            // Update caret position
-                            const range = document.createRange();
-                            range.selectNodeContents(prevEl);
-                            range.collapse(false);
-                            const sel = window.getSelection();
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                        }
-                    });
+                    if (index !== -1) {
+                        content[index].data = currentBlock.innerHTML;
+                    }
                     return;
+                }
+            }
+
+            if (currentBlock.textContent.trim().length === 0) {
+                const hasMedia = currentBlock.querySelector("img") !== null;
+
+                if (!hasMedia) {
+                    if (content.length > 1) {
+                        e.preventDefault();
+
+                        const id = currentBlock.dataset.id;
+                        const index = content.findIndex(i => i.id === id);
+
+                        const previousIndex = index > 0 ? index - 1 : 0;
+                        const previousId = content[previousIndex].id;
+
+                        content.splice(index, 1);
+
+                        tick().then(() => {
+                            const prevEl = document.querySelector(`[data-id="${previousId}"]`);
+                            if (prevEl) {
+                                // @ts-ignore
+                                prevEl.focus();
+
+                                // Update caret position smoothly to end of the previous block
+                                const range = document.createRange();
+                                range.selectNodeContents(prevEl);
+                                range.collapse(false);
+                                const sel = window.getSelection();
+                                if (sel) {
+                                    sel.removeAllRanges();
+                                    sel.addRange(range);
+                                }
+                            }
+                        });
+                        return;
+                    }
                 }
             }
         }

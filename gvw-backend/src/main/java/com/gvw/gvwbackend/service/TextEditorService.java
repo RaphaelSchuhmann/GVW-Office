@@ -87,12 +87,17 @@ public class TextEditorService {
       String title = doc.title().isBlank() ? url : doc.title();
       org.jsoup.nodes.Element iconElement =
           doc.head().select("link[rel~=(?i)^(shortcut|icon|apple-touch-icon)$]").first();
-      String favicon =
+      String faviconUrl =
           (iconElement != null)
               ? iconElement.attr("abs:href")
               : uri.getScheme() + "://" + host + "/favicon.ico";
 
-      return new LinkMetadataResponseDTO(title, favicon);
+      byte[] imageBytes = Jsoup.connect(faviconUrl).ignoreContentType(true).timeout(3000).execute().bodyAsBytes();
+
+      String base64Image = Base64.getEncoder().encodeToString(imageBytes);
+      String dataUrl = "data:image/x-icon;base64," + base64Image;
+
+      return new LinkMetadataResponseDTO(title, dataUrl);
     } catch (Exception e) {
       return new LinkMetadataResponseDTO(url, "");
     }

@@ -372,3 +372,7 @@ export async function downloadAttachments(reportId) {
         isFetching.downloadAttachments = false;
     }
 }
+
+export async function updateReport(reportData) {
+
+}
