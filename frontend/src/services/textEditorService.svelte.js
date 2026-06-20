@@ -265,7 +265,7 @@ export async function getDocumentImage(documentId, imageId) {
 export function applyStyleInDOM(action) {
     if (!action) return;
 
-    const sel = window.getSelection();
+    const sel = globalThis.getSelection();
     if (!sel || sel.rangeCount === 0) return;
 
     if (action === "strong" || action === "b") {
@@ -297,7 +297,7 @@ export function applyStyleInDOM(action) {
 export async function handleAutoLink(e, currentBlock, onDataSync) {
     if (e.key !== " " && e.key !== "Enter") return;
 
-    const selection = window.getSelection();
+    const selection = globalThis.getSelection();
     if (!selection.rangeCount) return;
 
     const range = selection.getRangeAt(0);
@@ -309,7 +309,7 @@ export async function handleAutoLink(e, currentBlock, onDataSync) {
     const cursorOffset = range.startOffset;
 
     const words = text.slice(0, cursorOffset).split(/\s+/);
-    const lastWord = words[words.length - 1];
+    const lastWord = words.at(-1);
 
     const urlPattern = /^(https?:\/\/[^\s]+)$/i;
 
@@ -329,13 +329,13 @@ export async function handleAutoLink(e, currentBlock, onDataSync) {
 
         const richLinkHtml = `
             <a href="${completeUrl}" target="_blank" contenteditable="false" class="inline-flex items-center gap-2 bg-gv-light-bg border border-gv-border px-3 py-1 rounded-md text-gv-toast-info select-all mx-1 my-0.5 pointer-events-auto hover:underline" data-rich-link="true">
-                ${urlData.favicon === "icon" ? `<span class=\"material-symbols-rounded text-sm\">link</span>` : `<img src="${urlData.favicon}" class=\"w-5 h-5 object-contain\" alt=\"\"/>`} 
+                ${urlData.favicon === "icon" ? `<span class="material-symbols-rounded text-sm">link</span>` : `<img src="${urlData.favicon}" class="w-5 h-5 object-contain" alt=""/>`} 
                 <span class="text-dt-7 font-medium">${urlData.title}</span>
             </a>`;
 
         document.execCommand("insertHTML", false, richLinkHtml);
 
-        const sel = window.getSelection();
+        const sel = globalThis.getSelection();
         if (sel?.rangeCount) {
             const range = sel.getRangeAt(0);
             range.collapse(false);

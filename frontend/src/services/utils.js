@@ -59,8 +59,8 @@ export function sanitize(html) {
     if (!html) return "";
 
     html = html
-        .replaceAll(/&nbsp;/g, " ")
-        .replaceAll(/\u00A0/g, " ")
+        .replaceAll("&nbsp;", " ")
+        .replaceAll("\u00A0", " ")
         .replaceAll(/[ \t]+(\r?\n)/g, "$1")
         .replaceAll(/\n\s+/g, "\n");
 
