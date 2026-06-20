@@ -52,7 +52,7 @@ public class DashboardService {
             .map(
                 m ->
                     new DashboardEventSummaryDTO(
-                        m.getTitle(), m.getDate(), m.getTime(), m.getLocation(), m.getType()))
+                        m.getTitle(), m.getDate(), m.getTime(), m.getLocation(), m.getType(), m.getMode(), m.getRecurrence()))
             .toList();
 
     // Get scores

@@ -78,13 +78,32 @@ const isFetching = {
  * @param {string} eventId - ID of the event to resolve
  * @returns {string} Localized description of the occurrence or "Unbekannt" if event not found
  */
-export function getEventOccurrence(eventId) {
+export function getEventOccurrenceById(eventId) {
     const event = eventsStore.raw.find(item => item.id === eventId);
 
     if (!event) return "Unbekannt";
     if (event.mode === "single") return formatISODateString(event.date);
     if (event.mode === "weekly") return getWeeklyOccurrence(event);
     if (event.mode === "monthly" && event.recurrence) return getMonthlyOccurrence(event);
+
+    return "Unbekannt";
+}
+
+/**
+ * Returns a human-readable description of how often an event occurs.
+ *
+ * Supports:
+ * - weekly events → "Jede Woche am <Wochentag>"
+ * - monthly events (by weekday or date)
+ *
+ * @param {Object} event - Event to resolve
+ * @returns {string} Localized description of the occurrence or "Unbekannt" if event not found
+ */
+export function getEventOccurrenceByEvent(event) {
+    if (!event) return "Unbekannt";
+    if (event.mode === "single") return formatISODateString(event.date);
+    if (event.mode === "weekly") return getWeeklyOccurrence(event);
+    if (event.mode === "monthly") return getMonthlyOccurrence(event);
 
     return "Unbekannt";
 }

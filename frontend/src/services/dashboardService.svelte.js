@@ -5,6 +5,7 @@ import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
 import { dashboardStore } from "../stores/dashboard.svelte.js";
 import { formatISODateString } from "./dateTimeUtils.js";
+import { getEventOccurrenceByEvent, getEventOccurrenceById } from "./eventsService.svelte.js";
 
 let isFetching = false;
 
@@ -83,7 +84,7 @@ export function prepareEvents() {
 
         return {
             title: event?.title || "Unbekannt",
-            time: time ? `${date} - ${time}` : date,
+            time: time ? `${getEventOccurrenceByEvent(event)} - ${time} Uhr` : date,
             location: event?.location || "Unbekannt",
             type: event?.type || "other"
         };
