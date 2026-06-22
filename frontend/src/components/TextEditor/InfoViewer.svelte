@@ -63,6 +63,11 @@
         }
     }
 
+    function cancelEditDescription() {
+        descriptionDraft = "";
+        isEditingDescription = false;
+    }
+
     async function saveDescription() {
         let description = descriptionDraft;
         if (descriptionDraft.trim().length === 0) description = "Keine Beschreibung";
@@ -177,6 +182,14 @@
                     <span
                         class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">{isEditingDescription ? "check" : "edit"}</span>
                 </button>
+                {#if isEditingDescription}
+                    <button
+                        class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-1 rounded-2 duration-200"
+                        onclick={cancelEditDescription}>
+                    <span
+                        class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">close</span>
+                    </button>
+                {/if}
             </div>
         </div>
         {#if enableAttachments}
