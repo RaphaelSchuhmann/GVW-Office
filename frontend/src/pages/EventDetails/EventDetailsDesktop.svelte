@@ -272,10 +272,10 @@
 
                     <div class="w-full flex items-center gap-4">
                         <Dropdown title="Typ" options={["Proben", "Meeting", "Konzerte", "Sonstiges"]}
-                                  onChange={(value) => draft.type = typeMap[value]} selected={typeMap[draft.type]} />
+                                  onChange={(value) => draft.type = typeMap[value]} selected={typeMap[draft.type]} showDropshadow={true} />
                         <Dropdown title="Status" options={["Bevorstehend", "Abgeschlossen"]}
                                   onChange={(value) => draft.status = statusMap[value]}
-                                  selected={statusMap[draft.status]} />
+                                  selected={statusMap[draft.status]} showDropshadow={true} />
                     </div>
 
                     <Input bind:value={draft.location} title="Ort" placeholder="Ort XYZ" />

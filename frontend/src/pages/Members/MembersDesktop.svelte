@@ -238,12 +238,12 @@
     <Input bind:value={memberInput.address} marginTop="5" title="Adresse" placeholder="Hauptstraße 1..." />
     <div class="w-full flex items-center gap-4 mt-5">
         <Dropdown onChange={(value) => memberInput.voice = value} title="Stimmlage"
-                  options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
+                  options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} showDropshadow={true} />
 
-        <Dropdown onChange={(value) => memberInput.status = value} title="Status" options={["Aktiv", "Passiv"]} />
+        <Dropdown onChange={(value) => memberInput.status = value} title="Status" options={["Aktiv", "Passiv"]} showDropshadow={true} />
 
         <Dropdown onChange={(value) => memberInput.role = value} title="Rolle"
-                  options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true} />
+                  options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true} showDropshadow={true} />
     </div>
 
     <div class="w-full flex items-center gap-4 mt-5 max-[1700px]:flex-col">

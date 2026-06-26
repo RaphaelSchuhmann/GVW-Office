@@ -98,6 +98,7 @@
                     doCapitalizeWords={false}
                     title="Kategorie"
                     onChange={(val) => inputs.dropdown = appSettings.feedbackCategories[val] || appSettings.feedbackCategories["_other"]}
+                    showDropshadow={true}
                 />
             {:else}
                 <div class="flex items-center gap-4 w-full">
@@ -111,6 +112,7 @@
                         doCapitalizeWords={false}
                         title="Kategorie"
                         onChange={(val) => inputs.dropdown = appSettings.feedbackCategories[val] || appSettings.feedbackCategories["_other"]}
+                        showDropshadow={true}
                     />
                 </div>
             {/if}
@@ -133,6 +135,7 @@
                     doCapitalizeWords={false}
                     title="Schweregrad"
                     onChange={(val) => inputs.dropdown = severityMap[val] || severityMap["_medium"]}
+                    showDropshadow={true}
                 />
             {:else}
                 <div class="flex items-center gap-4 w-full">
@@ -146,6 +149,7 @@
                         doCapitalizeWords={false}
                         title="Schweregrad"
                         onChange={(val) => inputs.dropdown = severityMap[val] || severityMap["_medium"]}
+                        showDropshadow={true}
                     />
                 </div>
             {/if}

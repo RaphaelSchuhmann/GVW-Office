@@ -235,15 +235,15 @@
                     <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
                         <Dropdown onChange={(value) => draft.voice = voiceMap[value]} selected={voiceMap[draft.voice]}
                                   title="Stimmlage"
-                                  options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} />
+                                  options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} showDropshadow={true} />
 
                         <Dropdown onChange={(value) => draft.status = statusMap[value]}
                                   selected={statusMap[draft.status]} title="Status"
-                                  options={["Aktiv", "Passiv"]} />
+                                  options={["Aktiv", "Passiv"]} showDropshadow={true} />
 
                         <Dropdown onChange={(value) => draft.role = roleMap[value]} selected={roleMap[draft.role]}
                                   title="Rolle"
-                                  options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} />
+                                  options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} showDropshadow={true} />
                     </div>
 
                     <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
