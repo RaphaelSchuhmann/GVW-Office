@@ -1,29 +1,34 @@
 <script>
-    import Logo from "../../assets/logo.svg";
-    import Button from "../../components/Button.svelte";
+    import bgImage from "../../assets/AbstractMusicNotesVector.svg";
     import { push } from "svelte-spa-router";
 </script>
 
-<main class="bg-gv-bg-bar w-dvw h-dvh flex items-center justify-center">
-    <div class="p-10 h-full w-full bg-white flex flex-col items-center justify-center">
+<main class="bg-gv-bg-bar w-dvw h-dvh grid grid-cols-1 grid-rows-1 place-items-center overflow-hidden">
+    {#if bgImage}
         <img
-            src={Logo}
-            alt="Logo"
-            class="min-[530px]:w-1/5 max-[530px]:w-2/5 rounded-full border-2 border-gv-border"
+            src={bgImage}
+            alt=""
+            class="col-start-1 row-start-1 pointer-events-none blur-sm"
         />
-        <p class="font-semibold text-dt-1 mt-5 text-center">404</p>
-        <p class="text-gv-dark-text text-dt-3 text-center">
-            Seite nicht gefunden
-        </p>
+    {/if}
 
-        <Button
-            type="primary"
-            marginTop="5"
-            onclick={async () => await push("/dashboard")}
-            isSubmit={true}
-        >
-            <span class="material-symbols-rounded text-icon-dt-5">arrow_back</span>
-            <p class="ml-3 text-dt-3">Zurück zum Dashboard</p>
-        </Button>
+    <div
+        class="col-start-1 row-start-1 z-10 w-[90%] text-center flex flex-col items-center justify-center gap-6 p-5 pt-10 pb-10 bg-[rgba(243,243,243,0.3)] border border-gv-border rounded-1 backdrop-blur-[154px]">
+        <div class="flex flex-col items-center">
+            <p class="text-gv-dark-text text-[50px] font-bold leading-none">404</p>
+            <p class="text-gv-dark-text text-dt-3">Seite nicht gefunden</p>
+        </div>
+        <p class="text-gv-dark-text text-dt-4">Die Seite die Sie suchen existiert nicht mehr</p>
+        <button
+            class="flex items-center justify-center gap-2 rounded-full bg-gv-primary cursor-pointer hover:bg-gv-primary-hover p-2 pl-4 pr-6"
+            onclick={async () => await push("/dashboard")}>
+            <span class="material-symbols-rounded text-icon-dt-5 text-white">
+                arrow_back
+            </span>
+
+            <span class="text-dt-5 text-white">
+                Zurück zum Dashboard
+            </span>
+        </button>
     </div>
 </main>

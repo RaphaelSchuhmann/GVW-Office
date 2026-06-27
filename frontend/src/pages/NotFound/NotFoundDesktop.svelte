@@ -1,32 +1,34 @@
 <script>
-    import Form from "../../components/Form.svelte";
-    import Logo from "../../assets/logo.svg";
-    import Button from "../../components/Button.svelte";
+    import bgImage from "../../assets/AbstractMusicNotesVector.svg";
     import { push } from "svelte-spa-router";
 </script>
 
-<main class="bg-gv-bg-bar w-dvw h-dvh flex items-center justify-center">
-    <div class="h-auto min-[1400px]:w-1/3 w-2/3">
-        <Form padding="10" height="auto" width="full">
-            <img
-                src={Logo}
-                alt="Logo"
-                class="w-1/4 rounded-full border-2 border-gv-border"
-            />
-            <p class="font-semibold text-dt-1 mt-5 text-center">404</p>
-            <p class="text-gv-dark-text text-dt-2 text-center">
-                Seite nicht gefunden
-            </p>
+<main class="bg-gv-bg-bar w-dvw h-dvh grid grid-cols-1 grid-rows-1 place-items-center overflow-hidden">
+    {#if bgImage}
+        <img
+            src={bgImage}
+            alt=""
+            class="col-start-1 row-start-1 pointer-events-none blur-sm"
+        />
+    {/if}
 
-            <Button
-                type="primary"
-                marginTop="5"
-                onclick={async () => await push("/dashboard")}
-                isSubmit={true}
-            >
-                <span class="material-symbols-rounded">arrow_back</span>
-                <p class="ml-3">Zurück zum Dashboard</p>
-            </Button>
-        </Form>
+    <div
+        class="col-start-1 row-start-1 z-10 max-w-1/4 max-[1500px]:max-w-1/2 text-center flex flex-col items-center gap-6 p-5 pt-10 pb-10 bg-[rgba(243,243,243,0.3)] border border-gv-border rounded-1 backdrop-blur-[154px]">
+        <div class="flex flex-col items-center">
+            <p class="text-gv-dark-text text-[80px] font-bold leading-none">404</p>
+            <p class="text-gv-dark-text text-dt-2">Seite nicht gefunden</p>
+        </div>
+        <p class="text-gv-dark-text text-dt-3">Die Seite die Sie suchen existiert nicht mehr</p>
+        <button
+            class="flex items-center justify-center gap-2 rounded-full bg-gv-primary cursor-pointer hover:bg-gv-primary-hover p-2 pl-4 pr-6"
+            onclick={async () => await push("/dashboard")}>
+            <span class="material-symbols-rounded text-icon-dt-4 text-white">
+                arrow_back
+            </span>
+
+            <span class="text-dt-4 text-white">
+                Zurück zum Dashboard
+            </span>
+        </button>
     </div>
 </main>
