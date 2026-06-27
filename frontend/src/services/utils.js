@@ -27,6 +27,7 @@ const ALLOWED_TAGS = new Set([
     "a",
     "span",
     "img",
+    "br",
 ]);
 
 /**
@@ -45,7 +46,7 @@ const ALLOWED_TAGS = new Set([
  * - Returns cleaned HTML as a string
  *
  * Allowed tags (via `ALLOWED_TAGS`):
- * - b, i, u, strong, em
+ * - b, i, u, strong, em, br
  *
  * Note:
  * This is not a full security sanitizer against malicious HTML injection.
