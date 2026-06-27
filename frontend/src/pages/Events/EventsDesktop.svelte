@@ -255,9 +255,9 @@
 
     <div class="w-full flex items-center gap-4 mt-5">
         <Dropdown title="Typ" options={["Proben", "Meeting", "Konzerte", "Sonstiges"]}
-                  onChange={(value) => eventInput.type = typeMap[value]} />
+                  onChange={(value) => eventInput.type = typeMap[value]} showDropshadow={true} />
         <Dropdown title="Status" options={["Bevorstehend", "Abgeschlossen"]}
-                  onChange={(value) => eventInput.status = statusMap[value]} />
+                  onChange={(value) => eventInput.status = statusMap[value]} showDropshadow={true} />
     </div>
 
     <Input bind:value={eventInput.location} title="Ort" placeholder="Ort XYZ" marginTop="5" />

@@ -110,7 +110,7 @@
                 monthlyKind: null,
                 dayOfMonth: null,
                 weekDay: null,
-                ordinal: null,
+                ordinal: null
             };
         }
 
@@ -156,7 +156,7 @@
     let sidebarOpen = $state(false);
 </script>
 
-<ToastStack isMobile={true}/>
+<ToastStack isMobile={true} />
 
 <Modal bind:this={addEventModal} extraFunction={resetAddInputs} isMobile={true}
        title="Neue Veranstaltung hinzufügen" subTitle="Erfassen Sie hier die Details der Veranstaltung"
@@ -165,14 +165,14 @@
     <Input bind:value={eventInput.title} title="Titel" placeholder="Veranstaltung XYZ" marginTop="5" />
 
     <Dropdown title="Typ" options={["Proben", "Meeting", "Konzerte", "Sonstiges"]}
-              onChange={(value) => eventInput.type = typeMap[value]} marginTop="5" />
+              onChange={(value) => eventInput.type = typeMap[value]} marginTop="5" showDropshadow={true} />
     <Dropdown title="Status" options={["Bevorstehend", "Abgeschlossen"]}
-              onChange={(value) => eventInput.status = statusMap[value]} marginTop="5" />
+              onChange={(value) => eventInput.status = statusMap[value]} marginTop="5" showDropshadow={true} />
 
     <Input bind:value={eventInput.location} title="Ort" placeholder="Ort XYZ" marginTop="5" />
 
     <Textarea bind:value={eventInput.description} title="Beschreibung (Optional)"
-           placeholder="Kurze Beschreibung zur Veranstaltung..." marginTop="5" />
+              placeholder="Kurze Beschreibung zur Veranstaltung..." marginTop="5" />
 
     <div class="flex flex-col items-start w-full h-full mt-5">
         <p class="text-dt-6 font-medium">Datum</p>
@@ -221,7 +221,8 @@
             <p class="text-gv-dark-text text-dt-6 text-left mt-5">Jeden Monat
                 am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
         {:else}
-            <p class="text-gv-dark-text text-dt-6 text-left mt-5">Jeden Monat am {formatISODateString(eventInput.date)}.</p>
+            <p class="text-gv-dark-text text-dt-6 text-left mt-5">Jeden Monat am {formatISODateString(eventInput.date)}
+                .</p>
         {/if}
     {/if}
 

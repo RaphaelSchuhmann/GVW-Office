@@ -34,7 +34,7 @@
         <button
             type="button"
             disabled={disabled}
-            class={`relative flex-1 p-2 rounded-full text-center z-10 text-dt-6 text-gv-dark transition-colors duration-150 ${
+            class={`relative flex-1 p-2 rounded-full text-center z-10 text-dt-6 text-gv-dark transition-colors duration-150 disabled:cursor-not-allowed ${
                 disabled ? 'cursor-default' : 'cursor-pointer hover:bg-gv-hover-effect/50'
             }`}
             onclick={() => selected = title}

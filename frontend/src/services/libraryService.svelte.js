@@ -21,7 +21,15 @@ export const voiceMap = {
     "b1": "1. Bass",
     "b2": "2. Bass",
     "s": "Sopran",
-    "a": "Alt"
+    "a": "Alt",
+    "Tenor": "t",
+    "1. Tenor": "t1",
+    "2. Tenor": "t2",
+    "Bass": "b",
+    "1. Bass": "b1",
+    "2. Bass": "b2",
+    "Sopran": "s",
+    "Alt": "a"
 };
 
 let isFetching = {

@@ -159,10 +159,10 @@
     <Dropdown onChange={(value) => memberInput.voice = value} title="Stimmlage"
               options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} marginTop="5" />
 
-    <Dropdown onChange={(value) => memberInput.status = value} title="Status" options={["Aktiv", "Passiv"]} marginTop="5" />
+    <Dropdown onChange={(value) => memberInput.status = value} title="Status" options={["Aktiv", "Passiv"]} marginTop="5" showDropshadow={true} />
 
     <Dropdown onChange={(value) => memberInput.role = value} title="Rolle"
-              options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true} marginTop="5" />
+              options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true} marginTop="5" showDropshadow={true} />
 
     <div class="w-full flex items-center gap-4 mt-5 flex-col">
         <div class="flex flex-col items-start w-full">

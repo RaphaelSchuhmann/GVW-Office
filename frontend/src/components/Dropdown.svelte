@@ -14,6 +14,7 @@
         textWrap = true,
         displayTop = false,
         doCapitalizeWords = true,
+        showDropshadow = false,
         ...restProps
     } = $props();
 
@@ -60,6 +61,8 @@
             selectedElement?.scrollIntoView({ block: "center", behavior: "smooth" });
         });
     }
+
+    const dropShadow = $derived(displayTop ? "drop-shadow-[0_-15px_5px_rgba(0,0,0,0.2)]" : "drop-shadow-[0_15px_2px_rgba(0,0,0,0.2)]");
 </script>
 
 <div
@@ -91,7 +94,7 @@
         {#if open && options.length > 0}
             <div
                 bind:this={menuRef}
-                class={`absolute w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${displayTop ? "bottom-10.5 rounded-t-1" : "rounded-b-1"} max-h-[20vh] flex flex-col items-center z-999 overflow-y-auto`}
+                class={`absolute ${showDropshadow ? dropShadow : ""} w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${displayTop ? "bottom-10.5 rounded-t-1" : "rounded-b-1"} max-h-[20vh] flex flex-col items-center z-999 overflow-y-auto`}
                 style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}
             >
                 {#each options as option}

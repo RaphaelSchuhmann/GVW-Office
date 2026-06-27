@@ -16,8 +16,14 @@
     import { determineChoirType } from "../../services/utils.js";
     import FileSelector from "../../components/FileSelector.svelte";
     import { appSettings } from "../../stores/appSettings.svelte";
-    import { downloadScoreFiles, getLibraryCategories, updateScore } from "../../services/libraryService.svelte";
+    import {
+        downloadScoreFiles,
+        getLibraryCategories,
+        updateScore,
+        voiceMap
+    } from "../../services/libraryService.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import ChipPicker from "../../components/ChipPicker.svelte";
 
     let {
         scoreData,
@@ -33,6 +39,9 @@
     let editedSelectedChoirType = $derived(originalSelectedChoirType);
     let editTabBarInitialized = $state(false);
 
+    let originalSelectedChips = $derived(scoreData.voices.map(str => voiceMap[str] ?? str));
+    let editSelectedChips = $state([]);
+
     /**
      * Initializes edit mode for the current score.
      *
@@ -44,6 +53,7 @@
         isEditing = true;
         editTabBarInitialized = false;
         editedSelectedChoirType = originalSelectedChoirType;
+        editSelectedChips = [...originalSelectedChips];
     }
 
     /**
@@ -55,24 +65,29 @@
     function cancelEditing() {
         draft = null;
         isEditing = false;
+        editSelectedChips = [];
     }
 
     /**
-     * Adds or removes a voice from the draft's `voices` array depending on the checkbox state.
-     * 
-     * If `isChecked` is true, the given voice is added to the array while ensuring
-     * no duplicates exist (using a Set). If `isChecked` is false, the voice is removed from the array.
-     * 
-     * This function updates `draft.voices` immutably by creating a new array
-     * instead of modifying the existing one.
-     * 
-     * @param voice - The voice identifier to add or remove
-     * @param isChecked - Indicates whether the voice checkbox is checked.
+     * Adds or removes a voice from the current draft depending
+     * on the checkbox state.
+     *
+     * When enabled, the voice is added to the `voices` array while
+     * ensuring that duplicates cannot occur. When disabled, the voice
+     * is removed from the array.
+     *
+     * @param {string} action - The action for a voice identifier to toggle.
+     * @returns {void}
      */
-    function toggleVoice(voice, isChecked) {
+    function toggleVoice(action) {
+        const [kind, voice] = action.split(":");
+        const isChecked = kind === "add";
+
+        if (!voiceMap[voice]) return;
+
         draft.voices = isChecked
-            ? [...new Set([...draft.voices, voice])]
-            : draft.voices.filter((item) => item !== voice);
+            ? [...new Set([...draft.voices, voiceMap[voice]])]
+            : draft.voices.filter((item) => item !== voiceMap[voice]);
     }
 
     /**
@@ -156,7 +171,7 @@
      */
     $effect.pre(() => {
         if (isEditing && !draft) {
-            draft = JSON.parse(JSON.stringify(scoreData));
+            startEditing();
         }
     });
 
@@ -273,28 +288,17 @@
                     <Input title="Kategorie" bind:value={appSettings.scoreCategories[scoreData.type]} readonly={true}/>
                     <TabBar contents={["Männerchor", "Gemischterchor"]} selected={originalSelectedChoirType} disabled={true} />
 
-                    <p class="text-gv-dark-text text-dt-5 font-semibold w-full text-left">Stimmen</p>
                     <div class="w-full flex items-start justify-start gap-8">
                         {#if originalSelectedChoirType === "Männerchor"}
-                            <div class="flex flex-col items-start justify-start gap-4">
-                                <Checkbox title="1. Tenor" isChecked={scoreData.voices.includes("t1")} disabled={true} />
-                                <Checkbox title="2. Tenor" isChecked={scoreData.voices.includes("t2")} disabled={true} />
-                            </div>
-                        
-                            <div class="flex flex-col items-start justify-start gap-4">
-                                <Checkbox title="1. Bass" isChecked={scoreData.voices.includes("b1")} disabled={true} />
-                                <Checkbox title="2. Bass" isChecked={scoreData.voices.includes("b2")} disabled={true} />
-                            </div>
+                            <ChipPicker title="Stimmen" options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} useLock={true}
+                                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={originalSelectedChips}
+                                        lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern."
+                                        disabled={true} />
                         {:else}
-                            <div class="flex flex-col items-start justify-start gap-4">
-                                <Checkbox title="Tenor" isChecked={scoreData.voices.includes("t")} disabled={true} />
-                                <Checkbox title="Bass" isChecked={scoreData.voices.includes("b")} disabled={true} />
-                            </div>
-                        
-                            <div class="flex flex-col items-start justify-start gap-4">
-                                <Checkbox title="Sopran" isChecked={scoreData.voices.includes("s")} disabled={true} />
-                                <Checkbox title="Alt" isChecked={scoreData.voices.includes("a")} disabled={true} />
-                            </div>
+                            <ChipPicker title="Stimmen" options={["Tenor", "Bass", "Sopran", "Alt"]} useLock={true}
+                                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={originalSelectedChips}
+                                        lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern."
+                                        disabled={true} />
                         {/if}
                     </div>
                 
@@ -308,30 +312,19 @@
                     <Dropdown title="Kategorie" options={getLibraryCategories(false)} selected={appSettings.scoreCategories[draft.type]}
                               onChange={(value) => draft.type = appSettings.scoreCategories[value]} />
                     <TabBar contents={["Männerchor", "Gemischterchor"]} selected={editedSelectedChoirType}
-                            onChange={(value) => {editedSelectedChoirType = value; !editTabBarInitialized ? editTabBarInitialized = true : draft.voices = [];}} />
+                            onChange={(value) => {editedSelectedChoirType = value; !editTabBarInitialized ? editTabBarInitialized = true : draft.voices = [];}}
+                            disabled={editSelectedChips.length > 0}
+                    />
 
-                    <p class="text-gv-dark-text text-dt-5 font-semibold w-full text-left">Stimmen</p>
                     <div class="w-full flex items-start justify-start gap-8">
                         {#if editedSelectedChoirType === "Männerchor"}
-                            <div class="flex flex-col items-start justify-start gap-4">
-                                <Checkbox title="1. Tenor" isChecked={draft.voices.includes("t1")} onChange={(isChecked) => {toggleVoice("t1", isChecked);}} />
-                                <Checkbox title="2. Tenor" isChecked={draft.voices.includes("t2")} onChange={(isChecked) => {toggleVoice("t2", isChecked);}} />
-                            </div>
-                        
-                            <div class="flex flex-col items-start justify-start gap-4">
-                                <Checkbox title="1. Bass" isChecked={draft.voices.includes("b1")} onChange={(isChecked) => {toggleVoice("b1", isChecked);}} />
-                                <Checkbox title="2. Bass" isChecked={draft.voices.includes("b2")} onChange={(isChecked) => {toggleVoice("b2", isChecked);}} />
-                            </div>
+                            <ChipPicker title="Stimmen" options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} useLock={true}
+                                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={editSelectedChips}
+                                        lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern." />
                         {:else}
-                            <div class="flex flex-col items-start justify-start gap-4">
-                                <Checkbox title="Tenor" isChecked={draft.voices.includes("t")} onChange={(isChecked) => {toggleVoice("t", isChecked);}} />
-                                <Checkbox title="Bass" isChecked={draft.voices.includes("b")} onChange={(isChecked) => {toggleVoice("b", isChecked);}} />
-                            </div>
-                        
-                            <div class="flex flex-col items-start justify-start gap-4">
-                                <Checkbox title="Sopran" isChecked={draft.voices.includes("s")} onChange={(isChecked) => {toggleVoice("s", isChecked);}} />
-                                <Checkbox title="Alt" isChecked={draft.voices.includes("a")} onChange={(isChecked) => {toggleVoice("a", isChecked);}} />
-                            </div>
+                            <ChipPicker title="Stimmen" options={["Tenor", "Bass", "Sopran", "Alt"]} useLock={true}
+                                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={editSelectedChips}
+                                        lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern." />
                         {/if}
                     </div>
                 

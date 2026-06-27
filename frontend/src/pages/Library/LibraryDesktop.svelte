@@ -27,6 +27,7 @@
     import Checkbox from "../../components/Checkbox.svelte";
     import FileSelector from "../../components/FileSelector.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import ChipPicker from "../../components/ChipPicker.svelte";
 
     // ==================
     // MODAL REFERENCES
@@ -105,6 +106,8 @@
      */
     let selectedChoirType = $state("Männerchor");
 
+    let selectedChips = $state([]);
+
     let isSubmitting = $state(false);
 
     /**
@@ -145,6 +148,8 @@
             voiceCount: 0,
             files: []
         };
+
+        selectedChips = [];
     }
 
     /**
@@ -155,15 +160,18 @@
      * ensuring that duplicates cannot occur. When disabled, the voice
      * is removed from the array.
      *
-     * @param {string} voice - The voice identifier to toggle.
-     * @param {boolean} isChecked - Whether the voice should be added (`true`)
-     * or removed (`false`).
+     * @param {string} action - The action for a voice identifier to toggle.
      * @returns {void}
      */
-    function toggleVoice(voice, isChecked) {
+    function toggleVoice(action) {
+        const [kind, voice] = action.split(":");
+        const isChecked = kind === "add";
+
+        if (!voiceMap[voice]) return;
+
         scoreInput.voices = isChecked
-            ? [...new Set([...scoreInput.voices, voice])]
-            : scoreInput.voices.filter((item) => item !== voice);
+            ? [...new Set([...scoreInput.voices, voiceMap[voice]])]
+            : scoreInput.voices.filter((item) => item !== voiceMap[voice]);
     }
 
     /**
@@ -249,7 +257,7 @@
 </script>
 
 <svelte:window oncontextmenu={() => (menu.data.open = false)} />
-<ToastStack/>
+<ToastStack />
 
 <CategoryModal bind:this={categoryModal} />
 
@@ -281,30 +289,18 @@
     <Dropdown title="Kategorie" options={getLibraryCategories(false)}
               onChange={(value) => scoreInput.type = appSettings.scoreCategories[value]} marginTop="5" />
     <TabBar contents={["Männerchor", "Gemischterchor"]} selected={selectedChoirType}
-            onChange={(value) => {selectedChoirType = value; scoreInput.voices = [];}} marginTop="5" />
+            onChange={(value) => {selectedChoirType = value; scoreInput.voices = [];}} marginTop="5"
+            disabled={selectedChips.length > 0} />
 
-    <p class="text-gv-dark-text text-dt-5 font-semibold w-full text-left mt-3">Stimmen</p>
     <div class="w-full flex items-start justify-start mt-2 gap-8">
         {#if selectedChoirType === "Männerchor"}
-            <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="1. Tenor" onChange={(isChecked) => {toggleVoice("t1", isChecked);}} />
-                <Checkbox title="2. Tenor" onChange={(isChecked) => {toggleVoice("t2", isChecked);}} />
-            </div>
-
-            <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="1. Bass" onChange={(isChecked) => {toggleVoice("b1", isChecked);}} />
-                <Checkbox title="2. Bass" onChange={(isChecked) => {toggleVoice("b2", isChecked);}} />
-            </div>
+            <ChipPicker title="Stimmen" options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} useLock={true}
+                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={selectedChips}
+                        lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern." />
         {:else}
-            <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="Tenor" onChange={(isChecked) => {toggleVoice("t", isChecked);}} />
-                <Checkbox title="Bass" onChange={(isChecked) => {toggleVoice("b", isChecked);}} />
-            </div>
-
-            <div class="flex flex-col items-start justify-start gap-4">
-                <Checkbox title="Sopran" onChange={(isChecked) => {toggleVoice("s", isChecked);}} />
-                <Checkbox title="Alt" onChange={(isChecked) => {toggleVoice("a", isChecked);}} />
-            </div>
+            <ChipPicker title="Stimmen" options={["Tenor", "Bass", "Sopran", "Alt"]} useLock={true}
+                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={selectedChips}
+                        lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern." />
         {/if}
     </div>
 
