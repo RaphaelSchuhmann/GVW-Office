@@ -52,7 +52,7 @@
         isEditing = true;
         editTabBarInitialized = false;
         editedSelectedChoirType = originalSelectedChoirType;
-        editSelectedChips = originalSelectedChips;
+        editSelectedChips = [...originalSelectedChips];
     }
 
     /**
@@ -311,7 +311,6 @@
                             onChange={(value) => {editedSelectedChoirType = value; !editTabBarInitialized ? editTabBarInitialized = true : draft.voices = [];}}
                             disabled={editSelectedChips.length > 0} />
 
-                    <p class="text-gv-dark-text text-dt-5 font-semibold w-full text-left">Stimmen</p>
                     <div class="w-full flex items-start justify-start gap-8">
                         {#if editedSelectedChoirType === "Männerchor"}
                             <ChipPicker title="Stimmen" options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} useLock={true}

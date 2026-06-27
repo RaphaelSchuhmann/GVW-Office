@@ -7,7 +7,8 @@
         selectedOptions = $bindable([]),
         useLock = false,
         lockTooltip = "",
-        onChange = () => {},
+        onChange = () => {
+        },
         disabled = false,
         ...restProps
     } = $props();
@@ -34,12 +35,13 @@
 <div class="w-full flex flex-col items-start justify-start gap-2">
     <div class="flex items-center justify-start gap-2">
         <p class="text-dt-6 font-medium text-gv-dark-text">{title}</p>
-        {#if useLock && selectedOptions.length > 0  && !disabled}
+        {#if useLock && selectedOptions.length > 0 && !disabled}
             {#if viewport.isMobile}
                 <div class="relative inline-block">
                     {#if mobileIsTooltipOpen}
-                        <div class="fixed bottom-[27%] left-0 right-0 -translate-y-1/2 mx-4 rounded-2 p-2 drop-shadow-[0_0_2px_rgba(0,0,0,0.2)] bg-gv-input-bg border border-gv-separator text-gv-dark-text z-[10000]">
-                            {lockTooltip} bla bla
+                        <div
+                            class="fixed bottom-[27%] left-0 right-0 -translate-y-1/2 mx-4 rounded-2 p-2 drop-shadow-[0_0_2px_rgba(0,0,0,0.2)] bg-gv-input-bg border border-gv-separator text-gv-dark-text z-[10000]">
+                            {lockTooltip}
                         </div>
                     {/if}
 
@@ -75,11 +77,13 @@
                 onclick={() => toggleChip(option)}
             >
                 {#if selectedOptions.includes(option)}
-                    <span class="material-symbols-rounded {viewport.isMobile ? 'text-icon-dt-7' : 'text-icon-dt-6'} group-hover:hidden!">
+                    <span
+                        class="material-symbols-rounded {viewport.isMobile ? 'text-icon-dt-7' : 'text-icon-dt-6'} group-hover:hidden!">
                         check
                     </span>
 
-                    <span class="material-symbols-rounded hidden! {viewport.isMobile ? 'text-icon-dt-7' : 'text-icon-dt-6'} group-hover:block!">
+                    <span
+                        class="material-symbols-rounded hidden! {viewport.isMobile ? 'text-icon-dt-7' : 'text-icon-dt-6'} group-hover:block!">
                         close
                     </span>
                 {/if}
@@ -93,7 +97,11 @@
     {#if selectedOptions.length > 0 && !disabled}
         <button
             class="p-2 bg-gv-semi-transparent-red rounded-2 flex items-center justify-center gap-2 text-gv-delete hover:bg-gv-semi-transparent-red-hover cursor-pointer"
-            onclick={() => selectedOptions = []}
+            onclick={() => {
+                const removed = [...selectedOptions];
+                selectedOptions = [];
+                removed.forEach((option) => onChange?.(`remove:${option}`));
+            }}
         >
             <span class="material-symbols-rounded text-icon-dt-6">
                 {useLock ? "lock_open" : "close"}
