@@ -96,6 +96,11 @@
 
                 {#if userOptionsVisible}
                     <div class="absolute bottom-22 w-full bg-white border border-gv-border rounded-1 p-2 flex flex-col items-center">
+                        <button onclick={async () => {await push("/help"); toggleUserOptions()}}
+                                class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
+                            <span class="material-symbols-rounded text-icon-dt-5 mr-2">menu_book</span>
+                            Hilfe-Center
+                        </button>
                         <button onclick={() => {feedbackModal.showModal(); toggleUserOptions()}}
                                 class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
                             <span class="material-symbols-rounded text-icon-dt-5 mr-2">chat_bubble</span>
@@ -116,6 +121,9 @@
             </div>
         {:else}
             <div class="flex flex-col items-center gap-2">
+                <SidebarButton minimized={minimized} onclick={async () => {await push("/help")}}>
+                    <span class="material-symbols-rounded text-icon-dt-3">menu_book</span>
+                </SidebarButton>
                 <SidebarButton minimized={minimized} onclick={() => {feedbackModal.showModal()}}>
                     <span class="material-symbols-rounded text-icon-dt-3">chat_bubble</span>
                 </SidebarButton>
