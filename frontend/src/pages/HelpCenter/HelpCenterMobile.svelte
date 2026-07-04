@@ -1,8 +1,8 @@
 <script>
     import ToastStack from "../../components/ToastStack.svelte";
-    import PageHeader from "../../components/PageHeader.svelte";
     import MobileSidebar from "../../components/HelpCenter/MobileSidebar.svelte";
     import { appSettings } from "../../stores/appSettings.svelte.js";
+    import AddCategoryModal from "../../components/HelpCenter/AddCategoryModal.svelte";
 
     let {
         category,
@@ -26,10 +26,6 @@
                 <button class="flex items-center justify-center" onclick={() => sidebarOpen = true}>
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">menu</span>
                 </button>
-            </div>
-            <div class="flex flex-col items-start justify-start">
-                <p class="font-bold text-dt-5 text-gv-primary">HILFE-CENTER</p>
-                <PageHeader title="Wie können wir helfen?" hideSubTitle={true} showSlot={false}/>
             </div>
         </div>
     </div>

@@ -21,7 +21,7 @@ export async function apiDeleteCategory(id) {
 }
 
 export async function apiUpdateFeaturedCategories(featured) {
-    const resp = await httpPatch(`${apiUrl}/help/category/update/featured`, { featured: featured });
+    const resp = await httpPatch(`${apiUrl}/help/category/update/featured`, { featured: Object.fromEntries(featured) });
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };

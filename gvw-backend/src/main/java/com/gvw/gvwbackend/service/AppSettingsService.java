@@ -156,6 +156,7 @@ public class AppSettingsService {
                     .icon(dto.icon())
                     .description(dto.description())
                     .articleCount(0)
+                    .isFeatured(false)
                     .build());
 
     settings.setHelpCenterCategories(categories);

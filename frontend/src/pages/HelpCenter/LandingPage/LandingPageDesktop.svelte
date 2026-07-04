@@ -3,17 +3,19 @@
     import { user } from "../../../stores/user.svelte.js";
     import Card from "../../../components/Card.svelte";
     import SearchBarButton from "../../../components/HelpCenter/SearchBarButton.svelte";
+    import { appSettings } from "../../../stores/appSettings.svelte.js";
+    import ManageFeaturedCategoriesModal from "../../../components/HelpCenter/ManageFeaturedCategoriesModal.svelte";
 
-    const categories = [
-        {
-            icon: "group",
-            title: "Mitlieder",
-            subTitle: "Mitglieder einladen, verwalten und Rollen vergeben.",
-            articleCount: 8,
-            isFeatured: true
-        }
-    ];
+    /**
+     * Reference to the manage category modal.
+     * Used to programmatically open the manage category dialog.
+     * @type {import("../../components/HelpCenter/ManageFeaturedCategoriesModal.svelte").default}
+     */
+    let manageFeaturedCategoriesModalRef = $state(null);
 </script>
+
+<ManageFeaturedCategoriesModal bind:this={manageFeaturedCategoriesModalRef} isMobile={false} />
+
 <div class="flex flex-col w-full h-full items-start justify-start gap-4 p-10 overflow-y-auto">
     <div class="flex flex-col items-start justify-start gap-2">
         <p class="font-bold text-dt-3 text-gv-primary tracking-[8%]">HILFE-CENTER</p>
@@ -29,23 +31,23 @@
         <div class="flex items-center justify-start w-full">
             <p class="text-dt-3 font-bold">Kategorien</p>
             {#if user.role === "admin"}
-                <button class="flex items-center justify-center ml-auto cursor-pointer">
+                <button class="flex items-center justify-center ml-auto cursor-pointer" onclick={manageFeaturedCategoriesModalRef?.showModal}>
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">discover_tune</span>
                 </button>
             {/if}
         </div>
         <div class="grid grid-cols-3 grid-rows-2 w-full h-full gap-4">
-            {#each categories as category}
+            {#each appSettings.helpCenterCategories as category}
                 {#if category.isFeatured}
                     <button class="h-full w-full cursor-pointer group">
                         <Card fillHeight={true}>
-                            <div class="flex flex-col items-start justify-start gap-4 w-full h-full">
+                            <div class="flex flex-col items-start justify-start gap-4 w-full h-full p-2">
                                 <span class="rounded-2 bg-gv-bg-bar p-4 text-icon-dt-2 text-gv-primary material-symbols-rounded">
                                     {category.icon}
                                 </span>
                                 <div class="flex flex-col items-start justify-start w-full">
                                     <p class="text-dt-3 text-gv-dark-text">{category.title}</p>
-                                    <p class="text-dt-5 text-left text-gv-light-text text-wrap line-clamp-2 truncate">{category.subTitle}</p>
+                                    <p class="text-dt-5 text-left text-gv-light-text text-wrap line-clamp-2 truncate">{category.description}</p>
                                 </div>
                                 <div class="flex items-center justify-start gap-2">
                                     <p class="text-gv-light-text text-dt-5">{category.articleCount} Artikel</p>
