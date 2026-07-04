@@ -2,12 +2,8 @@
     import ToastStack from "../../components/ToastStack.svelte";
     import MobileSidebar from "../../components/HelpCenter/MobileSidebar.svelte";
     import { appSettings } from "../../stores/appSettings.svelte.js";
-    import AddCategoryModal from "../../components/HelpCenter/AddCategoryModal.svelte";
-
-    let {
-        category,
-        ...restProps
-    } = $props();
+    import { helpCenterStore } from "../../stores/helpCenterStore.svelte.js";
+    import LandingPageMobile from "./LandingPage/LandingPageMobile.svelte";
 
     let sidebarOpen = $state(false);
 </script>
@@ -22,10 +18,16 @@
     </button>
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full flex-1 overflow-hidden p-7 min-h-0 gap-4">
-            <div class="w-full flex items-center justify-start">
+            <div class="w-full flex flex-col items-start justify-start">
                 <button class="flex items-center justify-center" onclick={() => sidebarOpen = true}>
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">menu</span>
                 </button>
+
+                <div class="flex flex-col w-full h-full items-start gap-2">
+                    {#if helpCenterStore.activeCategory === ""}
+                        <LandingPageMobile />
+                    {/if}
+                </div>
             </div>
         </div>
     </div>

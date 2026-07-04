@@ -5,11 +5,8 @@
     import LandingPageDesktop from "./LandingPage/LandingPageDesktop.svelte";
     import { appSettings } from "../../stores/appSettings.svelte.js";
     import AddCategoryModal from "../../components/HelpCenter/AddCategoryModal.svelte";
-
-    let {
-        category,
-        ...restProps
-    } = $props();
+    import { helpCenterStore } from "../../stores/helpCenterStore.svelte.js";
+    import CategoryPageDesktop from "./CategoryPage/CategoryPageDesktop.svelte";
 
     /**
      * Reference to the add category modal.
@@ -29,9 +26,11 @@
 
         <div class="flex w-dvw h-full overflow-hidden">
             <DesktopSidebar buttons={appSettings.helpCenterCategories} />
-
-            {#if category === "none" || category === ""}
+            
+            {#if helpCenterStore.activeCategory === ""}
                 <LandingPageDesktop />
+            {:else}
+                <CategoryPageDesktop />
             {/if}
         </div>
     </div>

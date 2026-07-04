@@ -6,6 +6,7 @@
     import SidebarButton from "./SidebarButton.svelte";
     import ChangelogsModal from "../ChangelogsModal.svelte";
     import FeedbackModal from "../FeedbackModal.svelte";
+    import { helpCenterStore } from "../../stores/helpCenterStore.svelte";
 
     let {
         currentCategory = $bindable(""),
@@ -19,6 +20,14 @@
 
     /** @type {import("../../components/FeedbackModal.svelte").default} */
     let feedbackModal = $state(null);
+
+    $effect(() => {
+       if (helpCenterStore.activeCategory === "") {
+           currentCategory = "";
+       } else {
+           currentCategory = buttons.find(cat => cat.id === helpCenterStore.activeCategory)?.title;
+       }
+    });
 
     let userOptionsVisible = $state(false);
     let userOptionsIcon = $state("expand_all");
@@ -44,7 +53,7 @@
             <span class="text-dt-3 text-gv-dark-text group-hover:underline">Dashboard</span>
         </button>
         {#each buttons as button}
-            <SidebarButton onclick={() => currentCategory = button.text} selected={currentCategory === button.text}>
+            <SidebarButton onclick={() => {currentCategory = button.title; helpCenterStore.activeCategory = button.id}} selected={currentCategory === button.title}>
                 <div class="flex items-center justify-start gap-2">
                     <span class="material-symbols-rounded text-icon-dt-4">{button.icon}</span>
                     <p class="text-dt-3">{button.title}</p>

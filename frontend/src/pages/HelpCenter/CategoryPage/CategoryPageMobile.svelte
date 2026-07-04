@@ -5,7 +5,6 @@
     import SearchBarButton from "../../../components/HelpCenter/SearchBarButton.svelte";
     import { appSettings } from "../../../stores/appSettings.svelte.js";
     import ManageFeaturedCategoriesModal from "../../../components/HelpCenter/ManageFeaturedCategoriesModal.svelte";
-    import { helpCenterStore } from "../../../stores/helpCenterStore.svelte.js";
 
     /**
      * Reference to the manage category modal.
@@ -15,20 +14,18 @@
     let manageFeaturedCategoriesModalRef = $state(null);
 </script>
 
-<ManageFeaturedCategoriesModal bind:this={manageFeaturedCategoriesModalRef} isMobile={false} />
+<ManageFeaturedCategoriesModal bind:this={manageFeaturedCategoriesModalRef} isMobile={true} />
 
-<div class="flex flex-col w-full h-full items-start justify-start gap-4 p-10 overflow-y-auto">
+<div class="flex flex-col w-full h-full items-start justify-start gap-4 overflow-y-auto">
     <div class="flex flex-col items-start justify-start gap-2">
         <p class="font-bold text-dt-3 text-gv-primary tracking-[8%]">HILFE-CENTER</p>
         <PageHeader title="Wie können wir helfen?"
-                    subTitle="Durchsuchen Sie unsere Wissensdatenbank oder wählen Sie eine Kategorie, um direkt zu den passenden Artikeln zu gelangen."
+                    hideSubTitle={true}
                     showSlot={false} />
     </div>
 
-    <SearchBarButton />
-
     <div
-        class="w-full h-full flex flex-col items-start justify-start gap-2 p-5 bg-white rounded-1 drop-shadow-[0_0_5px_rgba(0,0,0,0.2)]">
+        class="w-full h-full flex flex-col items-start justify-start gap-2">
         <div class="flex items-center justify-start w-full">
             <p class="text-dt-3 font-bold">Kategorien</p>
             {#if user.role === "admin"}
@@ -37,19 +34,16 @@
                 </button>
             {/if}
         </div>
-        <div class="grid grid-cols-3 grid-rows-2 w-full h-full gap-4">
+        <div class="flex flex-col items-center justify-start w-full h-full gap-2">
             {#each appSettings.helpCenterCategories as category}
                 {#if category.isFeatured}
-                    <button class="h-full w-full cursor-pointer group" onclick={() => helpCenterStore.activeCategory = category.id}>
+                    <button class="h-full w-full cursor-pointer group">
                         <Card fillHeight={true}>
                             <div class="flex flex-col items-start justify-start gap-4 w-full h-full p-2">
                                 <span class="rounded-2 bg-gv-bg-bar p-4 text-icon-dt-2 text-gv-primary material-symbols-rounded">
                                     {category.icon}
                                 </span>
-                                <div class="flex flex-col items-start justify-start w-full">
-                                    <p class="text-dt-3 text-gv-dark-text">{category.title}</p>
-                                    <p class="text-dt-5 text-left text-gv-light-text text-wrap line-clamp-2 truncate">{category.description}</p>
-                                </div>
+                                <p class="text-dt-3 text-gv-dark-text">{category.title}</p>
                                 <div class="flex items-center justify-start gap-2">
                                     <p class="text-gv-light-text text-dt-5">{category.articleCount} Artikel</p>
                                     <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text group-hover:ml-1 duration-200">chevron_right</span>
