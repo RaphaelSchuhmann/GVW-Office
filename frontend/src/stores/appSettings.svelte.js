@@ -10,5 +10,6 @@ export const appSettings = $state({
     }, // Library Page Categories
     feedbackCategories: {},
     appVersion: "",
+    helpCenterCategories: [],
     rev: null,
 });

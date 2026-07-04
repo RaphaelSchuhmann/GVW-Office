@@ -16,8 +16,8 @@ public class HelpCenterCategory {
   private String title;
   private String icon;
   private String description;
-  private boolean isFeatured;
-  private int articleCount;
+  private Boolean isFeatured;
+  private Integer articleCount;
 
   @Builder.Default private final String type = "helpCenterCategory";
 }

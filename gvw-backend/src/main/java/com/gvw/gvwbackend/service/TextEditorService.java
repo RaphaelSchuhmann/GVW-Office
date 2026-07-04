@@ -36,7 +36,9 @@ public class TextEditorService {
         || filename.contains("..")
         || filename.contains("/")) {
       throw new BadRequestException(
-          String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
+          String.valueOf(
+              ErrorDomain.TEXT_EDITOR.createCode(
+                  ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
     }
 
     Path filePath = Paths.get(filesDir, filename);
@@ -44,7 +46,9 @@ public class TextEditorService {
 
     if (!file.exists()) {
       throw new NotFoundException(
-          String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 404, ErrorResource.TEXT_EDITOR_CONTENT)));
+          String.valueOf(
+              ErrorDomain.TEXT_EDITOR.createCode(
+                  ErrorAction.UTILITY, 404, ErrorResource.TEXT_EDITOR_CONTENT)));
     }
 
     try {
@@ -65,14 +69,18 @@ public class TextEditorService {
       URI uri = new URI(url);
       if (!"https".equalsIgnoreCase(uri.getScheme())) {
         throw new BadRequestException(
-            String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
+            String.valueOf(
+                ErrorDomain.TEXT_EDITOR.createCode(
+                    ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
       }
 
       String host = uri.getHost();
       if (host == null
           || Arrays.stream(InetAddress.getAllByName(host)).anyMatch(this::isBlockedAddress)) {
         throw new BadRequestException(
-            String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
+            String.valueOf(
+                ErrorDomain.TEXT_EDITOR.createCode(
+                    ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
       }
 
       org.jsoup.nodes.Document doc =

@@ -47,9 +47,9 @@
             <SidebarButton onclick={() => currentCategory = button.text} selected={currentCategory === button.text}>
                 <div class="flex items-center justify-start gap-2">
                     <span class="material-symbols-rounded text-icon-dt-4">{button.icon}</span>
-                    <p class="text-dt-3">{button.text}</p>
+                    <p class="text-dt-3">{button.title}</p>
                 </div>
-                <p class="text-dt-3 ml-auto">{button.count}</p>
+                <p class="text-dt-3 ml-auto">{button.articleCount}</p>
             </SidebarButton>
         {/each}
     </div>

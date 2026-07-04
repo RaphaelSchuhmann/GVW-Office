@@ -2,7 +2,7 @@
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
     import MobileSidebar from "../../components/HelpCenter/MobileSidebar.svelte";
-    import { buttons } from "../../services/helpCenterService.svelte.js";
+    import { appSettings } from "../../stores/appSettings.svelte.js";
 
     let {
         category,
@@ -14,7 +14,7 @@
 
 <ToastStack isMobile={true}/>
 
-<MobileSidebar buttons={buttons} isOpen={sidebarOpen} />
+<MobileSidebar buttons={appSettings.helpCenterCategories} isOpen={sidebarOpen} />
 
 <main class="flex overflow-hidden">
     <button class="rounded-full bg-gv-primary text-white p-3 flex items-center justify-center absolute top-6 right-6">

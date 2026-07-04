@@ -26,6 +26,7 @@ export const DOMAINS = {
     },
     "15": {
         default: "Artikel",
+        "001": "Hilfe-Center Kategorie"
     }
 };
 

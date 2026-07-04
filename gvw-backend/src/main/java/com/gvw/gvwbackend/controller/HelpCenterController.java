@@ -4,6 +4,7 @@ import com.gvw.gvwbackend.dto.request.AddHelpCenterCategoryRequestDTO;
 import com.gvw.gvwbackend.dto.request.SetFeaturedHelpCenterCategoriesRequestDTO;
 import com.gvw.gvwbackend.exception.ErrorAction;
 import com.gvw.gvwbackend.exception.ErrorDomain;
+import com.gvw.gvwbackend.exception.ErrorResource;
 import com.gvw.gvwbackend.exception.handler.ErrorContext;
 import com.gvw.gvwbackend.service.AppSettingsService;
 import com.gvw.gvwbackend.service.HelpCenterService;
@@ -25,9 +26,9 @@ public class HelpCenterController {
   }
 
   @PostMapping("/category/add")
-  @ErrorContext(domain = ErrorDomain.HELP_CENTER, action = ErrorAction.CREATE)
+  @ErrorContext(domain = ErrorDomain.HELP_CENTER, action = ErrorAction.CREATE, resource = ErrorResource.HELP_CENTER_CATEGORY)
   @ResponseStatus(HttpStatus.OK)
-  public Map<String, String> addCategory(@Valid AddHelpCenterCategoryRequestDTO request) {
+  public Map<String, String> addCategory(@Valid @RequestBody AddHelpCenterCategoryRequestDTO request) {
     String rev = appSettingsService.addHelpCenterCategoryToSettings(request);
     return Map.of("rev", rev);
   }
@@ -40,10 +41,10 @@ public class HelpCenterController {
   }
 
   @PatchMapping("/category/update/featured")
-  @ErrorContext(domain = ErrorDomain.HELP_CENTER, action = ErrorAction.UPDATE)
+  @ErrorContext(domain = ErrorDomain.HELP_CENTER, action = ErrorAction.UPDATE, resource = ErrorResource.HELP_CENTER_CATEGORY)
   @ResponseStatus(HttpStatus.OK)
   public Map<String, String> featureCategories(
-      @Valid SetFeaturedHelpCenterCategoriesRequestDTO request) {
+      @Valid @RequestBody SetFeaturedHelpCenterCategoriesRequestDTO request) {
     String rev = appSettingsService.updateFeaturedHelpCenterCategories(request);
     return Map.of("rev", rev);
   }
