@@ -3,7 +3,6 @@ package com.gvw.gvwbackend.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,18 +13,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class AppSettings {
+public class HelpCenterArticle {
   @JsonProperty("_id")
   private String id;
 
   @JsonProperty("_rev")
   private String rev;
 
-  private int maxMembers;
-  private Map<String, String> scoreCategories;
-  private Map<String, String> feedbackCategories;
-  private String appVersion;
-  private List<HelpCenterCategory> helpCenterCategories;
+  private String title;
+  private String description;
+  private String category;
+  private List<String> tags;
 
-  @Builder.Default private final String type = "appSettings";
+  private List<TextEditorBlock> contents;
+  private List<File> attachments;
+
+  @Builder.Default private final String type = "helpCenterArticle";
 }

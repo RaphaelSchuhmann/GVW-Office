@@ -1,10 +1,7 @@
 package com.gvw.gvwbackend.service;
 
 import com.gvw.gvwbackend.dto.response.LinkMetadataResponseDTO;
-import com.gvw.gvwbackend.exception.BadRequestException;
-import com.gvw.gvwbackend.exception.ErrorAction;
-import com.gvw.gvwbackend.exception.ErrorDomain;
-import com.gvw.gvwbackend.exception.NotFoundException;
+import com.gvw.gvwbackend.exception.*;
 import com.gvw.gvwbackend.model.AttachmentResource;
 import com.gvw.gvwbackend.model.TextEditorBlock;
 import com.gvw.gvwbackend.model.TextEditorBlockType;
@@ -39,7 +36,7 @@ public class TextEditorService {
         || filename.contains("..")
         || filename.contains("/")) {
       throw new BadRequestException(
-          String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400)));
+          String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
     }
 
     Path filePath = Paths.get(filesDir, filename);
@@ -47,7 +44,7 @@ public class TextEditorService {
 
     if (!file.exists()) {
       throw new NotFoundException(
-          String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 404)));
+          String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 404, ErrorResource.TEXT_EDITOR_CONTENT)));
     }
 
     try {
@@ -68,14 +65,14 @@ public class TextEditorService {
       URI uri = new URI(url);
       if (!"https".equalsIgnoreCase(uri.getScheme())) {
         throw new BadRequestException(
-            String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400)));
+            String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
       }
 
       String host = uri.getHost();
       if (host == null
           || Arrays.stream(InetAddress.getAllByName(host)).anyMatch(this::isBlockedAddress)) {
         throw new BadRequestException(
-            String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400)));
+            String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
       }
 
       org.jsoup.nodes.Document doc =
@@ -92,7 +89,8 @@ public class TextEditorService {
               ? iconElement.attr("abs:href")
               : uri.getScheme() + "://" + host + "/favicon.ico";
 
-      byte[] imageBytes = Jsoup.connect(faviconUrl).ignoreContentType(true).timeout(3000).execute().bodyAsBytes();
+      byte[] imageBytes =
+          Jsoup.connect(faviconUrl).ignoreContentType(true).timeout(3000).execute().bodyAsBytes();
 
       String base64Image = Base64.getEncoder().encodeToString(imageBytes);
       String dataUrl = "data:image/x-icon;base64," + base64Image;

@@ -187,12 +187,12 @@ public class ReportService {
       for (File file : attachments) {
         try {
           editorService.deleteAssetFromDisk(
-                  file.getId() + "." + file.getExtension(), ErrorAction.UPDATE);
+              file.getId() + "." + file.getExtension(), ErrorAction.UPDATE);
         } catch (Exception ex) {
           log.error(
-                  "Failed to purge unlinked attachment asset from file system: {}",
-                  file.getId() + "." + file.getExtension(),
-                  ex);
+              "Failed to purge unlinked attachment asset from file system: {}",
+              file.getId() + "." + file.getExtension(),
+              ex);
         }
       }
     }

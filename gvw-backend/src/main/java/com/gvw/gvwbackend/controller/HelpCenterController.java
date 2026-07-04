@@ -1,0 +1,50 @@
+package com.gvw.gvwbackend.controller;
+
+import com.gvw.gvwbackend.dto.request.AddHelpCenterCategoryRequestDTO;
+import com.gvw.gvwbackend.dto.request.SetFeaturedHelpCenterCategoriesRequestDTO;
+import com.gvw.gvwbackend.exception.ErrorAction;
+import com.gvw.gvwbackend.exception.ErrorDomain;
+import com.gvw.gvwbackend.exception.handler.ErrorContext;
+import com.gvw.gvwbackend.service.AppSettingsService;
+import com.gvw.gvwbackend.service.HelpCenterService;
+import jakarta.validation.Valid;
+import java.util.Map;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/help")
+public class HelpCenterController {
+  private final AppSettingsService appSettingsService;
+  private final HelpCenterService helpCenterService;
+
+  public HelpCenterController(
+      AppSettingsService appSettingsService, HelpCenterService helpCenterService) {
+    this.appSettingsService = appSettingsService;
+    this.helpCenterService = helpCenterService;
+  }
+
+  @PostMapping("/category/add")
+  @ErrorContext(domain = ErrorDomain.HELP_CENTER, action = ErrorAction.CREATE)
+  @ResponseStatus(HttpStatus.OK)
+  public Map<String, String> addCategory(@Valid AddHelpCenterCategoryRequestDTO request) {
+    String rev = appSettingsService.addHelpCenterCategoryToSettings(request);
+    return Map.of("rev", rev);
+  }
+
+  @DeleteMapping("/category/delete/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  public Map<String, String> removeCategory(@PathVariable String id) {
+    String rev = helpCenterService.removeHelpCenterCategory(id);
+    return Map.of("rev", rev);
+  }
+
+  @PatchMapping("/category/update/featured")
+  @ErrorContext(domain = ErrorDomain.HELP_CENTER, action = ErrorAction.UPDATE)
+  @ResponseStatus(HttpStatus.OK)
+  public Map<String, String> featureCategories(
+      @Valid SetFeaturedHelpCenterCategoriesRequestDTO request) {
+    String rev = appSettingsService.updateFeaturedHelpCenterCategories(request);
+    return Map.of("rev", rev);
+  }
+}

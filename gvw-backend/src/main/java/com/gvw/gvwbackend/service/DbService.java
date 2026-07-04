@@ -41,7 +41,8 @@ public class DbService {
     "app_settings",
     "emergency_token",
     "library",
-    "changelogs"
+    "changelogs",
+    "help_center"
   };
   private final String appSettingsDb = "app_settings";
   private Map<String, Object> DEFAULT_SETTINGS = new HashMap<>();

@@ -1,13 +1,14 @@
 package com.gvw.gvwbackend.service;
 
-import com.gvw.gvwbackend.dto.request.AddCategoryRequestDTO;
-import com.gvw.gvwbackend.dto.request.RemoveCategoryRequestDTO;
-import com.gvw.gvwbackend.dto.request.UpdateMaxMembersRequestDTO;
+import com.gvw.gvwbackend.dto.request.*;
 import com.gvw.gvwbackend.dto.response.AppSettingsResponseDTO;
 import com.gvw.gvwbackend.exception.*;
 import com.gvw.gvwbackend.model.AppSettings;
+import com.gvw.gvwbackend.model.HelpCenterCategory;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,18 +26,19 @@ public class AppSettingsService {
   }
 
   public AppSettingsResponseDTO getAppSettings() {
-    AppSettings settings = appSettings(ErrorAction.READ_ONE);
+    AppSettings settings = appSettings(ErrorAction.READ_ONE, ErrorResource.NONE);
 
     return new AppSettingsResponseDTO(
         settings.getMaxMembers(),
         settings.getScoreCategories(),
         settings.getFeedbackCategories(),
         settings.getAppVersion(),
+        settings.getHelpCenterCategories(),
         settings.getRev());
   }
 
   public String updateMaxMembers(UpdateMaxMembersRequestDTO requestDTO) {
-    AppSettings settings = appSettings(ErrorAction.UPDATE);
+    AppSettings settings = appSettings(ErrorAction.UPDATE, ErrorResource.NONE);
     settings.setMaxMembers(requestDTO.maxMembers());
     settings.setRev(requestDTO.rev());
 
@@ -63,16 +65,20 @@ public class AppSettingsService {
         || BLOCKED_KEYS.contains(requestDTO.type())
         || BLOCKED_KEYS.contains(requestDTO.displayName())) {
       throw new BadRequestException(
-          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 400)));
+          String.valueOf(
+              ErrorDomain.APP_SETTINGS.createCode(
+                  ErrorAction.UPDATE, 400, ErrorResource.LIBRARY_CATEGORY)));
     }
 
-    AppSettings settings = appSettings(ErrorAction.UPDATE);
+    AppSettings settings = appSettings(ErrorAction.UPDATE, ErrorResource.LIBRARY_CATEGORY);
     Map<String, String> categories = settings.getScoreCategories();
 
     if (categories.containsKey(requestDTO.type())
         || categories.containsKey(requestDTO.displayName())) {
       throw new ConflictException(
-          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 409)));
+          String.valueOf(
+              ErrorDomain.APP_SETTINGS.createCode(
+                  ErrorAction.UPDATE, 409, ErrorResource.LIBRARY_CATEGORY)));
     }
 
     categories.put(requestDTO.type(), requestDTO.displayName());
@@ -100,10 +106,12 @@ public class AppSettingsService {
     String type = requestDTO.type();
     if (type == null) {
       throw new BadRequestException(
-          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.DELETE, 400)));
+          String.valueOf(
+              ErrorDomain.APP_SETTINGS.createCode(
+                  ErrorAction.DELETE, 400, ErrorResource.LIBRARY_CATEGORY)));
     }
 
-    AppSettings settings = appSettings(ErrorAction.DELETE);
+    AppSettings settings = appSettings(ErrorAction.DELETE, ErrorResource.LIBRARY_CATEGORY);
     Map<String, String> categories = settings.getScoreCategories();
 
     String displayName = categories.get(type);
@@ -128,12 +136,152 @@ public class AppSettingsService {
         String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.DELETE, 500)));
   }
 
-  private AppSettings appSettings(ErrorAction action) {
+  public String addHelpCenterCategoryToSettings(AddHelpCenterCategoryRequestDTO dto) {
+    AppSettings settings = appSettings(ErrorAction.CREATE, ErrorResource.HELP_CENTER_CATEGORY);
+    List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
+
+    if (categories.stream().anyMatch(obj -> obj.getTitle().equals(dto.title())))
+      throw new ConflictException(
+          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.CREATE, 409, ErrorResource.HELP_CENTER_CATEGORY)));
+
+    categories.add(
+        HelpCenterCategory.builder()
+            .id(UUID.randomUUID().toString())
+            .title(dto.title())
+            .icon(dto.icon())
+            .description(dto.description())
+            .articleCount(0)
+            .build());
+    settings.setHelpCenterCategories(categories);
+
+    Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
+
+    try {
+      sseService.broadcastRefresh("SETTINGS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast SETTINGS refresh: ", ex);
+    }
+
+    if (resp != null && resp.containsKey("rev")) {
+      return (String) resp.get("rev");
+    }
+
+    throw new RuntimeException(
+        String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.CREATE, 500, ErrorResource.HELP_CENTER_CATEGORY)));
+  }
+
+  public String removeHelpCenterCategoryFromSettings(String id) {
+    if (id == null || id.isBlank()) {
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.DELETE, 400, ErrorResource.HELP_CENTER_CATEGORY)));
+    }
+
+    AppSettings settings = appSettings(ErrorAction.DELETE, ErrorResource.HELP_CENTER_CATEGORY);
+    List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
+
+    if (categories.stream().anyMatch(obj -> !obj.getId().equals(id)))
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.DELETE, 404, ErrorResource.HELP_CENTER_CATEGORY)));
+
+    categories.removeIf(obj -> obj.getId().equals(id));
+    settings.setHelpCenterCategories(categories);
+
+    Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
+
+    try {
+      sseService.broadcastRefresh("SETTINGS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast SETTINGS refresh: ", ex);
+    }
+
+    if (resp != null && resp.containsKey("rev")) {
+      return (String) resp.get("rev");
+    }
+
+    throw new RuntimeException(
+        String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.DELETE, 500)));
+  }
+
+  public String updateFeaturedHelpCenterCategories(
+      SetFeaturedHelpCenterCategoriesRequestDTO request) {
+    AppSettings settings = appSettings(ErrorAction.UPDATE, ErrorResource.HELP_CENTER_CATEGORY);
+    List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
+
+    categories.forEach(
+        obj -> {
+          if (request.featured().containsKey(obj.getId())) {
+            obj.setFeatured(request.featured().get(obj.getId()));
+          }
+        });
+
+    settings.setHelpCenterCategories(categories);
+
+    Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
+
+    try {
+      sseService.broadcastRefresh("SETTINGS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast SETTINGS refresh: ", ex);
+    }
+
+    if (resp != null && resp.containsKey("rev")) {
+      return (String) resp.get("rev");
+    }
+
+    throw new RuntimeException(
+        String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 500)));
+  }
+
+  public String updateHelpCenterCategoryArticleCount(String id, int newCount) {
+    if (id == null || id.isBlank() || newCount < 0) {
+      throw new BadRequestException(
+          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 400, ErrorResource.HELP_CENTER_CATEGORY)));
+    }
+
+    AppSettings settings = appSettings(ErrorAction.UPDATE, ErrorResource.HELP_CENTER_CATEGORY);
+    List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
+    if (categories == null || categories.isEmpty())
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 404, ErrorResource.HELP_CENTER_CATEGORY)));
+
+    List<HelpCenterCategory> filteredCategories =
+        categories.stream().filter(cat -> cat.getId().equals(id)).toList();
+    if (filteredCategories.isEmpty())
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 404, ErrorResource.HELP_CENTER_CATEGORY)));
+
+    HelpCenterCategory category = filteredCategories.getFirst();
+    if (category == null)
+      throw new NotFoundException(
+          String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 404, ErrorResource.HELP_CENTER_CATEGORY)));
+
+    int index = categories.indexOf(category);
+    categories.get(index).setArticleCount(newCount);
+
+    settings.setHelpCenterCategories(categories);
+
+    Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
+
+    try {
+      sseService.broadcastRefresh("SETTINGS");
+    } catch (RuntimeException ex) {
+      log.warn("Failed to broadcast SETTINGS refresh: ", ex);
+    }
+
+    if (resp != null && resp.containsKey("rev")) {
+      return (String) resp.get("rev");
+    }
+
+    throw new RuntimeException(
+        String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 500)));
+  }
+
+  private AppSettings appSettings(ErrorAction action, ErrorResource resource) {
     AppSettings settings = dbService.findById("app_settings", "general", AppSettings.class);
 
     if (settings == null) {
       log.error("App settings not found");
-      throw new NotFoundException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(action, 404)));
+      throw new NotFoundException(String.valueOf(ErrorDomain.APP_SETTINGS.createCode(action, 404, resource)));
     }
 
     return settings;
