@@ -39,7 +39,7 @@
 
 <div class="flex flex-col items-center w-full flex-1 overflow-y-auto">
     <div class="flex flex-col items-center w-full h-full flex-1 p-5 gap-4">
-        <button class="group cursor-pointer w-full flex items-center justify-start gap-2 p-2">
+        <button class="group cursor-pointer w-full flex items-center justify-start gap-2 p-2" onclick={() => push("/dashboard")}>
             <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">arrow_back</span>
             <span class="text-dt-3 text-gv-dark-text group-hover:underline">Dashboard</span>
         </button>

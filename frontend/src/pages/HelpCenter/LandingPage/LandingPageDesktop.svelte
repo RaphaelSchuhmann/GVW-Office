@@ -2,6 +2,7 @@
     import PageHeader from "../../../components/PageHeader.svelte";
     import { user } from "../../../stores/user.svelte.js";
     import Card from "../../../components/Card.svelte";
+    import SearchBarButton from "../../../components/HelpCenter/SearchBarButton.svelte";
 
     const categories = [
         {
@@ -21,12 +22,7 @@
                     showSlot={false} />
     </div>
 
-    <button
-        class="flex items-center justify-start gap-2 bg-gv-input-bg border border-gv-separator rounded-1 cursor-text p-2 pr-10"
-        onclick={() => {}}>
-        <span class="material-symbols-rounded text-icon-dt-6 text-gv-input-placeholder">search</span>
-        <span class="text-dt-5 text-gv-input-placeholder">Nach Artikeln, Funktionen oder Stichwörter suchen...</span>
-    </button>
+    <SearchBarButton />
 
     <div
         class="w-full h-full flex flex-col items-start justify-start gap-2 p-5 bg-white rounded-1 drop-shadow-[0_0_5px_rgba(0,0,0,0.2)]">

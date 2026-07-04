@@ -1,5 +1,6 @@
 <script>
     import Button from "../Button.svelte";
+    import SearchBarButton from "./SearchBarButton.svelte";
 
     let {
         onClickAddCategory = () => {},
@@ -13,12 +14,7 @@
         <span class="material-symbols-rounded text-icon-dt-2 text-gv-dark-text">menu_book</span>
         <p class="text-gv-dark-text text-dt-3">Hilfe-Center</p>
     </div>
-    <button
-        class="flex items-center justify-start gap-2 bg-gv-input-bg border border-gv-separator rounded-1 cursor-text w-82.5 p-2"
-        onclick={() => onClickSearchBar?.()}>
-        <span class="material-symbols-rounded text-icon-dt-6 text-gv-input-placeholder">search</span>
-        <span class="text-dt-5 text-gv-input-placeholder">Artikel suchen...</span>
-    </button>
+    <SearchBarButton isHeader={true} onclick={() => onClickSearchBar?.()}/>
     <div class="flex items-center ml-auto justify-center">
         <Button onclick={() => onClickAddCategory?.()}>
             <span class="material-symbols-rounded text-icon-dt-6">splitscreen_add</span>
