@@ -54,7 +54,10 @@ public class SupportController {
 
   @PostMapping("/feedback/add")
   @ResponseStatus(HttpStatus.OK)
-  @ErrorContext(domain = ErrorDomain.FEEDBACK, action = ErrorAction.CREATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.FEEDBACK,
+      action = ErrorAction.CREATE,
+      resource = ErrorResource.NONE)
   public void addFeedback(
       @Valid @RequestBody AddFeedbackRequestDTO request,
       @RequestAttribute("userId") String userId) {
@@ -63,7 +66,10 @@ public class SupportController {
 
   @PostMapping("/bugs/add")
   @ResponseStatus(HttpStatus.OK)
-  @ErrorContext(domain = ErrorDomain.BUG_REPORT, action = ErrorAction.CREATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.BUG_REPORT,
+      action = ErrorAction.CREATE,
+      resource = ErrorResource.NONE)
   public void addBugReport(
       @Valid @RequestBody AddBugReportRequestDTO request,
       @RequestAttribute("userId") String userId) {

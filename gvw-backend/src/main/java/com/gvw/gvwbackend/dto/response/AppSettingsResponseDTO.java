@@ -15,6 +15,7 @@ public record AppSettingsResponseDTO(
     scoreCategories = scoreCategories == null ? Map.of() : Map.copyOf(scoreCategories);
     feedbackCategories = feedbackCategories == null ? Map.of() : Map.copyOf(feedbackCategories);
     appVersion = appVersion == null ? "unknown" : appVersion;
-    helpCenterCategories = helpCenterCategories == null ? List.of() : List.copyOf(helpCenterCategories);
+    helpCenterCategories =
+        helpCenterCategories == null ? List.of() : List.copyOf(helpCenterCategories);
   }
 }

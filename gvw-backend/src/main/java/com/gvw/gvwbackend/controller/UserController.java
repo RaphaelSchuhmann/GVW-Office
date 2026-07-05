@@ -46,7 +46,10 @@ public class UserController {
   @PostMapping("/admin/addUser")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN')")
-  @ErrorContext(domain = ErrorDomain.USER, action = ErrorAction.CREATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.USER,
+      action = ErrorAction.CREATE,
+      resource = ErrorResource.NONE)
   public void addUser(@Valid @RequestBody AddUserAdminRequestDTO request) {
     userService.addUser(request);
   }
@@ -76,7 +79,10 @@ public class UserController {
   @PatchMapping("/admin/update")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN')")
-  @ErrorContext(domain = ErrorDomain.USER, action = ErrorAction.UPDATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.USER,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   public Map<String, Object> updateUser(@Valid @RequestBody UpdateUserAdminRequestDTO requestDTO) {
     String rev = userService.updateUser(requestDTO);
     return Map.of("rev", rev);

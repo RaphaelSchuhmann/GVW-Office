@@ -29,7 +29,10 @@ public class ChangelogController {
   @PostMapping("/add")
   @PreAuthorize("hasAnyRole('ADMIN')")
   @ResponseStatus(HttpStatus.OK)
-  @ErrorContext(domain = ErrorDomain.CHANGELOG, action = ErrorAction.CREATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.CHANGELOG,
+      action = ErrorAction.CREATE,
+      resource = ErrorResource.NONE)
   public void addChangelog(@Valid @RequestBody AddChangelogRequestDTO request) {
     changelogService.addChangelog(request);
   }

@@ -32,7 +32,10 @@ public class AppSettingsController {
   @PatchMapping("/update/max-members")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  @ErrorContext(domain = ErrorDomain.APP_SETTINGS, action = ErrorAction.UPDATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.APP_SETTINGS,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   public Map<String, Object> updateMaxMembers(
       @Valid @RequestBody UpdateMaxMembersRequestDTO requestDTO) {
     String rev = appSettingsService.updateMaxMembers(requestDTO);
@@ -42,7 +45,10 @@ public class AppSettingsController {
   @PostMapping("/add/category")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN', 'CONDUCTOR')")
-  @ErrorContext(domain = ErrorDomain.APP_SETTINGS, action = ErrorAction.UPDATE, resource = ErrorResource.LIBRARY_CATEGORY)
+  @ErrorContext(
+      domain = ErrorDomain.APP_SETTINGS,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.LIBRARY_CATEGORY)
   public Map<String, Object> addCategory(@Valid @RequestBody AddCategoryRequestDTO requestDTO) {
     String rev = appSettingsService.addCategory(requestDTO);
     return Map.of("rev", rev);
@@ -51,7 +57,10 @@ public class AppSettingsController {
   @PostMapping("/remove/category")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN', 'CONDUCTOR')")
-  @ErrorContext(domain = ErrorDomain.APP_SETTINGS, action = ErrorAction.DELETE, resource = ErrorResource.LIBRARY_CATEGORY)
+  @ErrorContext(
+      domain = ErrorDomain.APP_SETTINGS,
+      action = ErrorAction.DELETE,
+      resource = ErrorResource.LIBRARY_CATEGORY)
   public Map<String, Object> removeCategory(
       @Valid @RequestBody RemoveCategoryRequestDTO requestDTO) {
     String rev = appSettingsService.removeCategory(requestDTO);

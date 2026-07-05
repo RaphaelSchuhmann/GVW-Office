@@ -51,7 +51,10 @@ public class ReportController {
 
   @PostMapping("/add")
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
-  @ErrorContext(domain = ErrorDomain.REPORT, action = ErrorAction.CREATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.REPORT,
+      action = ErrorAction.CREATE,
+      resource = ErrorResource.NONE)
   @ResponseStatus(HttpStatus.OK)
   public void addReport(@Valid @RequestBody AddReportRequestDTO request) {
     reportService.createReport(request);
@@ -78,7 +81,10 @@ public class ReportController {
 
   @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
-  @ErrorContext(domain = ErrorDomain.TEXT_EDITOR, action = ErrorAction.UPDATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.TEXT_EDITOR,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
   public Map<String, Object> updateReport(
       @RequestPart("reportData") @Valid UpdateReportRequestDTO request,
@@ -98,7 +104,10 @@ public class ReportController {
   @PatchMapping("/update/description")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
-  @ErrorContext(domain = ErrorDomain.TEXT_EDITOR, action = ErrorAction.UPDATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.TEXT_EDITOR,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   public Map<String, Object> updateReportDescription(
       @Valid @RequestBody UpdateReportDescriptionRequestDTO request) {
     String rev = reportService.updateReportDescription(request);
@@ -110,7 +119,10 @@ public class ReportController {
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")
-  @ErrorContext(domain = ErrorDomain.REPORT, action = ErrorAction.UPDATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.REPORT,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   public Map<String, Object> updateReportAttachments(
       @PathVariable String reportId,
       @RequestPart("metadata") @Valid UpdateDocumentAttachmentsDTO request,

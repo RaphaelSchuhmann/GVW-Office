@@ -4,6 +4,7 @@
     import { appSettings } from "../../stores/appSettings.svelte.js";
     import { helpCenterStore } from "../../stores/helpCenterStore.svelte.js";
     import LandingPageMobile from "./LandingPage/LandingPageMobile.svelte";
+    import CategoryPageMobile from "./CategoryPage/CategoryPageMobile.svelte";
 
     let sidebarOpen = $state(false);
 </script>
@@ -26,6 +27,8 @@
                 <div class="flex flex-col w-full h-full items-start gap-2">
                     {#if helpCenterStore.activeCategory === ""}
                         <LandingPageMobile />
+                    {:else}
+                        <CategoryPageMobile />
                     {/if}
                 </div>
             </div>

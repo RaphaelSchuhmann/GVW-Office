@@ -32,7 +32,10 @@ public class AuthController {
 
   @PostMapping("/changePw")
   @ResponseStatus(HttpStatus.OK)
-  @ErrorContext(domain = ErrorDomain.AUTH, action = ErrorAction.UPDATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.AUTH,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   public Map<String, Object> changePw(@Valid @RequestBody ChangePwRequestDTO changePwRequest) {
     String rev = authService.changePassword(changePwRequest);
     return Map.of("rev", rev);

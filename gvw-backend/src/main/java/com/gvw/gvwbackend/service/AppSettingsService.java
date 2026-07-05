@@ -5,9 +5,7 @@ import com.gvw.gvwbackend.dto.response.AppSettingsResponseDTO;
 import com.gvw.gvwbackend.exception.*;
 import com.gvw.gvwbackend.model.AppSettings;
 import com.gvw.gvwbackend.model.HelpCenterCategory;
-
 import java.util.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -138,35 +136,36 @@ public class AppSettingsService {
   public String addHelpCenterCategoryToSettings(AddHelpCenterCategoryRequestDTO dto) {
     AppSettings settings = appSettings(ErrorAction.CREATE, ErrorResource.HELP_CENTER_CATEGORY);
 
-    List<HelpCenterCategory> categories = settings.getHelpCenterCategories() != null
+    List<HelpCenterCategory> categories =
+        settings.getHelpCenterCategories() != null
             ? new ArrayList<>(settings.getHelpCenterCategories())
             : new ArrayList<>();
 
     if (categories.stream().anyMatch(obj -> dto.title().equals(obj.getTitle()))) {
       throw new ConflictException(
-              String.valueOf(
-                      ErrorDomain.APP_SETTINGS.createCode(
-                              ErrorAction.CREATE, 409, ErrorResource.HELP_CENTER_CATEGORY)));
+          String.valueOf(
+              ErrorDomain.APP_SETTINGS.createCode(
+                  ErrorAction.CREATE, 409, ErrorResource.HELP_CENTER_CATEGORY)));
     }
 
     categories.add(
-            HelpCenterCategory.builder()
-                    .id(UUID.randomUUID().toString())
-                    .title(dto.title())
-                    .icon(dto.icon())
-                    .description(dto.description())
-                    .articleCount(0)
-                    .isFeatured(false)
-                    .build());
+        HelpCenterCategory.builder()
+            .id(UUID.randomUUID().toString())
+            .title(dto.title())
+            .icon(dto.icon())
+            .description(dto.description())
+            .articleCount(0)
+            .isFeatured(false)
+            .build());
 
     settings.setHelpCenterCategories(categories);
 
     Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
 
     try {
-      sseService.broadcastRefresh("SETTINGS");
+      sseService.broadcastRefresh("HELP_CENTER");
     } catch (RuntimeException ex) {
-      log.warn("Failed to broadcast SETTINGS refresh: ", ex);
+      log.warn("Failed to broadcast HELP_CENTER refresh: ", ex);
     }
 
     if (resp != null && resp.containsKey("rev")) {
@@ -202,9 +201,9 @@ public class AppSettingsService {
     Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
 
     try {
-      sseService.broadcastRefresh("SETTINGS");
+      sseService.broadcastRefresh("HELP_CENTER");
     } catch (RuntimeException ex) {
-      log.warn("Failed to broadcast SETTINGS refresh: ", ex);
+      log.warn("Failed to broadcast HELP_CENTER refresh: ", ex);
     }
 
     if (resp != null && resp.containsKey("rev")) {
@@ -232,9 +231,9 @@ public class AppSettingsService {
     Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
 
     try {
-      sseService.broadcastRefresh("SETTINGS");
+      sseService.broadcastRefresh("HELP_CENTER");
     } catch (RuntimeException ex) {
-      log.warn("Failed to broadcast SETTINGS refresh: ", ex);
+      log.warn("Failed to broadcast HELP_CENTER refresh: ", ex);
     }
 
     if (resp != null && resp.containsKey("rev")) {
@@ -279,9 +278,9 @@ public class AppSettingsService {
     Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
 
     try {
-      sseService.broadcastRefresh("SETTINGS");
+      sseService.broadcastRefresh("HELP_CENTER");
     } catch (RuntimeException ex) {
-      log.warn("Failed to broadcast SETTINGS refresh: ", ex);
+      log.warn("Failed to broadcast HELP_CENTER refresh: ", ex);
     }
 
     if (resp != null && resp.get("rev") instanceof String rev) {
@@ -292,7 +291,7 @@ public class AppSettingsService {
         String.valueOf(ErrorDomain.APP_SETTINGS.createCode(ErrorAction.UPDATE, 500)));
   }
 
-  private AppSettings appSettings(ErrorAction action, ErrorResource resource) {
+  public AppSettings appSettings(ErrorAction action, ErrorResource resource) {
     AppSettings settings = dbService.findById("app_settings", "general", AppSettings.class);
 
     if (settings == null) {

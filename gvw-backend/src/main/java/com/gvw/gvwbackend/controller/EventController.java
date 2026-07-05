@@ -32,7 +32,10 @@ public class EventController {
   @PostMapping("/add")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  @ErrorContext(domain = ErrorDomain.EVENTS, action = ErrorAction.CREATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.EVENTS,
+      action = ErrorAction.CREATE,
+      resource = ErrorResource.NONE)
   public void addEvent(@Valid @RequestBody AddEventRequestDTO request) {
     eventService.addEvent(request);
   }
@@ -53,7 +56,10 @@ public class EventController {
   @PatchMapping("/update/status/{id}")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  @ErrorContext(domain = ErrorDomain.EVENTS, action = ErrorAction.UPDATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.EVENTS,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   public Map<String, Object> updateEventStatus(
       @PathVariable String id, @Valid @RequestBody UpdateEventStatusRequestDTO request) {
     String rev = eventService.updateEventStatus(id, request.rev());
@@ -63,7 +69,10 @@ public class EventController {
   @PatchMapping("/update")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  @ErrorContext(domain = ErrorDomain.EVENTS, action = ErrorAction.UPDATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.EVENTS,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   public Map<String, Object> updateEvent(@Valid @RequestBody UpdateEventRequestDTO request) {
     String rev = eventService.updateEvent(request);
     return Map.of("rev", rev);

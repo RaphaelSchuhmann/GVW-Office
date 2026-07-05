@@ -41,7 +41,10 @@ public class MemberController {
   @PostMapping("/add")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  @ErrorContext(domain = ErrorDomain.MEMBER, action = ErrorAction.CREATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.MEMBER,
+      action = ErrorAction.CREATE,
+      resource = ErrorResource.NONE)
   public void addMember(@Valid @RequestBody AddMemberRequestDTO requestDTO) {
     memberService.addMember(requestDTO);
   }
@@ -56,7 +59,10 @@ public class MemberController {
   @PatchMapping("/update")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  @ErrorContext(domain = ErrorDomain.MEMBER, action = ErrorAction.UPDATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.MEMBER,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   public Map<String, Object> updateMember(@Valid @RequestBody UpdateMemberRequestDTO requestDTO) {
     List<String> revisions = memberService.updateMember(requestDTO);
     return Map.of("rev_member", revisions.get(0), "rev_user", revisions.get(1));
@@ -65,7 +71,10 @@ public class MemberController {
   @PatchMapping("/update/status/{id}")
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER')")
-  @ErrorContext(domain = ErrorDomain.MEMBER, action = ErrorAction.UPDATE, resource = ErrorResource.NONE)
+  @ErrorContext(
+      domain = ErrorDomain.MEMBER,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   public Map<String, Object> updateMemberStatus(
       @PathVariable String id, @Valid @RequestBody UpdateMemberStatusRequestDTO request) {
     String rev = memberService.updateMemberStatus(id, request.rev());

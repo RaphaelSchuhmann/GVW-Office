@@ -26,7 +26,6 @@ public class HelpCenterArticle {
   private List<String> tags;
 
   private List<TextEditorBlock> contents;
-  private List<File> attachments;
 
   @Builder.Default private final String type = "helpCenterArticle";
 }
