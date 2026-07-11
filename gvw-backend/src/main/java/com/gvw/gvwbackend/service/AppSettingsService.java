@@ -189,7 +189,7 @@ public class AppSettingsService {
     AppSettings settings = appSettings(ErrorAction.DELETE, ErrorResource.HELP_CENTER_CATEGORY);
     List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
 
-    if (categories.stream().anyMatch(obj -> !obj.getId().equals(id)))
+    if (categories.stream().noneMatch(obj -> obj.getId().equals(id)))
       throw new NotFoundException(
           String.valueOf(
               ErrorDomain.APP_SETTINGS.createCode(

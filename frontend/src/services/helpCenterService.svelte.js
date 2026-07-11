@@ -1,6 +1,6 @@
 import {
     apiAddArticle,
-    apiAddCategory,
+    apiAddCategory, apiDeleteCategory,
     apiGetArticles,
     apiUpdateFeaturedCategories
 } from "../api/apiHelpCenter.svelte.js";
@@ -75,6 +75,28 @@ export async function updateHelpCenterCategoryFeaturedList(featured) {
 }
 
 export async function deleteHelpCenterCategory(id) {
+    if (isFetching.deleteCategory || !id) return;
+
+    isFetching.deleteCategory = true;
+
+    try {
+        const category = appSettings.helpCenterCategories.find(cat => cat.id === id);
+
+        if (!category || category.articleCount > 0) return;
+
+        const { resp } = await apiDeleteCategory(id);
+        const normalizedResp = await normalizeResponse(resp);
+
+        if (handleGlobalApiError(normalizedResp)) return;
+
+        addToast({
+            title: "Kategorie gelöscht",
+            subTitle: viewport.isMobile ? "" : "Kategorie wurde erfolgreich gelöscht.",
+            type: "success"
+        });
+    } finally {
+        isFetching.deleteCategory = false;
+    }
 }
 
 export async function addHelpCenterArticle(data) {
@@ -89,6 +111,10 @@ export async function addHelpCenterArticle(data) {
         const normalizedResp = await normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResp)) return;
+
+        if (!body.rev) return;
+
+        appSettings.rev = body.rev;
 
         addToast({
             title: "Artikel angelegt",

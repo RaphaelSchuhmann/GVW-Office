@@ -58,18 +58,31 @@ public class HelpCenterController {
     return Map.of("rev", rev);
   }
 
+  @GetMapping("/category/check/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  public void checkCategory(@PathVariable String id) {
+    helpCenterService.categoryExists(id);
+  }
+
   @PostMapping("/article/add")
   @ErrorContext(
       domain = ErrorDomain.HELP_CENTER,
       action = ErrorAction.CREATE,
       resource = ErrorResource.HELP_CENTER_ARTICLE)
   @ResponseStatus(HttpStatus.OK)
-  public void addArticle(@Valid @RequestBody AddHelpCenterArticleRequestDTO request) {
-    helpCenterService.createArticle(request);
+  public Map<String, String> addArticle(@Valid @RequestBody AddHelpCenterArticleRequestDTO request) {
+    String rev = helpCenterService.createArticle(request);
+    return Map.of("rev", rev);
   }
 
   @GetMapping("/article/get")
   public ArticlesResponseDTO getArticlesOfCategory(@RequestParam("category") String category) {
     return helpCenterService.getArticles(category);
+  }
+
+  @GetMapping("/article/check/{id}")
+  @ResponseStatus(HttpStatus.OK)
+  public void checkArticle(@PathVariable String id) {
+    helpCenterService.articleExists(id);
   }
 }

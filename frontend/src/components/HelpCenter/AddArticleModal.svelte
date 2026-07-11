@@ -4,7 +4,8 @@
     import Textarea from "../Textarea.svelte";
     import Button from "../Button.svelte";
     import Spinner from "../Spinner.svelte";
-    import { addHelpCenterArticle } from "../../services/helpCenterService.svelte.js";
+    import { addHelpCenterArticle, getArticles } from "../../services/helpCenterService.svelte.js";
+    import { loadAppSettings } from "../../services/appSettingsSyncService.svelte.js";
 
     let {
         isMobile = false,
@@ -30,6 +31,7 @@
             await addHelpCenterArticle(data);
         } finally {
             isSubmitting = false;
+            await loadAppSettings();
             hideModal();
         }
     }

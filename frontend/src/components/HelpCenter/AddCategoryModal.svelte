@@ -5,6 +5,7 @@
     import Button from "../Button.svelte";
     import Spinner from "../Spinner.svelte";
     import { addHelpCenterCategory } from "../../services/helpCenterService.svelte.js";
+    import { loadAppSettings } from "../../services/appSettingsSyncService.svelte.js";
 
     let {
         isMobile = false,
@@ -28,7 +29,7 @@
 
     let addDisabled = $derived(!inputs.title || !inputs.icon);
 
-    function submit() {
+    async function submit() {
         isSubmitting = true;
 
         try {
@@ -36,9 +37,10 @@
                 inputs.description = "Keine Beschreibung";
             }
 
-            addHelpCenterCategory(inputs);
+            await addHelpCenterCategory(inputs);
         } finally {
             isSubmitting = false;
+            await loadAppSettings();
             hideModal();
         }
     }

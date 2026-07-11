@@ -8,12 +8,14 @@
     import { deleteUser } from "../services/userService.svelte";
     import { addToast } from "../stores/toasts.svelte";
     import Spinner from "./Spinner.svelte";
+    import { deleteHelpCenterCategory } from "../services/helpCenterService.svelte.js";
 
     const actionMap = {
         "deleteMember": removeMember,
         "deleteEvent": deleteEvent,
         "deleteLibEntry": deleteScore,
         "deleteUser": deleteUser,
+        "deleteHelpCategory": deleteHelpCenterCategory,
     };
 
     let {

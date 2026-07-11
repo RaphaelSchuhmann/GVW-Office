@@ -34,6 +34,32 @@ public class HelpCenterService {
     this.editorService = editorService;
   }
 
+  public void categoryExists(String id) {
+    if (id == null || id.isBlank()) {
+      throw new BadRequestException(
+              String.valueOf(ErrorDomain.HELP_CENTER.createCode(ErrorAction.CHECK, 400, ErrorResource.HELP_CENTER_CATEGORY)));
+    }
+
+    AppSettings settings = appSettingsService.appSettings(ErrorAction.CHECK, ErrorResource.HELP_CENTER_CATEGORY);
+    List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
+
+    if (categories.stream().noneMatch(obj -> obj.getId().equals(id))) {
+      throw new NotFoundException(String.valueOf(ErrorDomain.HELP_CENTER.createCode(ErrorAction.CHECK, 404, ErrorResource.HELP_CENTER_CATEGORY)));
+    }
+  }
+
+  public void articleExists(String id) {
+    if (id == null || id.isBlank()) {
+      throw new BadRequestException(
+              String.valueOf(ErrorDomain.HELP_CENTER.createCode(ErrorAction.CHECK, 400, ErrorResource.HELP_CENTER_ARTICLE)));
+    }
+
+    HelpCenterArticle article = dbService.findById("help_center", id, HelpCenterArticle.class);
+    if (article == null) {
+      throw new NotFoundException(String.valueOf(ErrorDomain.HELP_CENTER.createCode(ErrorAction.CHECK, 404, ErrorResource.HELP_CENTER_ARTICLE)));
+    }
+  }
+
   public String removeHelpCenterCategory(String id) {
     if (id == null || id.isBlank()) {
       throw new BadRequestException(
@@ -51,13 +77,15 @@ public class HelpCenterService {
     return appSettingsService.removeHelpCenterCategoryFromSettings(id);
   }
 
-  public void createArticle(AddHelpCenterArticleRequestDTO dto) {
+  public String createArticle(AddHelpCenterArticleRequestDTO dto) {
     // Check if category is valid
     AppSettings settings =
         appSettingsService.appSettings(ErrorAction.CREATE, ErrorResource.HELP_CENTER_ARTICLE);
     List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
 
-    if (categories.stream().noneMatch(obj -> obj.getId().equals(dto.category()))) {
+    HelpCenterCategory category = categories.stream().filter(obj -> obj.getId().equals(dto.category())).findFirst().orElse(null);
+
+    if (category == null) {
       throw new BadRequestException(
           String.valueOf(
               ErrorDomain.HELP_CENTER.createCode(
@@ -80,11 +108,15 @@ public class HelpCenterService {
 
     dbService.insert("help_center", article);
 
+    String rev = appSettingsService.updateHelpCenterCategoryArticleCount(dto.category(), category.getArticleCount() + 1);
+
     try {
       sseService.broadcastRefresh("HELP_CENTER");
     } catch (RuntimeException ex) {
       log.warn("Failed to broadcast REPORTS refresh: ", ex);
     }
+
+    return rev;
   }
 
   public ArticlesResponseDTO getArticles(String category) {
@@ -95,12 +127,9 @@ public class HelpCenterService {
                   ErrorAction.READ_ALL, 400, ErrorResource.HELP_CENTER_ARTICLE)));
     }
 
-    List<Map<String, Object>> rawArticles = dbService.findAll("help_center");
+    List<HelpCenterArticle> articles = dbService.findByQuery("help_center", Map.of("selector", Map.of("category", category)), HelpCenterArticle.class);
 
-    List<HelpCenterArticle> articles =
-        rawArticles.stream().map(map -> mapper.convertValue(map, HelpCenterArticle.class)).toList();
-
-    if (articles.isEmpty()) {
+    if (articles == null || articles.isEmpty()) {
       return new ArticlesResponseDTO(List.of());
     }
 

@@ -6,6 +6,9 @@
     import Button from "../../../components/Button.svelte";
     import AddArticleModal from "../../../components/HelpCenter/AddArticleModal.svelte";
     import Chip from "../../../components/Chip.svelte";
+    import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal.svelte";
+    import { getArticles } from "../../../services/helpCenterService.svelte.js";
+    import { addToast } from "../../../stores/toasts.svelte.js";
 
     /**
      * Reference to the add article modal.
@@ -14,10 +17,36 @@
      */
     let addArticleModalRef = $state(null);
 
+    /**
+     * Reference to the confirm delete modal.
+     * Used to programmatically open the confirm deletion dialog.
+     * @type {import("../../../components/ConfirmDeleteModal.svelte").default}
+     */
+    let confirmDeleteCategoryModal = $state(null);
+
     const category = appSettings.helpCenterCategories.find(cat => cat.id === helpCenterStore.activeCategory);
+
+    function startDelete() {
+        if (!confirmDeleteCategoryModal) return;
+
+        if (!helpCenterStore.activeCategory || !category) {
+            addToast({
+                title: "Noten nicht gefunden",
+                subTitle: "Die ausgewählten Noten wurden nicht gefunden. Bitte versuchen Sie es erneut.",
+                type: "error"
+            });
+            return;
+        }
+
+        if (category.id === helpCenterStore.activeCategory) confirmDeleteCategoryModal.startDelete();
+    }
 </script>
 
 <AddArticleModal bind:this={addArticleModalRef} isMobile={false} />
+<ConfirmDeleteModal action="deleteHelpCategory" title="Kategorie löschen"
+                    subTitle="Sind Sie sich sicher das sie diese Kategorie löschen möchten?" placeholder="Kategorie1"
+                    expectedInput={category?.title} id={helpCenterStore.activeCategory}
+                    onClose={async () => { await getArticles(); }} bind:this={confirmDeleteCategoryModal} />
 
 <div class="flex flex-col w-full h-full items-start justify-start gap-4 p-10 overflow-y-auto">
     <div class="flex flex-col items-start justify-start gap-8 w-full h-full">
@@ -30,7 +59,7 @@
                 </button>
                 {#if user.role === "admin"}
                     <div class="flex items-center gap-4 ml-auto">
-                        <Button type="delete" disabled={helpCenterStore.articles.length > 0}>
+                        <Button type="delete" disabled={helpCenterStore.articles.length > 0} onclick={startDelete}>
                             <div class="flex items-center justify-center gap-2">
                                 <span class="material-symbols-rounded">delete</span>
                                 <span class="text-nowrap">Kategorie löschen</span>
