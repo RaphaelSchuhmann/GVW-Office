@@ -1,7 +1,7 @@
 import {
     apiAddArticle,
-    apiAddCategory, apiDeleteCategory,
-    apiGetArticles,
+    apiAddCategory, apiCheckArticle, apiCheckCategory, apiDeleteArticle, apiDeleteCategory, apiGetArticle,
+    apiGetArticles, apiUpdateArticle,
     apiUpdateFeaturedCategories
 } from "../api/apiHelpCenter.svelte.js";
 import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
@@ -10,6 +10,7 @@ import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
 import { appSettings } from "../stores/appSettings.svelte.js";
 import { helpCenterStore } from "../stores/helpCenterStore.svelte.js";
+import { pendingImages } from "./textEditorService.svelte.js";
 
 const isFetching = {
     addCategory: false,
@@ -17,8 +18,14 @@ const isFetching = {
     updatedFeatured: false,
     addArticle: false,
     deleteArticle: false,
-    updateArticle: false
+    updateArticle: false,
+    getArticle: false,
+    checkCategory: false,
+    checkArticle: false,
 };
+
+const pendingCategoryChecks = new Map();
+const pendingArticleChecks = new Map();
 
 export async function addHelpCenterCategory(inputs) {
     if (isFetching.addCategory) return false;
@@ -137,4 +144,147 @@ export async function getArticles() {
     if (!body.articles) return;
 
     helpCenterStore.articles = body.articles;
+}
+
+export async function getArticle(id) {
+    if (isFetching.getArticle || !id) return;
+
+    isFetching.getArticle = true;
+
+    try {
+        const { resp, body } = await apiGetArticle(id);
+        const normalizedResp = await normalizeResponse(resp);
+
+        if (handleGlobalApiError(normalizedResp)) return;
+
+        helpCenterStore.activeArticle = body;
+    } finally {
+        isFetching.getArticle = false;
+    }
+}
+
+export async function updateHelpCenterArticle(data) {
+    if (isFetching.updateArticle) return data.rev || "";
+
+    isFetching.updateArticle = true;
+
+    try {
+        const formData = new FormData();
+
+        formData.append("articleData", new Blob([
+            JSON.stringify({
+                id: data.id,
+                rev: data.rev,
+                title: data.title,
+                content: data.content,
+            })
+        ], {
+            type: "application/json"
+        }));
+
+        const images = pendingImages.values();
+
+        for (const item of images) {
+            formData.append("files", item, item.name);
+        }
+
+        const { resp, body } = await apiUpdateArticle(formData);
+        const normalized = normalizeResponse(resp);
+
+        if (handleGlobalApiError(normalized)) return data.rev;
+        if (!body.rev || body.rev === "") return data.rev;
+
+        addToast({
+            title: "Artikel aktualisiert",
+            subTitle: viewport.isMobile ? "" : "Der Artikel wurde erfolgreich aktualisiert.",
+            type: "success"
+        });
+
+        return body.rev;
+    } finally {
+        isFetching.updateArticle = false;
+    }
+}
+
+export async function categoryExists(id) {
+    if (!id) return false;
+
+    if (pendingCategoryChecks.has(id)) return await pendingCategoryChecks.get(id);
+
+    isFetching.checkCategory = true;
+
+    const request = (async () => {
+        try {
+            const { resp } = await apiCheckCategory(id);
+            const normalized = normalizeResponse(resp);
+
+            if (normalized.status === 404) return false;
+
+            if (handleGenericErrors(normalized)) return true;
+
+            return true;
+        } catch (e) {
+            return true;
+        } finally {
+            pendingCategoryChecks.delete(id);
+            if (pendingCategoryChecks.size === 0) {
+                isFetching.checkCategory = false;
+            }
+        }
+    })();
+
+    pendingCategoryChecks.set(id, request);
+    return await request;
+}
+
+export async function articleExists(id) {
+    if (!id) return false;
+
+    if (pendingArticleChecks.has(id)) return await pendingArticleChecks.get(id);
+
+    isFetching.checkArticle = true;
+
+    const request = (async () => {
+        try {
+            const { resp } = await apiCheckArticle(id);
+            const normalized = normalizeResponse(resp);
+
+            if (normalized.status === 404) return false;
+
+            if (handleGenericErrors(normalized)) return true;
+
+            return true;
+        } catch (e) {
+            return true;
+        } finally {
+            pendingArticleChecks.delete(id);
+            if (pendingCategoryChecks.size === 0) {
+                isFetching.checkArticle = false;
+            }
+        }
+    })();
+
+    pendingArticleChecks.set(id, request);
+    return await request;
+}
+
+export async function deleteArticle(id) {
+    if (isFetching.deleteArticle) return;
+
+    isFetching.deleteArticle = true;
+
+    try {
+        const { resp } = await apiDeleteArticle(id);
+        const normalized = normalizeResponse(resp);
+
+        if (handleGlobalApiError(normalized)) return;
+
+        addToast({
+            title: "Artikel gelöscht",
+            subTitle: viewport.isMobile ? "" : "Artikel wrude erfolgreich gelöscht.",
+            type: "success"
+        });
+    } finally {
+        isFetching.deleteArticle = false;
+    }
 }

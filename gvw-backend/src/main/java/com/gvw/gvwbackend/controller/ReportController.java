@@ -82,7 +82,7 @@ public class ReportController {
   @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
   @ErrorContext(
-      domain = ErrorDomain.TEXT_EDITOR,
+      domain = ErrorDomain.REPORT,
       action = ErrorAction.UPDATE,
       resource = ErrorResource.NONE)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'SECRETARY')")

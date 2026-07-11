@@ -266,4 +266,13 @@ public class TextEditorService {
     }
     return storedFiles;
   }
+
+  public int getReadingTime(List<TextEditorBlock> content) {
+    String plainText = convertBlocksToPlainText(content);
+
+    List<String> words =
+            Arrays.stream(plainText.split("\\s+")).filter(word -> !word.isEmpty()).toList();
+
+    return words.size() / 200;
+  }
 }

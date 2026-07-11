@@ -7,7 +7,7 @@
     import AddArticleModal from "../../../components/HelpCenter/AddArticleModal.svelte";
     import Chip from "../../../components/Chip.svelte";
     import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal.svelte";
-    import { getArticles } from "../../../services/helpCenterService.svelte.js";
+    import { getArticle, getArticles } from "../../../services/helpCenterService.svelte.js";
     import { addToast } from "../../../stores/toasts.svelte.js";
 
     /**
@@ -89,7 +89,7 @@
             class="w-full h-full flex flex-col items-start justify-start gap-2 p-5 bg-white rounded-1 overflow-y-auto drop-shadow-[0_0_5px_rgba(0,0,0,0.2)]">
             {#each helpCenterStore.articles as article}
                 <button class="w-full cursor-pointer group"
-                        onclick={() => helpCenterStore.activeCategory = category.id}>
+                        onclick={async () => {await getArticle(article.id)}}>
                     <Card>
                         <div class="flex items-center justify-start gap-4 w-full h-full">
                             <div class="flex flex-col items-start justify-start gap-2 max-w-1/3">
@@ -111,6 +111,4 @@
             {/each}
         </div>
     </div>
-
-
 </div>

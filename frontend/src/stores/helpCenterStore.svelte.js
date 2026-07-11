@@ -4,4 +4,5 @@
 export const helpCenterStore = $state({
     activeCategory: "",
     articles: [],
+    activeArticle: null,
 });

@@ -137,7 +137,7 @@ public class ReportService {
         report.getAuthor(),
         report.getRev(),
         report.getDescription(),
-        words.size() / 200,
+            editorService.getReadingTime(report.getContents()),
         words.size(),
         report.getCreatedAt(),
         report.getLastEditedBy(),

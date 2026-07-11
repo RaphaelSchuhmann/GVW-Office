@@ -85,6 +85,8 @@
     async function saveReport() {
         editorRef.getContent();
 
+        isSubmitting = true;
+
         const data = {
             id: reportData.id,
             rev: reportData.rev,

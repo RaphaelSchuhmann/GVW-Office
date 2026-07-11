@@ -164,8 +164,9 @@ public class AppSettingsService {
 
     try {
       sseService.broadcastRefresh("HELP_CENTER");
+      sseService.broadcastRefresh("SETTINGS");
     } catch (RuntimeException ex) {
-      log.warn("Failed to broadcast HELP_CENTER refresh: ", ex);
+      log.warn("Failed to broadcast HELP_CENTER or SETTINGS refresh: ", ex);
     }
 
     if (resp != null && resp.containsKey("rev")) {
@@ -202,8 +203,9 @@ public class AppSettingsService {
 
     try {
       sseService.broadcastRefresh("HELP_CENTER");
+      sseService.broadcastRefresh("SETTINGS");
     } catch (RuntimeException ex) {
-      log.warn("Failed to broadcast HELP_CENTER refresh: ", ex);
+      log.warn("Failed to broadcast HELP_CENTER or SETTINGS refresh: ", ex);
     }
 
     if (resp != null && resp.containsKey("rev")) {
@@ -232,8 +234,9 @@ public class AppSettingsService {
 
     try {
       sseService.broadcastRefresh("HELP_CENTER");
+      sseService.broadcastRefresh("SETTINGS");
     } catch (RuntimeException ex) {
-      log.warn("Failed to broadcast HELP_CENTER refresh: ", ex);
+      log.warn("Failed to broadcast HELP_CENTER or SETTINGS refresh: ", ex);
     }
 
     if (resp != null && resp.containsKey("rev")) {
@@ -279,8 +282,9 @@ public class AppSettingsService {
 
     try {
       sseService.broadcastRefresh("HELP_CENTER");
+      sseService.broadcastRefresh("SETTINGS");
     } catch (RuntimeException ex) {
-      log.warn("Failed to broadcast HELP_CENTER refresh: ", ex);
+      log.warn("Failed to broadcast HELP_CENTER or SETTINGS refresh: ", ex);
     }
 
     if (resp != null && resp.get("rev") instanceof String rev) {

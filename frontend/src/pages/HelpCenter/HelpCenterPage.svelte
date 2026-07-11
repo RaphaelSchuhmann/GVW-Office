@@ -7,8 +7,10 @@
     import { user } from "../../stores/user.svelte.js";
     import Spinner from "../../components/Spinner.svelte";
     import { lastRefresh } from "../../stores/sseStore.svelte.js";
-    import { getArticles } from "../../services/helpCenterService.svelte.js";
+    import { getArticles, categoryExists, articleExists } from "../../services/helpCenterService.svelte.js";
     import { helpCenterStore } from "../../stores/helpCenterStore.svelte.js";
+    import { editorMetadataStore } from "../../stores/textEditorStore.svelte.js";
+    import { addToast } from "../../stores/toasts.svelte.js";
 
     let isGlobalLoading = $derived(user.name.length === 0);
     let ready = false;
@@ -19,21 +21,49 @@
         (async () => {
             await ensureUserData();
             if (!auth.token) return;
+            editorMetadataStore.activeFeature = "help";
             ready = true;
         })();
     });
 
     $effect(() => {
-        const _triggerSSE = lastRefresh.HELP_CENTER;
-        const _triggerActiveCat = helpCenterStore.activeCategory;
+        const _trigger = lastRefresh.HELP_CENTER;
+        const _triggerStore = helpCenterStore.activeCategory;
 
         if (!ready) return;
 
         (async () => {
-           await getArticles();
-           // Check articles
+            await getArticles();
+
+            if (helpCenterStore.activeCategory) {
+                const activeCategoryExists = await categoryExists(helpCenterStore.activeCategory);
+                if (!activeCategoryExists) {
+                    addToast({
+                        title: "Kategorie nicht mehr verfügbar",
+                        subTitle: viewport.isMobile ? "" : "Diese Kategorie wurde gelöscht und ist nicht mehr verfügbar.",
+                        type: "error"
+                    });
+
+                    helpCenterStore.activeCategory = "";
+                    return;
+                }
+            }
+
+            if (helpCenterStore.activeArticle.id) {
+                const activeArticleExists = await articleExists(helpCenterStore.activeArticle.id);
+                if (!activeArticleExists) {
+                    addToast({
+                        title: "Artikel nicht mehr verfügbar",
+                        subTitle: viewport.isMobile ? "" : "Dieser Artikel wurde gelöscht und ist nicht mehr verfügbar.",
+                        type: "error"
+                    });
+
+                    helpCenterStore.activeArticle = null;
+                    await getArticles();
+                }
+            }
         })();
-    })
+    });
 </script>
 
 {#if isGlobalLoading}

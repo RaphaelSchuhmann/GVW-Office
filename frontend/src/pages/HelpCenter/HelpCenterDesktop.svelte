@@ -7,6 +7,7 @@
     import AddCategoryModal from "../../components/HelpCenter/AddCategoryModal.svelte";
     import { helpCenterStore } from "../../stores/helpCenterStore.svelte.js";
     import CategoryPageDesktop from "./CategoryPage/CategoryPageDesktop.svelte";
+    import ArticlePageDesktop from "./ArticlePage/ArticlePageDesktop.svelte";
 
     /**
      * Reference to the add category modal.
@@ -29,6 +30,8 @@
             
             {#if helpCenterStore.activeCategory === ""}
                 <LandingPageDesktop />
+            {:else if helpCenterStore.activeArticle !== null}
+                <ArticlePageDesktop />
             {:else}
                 <CategoryPageDesktop />
             {/if}

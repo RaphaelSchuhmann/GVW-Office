@@ -52,3 +52,31 @@ export async function apiGetArticles(category) {
     const body = await parseBodySafe(resp);
     return { resp, body };
 }
+
+export async function apiGetArticle(id) {
+    const resp = await httpGet(`${apiUrl}/help/article/${id}`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+export async function apiUpdateArticle(formData) {
+    const resp = await httpPatch(`${apiUrl}/help/article/update`, formData, "", true, true);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+export async function apiCheckCategory(id) {
+    const resp = await httpGet(`${apiUrl}/help/category/check/${id}`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}
+
+export async function apiCheckArticle(id) {
+    const resp = await httpGet(`${apiUrl}/help/article/check/${id}`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}

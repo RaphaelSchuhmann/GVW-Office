@@ -6,6 +6,7 @@
     import Button from "../../../components/Button.svelte";
     import AddArticleModal from "../../../components/HelpCenter/AddArticleModal.svelte";
     import Chip from "../../../components/Chip.svelte";
+    import { getArticle } from "../../../services/helpCenterService.svelte.js";
 
     /**
      * Reference to the add article modal.
@@ -43,7 +44,7 @@
             class="w-full h-full flex flex-col items-start justify-start gap-2 bg-white overflow-y-auto">
             {#each helpCenterStore.articles as article}
                 <button class="w-full cursor-pointer group"
-                        onclick={() => helpCenterStore.activeCategory = category.id}>
+                        onclick={async () => {await getArticle(article.id)}}>
                     <Card>
                         <div class="flex flex-col items-start justify-start w-full h-full gap-2">
                             <p class="text-gv-dark-text font-bold text-dt-3">{article.title}</p>
