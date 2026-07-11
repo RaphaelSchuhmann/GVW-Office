@@ -3,12 +3,6 @@
     import { helpCenterStore } from "../../../stores/helpCenterStore.svelte.js";
     import TextEditor from "../../../components/TextEditor/TextEditor.svelte";
 
-    /**
-     * Reference to the text editor.
-     * @type {import("../../../components/TextEditor/TextEditor.svelte").default}
-     */
-    let editorRef = $state(null);
-
     const category = appSettings.helpCenterCategories.find(cat => cat.id === helpCenterStore.activeCategory);
     const articleData = $derived(helpCenterStore.activeArticle);
 </script>
@@ -22,6 +16,6 @@
                 <span class="text-dt-5 text-gv-dark-text group-hover:underline">{category?.title || "Zurück"}</span>
             </button>
         </div>
-        <TextEditor bind:this={editorRef} isEditing={false} isMobile={true} itemData={articleData} draft={null} page="helpCenterEditor" />
+        <TextEditor isEditing={false} isMobile={true} itemData={articleData} draft={null} page="helpCenterEditor" />
     </div>
 </div>
