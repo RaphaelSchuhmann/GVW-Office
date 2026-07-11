@@ -17,7 +17,7 @@
     <div class="flex flex-col items-start justify-start gap-8 w-full h-full">
         <div class="w-full flex items-center justify-start">
             <button class="group cursor-pointer flex items-center justify-start gap-2 p-2"
-                    onclick={() => helpCenterStore.activeArticle = {}}>
+                    onclick={() => helpCenterStore.activeArticle = null}>
                 <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_back</span>
                 <span class="text-dt-5 text-gv-dark-text group-hover:underline">{category?.title || "Zurück"}</span>
             </button>
