@@ -259,7 +259,17 @@ public class HelpCenterService {
       throw new NotFoundException(String.valueOf(ErrorDomain.HELP_CENTER.createCode(ErrorAction.DELETE, 404, ErrorResource.HELP_CENTER_ARTICLE)));
     }
 
+    AppSettings settings = appSettingsService.appSettings(ErrorAction.DELETE, ErrorResource.HELP_CENTER_ARTICLE);
+    List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
+
+    HelpCenterCategory category = categories.stream().filter(obj -> obj.getId().equals(article.getCategory())).findFirst().orElse(null);
+    if (category != null) {
+      appSettingsService.updateHelpCenterCategoryArticleCount(article.getCategory(), category.getArticleCount() - 1);
+    }
+
     dbService.delete("help_center", article.getId(), article.getRev());
+
+    editorService.purgeAllBlockAssets(article.getContents(), ErrorAction.DELETE);
 
     try {
       sseService.broadcastRefresh("HELP_CENTER");

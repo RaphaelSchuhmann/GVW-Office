@@ -281,7 +281,6 @@ public class AppSettingsService {
     Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);
 
     try {
-      sseService.broadcastRefresh("HELP_CENTER");
       sseService.broadcastRefresh("SETTINGS");
     } catch (RuntimeException ex) {
       log.warn("Failed to broadcast HELP_CENTER or SETTINGS refresh: ", ex);
