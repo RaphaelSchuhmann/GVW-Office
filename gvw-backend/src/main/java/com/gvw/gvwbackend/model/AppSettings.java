@@ -2,6 +2,7 @@ package com.gvw.gvwbackend.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,6 +25,7 @@ public class AppSettings {
   private Map<String, String> scoreCategories;
   private Map<String, String> feedbackCategories;
   private String appVersion;
+  private List<HelpCenterCategory> helpCenterCategories;
 
   @Builder.Default private final String type = "appSettings";
 }

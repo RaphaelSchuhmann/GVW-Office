@@ -6,6 +6,7 @@
         isChecked = $bindable(false),
         onChange = () => {},
         disabled = false,
+        clickable = true,
         textWrap = true
     } = $props();
 
@@ -13,6 +14,7 @@
      * Handles the toggle and triggers the callback
      */
     function toggle() {
+        if (!clickable) return;
         isChecked = !isChecked;
         onChange(isChecked);
     }

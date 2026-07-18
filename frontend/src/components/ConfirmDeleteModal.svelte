@@ -2,18 +2,21 @@
     import Modal from "./Modal.svelte";
     import Button from "./Button.svelte";
     import Input from "./Input.svelte";
+    import Spinner from "./Spinner.svelte";
     import { removeMember } from "../services/membersService.svelte";
     import { deleteEvent } from "../services/eventsService.svelte";
     import { deleteScore } from "../services/libraryService.svelte";
     import { deleteUser } from "../services/userService.svelte";
     import { addToast } from "../stores/toasts.svelte";
-    import Spinner from "./Spinner.svelte";
+    import { deleteArticle, deleteHelpCenterCategory } from "../services/helpCenterService.svelte.js";
 
     const actionMap = {
         "deleteMember": removeMember,
         "deleteEvent": deleteEvent,
         "deleteLibEntry": deleteScore,
         "deleteUser": deleteUser,
+        "deleteHelpCategory": deleteHelpCenterCategory,
+        "deleteHelpArticle": deleteArticle,
     };
 
     let {

@@ -43,6 +43,7 @@ public class GlobalExceptionHandler {
       MethodArgumentNotValidException ex) {
     ErrorDomain domain;
     ErrorAction action;
+    ErrorResource resource;
 
     java.lang.reflect.Method executable =
         (java.lang.reflect.Method) ex.getParameter().getExecutable();
@@ -56,9 +57,9 @@ public class GlobalExceptionHandler {
     if (context != null) {
       domain = context.domain();
       action = context.action();
+      resource = context.resource();
 
-      int code = domain.createCode(action, 400);
-
+      long code = domain.createCode(action, 400, resource);
       return generateResponse(String.valueOf(code), null, HttpStatus.BAD_REQUEST);
     } else {
       log.warn("Missing @ErrorContext annotation");

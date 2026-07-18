@@ -2,6 +2,21 @@
     import ModalHeader from "./ModalHeader.svelte";
     import { widthMap, heightMap } from "../lib/dynamicStyles";
 
+    /**
+     * @typedef {Object} Props
+     * @property {string} [title=""] - The main title text displayed at the top of the component
+     * @property {string} [subTitle=""] - The subtitle or description text displayed below the main title
+     * @property {boolean} [hideSubTitle=false] - Toggles the visibility of the subtitle layout element
+     * @property {string} [height="auto"] - The height css class configuration (e.g., 'auto', 'full', 'h-96')
+     * @property {string} [width="1/3"] - The horizontal scaling utility width configuration (e.g., '1/3', '1/2', 'full')
+     * @property {boolean} [isMobile=false] - Flag specifying if the layout should adjust for mobile screen viewports
+     * @property {Function} [extraFunction=( )=>{}] - An optional secondary action callback triggered by a specific layout interaction
+     * @property {boolean} [extraFunctionOnClose=true] - Dictates whether the extraFunction lifecycle hook should execute on close events
+     * @property {Function} [onCancel=( )=>{}] - The primary cancellation or modal dismissal callback function
+     * @property {import('svelte').Snippet} children - The Svelte snippet placeholder representing children elements injected into the slot
+     */
+
+    /** @type {Props} */
     let {
         title = "",
         subTitle = "",

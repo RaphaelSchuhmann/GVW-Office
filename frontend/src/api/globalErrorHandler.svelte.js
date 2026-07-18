@@ -5,20 +5,28 @@ import { push } from "svelte-spa-router";
 
 export const DOMAINS = {
     "10": { default: "Authentifizierung" },
-    "20": { default: "Systemeinstellungen" },
+    "20": {
+        default: "Systemeinstellungen",
+        "001": "Hilfe-Center Kategorie",
+        "003": "Genre"
+    },
     "30": { default: "Benutzer" },
     "40": { default: "Dashboarddaten" },
     "50": { default: "Mitglied" },
     "60": { default: "Veranstaltung" },
     "70": { default: "Bericht" },
-    "80": { default: "Noteneintrag" },
+    "80": { default: "Noteneintrag", },
     "90": { default: "Feedback" },
     "11": { default: "Fehlerbericht" },
     "12": { default: "Changelog" },
     "13": { default: "Datei" },
     "14": {
         default: "Dokument",
-        "99": "Dokumentinhalt"
+        "004": "Dokumentinhalt"
+    },
+    "15": {
+        default: "Artikel",
+        "001": "Hilfe-Center Kategorie"
     }
 };
 
@@ -99,6 +107,7 @@ export function handleGlobalApiError(result) {
     const domain = codeStr.substring(0, 2);
     const action = codeStr.substring(2, 4);
     const status = codeStr.substring(4, 7);
+    const resource = codeStr.substring(7);
 
     // Handle generic errors like network or 500 or 401
     if (handleGenericErrors(result)) return true;
@@ -106,7 +115,7 @@ export function handleGlobalApiError(result) {
     const domainConfig = DOMAINS[domain];
     let domainWord = "System";
     if (domainConfig) {
-        domainWord = domainConfig[action] || domainConfig.default;
+        domainWord = domainConfig[resource] || domainConfig.default;
     }
 
     const actionWord = ACTIONS[action] || "Verarbeitung";

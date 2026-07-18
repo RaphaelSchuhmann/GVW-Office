@@ -10,6 +10,7 @@
     import Image from "./Blocks/Image.svelte";
     import BlockQuote from "./Blocks/BlockQuote.svelte";
     import { sanitize } from "../../services/utils.js";
+    import { textEditorConfigs } from "../../lib/textEditorConfig.svelte.js";
 
     let {
         reportId,
@@ -19,8 +20,12 @@
         content = $bindable([]),
         isEditing = false,
         activeBlock = $bindable(null),
+        configKey,
+        isMobile = false,
         ...restProps
     } = $props();
+
+    const showAuthor = $derived(textEditorConfigs[configKey].showAuthor || false);
 
     let draggedIndex = $state(null);
 
@@ -506,10 +511,12 @@
 
     {#if !isEditing}
         <div class="flex w-full items-center justify-start gap-4">
-            <div class="flex items-center justify-start gap-2">
-                <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text">person</span>
-                <p class="text-dt-6 text-gv-dark-text">{author}</p>
-            </div>
+            {#if showAuthor}
+                <div class="flex items-center justify-start gap-2">
+                    <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text">person</span>
+                    <p class="text-dt-6 text-gv-dark-text">{author}</p>
+                </div>
+            {/if}
             <div class="flex items-center justify-start gap-2">
                 <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text">overview</span>
                 <p class="text-dt-6 text-gv-dark-text">{readingTime} Minuten</p>
@@ -561,7 +568,7 @@
                 <!-- Pointer events none prevents the raw image from stealing the drag target focus -->
                 <div class="select-none flex justify-start w-full">
                     <Image reportId={reportId} imageId={item.data} content={content} blockId={item.id}
-                           isEditing={isEditing} />
+                           isEditing={isEditing} isMobile={isMobile} />
                 </div>
             {/if}
         </div>

@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Report {
+public class Report implements TextDocument {
   @JsonProperty("_id")
   private String id;
 

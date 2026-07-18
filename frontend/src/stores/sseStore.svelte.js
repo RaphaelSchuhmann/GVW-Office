@@ -8,4 +8,5 @@ export const lastRefresh = $state({
     BUG: Date.now(),
     USER: Date.now(),
     REPORTS: Date.now(),
+    HELP_CENTER: Date.now(),
 });

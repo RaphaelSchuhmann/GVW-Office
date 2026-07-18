@@ -9,12 +9,14 @@
     import { addBlock, applyStyleInDOM, updateBlockType } from "../../services/textEditorService.svelte";
     import { tick } from "svelte";
     import { sanitize } from "../../services/utils.js";
+    import { viewport } from "../../stores/viewport.svelte";
 
     let {
         itemData = $bindable({}),
         draft = $bindable({}),
         page = "",
         isEditing = $bindable(false),
+        isMobile = false,
         ...restProps
     } = $props();
 
@@ -108,7 +110,7 @@
     let activeBlockType = $derived(config?.optionMap[editorSelectionStore.activeStyles.blockType] || config?.optionMap["text"]);
 </script>
 
-<div class="w-full h-full flex-1 flex flex-col items-start justify-start rounded-1 bg-white drop-shadow-md min-h-0">
+<div class="w-full h-full flex-1 flex flex-col items-start justify-start {isMobile ? 'rounded-none' : 'rounded-1 drop-shadow-md'} bg-white  min-h-0">
     {#if isEditing}
         <div class="w-full flex items-center justify-start gap-2 border-b-2 border-gv-border p-2">
             <ButtonSelect
@@ -154,10 +156,10 @@
         </div>
     {/if}
     <div class="flex flex-col w-full flex-1 items-start justify-start min-h-0 overflow-hidden">
-        <div class="flex flex-col items-start justify-start p-5 pl-8 pr-8 gap-4 max-w-3/5 w-3/5 h-full overflow-y-auto min-h-0 mx-auto">
+        <div class="flex flex-col items-start justify-start {viewport.width < 1000 ? isMobile ? 'p-0 w-full' : 'p-2 w-full' : viewport.width > 1200 ? 'p-5 max-w-3/5 w-3/5 pl-8 pr-8' : 'p-5 max-w-4/5 w-4/5 pl-8 pr-8'} gap-4 h-full overflow-y-auto min-h-0 mx-auto">
             <ContentDisplay reportId={itemData.id} bind:title={data.title} author={data.author}
                             readingTime={data.readingTime} bind:content={data.content} isEditing={isEditing}
-                            bind:activeBlock={activeBlock} />
+                            bind:activeBlock={activeBlock} configKey={page} isMobile={isMobile} />
         </div>
     </div>
 </div>

@@ -17,8 +17,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
@@ -137,7 +135,7 @@ public class ReportService {
         report.getAuthor(),
         report.getRev(),
         report.getDescription(),
-        words.size() / 200,
+        editorService.getReadingTime(report.getContents()),
         words.size(),
         report.getCreatedAt(),
         report.getLastEditedBy(),
@@ -187,12 +185,12 @@ public class ReportService {
       for (File file : attachments) {
         try {
           editorService.deleteAssetFromDisk(
-                  file.getId() + "." + file.getExtension(), ErrorAction.UPDATE);
+              file.getId() + "." + file.getExtension(), ErrorAction.UPDATE);
         } catch (Exception ex) {
           log.error(
-                  "Failed to purge unlinked attachment asset from file system: {}",
-                  file.getId() + "." + file.getExtension(),
-                  ex);
+              "Failed to purge unlinked attachment asset from file system: {}",
+              file.getId() + "." + file.getExtension(),
+              ex);
         }
       }
     }
@@ -218,36 +216,19 @@ public class ReportService {
       return new ReportsSearchResponseDTO(List.of());
     }
 
-    String regex = "(?i)" + Pattern.quote(input);
-    Pattern pattern = Pattern.compile(regex);
-
-    List<ReportSearchResult> results = new ArrayList<>();
-
-    for (Report report : reports) {
-      String content = editorService.convertBlocksToPlainText(report.getContents());
-      if (content.isBlank()) continue;
-
-      Matcher matcher = pattern.matcher(content);
-
-      if (matcher.find()) {
-        int start = matcher.start();
-        int end = matcher.end();
-        String snippet = extractSnippet(content, start, end);
-        results.add(new ReportSearchResult(report, snippet));
-      }
-    }
+    List<TextDocumentSearchResult<Report>> results = editorService.deepSearch(reports, input);
 
     List<ReportSearchResponseDTO> responseDTOS =
         results.stream()
             .map(
                 m ->
                     new ReportSearchResponseDTO(
-                        m.getReport().getId(),
-                        m.getReport().getTitle(),
-                        m.getReport().getAuthor(),
-                        m.getReport().getType(),
+                        m.getDocument().getId(),
+                        m.getDocument().getTitle(),
+                        m.getDocument().getAuthor(),
+                        m.getDocument().getType(),
                         m.getSnippet(),
-                        m.getReport().getCreatedAt()))
+                        m.getDocument().getCreatedAt()))
             .toList();
 
     return new ReportsSearchResponseDTO(responseDTOS);
@@ -495,20 +476,5 @@ public class ReportService {
       throw new RuntimeException(
           String.valueOf(ErrorDomain.REPORT.createCode(ErrorAction.UTILITY, 500)), e);
     }
-  }
-
-  private String extractSnippet(String content, int hitStart, int hitEnd) {
-    int start;
-    int end;
-
-    if (hitStart <= 50) {
-      start = 0;
-    } else {
-      start = hitStart - 50;
-    }
-
-    end = Math.min(hitEnd + 50, content.length());
-
-    return content.substring(start, end);
   }
 }

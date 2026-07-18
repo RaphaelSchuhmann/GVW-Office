@@ -9,6 +9,7 @@
         content,
         alt = "Bericht bild",
         isEditing = false,
+        isMobile = false,
         ...restProps
     } = $props();
 
@@ -59,6 +60,12 @@
                 <span class="material-symbols-rounded">delete</span>
             </button>
         {/if}
-        <img src={srcUrl} alt={alt} class="rounded-2" />
+        {#if isMobile}
+            <a href={srcUrl} target="_blank" rel="noopener noreferrer">
+                <img src={srcUrl} alt={alt} class="rounded-2" />
+            </a>
+        {:else}
+            <img src={srcUrl} alt={alt} class="rounded-2" />
+        {/if}
     </div>
 {/if}

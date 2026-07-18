@@ -3,10 +3,7 @@ package com.gvw.gvwbackend.controller;
 import com.gvw.gvwbackend.dto.request.AddScoreRequestDTO;
 import com.gvw.gvwbackend.dto.request.UpdateScoreRequestDTO;
 import com.gvw.gvwbackend.dto.response.ScoresResponseDTO;
-import com.gvw.gvwbackend.exception.BadRequestException;
-import com.gvw.gvwbackend.exception.ErrorAction;
-import com.gvw.gvwbackend.exception.ErrorDomain;
-import com.gvw.gvwbackend.exception.NotFoundException;
+import com.gvw.gvwbackend.exception.*;
 import com.gvw.gvwbackend.exception.handler.ErrorContext;
 import com.gvw.gvwbackend.model.Score;
 import com.gvw.gvwbackend.service.DbService;
@@ -52,7 +49,10 @@ public class LibraryController {
   @PostMapping(value = "/new", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN')")
-  @ErrorContext(domain = ErrorDomain.LIBRARY, action = ErrorAction.CREATE)
+  @ErrorContext(
+      domain = ErrorDomain.LIBRARY,
+      action = ErrorAction.CREATE,
+      resource = ErrorResource.NONE)
   public void createScore(
       @RequestPart("scoreData") @Valid AddScoreRequestDTO request,
       @RequestPart(value = "files", required = false) List<MultipartFile> files) {
@@ -99,7 +99,10 @@ public class LibraryController {
   @PatchMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN', 'BOARD_MEMBER', 'LIBRARIAN')")
-  @ErrorContext(domain = ErrorDomain.LIBRARY, action = ErrorAction.UPDATE)
+  @ErrorContext(
+      domain = ErrorDomain.LIBRARY,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   public Map<String, Object> updateScore(
       @RequestPart("scoreData") @Valid UpdateScoreRequestDTO request,
       @RequestPart(value = "files", required = false) List<MultipartFile> newFiles,

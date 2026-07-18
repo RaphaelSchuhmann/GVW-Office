@@ -1,13 +1,8 @@
 package com.gvw.gvwbackend.service;
 
 import com.gvw.gvwbackend.dto.response.LinkMetadataResponseDTO;
-import com.gvw.gvwbackend.exception.BadRequestException;
-import com.gvw.gvwbackend.exception.ErrorAction;
-import com.gvw.gvwbackend.exception.ErrorDomain;
-import com.gvw.gvwbackend.exception.NotFoundException;
-import com.gvw.gvwbackend.model.AttachmentResource;
-import com.gvw.gvwbackend.model.TextEditorBlock;
-import com.gvw.gvwbackend.model.TextEditorBlockType;
+import com.gvw.gvwbackend.exception.*;
+import com.gvw.gvwbackend.model.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -16,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -39,7 +36,9 @@ public class TextEditorService {
         || filename.contains("..")
         || filename.contains("/")) {
       throw new BadRequestException(
-          String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400)));
+          String.valueOf(
+              ErrorDomain.TEXT_EDITOR.createCode(
+                  ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
     }
 
     Path filePath = Paths.get(filesDir, filename);
@@ -47,7 +46,9 @@ public class TextEditorService {
 
     if (!file.exists()) {
       throw new NotFoundException(
-          String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 404)));
+          String.valueOf(
+              ErrorDomain.TEXT_EDITOR.createCode(
+                  ErrorAction.UTILITY, 404, ErrorResource.TEXT_EDITOR_CONTENT)));
     }
 
     try {
@@ -68,14 +69,18 @@ public class TextEditorService {
       URI uri = new URI(url);
       if (!"https".equalsIgnoreCase(uri.getScheme())) {
         throw new BadRequestException(
-            String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400)));
+            String.valueOf(
+                ErrorDomain.TEXT_EDITOR.createCode(
+                    ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
       }
 
       String host = uri.getHost();
       if (host == null
           || Arrays.stream(InetAddress.getAllByName(host)).anyMatch(this::isBlockedAddress)) {
         throw new BadRequestException(
-            String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(ErrorAction.UTILITY, 400)));
+            String.valueOf(
+                ErrorDomain.TEXT_EDITOR.createCode(
+                    ErrorAction.UTILITY, 400, ErrorResource.TEXT_EDITOR_CONTENT)));
       }
 
       org.jsoup.nodes.Document doc =
@@ -92,7 +97,8 @@ public class TextEditorService {
               ? iconElement.attr("abs:href")
               : uri.getScheme() + "://" + host + "/favicon.ico";
 
-      byte[] imageBytes = Jsoup.connect(faviconUrl).ignoreContentType(true).timeout(3000).execute().bodyAsBytes();
+      byte[] imageBytes =
+          Jsoup.connect(faviconUrl).ignoreContentType(true).timeout(3000).execute().bodyAsBytes();
 
       String base64Image = Base64.getEncoder().encodeToString(imageBytes);
       String dataUrl = "data:image/x-icon;base64," + base64Image;
@@ -259,5 +265,54 @@ public class TextEditorService {
           String.valueOf(ErrorDomain.TEXT_EDITOR.createCode(action, 500)), e);
     }
     return storedFiles;
+  }
+
+  public int getReadingTime(List<TextEditorBlock> content) {
+    String plainText = convertBlocksToPlainText(content);
+
+    List<String> words =
+        Arrays.stream(plainText.split("\\s+")).filter(word -> !word.isEmpty()).toList();
+
+    if (words.isEmpty()) return 0;
+    return (words.size() + 199) / 200;
+  }
+
+  public <T extends TextDocument> List<TextDocumentSearchResult<T>> deepSearch(
+      List<T> documents, String input) {
+    String regex = "(?i)" + Pattern.quote(input);
+    Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+
+    List<TextDocumentSearchResult<T>> results = new ArrayList<>();
+
+    for (T doc : documents) {
+      String content = convertBlocksToPlainText(doc.getContents());
+      if (content.isBlank()) continue;
+
+      Matcher matcher = pattern.matcher(content);
+
+      if (matcher.find()) {
+        int start = matcher.start();
+        int end = matcher.end();
+        String snippet = extractSnippet(content, start, end);
+        results.add(new TextDocumentSearchResult<>(doc, snippet));
+      }
+    }
+
+    return results;
+  }
+
+  private String extractSnippet(String content, int hitStart, int hitEnd) {
+    int start;
+    int end;
+
+    if (hitStart <= 50) {
+      start = 0;
+    } else {
+      start = hitStart - 50;
+    }
+
+    end = Math.min(hitEnd + 50, content.length());
+
+    return content.substring(start, end);
   }
 }

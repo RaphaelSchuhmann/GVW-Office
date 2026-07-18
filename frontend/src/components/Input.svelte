@@ -12,6 +12,7 @@
         width = "w-full",
         onChange = () => {},
         onblur = undefined, // Forwarding onblur
+        showTitle = true,
         ...restProps
     } = $props();
 
@@ -46,8 +47,10 @@
     }
 </script>
 
-<div class={`flex flex-col items-start ${width} ${marginMap[marginTop]}`}>
-    <p class="text-dt-6 font-medium">{title}</p>
+<div class={`flex flex-col gap-1 items-start ${width} ${marginMap[marginTop]}`}>
+    {#if showTitle}
+        <p class="text-dt-6 font-medium">{title}</p>
+    {/if}
 
     {#if !isOriginallyPassword}
         <input
@@ -59,7 +62,7 @@
             {disabled}
             {onblur}
             onchange={(e) => onChange?.(e)}
-            class="rounded-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6 max-[470px]:text-dt-7"
+            class="rounded-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary text-dt-6 max-[470px]:text-dt-7"
             {...restProps}
         />
     {:else}
@@ -73,12 +76,12 @@
                 {disabled}
                 {onblur}
                 onchange={(e) => onChange?.(e)}
-                class="rounded-tl-1 rounded-bl-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6 max-[470px]:text-dt-7"
+                class="rounded-tl-1 rounded-bl-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary text-dt-6 max-[470px]:text-dt-7"
                 {...restProps}
             />
             <button
                 type="button"
-                class="flex items-center justify-center bg-gv-input-bg px-3 mt-1 rounded-tr-1 rounded-br-1 cursor-pointer"
+                class="flex items-center justify-center bg-gv-input-bg px-3 rounded-tr-1 rounded-br-1 cursor-pointer"
                 aria-label={passwordVisible ? "Hide password" : "Show password"}
                 aria-pressed={passwordVisible}
                 onclick={togglePasswordView}

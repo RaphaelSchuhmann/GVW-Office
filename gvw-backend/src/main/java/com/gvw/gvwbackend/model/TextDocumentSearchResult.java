@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReportSearchResult {
-  private Report report;
+public class TextDocumentSearchResult<T> {
+  private T document;
   private String snippet;
 }
