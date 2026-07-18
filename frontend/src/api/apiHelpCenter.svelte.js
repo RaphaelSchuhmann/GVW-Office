@@ -80,3 +80,10 @@ export async function apiCheckArticle(id) {
     const body = await parseBodySafe(resp);
     return { resp, body };
 }
+
+export async function apiSearchArticles(term) {
+    const resp = await httpGet(`${apiUrl}/help/article/search?term=${term}`);
+    if (!resp) return { resp: null, body: null };
+    const body = await parseBodySafe(resp);
+    return { resp, body };
+}

@@ -6,16 +6,26 @@
     import LandingPageMobile from "./LandingPage/LandingPageMobile.svelte";
     import CategoryPageMobile from "./CategoryPage/CategoryPageMobile.svelte";
     import ArticlePageMobile from "./ArticlePage/ArticlePageMobile.svelte";
+    import SearchModal from "../../components/HelpCenter/SearchModal.svelte";
 
     let sidebarOpen = $state(false);
+
+    /**
+     * Reference to the search modal.
+     * Used to programmatically open the search dialog.
+     * @type {import("../../components/HelpCenter/SearchModal.svelte").default}
+     */
+    let searchModalRef = $state(null);
 </script>
 
 <ToastStack isMobile={true}/>
 
 <MobileSidebar buttons={appSettings.helpCenterCategories} isOpen={sidebarOpen} />
 
+<SearchModal bind:this={searchModalRef} isMobile={true} />
+
 <main class="flex overflow-hidden">
-    <button class="rounded-full bg-gv-primary text-white p-3 flex items-center justify-center absolute top-6 right-6">
+    <button class="rounded-full bg-gv-primary text-white p-3 flex items-center justify-center absolute top-6 right-6" onclick={searchModalRef?.openSearch}>
         <span class="material-symbols-rounded text-icon-dt-4">search</span>
     </button>
     <div class="flex-1 min-h-0 overflow-y-auto h-screen">

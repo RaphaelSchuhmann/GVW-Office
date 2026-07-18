@@ -17,7 +17,10 @@ public class TextEditorController {
   private final ReportService reportService;
   private final HelpCenterService helpCenterService;
 
-  public TextEditorController(TextEditorService editorService, ReportService reportService, HelpCenterService helpCenterService) {
+  public TextEditorController(
+      TextEditorService editorService,
+      ReportService reportService,
+      HelpCenterService helpCenterService) {
     this.editorService = editorService;
     this.reportService = reportService;
     this.helpCenterService = helpCenterService;

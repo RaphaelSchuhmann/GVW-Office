@@ -2,9 +2,7 @@ package com.gvw.gvwbackend.service;
 
 import com.gvw.gvwbackend.dto.response.LinkMetadataResponseDTO;
 import com.gvw.gvwbackend.exception.*;
-import com.gvw.gvwbackend.model.AttachmentResource;
-import com.gvw.gvwbackend.model.TextEditorBlock;
-import com.gvw.gvwbackend.model.TextEditorBlockType;
+import com.gvw.gvwbackend.model.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -13,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.Getter;
 import org.jsoup.Jsoup;
 import org.slf4j.Logger;
@@ -271,8 +271,47 @@ public class TextEditorService {
     String plainText = convertBlocksToPlainText(content);
 
     List<String> words =
-            Arrays.stream(plainText.split("\\s+")).filter(word -> !word.isEmpty()).toList();
+        Arrays.stream(plainText.split("\\s+")).filter(word -> !word.isEmpty()).toList();
 
     return words.size() / 200;
+  }
+
+  public <T extends TextDocument> List<TextDocumentSearchResult<T>> deepSearch(
+      List<T> documents, String input) {
+    String regex = "(?i)" + Pattern.quote(input);
+    Pattern pattern = Pattern.compile(regex);
+
+    List<TextDocumentSearchResult<T>> results = new ArrayList<>();
+
+    for (T doc : documents) {
+      String content = convertBlocksToPlainText(doc.getContents());
+      if (content.isBlank()) continue;
+
+      Matcher matcher = pattern.matcher(content);
+
+      if (matcher.find()) {
+        int start = matcher.start();
+        int end = matcher.end();
+        String snippet = extractSnippet(content, start, end);
+        results.add(new TextDocumentSearchResult<>(doc, snippet));
+      }
+    }
+
+    return results;
+  }
+
+  private String extractSnippet(String content, int hitStart, int hitEnd) {
+    int start;
+    int end;
+
+    if (hitStart <= 50) {
+      start = 0;
+    } else {
+      start = hitStart - 50;
+    }
+
+    end = Math.min(hitEnd + 50, content.length());
+
+    return content.substring(start, end);
   }
 }

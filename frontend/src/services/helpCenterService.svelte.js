@@ -1,7 +1,7 @@
 import {
     apiAddArticle,
     apiAddCategory, apiCheckArticle, apiCheckCategory, apiDeleteArticle, apiDeleteCategory, apiGetArticle,
-    apiGetArticles, apiUpdateArticle,
+    apiGetArticles, apiSearchArticles, apiUpdateArticle,
     apiUpdateFeaturedCategories
 } from "../api/apiHelpCenter.svelte.js";
 import { handleGenericErrors, handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
@@ -22,10 +22,12 @@ const isFetching = {
     getArticle: false,
     checkCategory: false,
     checkArticle: false,
+    searchArticle: false,
 };
 
 const pendingCategoryChecks = new Map();
 const pendingArticleChecks = new Map();
+const pendingArticleSearch = new Map();
 
 export async function addHelpCenterCategory(inputs) {
     if (isFetching.addCategory) return false;
@@ -287,4 +289,34 @@ export async function deleteArticle(id) {
     } finally {
         isFetching.deleteArticle = false;
     }
+}
+
+export async function searchArticles(query) {
+    if (pendingArticleSearch.has(query)) return await pendingArticleSearch.get(query);
+
+    isFetching.searchArticles = true;
+
+    const request = (async () => {
+        try {
+            const { resp, body } = await apiSearchArticles(query);
+            const normalized = normalizeResponse(resp);
+
+            if (handleGlobalApiError(normalized)) return;
+
+            // If there is no data array just display nothing found
+            if (!Array.isArray(body?.data)) {
+                return [];
+            }
+
+            return body.data;
+        } finally {
+            pendingArticleSearch.delete(query);
+            if (pendingArticleSearch.size === 0) {
+                isFetching.searchArticles = false;
+            }
+        }
+    })();
+
+    pendingArticleSearch.set(query, request);
+    return await request;
 }

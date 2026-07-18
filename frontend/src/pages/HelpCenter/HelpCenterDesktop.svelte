@@ -39,7 +39,7 @@
             <DesktopSidebar buttons={appSettings.helpCenterCategories} />
             
             {#if helpCenterStore.activeCategory === ""}
-                <LandingPageDesktop />
+                <LandingPageDesktop searchBarButton={searchModalRef?.openSearch} />
             {:else if helpCenterStore.activeArticle !== null}
                 <ArticlePageDesktop />
             {:else}

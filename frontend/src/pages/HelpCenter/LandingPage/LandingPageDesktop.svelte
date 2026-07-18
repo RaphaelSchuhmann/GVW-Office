@@ -8,6 +8,11 @@
     import { helpCenterStore } from "../../../stores/helpCenterStore.svelte.js";
     import { viewport } from "../../../stores/viewport.svelte.js";
 
+    let {
+        searchBarButton = () => {},
+        ...restProps
+    } = $props();
+
     /**
      * Reference to the manage category modal.
      * Used to programmatically open the manage category dialog.
@@ -26,7 +31,7 @@
                     showSlot={false} />
     </div>
 
-    <SearchBarButton />
+    <SearchBarButton onclick={searchBarButton} />
 
     <div
         class="w-full h-full flex flex-col items-start justify-start gap-2 p-5 bg-white rounded-1 drop-shadow-[0_0_5px_rgba(0,0,0,0.2)]">

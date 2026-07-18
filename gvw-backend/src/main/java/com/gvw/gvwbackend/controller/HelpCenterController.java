@@ -2,6 +2,7 @@ package com.gvw.gvwbackend.controller;
 
 import com.gvw.gvwbackend.dto.request.*;
 import com.gvw.gvwbackend.dto.response.ArticlesResponseDTO;
+import com.gvw.gvwbackend.dto.response.ArticlesSearchResponseDTO;
 import com.gvw.gvwbackend.dto.response.FullArticleResponseDTO;
 import com.gvw.gvwbackend.exception.BadRequestException;
 import com.gvw.gvwbackend.exception.ErrorAction;
@@ -28,7 +29,9 @@ public class HelpCenterController {
   private final FileValidator fileValidator;
 
   public HelpCenterController(
-      AppSettingsService appSettingsService, HelpCenterService helpCenterService, FileValidator fileValidator) {
+      AppSettingsService appSettingsService,
+      HelpCenterService helpCenterService,
+      FileValidator fileValidator) {
     this.appSettingsService = appSettingsService;
     this.helpCenterService = helpCenterService;
     this.fileValidator = fileValidator;
@@ -81,7 +84,8 @@ public class HelpCenterController {
       resource = ErrorResource.HELP_CENTER_ARTICLE)
   @ResponseStatus(HttpStatus.OK)
   @PreAuthorize("hasAnyRole('ADMIN')")
-  public Map<String, String> addArticle(@Valid @RequestBody AddHelpCenterArticleRequestDTO request) {
+  public Map<String, String> addArticle(
+      @Valid @RequestBody AddHelpCenterArticleRequestDTO request) {
     String rev = helpCenterService.createArticle(request);
     return Map.of("rev", rev);
   }
@@ -106,18 +110,18 @@ public class HelpCenterController {
   @PatchMapping(value = "/article/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @ResponseStatus(HttpStatus.OK)
   @ErrorContext(
-          domain = ErrorDomain.HELP_CENTER,
-          action = ErrorAction.UPDATE,
-          resource = ErrorResource.NONE)
+      domain = ErrorDomain.HELP_CENTER,
+      action = ErrorAction.UPDATE,
+      resource = ErrorResource.NONE)
   @PreAuthorize("hasAnyRole('ADMIN')")
   public Map<String, Object> updateArticle(
-          @RequestPart("articleData") @Valid UpdateArticleRequestDTO request,
-          @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+      @RequestPart("articleData") @Valid UpdateArticleRequestDTO request,
+      @RequestPart(value = "files", required = false) List<MultipartFile> files) {
     if (files != null) {
       for (MultipartFile file : files) {
         if (!fileValidator.isSafe(file)) {
           throw new BadRequestException(
-                  String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
+              String.valueOf(ErrorDomain.FILE_VALIDATOR.createCode(ErrorAction.UTILITY, 400)));
         }
       }
     }
@@ -130,5 +134,12 @@ public class HelpCenterController {
   @PreAuthorize("hasAnyRole('ADMIN')")
   public void deleteArticle(@PathVariable String id) {
     helpCenterService.deleteArticle(id);
+  }
+
+  @GetMapping("/article/search")
+  @ResponseStatus(HttpStatus.OK)
+  public Map<String, List<ArticlesSearchResponseDTO>> searchArticles(
+      @RequestParam(name = "term") String searchTerm) {
+    return Map.of("data", helpCenterService.searchArticles(searchTerm));
   }
 }
