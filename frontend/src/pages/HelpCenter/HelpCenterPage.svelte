@@ -49,7 +49,7 @@
                 }
             }
 
-            if (helpCenterStore.activeArticle.id) {
+            if (helpCenterStore.activeArticle?.id) {
                 const activeArticleExists = await articleExists(helpCenterStore.activeArticle.id);
                 if (!activeArticleExists) {
                     addToast({
@@ -71,6 +71,11 @@
         <Spinner title="GVW Office" subTitle="Daten werden geladen..." />
     </div>
 {:else}
+    {#if helpCenterStore.isLoading}
+        <div class="z-999 top-0 left-0 w-dvw h-dvh flex bg-gv-overlay fixed items-center justify-center">
+            <Spinner with="1/5" />
+        </div>
+    {/if}
     {#if viewport.width <= 800}
         <HelpCenterMobile />
     {:else}

@@ -13,11 +13,13 @@
 
     let debounce;
     $effect(() => {
-        () => clearTimeout(debounce);
+        return () => clearTimeout(debounce);
     });
 
     let inputEl = $state(null);
     let closeBtn = $state(null);
+
+    let searchSequence = 0;
     let isVisible = $state(false);
     let isSearching = $state(false);
 
@@ -56,16 +58,19 @@
     }
 
     async function search(value) {
+        const sequence = ++searchSequence;
         isSearching = true;
 
         try {
             const response = await searchArticles(value);
-            if (Array.isArray(response)) {
+            if (sequence === searchSequence && Array.isArray(response)) {
                 results = response;
                 searchedTerm = value;
             }
         } finally {
-            isSearching = false;
+            if (sequence === searchSequence) {
+                isSearching = false;
+            }
         }
     }
 
@@ -88,7 +93,8 @@
         >
             <div class="w-full flex-1 min-h-0 flex flex-col overflow-y-scroll overflow-x-hidden gap-2">
                 <div class="w-full flex items-center justify-start gap-2 pl-1">
-                    <Input placeholder="Artikel suchen..." title="" showTitle={false} oninput={handleInput} bind:this={inputEl} />
+                    <Input placeholder="Artikel suchen..." title="" showTitle={false} oninput={handleInput}
+                           bind:this={inputEl} />
                     <button
                         type="button"
                         class="cursor-pointer ml-auto hover:bg-gv-hover-effect flex items-center justify-center p-2 rounded-2"
@@ -142,14 +148,17 @@
                             </button>
                         {/each}
                     {:else if isSearching}
-                        <div class="gap-5 bg-white flex flex-col items-center min-h-0 justify-center rounded-1 border-2 border-gv-border w-full h-full p-3 pt-10 pb-10 overflow-hidden border-dashed">
+                        <div
+                            class="gap-5 bg-white flex flex-col items-center min-h-0 justify-center rounded-1 border-2 border-gv-border w-full h-full p-3 pt-10 pb-10 overflow-hidden border-dashed">
                             <Spinner width="2/5" />
                         </div>
                     {:else}
-                        <div class="gap-5 bg-white flex flex-col items-center min-h-0 justify-center rounded-1 border-2 border-gv-border w-full h-full p-3 overflow-hidden border-dashed">
+                        <div
+                            class="gap-5 bg-white flex flex-col items-center min-h-0 justify-center rounded-1 border-2 border-gv-border w-full h-full p-3 overflow-hidden border-dashed">
                             <div class="flex items-center justify-center gap-4">
                                 <span class="material-symbols-rounded text-icon-dt-4">search_off</span>
-                                <p class="text-gv-dark-text text-dt-3 font-medium pt-10 pb-10">Keine Artikel gefunden...</p>
+                                <p class="text-gv-dark-text text-dt-3 font-medium pt-10 pb-10">Keine Artikel
+                                    gefunden...</p>
                             </div>
                         </div>
                     {/if}

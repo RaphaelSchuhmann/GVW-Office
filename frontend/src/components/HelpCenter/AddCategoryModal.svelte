@@ -77,7 +77,7 @@
 
         <div class="w-full flex items-center justify-end gap-4">
             <Button type="secondary" onclick={() => modalRef.hideModal()}>Abbrechen</Button>
-            <Button type="primary" disabled={addDisabled} onclick={submit} isSubmit={true}>
+            <Button type="primary" disabled={addDisabled || isSubmitting} onclick={submit} isSubmit={true}>
                 {#if isSubmitting}
                     <Spinner light={true} />
                     <p>Speichern...</p>

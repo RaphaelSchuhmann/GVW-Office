@@ -148,7 +148,8 @@ export async function apiCheckArticle(id) {
  * @returns {Promise<{resp: Response|null, body: Object|null}>}
  */
 export async function apiSearchArticles(term) {
-    const resp = await httpGet(`${apiUrl}/help/article/search?term=${term}`);
+    const params = new URLSearchParams({ term });
+    const resp = await httpGet(`${apiUrl}/help/article/search?${params}`);
     if (!resp) return { resp: null, body: null };
     const body = await parseBodySafe(resp);
     return { resp, body };

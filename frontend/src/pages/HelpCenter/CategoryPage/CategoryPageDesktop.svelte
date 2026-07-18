@@ -33,8 +33,8 @@
 
         if (!helpCenterStore.activeCategory || !category) {
             addToast({
-                title: "Noten nicht gefunden",
-                subTitle: "Die ausgewählten Noten wurden nicht gefunden. Bitte versuchen Sie es erneut.",
+                title: "Kategorie nicht gefunden",
+                subTitle: "Die ausgewählte Kategorie wurden nicht gefunden. Bitte versuchen Sie es erneut.",
                 type: "error"
             });
             return;

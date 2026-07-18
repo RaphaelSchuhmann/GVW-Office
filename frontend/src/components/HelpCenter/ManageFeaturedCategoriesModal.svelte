@@ -33,15 +33,26 @@
         }
     }
 
-    function cleanup() {
-        inputs.clear();
+    function initializeInputs() {
+        inputs = new Map(
+            (appSettings.helpCenterCategories ?? []).map(category => [
+                category.id,
+                !!category.isFeatured
+            ])
+        );
     }
 
-    export function showModal() { modalRef?.showModal(); }
-    export function hideModal() { modalRef?.hideModal(); }
+    export function showModal() {
+        initializeInputs();
+        modalRef?.showModal();
+    }
+
+    export function hideModal() {
+        modalRef?.hideModal();
+    }
 </script>
 
-<Modal bind:this={modalRef} title="Kategorien auswählen" hideSubTitle={true} isMobile={isMobile} extraFunction={cleanup}>
+<Modal bind:this={modalRef} title="Kategorien auswählen" hideSubTitle={true} isMobile={isMobile}>
     <div class="flex flex-col w-full items-center justify-start gap-4">
         <div class="flex flex-col w-full items-center justify-start gap-2">
             {#each appSettings.helpCenterCategories as category}
@@ -56,7 +67,8 @@
                             <Checkbox isChecked={inputs.get(category.id)} clickable={false} />
 
                             <div class="flex items-center justify-center p-2 rounded-2 bg-gv-bg-bar">
-                                <span class="material-symbols-rounded text-gv-primary text-icon-dt-5">{category.icon}</span>
+                                <span
+                                    class="material-symbols-rounded text-gv-primary text-icon-dt-5">{category.icon}</span>
                             </div>
                             <p class="text-gv-dark-text text-nowrap truncate text-dt-4">{category.title}</p>
                         </div>

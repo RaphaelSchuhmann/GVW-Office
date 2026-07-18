@@ -9,6 +9,7 @@
     import CategoryPageDesktop from "./CategoryPage/CategoryPageDesktop.svelte";
     import ArticlePageDesktop from "./ArticlePage/ArticlePageDesktop.svelte";
     import SearchModal from "../../components/HelpCenter/SearchModal.svelte";
+    import Spinner from "../../components/Spinner.svelte";
 
     /**
      * Reference to the add category modal.
@@ -37,7 +38,7 @@
 
         <div class="flex w-dvw h-full overflow-hidden">
             <DesktopSidebar buttons={appSettings.helpCenterCategories} />
-            
+
             {#if helpCenterStore.activeCategory === "" && helpCenterStore.activeArticle === null}
                 <LandingPageDesktop searchBarButton={searchModalRef?.openSearch} />
             {:else if helpCenterStore.activeArticle !== null}

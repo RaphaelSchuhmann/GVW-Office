@@ -38,9 +38,11 @@ const pendingArticleSearch = new Map();
 export async function addHelpCenterCategory(inputs) {
     if (isFetching.addCategory) return false;
 
+    isFetching.addCategory = true;
+
     try {
         const { resp, body } = await apiAddCategory(inputs);
-        const normalizedResp = await normalizeResponse(resp);
+        const normalizedResp = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResp)) return;
 
@@ -74,7 +76,7 @@ export async function updateHelpCenterCategoryFeaturedList(featured) {
 
     try {
         const { resp, body } = await apiUpdateFeaturedCategories(featured);
-        const normalizedResp = await normalizeResponse(resp);
+        const normalizedResp = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResp)) return;
 
@@ -114,7 +116,7 @@ export async function deleteHelpCenterCategory(id) {
         if (!category || category.articleCount > 0) return;
 
         const { resp } = await apiDeleteCategory(id);
-        const normalizedResp = await normalizeResponse(resp);
+        const normalizedResp = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResp)) return;
 
@@ -143,7 +145,7 @@ export async function addHelpCenterArticle(data) {
         data.category = $state.snapshot(helpCenterStore.activeCategory);
 
         const { resp, body } = await apiAddArticle(data);
-        const normalizedResp = await normalizeResponse(resp);
+        const normalizedResp = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResp)) return;
 
@@ -169,14 +171,21 @@ export async function addHelpCenterArticle(data) {
 export async function getArticles() {
     if (!helpCenterStore.activeCategory) return;
 
-    const { resp, body } = await apiGetArticles(helpCenterStore.activeCategory);
-    const normalizedResp = await normalizeResponse(resp);
+    helpCenterStore.isLoading = true;
+    try {
+        const category = $state.snapshot(helpCenterStore.activeCategory);
+        const { resp, body } = await apiGetArticles(helpCenterStore.activeCategory);
+        const normalizedResp = normalizeResponse(resp);
 
-    if (handleGlobalApiError(normalizedResp)) return;
+        if (handleGlobalApiError(normalizedResp)) return;
+        if (helpCenterStore.activeCategory !== category) return;
 
-    if (!body.articles) return;
+        if (!body.articles) return;
 
-    helpCenterStore.articles = body.articles;
+        helpCenterStore.articles = body.articles;
+    } finally {
+        helpCenterStore.isLoading = false;
+    }
 }
 
 /**
@@ -189,16 +198,18 @@ export async function getArticle(id) {
     if (isFetching.getArticle || !id) return;
 
     isFetching.getArticle = true;
+    helpCenterStore.isLoading = true;
 
     try {
         const { resp, body } = await apiGetArticle(id);
-        const normalizedResp = await normalizeResponse(resp);
+        const normalizedResp = normalizeResponse(resp);
 
         if (handleGlobalApiError(normalizedResp)) return;
 
         helpCenterStore.activeArticle = body;
     } finally {
         isFetching.getArticle = false;
+        helpCenterStore.isLoading = false;
     }
 }
 
@@ -212,6 +223,7 @@ export async function updateHelpCenterArticle(data) {
     if (isFetching.updateArticle) return data.rev || "";
 
     isFetching.updateArticle = true;
+    helpCenterStore.isLoading = true;
 
     try {
         const formData = new FormData();
@@ -248,6 +260,7 @@ export async function updateHelpCenterArticle(data) {
         return body.rev;
     } finally {
         isFetching.updateArticle = false;
+        helpCenterStore.isLoading = false;
     }
 }
 
