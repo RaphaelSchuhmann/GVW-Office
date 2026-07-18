@@ -45,7 +45,7 @@ public class HelpCenterService {
         appSettingsService.appSettings(ErrorAction.CHECK, ErrorResource.HELP_CENTER_CATEGORY);
     List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
 
-    if (categories.stream().noneMatch(obj -> obj.getId().equals(id))) {
+    if (categories == null || categories.stream().noneMatch(obj -> obj.getId().equals(id))) {
       throw new NotFoundException(
           String.valueOf(
               ErrorDomain.HELP_CENTER.createCode(
@@ -93,17 +93,20 @@ public class HelpCenterService {
         appSettingsService.appSettings(ErrorAction.CREATE, ErrorResource.HELP_CENTER_ARTICLE);
     List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
 
-    HelpCenterCategory category =
-        categories.stream()
-            .filter(obj -> obj.getId().equals(dto.category()))
-            .findFirst()
-            .orElse(null);
+    HelpCenterCategory category = null;
+    if (categories != null) {
+      category =
+          categories.stream()
+              .filter(obj -> obj.getId().equals(dto.category()))
+              .findFirst()
+              .orElse(null);
+    }
 
     if (category == null) {
       throw new BadRequestException(
           String.valueOf(
               ErrorDomain.HELP_CENTER.createCode(
-                  ErrorAction.CREATE, 404, ErrorResource.HELP_CENTER_CATEGORY)));
+                  ErrorAction.CREATE, 400, ErrorResource.HELP_CENTER_CATEGORY)));
     }
 
     HelpCenterArticle article =

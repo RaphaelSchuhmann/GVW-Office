@@ -361,7 +361,7 @@ export async function deleteArticle(id) {
 
         addToast({
             title: "Artikel gelöscht",
-            subTitle: viewport.isMobile ? "" : "Artikel wrude erfolgreich gelöscht.",
+            subTitle: viewport.isMobile ? "" : "Artikel wurde erfolgreich gelöscht.",
             type: "success"
         });
     } finally {

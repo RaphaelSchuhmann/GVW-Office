@@ -190,7 +190,7 @@ public class AppSettingsService {
     AppSettings settings = appSettings(ErrorAction.DELETE, ErrorResource.HELP_CENTER_CATEGORY);
     List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
 
-    if (categories.stream().noneMatch(obj -> obj.getId().equals(id)))
+    if (categories == null || categories.stream().noneMatch(obj -> obj.getId().equals(id)))
       throw new NotFoundException(
           String.valueOf(
               ErrorDomain.APP_SETTINGS.createCode(
@@ -221,13 +221,14 @@ public class AppSettingsService {
     AppSettings settings = appSettings(ErrorAction.UPDATE, ErrorResource.HELP_CENTER_CATEGORY);
     List<HelpCenterCategory> categories = settings.getHelpCenterCategories();
 
-    categories.forEach(
-        obj -> {
-          if (request.featured().containsKey(obj.getId())) {
-            obj.setIsFeatured(request.featured().get(obj.getId()));
-          }
-        });
-
+    if (categories != null) {
+      categories.forEach(
+          obj -> {
+            if (request.featured().containsKey(obj.getId())) {
+              obj.setIsFeatured(request.featured().get(obj.getId()));
+            }
+          });
+    }
     settings.setHelpCenterCategories(categories);
 
     Map<String, Object> resp = dbService.update("app_settings", settings.getId(), settings);

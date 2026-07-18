@@ -273,13 +273,14 @@ public class TextEditorService {
     List<String> words =
         Arrays.stream(plainText.split("\\s+")).filter(word -> !word.isEmpty()).toList();
 
-    return words.size() / 200;
+    if (words.isEmpty()) return 0;
+    return (words.size() + 199) / 200;
   }
 
   public <T extends TextDocument> List<TextDocumentSearchResult<T>> deepSearch(
       List<T> documents, String input) {
     String regex = "(?i)" + Pattern.quote(input);
-    Pattern pattern = Pattern.compile(regex);
+    Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
     List<TextDocumentSearchResult<T>> results = new ArrayList<>();
 
