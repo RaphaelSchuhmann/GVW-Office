@@ -71,7 +71,7 @@
         <Spinner title="GVW Office" subTitle="Daten werden geladen..." />
     </div>
 {:else}
-    {#if viewport.isMobile}
+    {#if viewport.width <= 800}
         <HelpCenterMobile />
     {:else}
         <HelpCenterDesktop />

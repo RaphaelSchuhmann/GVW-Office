@@ -9,6 +9,7 @@
     import TextEditor from "../../../components/TextEditor/TextEditor.svelte";
     import { pendingImages, previewUrls } from "../../../services/textEditorService.svelte.js";
     import Spinner from "../../../components/Spinner.svelte";
+    import { viewport } from "../../../stores/viewport.svelte.js";
 
     /**
      * Reference to the confirm delete modal.
@@ -113,17 +114,19 @@
                 <div class="flex items-center gap-4 ml-auto">
                     <Button type="delete" onclick={startDelete}>
                         <div class="flex items-center justify-center gap-2">
-                            <span class="material-symbols-rounded">delete</span>
-                            <span class="text-nowrap">Artikel löschen</span>
+                            <span class="material-symbols-rounded text-icon-dt-6 max-[1200px]:text-icon-dt-7">delete</span>
+                            <span class="text-nowrap min-[1200px]:text-dt-3 text-dt-5">Artikel löschen</span>
                         </div>
                     </Button>
 
-                    <Button type="primary" onclick={startEditing}>
-                        <div class="flex items-center justify-center gap-2">
-                            <span class="material-symbols-rounded">edit</span>
-                            <span class="text-nowrap">Bearbeiten</span>
-                        </div>
-                    </Button>
+                    {#if viewport.width > 1200}
+                        <Button type="primary" onclick={startEditing}>
+                            <div class="flex items-center justify-center gap-2">
+                                <span class="material-symbols-rounded">edit</span>
+                                <span class="text-nowrap">Bearbeiten</span>
+                            </div>
+                        </Button>
+                    {/if}
                 </div>
             {/if}
 

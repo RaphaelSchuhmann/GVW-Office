@@ -61,7 +61,7 @@
 </script>
 
 <Modal bind:this={modalRef} title="Kategorie hinzufügen" hideSubTitle={true} isMobile={isMobile}
-       extraFunction={cleanup}>
+       extraFunction={cleanup} width="1/2">
     <div class="flex flex-col w-full items-center justify-start gap-4">
         {#if isMobile}
             <Input bind:value={inputs.title} title="Titel" placeholder="Kategorie Titel" />

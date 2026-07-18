@@ -6,6 +6,7 @@
     import { appSettings } from "../../../stores/appSettings.svelte.js";
     import ManageFeaturedCategoriesModal from "../../../components/HelpCenter/ManageFeaturedCategoriesModal.svelte";
     import { helpCenterStore } from "../../../stores/helpCenterStore.svelte.js";
+    import { viewport } from "../../../stores/viewport.svelte.js";
 
     /**
      * Reference to the manage category modal.
@@ -37,11 +38,11 @@
                 </button>
             {/if}
         </div>
-        <div class="grid grid-cols-3 grid-rows-2 w-full h-full gap-4">
+        <div class="min-[1400px]:grid min-[1400px]:grid-cols-3 min-[1400px]:grid-rows-2 max-[1400px]:flex max-[1400px]:flex-col w-full h-full gap-4">
             {#each appSettings.helpCenterCategories as category}
                 {#if category.isFeatured}
                     <button class="h-full w-full cursor-pointer group" onclick={() => helpCenterStore.activeCategory = category.id}>
-                        <Card fillHeight={true}>
+                        <Card fillHeight={viewport.width > 1400}>
                             <div class="flex flex-col items-start justify-start gap-4 w-full h-full">
                                 <span class="rounded-2 bg-gv-bg-bar p-4 text-icon-dt-2 text-gv-primary material-symbols-rounded">
                                     {category.icon}

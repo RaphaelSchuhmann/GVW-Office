@@ -22,6 +22,7 @@
 
     /**
      * Keyboard shortcut logic
+     * @param {{ key: string; preventDefault: () => void; }} event
      */
     function handleKeyDown(event) {
         if (!isSubmit && !isCancel) return;

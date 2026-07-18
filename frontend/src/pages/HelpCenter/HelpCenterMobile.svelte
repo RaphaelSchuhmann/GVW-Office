@@ -18,9 +18,9 @@
     <button class="rounded-full bg-gv-primary text-white p-3 flex items-center justify-center absolute top-6 right-6">
         <span class="material-symbols-rounded text-icon-dt-4">search</span>
     </button>
-    <div class="flex-1 min-h-0 overflow-y-auto">
-        <div class="flex flex-col w-full flex-1 overflow-hidden p-7 min-h-0 gap-4">
-            <div class="w-full flex flex-col items-start justify-start">
+    <div class="flex-1 min-h-0 overflow-y-auto h-screen">
+        <div class="flex flex-col w-full flex-1 overflow-hidden p-7 min-h-0 gap-4 h-full">
+            <div class="w-full flex flex-col items-start justify-start h-full">
                 <button class="flex items-center justify-center" onclick={() => sidebarOpen = true}>
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">menu</span>
                 </button>

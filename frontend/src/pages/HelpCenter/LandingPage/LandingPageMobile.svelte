@@ -38,8 +38,8 @@
         <div class="flex flex-col items-center justify-start w-full h-full gap-2">
             {#each appSettings.helpCenterCategories as category}
                 {#if category.isFeatured}
-                    <button class="h-full w-full cursor-pointer group" onclick={() => helpCenterStore.activeCategory = category.id}>
-                        <Card fillHeight={true}>
+                    <button class="w-full cursor-pointer group" onclick={() => helpCenterStore.activeCategory = category.id}>
+                        <Card>
                             <div class="flex flex-col items-start justify-start gap-4 w-full h-full p-2">
                                 <span class="rounded-2 bg-gv-bg-bar p-4 text-icon-dt-2 text-gv-primary material-symbols-rounded">
                                     {category.icon}

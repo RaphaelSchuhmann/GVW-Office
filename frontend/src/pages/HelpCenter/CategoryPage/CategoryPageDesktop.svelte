@@ -9,6 +9,8 @@
     import ConfirmDeleteModal from "../../../components/ConfirmDeleteModal.svelte";
     import { getArticle, getArticles } from "../../../services/helpCenterService.svelte.js";
     import { addToast } from "../../../stores/toasts.svelte.js";
+    import { justifyMap, marginMap, paddingMap, roundedMap } from "../../../lib/dynamicStyles.js";
+    import { viewport } from "../../../stores/viewport.svelte.js";
 
     /**
      * Reference to the add article modal.
@@ -55,60 +57,72 @@
                 <button class="group cursor-pointer flex items-center justify-start gap-2 p-2"
                         onclick={() => helpCenterStore.activeCategory = ""}>
                     <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_back</span>
-                    <span class="text-dt-5 text-gv-dark-text group-hover:underline">Alle Kategorien</span>
+                    <span class="text-dt-5 text-gv-dark-text group-hover:underline text-nowrap">Alle Kategorien</span>
                 </button>
-                {#if user.role === "admin"}
+                {#if user.role === "admin" && viewport.width > 1050}
                     <div class="flex items-center gap-4 ml-auto">
                         <Button type="delete" disabled={helpCenterStore.articles.length > 0} onclick={startDelete}>
                             <div class="flex items-center justify-center gap-2">
-                                <span class="material-symbols-rounded">delete</span>
-                                <span class="text-nowrap">Kategorie löschen</span>
+                                <span class="material-symbols-rounded min-[1200px]:text-icon-dt-6 max-[1200px]:text-icon-dt-7">delete</span>
+                                <span class="text-nowrap min-[1200px]:text-dt-4 max-[1200px]:text-dt-6">Kategorie löschen</span>
                             </div>
                         </Button>
 
                         <Button type="primary" onclick={addArticleModalRef?.showModal}>
                             <div class="flex items-center justify-center gap-2">
-                                <span class="material-symbols-rounded">post_add</span>
-                                <span class="text-nowrap">Artikel hinzufügen</span>
+                                <span class="material-symbols-rounded min-[1200px]:text-icon-dt-6 max-[1200px]:text-icon-dt-7">post_add</span>
+                                <span class="text-nowrap min-[1200px]:text-dt-4 max-[1200px]:text-dt-6">Artikel hinzufügen</span>
                             </div>
                         </Button>
                     </div>
                 {/if}
             </div>
             <div class="w-full flex items-start justify-start gap-4">
-                <span class="rounded-2 bg-gv-bg-bar p-4 text-icon-dt-2 text-gv-primary material-symbols-rounded">
+                <span class="rounded-2 bg-gv-bg-bar p-4 min-[1000px]:text-icon-dt-2 text-icon-dt-4 text-gv-primary material-symbols-rounded">
                     {category?.icon}
                 </span>
                 <div class="flex flex-col items-start justify-start">
-                    <p class="text-gv-dark-text text-dt-3">{category?.title}</p>
-                    <p class="text-gv-light-text text-dt-5 text-nowrap truncate">{category?.description}</p>
+                    <p class="text-gv-dark-text min-[1000px]:text-dt-3 text-dt-4">{category?.title}</p>
+                    <p class="text-gv-light-text min-[1000px]:text-dt-5 text-dt-5">{category?.description}</p>
                 </div>
             </div>
         </div>
         <div
             class="w-full h-full flex flex-col items-start justify-start gap-2 p-5 bg-white rounded-1 overflow-y-auto drop-shadow-[0_0_5px_rgba(0,0,0,0.2)]">
-            {#each helpCenterStore.articles as article}
-                <button class="w-full cursor-pointer group"
-                        onclick={async () => {await getArticle(article.id)}}>
-                    <Card>
-                        <div class="flex items-center justify-start gap-4 w-full h-full">
-                            <div class="flex flex-col items-start justify-start gap-2 max-w-1/3">
-                                <p class="text-gv-dark-text font-bold text-dt-3">{article.title}</p>
-                                <p class="text-gv-light-text text-dt-5 line-clamp-2 truncate">{article.description}</p>
-                                <div class="w-full flex items-center justify-start gap-2">
-                                    {#each article.tags as tag}
-                                        <Chip text={tag} />
-                                    {/each}
+            {#if helpCenterStore.articles.length > 0}
+                {#each helpCenterStore.articles as article}
+                    <button class="w-full cursor-pointer group"
+                            onclick={async () => {await getArticle(article.id)}}>
+                        <Card>
+                            <div class="flex items-center justify-start gap-4 w-full h-full">
+                                <div class="flex flex-col items-start justify-start gap-2 max-w-1/3">
+                                    <p class="text-gv-dark-text font-bold text-dt-3">{article.title}</p>
+                                    <p class="text-gv-light-text text-dt-5 line-clamp-2 truncate">{article.description}</p>
+                                    <div class="w-full flex items-center justify-start gap-2">
+                                        {#each article.tags as tag}
+                                            <Chip text={tag} />
+                                        {/each}
+                                    </div>
+                                </div>
+                                <div class="ml-auto h-full flex flex-col items-center justify-center">
+                                    <span
+                                        class="material-symbols-rounded text-icon-dt-4 text-gv-light-text duration-200">chevron_right</span>
                                 </div>
                             </div>
-                            <div class="ml-auto h-full flex flex-col items-center justify-center">
-                                <span
-                                    class="material-symbols-rounded text-icon-dt-4 text-gv-light-text duration-200">chevron_right</span>
-                            </div>
-                        </div>
-                    </Card>
-                </button>
-            {/each}
+                        </Card>
+                    </button>
+                {/each}
+            {:else}
+                <div class="gap-5 bg-white flex flex-col items-center min-h-0 justify-center rounded-1 border-2 border-gv-border w-full h-full p-3 overflow-hidden border-dashed">
+                    <span class="rounded-2 bg-gv-bg-bar p-4 text-icon-dt-1 text-gv-primary material-symbols-rounded">
+                        {category?.icon}
+                    </span>
+                    <div class="gap-2 flex flex-col items-center justify-center">
+                        <p class="text-gv-dark-text font-medium text-dt-3 text-center">Noch keine Artikel vorhanden</p>
+                        <p class="text-gv-light-text text-dt-5 text-center">Für diese Kategorie wurden noch keine Hilfeartikel veröffentlicht.</p>
+                    </div>
+                </div>
+            {/if}
         </div>
     </div>
 </div>
