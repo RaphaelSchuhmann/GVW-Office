@@ -22,13 +22,19 @@ const isFetching = {
     getArticle: false,
     checkCategory: false,
     checkArticle: false,
-    searchArticle: false,
+    searchArticles: false,
 };
 
 const pendingCategoryChecks = new Map();
 const pendingArticleChecks = new Map();
 const pendingArticleSearch = new Map();
 
+/**
+ * Creates a new help center category.
+ *
+ * @param {Object} inputs - Category creation data.
+ * @returns {Promise<void|boolean>} Returns `false` if another request is already running.
+ */
 export async function addHelpCenterCategory(inputs) {
     if (isFetching.addCategory) return false;
 
@@ -55,6 +61,12 @@ export async function addHelpCenterCategory(inputs) {
     }
 }
 
+/**
+ * Updates the list of featured help center categories.
+ *
+ * @param {Map<string, boolean>} featured - Set containing the featured category IDs.
+ * @returns {Promise<void>}
+ */
 export async function updateHelpCenterCategoryFeaturedList(featured) {
     if (isFetching.updatedFeatured || featured.size <= 0) return;
 
@@ -83,6 +95,14 @@ export async function updateHelpCenterCategoryFeaturedList(featured) {
     }
 }
 
+/**
+ * Deletes a help center category.
+ *
+ * The category is only deleted if it exists and contains no articles.
+ *
+ * @param {string} id - Category ID.
+ * @returns {Promise<void>}
+ */
 export async function deleteHelpCenterCategory(id) {
     if (isFetching.deleteCategory || !id) return;
 
@@ -108,6 +128,12 @@ export async function deleteHelpCenterCategory(id) {
     }
 }
 
+/**
+ * Creates a new help center article.
+ *
+ * @param {Object} data - Article data.
+ * @returns {Promise<void|boolean>} Returns `false` if another request is already running.
+ */
 export async function addHelpCenterArticle(data) {
     if (isFetching.addArticle) return;
 
@@ -135,6 +161,11 @@ export async function addHelpCenterArticle(data) {
     }
 }
 
+/**
+ * Loads all articles of the currently active category.
+ *
+ * @returns {Promise<void>}
+ */
 export async function getArticles() {
     if (!helpCenterStore.activeCategory) return;
 
@@ -148,6 +179,12 @@ export async function getArticles() {
     helpCenterStore.articles = body.articles;
 }
 
+/**
+ * Loads a help center article by its ID.
+ *
+ * @param {string} id - Article ID.
+ * @returns {Promise<void>}
+ */
 export async function getArticle(id) {
     if (isFetching.getArticle || !id) return;
 
@@ -165,6 +202,12 @@ export async function getArticle(id) {
     }
 }
 
+/**
+ * Updates an existing help center article including pending image uploads.
+ *
+ * @param {Object} data - Updated article data.
+ * @returns {Promise<string>} The latest document revision.
+ */
 export async function updateHelpCenterArticle(data) {
     if (isFetching.updateArticle) return data.rev || "";
 
@@ -208,6 +251,14 @@ export async function updateHelpCenterArticle(data) {
     }
 }
 
+/**
+ * Checks whether a help center category exists.
+ *
+ * Concurrent requests for the same ID are automatically deduplicated.
+ *
+ * @param {string} id - Category ID.
+ * @returns {Promise<boolean>} `true` if the category exists or the request failed, otherwise `false`.
+ */
 export async function categoryExists(id) {
     if (!id) return false;
 
@@ -239,6 +290,14 @@ export async function categoryExists(id) {
     return await request;
 }
 
+/**
+ * Checks whether a help center article exists.
+ *
+ * Concurrent requests for the same ID are automatically deduplicated.
+ *
+ * @param {string} id - Article ID.
+ * @returns {Promise<boolean>} `true` if the article exists or the request failed, otherwise `false`.
+ */
 export async function articleExists(id) {
     if (!id) return false;
 
@@ -260,7 +319,7 @@ export async function articleExists(id) {
             return true;
         } finally {
             pendingArticleChecks.delete(id);
-            if (pendingCategoryChecks.size === 0) {
+            if (pendingArticleChecks.size === 0) {
                 isFetching.checkArticle = false;
             }
         }
@@ -270,6 +329,12 @@ export async function articleExists(id) {
     return await request;
 }
 
+/**
+ * Deletes a help center article.
+ *
+ * @param {string} id - Article ID.
+ * @returns {Promise<void>}
+ */
 export async function deleteArticle(id) {
     if (isFetching.deleteArticle) return;
 
@@ -291,6 +356,14 @@ export async function deleteArticle(id) {
     }
 }
 
+/**
+ * Searches help center articles.
+ *
+ * Concurrent searches for the same query are automatically deduplicated.
+ *
+ * @param {string} query - Search query.
+ * @returns {Promise<Array>} Matching search results.
+ */
 export async function searchArticles(query) {
     if (pendingArticleSearch.has(query)) return await pendingArticleSearch.get(query);
 
