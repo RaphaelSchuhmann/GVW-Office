@@ -36,7 +36,7 @@
                 </button>
 
                 <div class="flex flex-col w-full h-full items-start gap-2">
-                    {#if helpCenterStore.activeCategory === ""}
+                    {#if helpCenterStore.activeCategory === "" && helpCenterStore.activeArticle === null}
                         <LandingPageMobile />
                     {:else if helpCenterStore.activeArticle}
                         <ArticlePageMobile />

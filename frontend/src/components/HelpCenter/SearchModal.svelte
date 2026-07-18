@@ -103,7 +103,7 @@
                     {#if results.length > 0}
                         {#each results as article}
                             <button class="w-full cursor-pointer group"
-                                    onclick={async () => {closeSearch(); await getArticle(article.id)}}>
+                                    onclick={async () => {await getArticle($state.snapshot(article.id)); closeSearch();}}>
                                 {#if isMobile}
                                     <Card>
                                         <div class="flex flex-col items-start justify-start w-full h-full gap-2">

@@ -38,7 +38,7 @@
         <div class="flex w-dvw h-full overflow-hidden">
             <DesktopSidebar buttons={appSettings.helpCenterCategories} />
             
-            {#if helpCenterStore.activeCategory === ""}
+            {#if helpCenterStore.activeCategory === "" && helpCenterStore.activeArticle === null}
                 <LandingPageDesktop searchBarButton={searchModalRef?.openSearch} />
             {:else if helpCenterStore.activeArticle !== null}
                 <ArticlePageDesktop />
