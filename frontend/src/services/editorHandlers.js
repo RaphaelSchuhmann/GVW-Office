@@ -87,9 +87,9 @@ function handleBackspace(e, currentBlock, content) {
         }
 
         // If the element right behind the cursor is a rich link, blow it up entirely
-        if (targetNode && targetNode.nodeType === Node.ELEMENT_NODE && targetNode.getAttribute?.("data-rich-link") === "true") {
+        if (targetNode?.getAttribute?.("data-rich-link") === "true") {
             e.preventDefault();
-            targetNode.parentNode.removeChild(targetNode);
+            targetNode.remove();
 
             // Sync current state to the Svelte array index item
             const id = currentBlock.dataset.id;
