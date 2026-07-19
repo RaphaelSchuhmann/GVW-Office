@@ -15,8 +15,8 @@
         ...restProps
     } = $props();
 
+    const activePage = page || "library";
     const icon = activePage === "library" ? "audio_file" : "draft";
-    const activePage = page === "library" ? page : "library";
     const acceptString = $derived.by(() => {
         let result = "";
         for (let i = 0; i < validTypes.length; i++) {
