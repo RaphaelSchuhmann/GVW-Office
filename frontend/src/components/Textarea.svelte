@@ -16,7 +16,7 @@
         ...restProps
     } = $props();
 
-    let inputEl = $state();
+    let inputEl = null;
 
     /**
      * Focuses the input element (Exposed via bind:this)
@@ -35,7 +35,7 @@
         {placeholder}
         {readonly}
         {disabled}
-        onchange={(e) => onChange?.(e)}
+        onchange={onChange}
         class={`rounded-1 w-full ${height} p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary mt-1 text-dt-6 ${resizable ? "resize" : "resize-none"}`}
         {...restProps}
     ></textarea>

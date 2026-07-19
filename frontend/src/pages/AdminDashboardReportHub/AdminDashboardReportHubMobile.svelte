@@ -25,7 +25,7 @@
     let sidebarOpen = $state(false);
 
     /** @type {import("../../components/Modal.svelte").default} */
-    let detailsModal = $state(null);
+    let detailsModal = null;
 
     let selectedView = $state("Feedback");
 
@@ -65,6 +65,8 @@
             bugReportItemDetails = details;
         }
     }
+
+    function openSidebar() { sidebarOpen = true; }
 </script>
 
 <ToastStack isMobile={true} />
@@ -134,7 +136,7 @@
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full flex-1 overflow-hidden p-7 min-h-0 h-full">
             <div class="w-full flex items-center justify-start">
-                <button class="flex items-center justify-center" onclick={() => (sidebarOpen = true)}>
+                <button class="flex items-center justify-center" onclick={openSidebar}>
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">
                         menu
                     </span>
@@ -169,7 +171,7 @@
                 <div class="w-full h-full flex gap-4 mt-5">
                     <div class="h-full w-full">
                         <Card fillHeight={true} padding="0">
-                            {#each feedbackStore.data as feedback}
+                            {#each feedbackStore.data as feedback (feedback.id)}
                                 <ReportHubListItem
                                     id={feedback.id}
                                     title={feedback.title}
@@ -188,7 +190,7 @@
                 <div class="w-full h-full flex gap-4 mt-5">
                     <div class="h-full w-full">
                         <Card fillHeight={true} padding="0">
-                            {#each bugReportStore.data as bugReport}
+                            {#each bugReportStore.data as bugReport (bugReport.id)}
                                 <ReportHubListItem
                                     id={bugReport.id}
                                     title={bugReport.title}

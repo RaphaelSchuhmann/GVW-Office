@@ -16,13 +16,13 @@
      * Used to programmatically open the confirm deletion dialog.
      * @type {import("../../../components/ConfirmDeleteModal.svelte").default}
      */
-    let confirmDeleteArticleModal = $state(null);
+    let confirmDeleteArticleModal = null;
 
     /**
      * Reference to the text editor.
      * @type {import("../../../components/TextEditor/TextEditor.svelte").default}
      */
-    let editorRef = $state(null);
+    let editorRef = null;
 
     const category = appSettings.helpCenterCategories.find(cat => cat.id === helpCenterStore.activeCategory);
 
@@ -94,19 +94,21 @@
 
         confirmDeleteArticleModal.startDelete();
     }
+
+    function clearActiveArticle() {  helpCenterStore.activeArticle = null; }
 </script>
 
 <ConfirmDeleteModal action="deleteHelpArticle" title="Artikel löschen"
                     subTitle="Sind Sie sich sicher das sie diesen Artikel löschen möchten?" placeholder="Artikel1"
                     expectedInput={articleData?.title} id={articleData?.id}
-                    onClose={async () => { helpCenterStore.activeArticle = null; await getArticles(); }}
+                    onClose={async () => { clearActiveArticle(); await getArticles(); }}
                     bind:this={confirmDeleteArticleModal} />
 
 <div class="flex flex-col w-full h-full items-start justify-start gap-4 p-10 overflow-y-auto">
     <div class="flex flex-col items-start justify-start gap-8 w-full h-full">
         <div class="w-full flex items-center justify-start">
             <button class="group cursor-pointer flex items-center justify-start gap-2 p-2"
-                    onclick={() => helpCenterStore.activeArticle = null}>
+                    onclick={clearActiveArticle}>
                 <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_back</span>
                 <span class="text-dt-5 text-gv-dark-text group-hover:underline">{category?.title || "Zurück"}</span>
             </button>

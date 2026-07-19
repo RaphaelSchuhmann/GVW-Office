@@ -37,21 +37,21 @@
      * Used to programmatically open the category dialog.
      * @type {import("../../components/CategoryModal.svelte").default}
      */
-    let categoryModal = $state();
+    let categoryModal = null;
 
     /**
      * Reference to the confirm delete modal.
      * Used to programmatically open the confirm deletion dialog.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
-    let confirmDeleteScoreModal = $state();
+    let confirmDeleteScoreModal = null;
 
     /**
      * Reference to the add score modal.
      * Used to programmatically open the add score dialog.
      * @type {import("../../components/Modal.svelte").default}
      */
-    let addScoreModal = $state();
+    let addScoreModal = null;
 
     // ==========
     // CATEGORIES
@@ -254,9 +254,46 @@
      * Stores open state, position, and currently active member ID.
      */
     let menu = createContextMenu();
+
+    function handleMenuOpenFromBtn(e) {
+        const memberId = e.currentTarget.dataset.id;
+        menu.openFromButton(e, memberId);
+    }
+
+    function handleMenuOpenFromEvent(e) {
+        const memberId = e.currentTarget.dataset.id;
+        menu.openFromEvent(e, memberId);
+    }
+
+    function closeMenu() { menu.data.open = false; }
+
+    function showAddScoreModal() {
+        if (addScoreModal) {
+            addScoreModal.showModal();
+        }
+    }
+
+    function hideAddScoreModal() {
+        if (addScoreModal) {
+            addScoreModal.hideModal();
+        }
+    }
+
+    function showCategoryModal() {
+        if (categoryModal) {
+            categoryModal.showModal();
+        }
+    }
+
+    function updateCategory(value) { scoreInput.type = appSettings.scoreCategories[value]; }
+
+    function updateChoirType(value) {
+        selectedChoirType = value;
+        scoreInput.voices = [];
+    }
 </script>
 
-<svelte:window oncontextmenu={() => (menu.data.open = false)} />
+<svelte:window oncontextmenu={closeMenu} />
 <ToastStack />
 
 <CategoryModal bind:this={categoryModal} />
@@ -271,7 +308,7 @@
                 onclick={async () =>  await push(`/library/details?id=${menu.data.activeId}&editing=true`)}>
             Bearbeiten
         </Button>
-        <Button type="contextMenu" fontColor="text-gv-delete" onclick={() => startDeleteScore()}>Löschen</Button>
+        <Button type="contextMenu" fontColor="text-gv-delete" onclick={startDeleteScore}>Löschen</Button>
     {/if}
 </ContextMenu>
 
@@ -287,19 +324,19 @@
     <Input title="Titel" placeholder="The Final Countdown" bind:value={scoreInput.title} marginTop="5" />
     <Input title="Komponist/Band" placeholder="Europe" bind:value={scoreInput.artist} marginTop="5" />
     <Dropdown title="Kategorie" options={getLibraryCategories(false)}
-              onChange={(value) => scoreInput.type = appSettings.scoreCategories[value]} marginTop="5" />
+              onChange={updateCategory} marginTop="5" />
     <TabBar contents={["Männerchor", "Gemischterchor"]} selected={selectedChoirType}
-            onChange={(value) => {selectedChoirType = value; scoreInput.voices = [];}} marginTop="5"
+            onChange={updateChoirType} marginTop="5"
             disabled={selectedChips.length > 0} />
 
     <div class="w-full flex items-start justify-start mt-2 gap-8">
         {#if selectedChoirType === "Männerchor"}
             <ChipPicker title="Stimmen" options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} useLock={true}
-                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={selectedChips}
+                        onChange={toggleVoice} bind:selectedOptions={selectedChips}
                         lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern." />
         {:else}
             <ChipPicker title="Stimmen" options={["Tenor", "Bass", "Sopran", "Alt"]} useLock={true}
-                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={selectedChips}
+                        onChange={toggleVoice} bind:selectedOptions={selectedChips}
                         lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern." />
         {/if}
     </div>
@@ -309,7 +346,7 @@
                   bind:files={scoreInput.files} />
 
     <div class="w-full flex items-center gap-4 mt-5">
-        <Button type="secondary" onclick={() => addScoreModal.hideModal()}>Abbrechen</Button>
+        <Button type="secondary" onclick={hideAddScoreModal}>Abbrechen</Button>
         <Button type="primary" disabled={saveDisabled} onclick={async () => await submitScore()}>
             {#if isSubmitting}
                 <Spinner light={true} />
@@ -327,11 +364,11 @@
         <PageHeader title="Notenbibliothek" subTitle="Verwaltung des gesamten Notenmaterials"
                     showSlot={viewport.width > 1300}>
             {#if (user.role === "board_member" || user.role === "admin" || user.role === "librarian" || user.role === "conductor") && viewport.width > 1300}
-                <Button type="primary" onclick={() => categoryModal.openModal()}>
+                <Button type="primary" onclick={showCategoryModal}>
                     <span class="material-symbols-rounded text-icon-dt-4 mr-2">discover_tune</span>
                     <p class="text-dt-4">Kategorien</p>
                 </Button>
-                <Button type="primary" onclick={() => addScoreModal.showModal()}>
+                <Button type="primary" onclick={showAddScoreModal}>
                     <span class="material-symbols-rounded text-icon-dt-4 mr-2">add</span>
                     <p class="text-dt-4 text-nowrap">Noten hinzufügen</p>
                 </Button>
@@ -340,12 +377,12 @@
 
         {#if (user.role === "board_member" || user.role === "admin" || user.role === "librarian" || user.role === "conductor") && viewport.width < 1300}
             <div class="flex items-center w-full min-[1000px]:gap-4 gap-2 mt-5">
-                <Button type="primary" onclick={() => categoryModal.openModal()}>
+                <Button type="primary" onclick={showCategoryModal}>
                     <span
                         class="material-symbols-rounded min-[1000px]:text-icon-dt-4 text-icon-dt-5 mr-2">discover_tune</span>
                     <p class="min-[1000px]:text-dt-4 text-dt-5">Kategorien</p>
                 </Button>
-                <Button type="primary" onclick={() => addScoreModal.showModal()}>
+                <Button type="primary" onclick={showAddScoreModal}>
                     <span class="material-symbols-rounded min-[1000px]:text-icon-dt-4 text-icon-dt-5 mr-2">add</span>
                     <p class="min-[1000px]:text-dt-4 text-dt-5 text-nowrap">Noten hinzufügen</p>
                 </Button>
@@ -362,8 +399,8 @@
         <div class="flex-1 min-h-0 overflow-y-auto mt-5">
             <div
                 class="min-[1470px]:grid min-[1470px]:grid-cols-2 flex flex-col gap-4 overflow-y-auto overflow-x-hidden">
-                {#each libraryStore.display as score}
-                    <Card oncontextmenu={(e) => menu.openFromEvent(e, score.id)}>
+                {#each libraryStore.display as score (score.id)}
+                    <Card data-id={score.id} oncontextmenu={handleMenuOpenFromEvent}>
                         <div class="flex items-start justify-start gap-2 w-full">
                             <span class="material-symbols-rounded text-icon-dt-6 text-gv-primary">music_note</span>
                             <div class="flex flex-col items-start gap-1 max-w-2/3">
@@ -378,7 +415,8 @@
                                 </button>
                                 <button
                                     class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2"
-                                    onclick={(e) => menu.openFromButton(e, score.id)}>
+                                    data-id={score.id}
+                                    onclick={handleMenuOpenFromBtn}>
                                     <span class="material-symbols-rounded text-icon-dt-5">more_horiz</span>
                                 </button>
                             </div>
@@ -391,7 +429,7 @@
                         <div class="flex w-full items-center justify-start mt-4 gap-2">
                             <span
                                 class="material-symbols-rounded text-gv-light-text text-icon-dt-5">import_contacts</span>
-                            {#each score.voices as voice}
+                            {#each score.voices as voice, i (i)}
                                 <p class="text-gv-light-text text-dt-7">{voiceMap[voice]}</p>
                             {/each}
                         </div>

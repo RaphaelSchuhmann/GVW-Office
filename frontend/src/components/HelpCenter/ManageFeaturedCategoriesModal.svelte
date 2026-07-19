@@ -9,10 +9,11 @@
 
     let { isMobile = false, ...restProps } = $props();
 
-    let modalRef = $state(null);
+    let modalRef = null;
     let isSubmitting = $state(false);
 
-    let inputs = $state(new Map());
+    let inputMap = new Map();
+    let inputs = $state(inputMap);
 
     $effect(() => {
         if (appSettings.helpCenterCategories) {
@@ -20,8 +21,17 @@
         }
     });
 
-    let getEnabledCount = $derived(Array.from(inputs.values()).filter(val => val).length);
-    let addDisabled = $derived(getEnabledCount < 1 || getEnabledCount > 6);
+    let getEnabledCount = $derived.by(() => {
+        let count = 0;
+
+        for (const val of inputs.values()) {
+            if (val) count++;
+        }
+
+        return count;
+    });
+
+    let addDisabled = getEnabledCount < 1 || getEnabledCount > 6;
 
     function submit() {
         isSubmitting = true;
@@ -43,25 +53,32 @@
     }
 
     export function showModal() {
-        initializeInputs();
-        modalRef?.showModal();
+        if (modalRef) {
+            initializeInputs();
+            modalRef.showModal();
+        }
     }
 
     export function hideModal() {
-        modalRef?.hideModal();
+        if (modalRef) modalRef.hideModal();
+    }
+
+    function updateCategory(event) {
+        const id = event.currentTarget.dataset.id;
+
+        inputs.set(id, !inputs.get(id));
+        inputs = new Map(inputs);
     }
 </script>
 
 <Modal bind:this={modalRef} title="Kategorien auswählen" hideSubTitle={true} isMobile={isMobile}>
     <div class="flex flex-col w-full items-center justify-start gap-4">
         <div class="flex flex-col w-full items-center justify-start gap-2">
-            {#each appSettings.helpCenterCategories as category}
+            {#each appSettings.helpCenterCategories as category (category.id)}
                 <button class="cursor-pointer disabled:cursor-not-allowed opacity-75 w-full"
                         disabled={getEnabledCount >= 6 && !inputs.get(category.id)}
-                        onclick={() => {
-                            inputs.set(category.id, !inputs.get(category.id));
-                            inputs = new Map(inputs);
-                        }}>
+                        data-id={category.id}
+                        onclick={updateCategory}>
                     <Card>
                         <div class="flex items-center justify-start gap-2 w-full">
                             <Checkbox isChecked={inputs.get(category.id)} clickable={false} />
@@ -78,7 +95,7 @@
         </div>
 
         <div class="w-full flex items-center justify-end gap-4">
-            <Button type="secondary" onclick={() => modalRef.hideModal()}>Abbrechen</Button>
+            <Button type="secondary" onclick={hideModal}>Abbrechen</Button>
             <Button type="primary" disabled={addDisabled} onclick={submit} isSubmit={true}>
                 {#if isSubmitting}
                     <Spinner light={true} />

@@ -1,8 +1,9 @@
 <script>
     import Card from "./Card.svelte";
     import Chip from "./Chip.svelte";
-    import { reportTypeMap, deleteReport } from "../services/reportService.svelte.js";
+    import { reportTypeMap, deleteReport, highlight } from "../services/reportService.svelte.js";
     import { push } from "svelte-spa-router";
+    import SanitizedHTML from "./SanitizedHTML.svelte";
 
     let {
         id = "",
@@ -28,24 +29,24 @@
         <button class="flex flex-col items-start gap-4 cursor-pointer w-full" onclick={openReport}>
             <div class="flex items-center gap-2">
                 <span class="material-symbols-rounded text-gv-primary text-icon-dt-4">docs</span>
-                <span class="text-gv-dark-text text-dt-5 text-nowrap truncate">{title}</span>
+                <span class="text-gv-dark-text text-dt-5 text-nowrap truncate text-left">{title}</span>
             </div>
             <div class="flex items-center gap-4">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-gv-light-text text-icon-dt-6">calendar_today</span>
-                    <span class="text-gv-light-text text-dt-6">{date}</span>
+                    <span class="text-gv-light-text text-dt-6 text-left">{date}</span>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 w-full">
                     <span class="material-symbols-rounded text-gv-light-text text-icon-dt-6">person</span>
-                    <span class="text-gv-light-text text-dt-6">{author}</span>
+                    <span class="text-gv-light-text text-dt-6 text-left text-nowrap truncate w-full">{author}</span>
                 </div>
             </div>
             {#if isSearchResult}
-                <div class="flex w-full justify-start">
-                    {@html additionalText}
+                <div class="flex w-full justify-start text-left">
+                    <SanitizedHTML htmlContent={additionalText} />
                 </div>
             {:else}
-                <span class="text-gv-light-text mt-2 text-dt-6 line-clamp-2 truncate">{additionalText}</span>
+                <span class="text-gv-light-text mt-2 text-dt-6 line-clamp-2 truncate text-left">{additionalText}</span>
             {/if}
         </button>
         <div class={`flex items-center ${isMobile ? "justify-start mt-4" : "justify-end"} gap-4 ml-auto`}>

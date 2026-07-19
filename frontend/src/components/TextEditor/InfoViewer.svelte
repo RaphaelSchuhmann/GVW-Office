@@ -22,7 +22,7 @@
     let _isOpen = $state(false);
     let isEditingDescription = $state(false);
     let descriptionDraft = $state("");
-    let descriptionTextAreaRef = $state(null);
+    let descriptionTextAreaRef = null;
 
     let savedState = $state([]);
     let workingState = $state([]);
@@ -111,6 +111,11 @@
             isSavingAttachments = false;
         }
     }
+
+    function handleDownloadAttachments(e) {
+        const itemId = e.currentTarget.dataset.id;
+        downloadAttachments(itemId);
+    }
 </script>
 
 {#if _isOpen}
@@ -198,7 +203,8 @@
                     <p class="text-gv-dark-text text-dt-4 font-bold">Anhänge</p>
                     <button
                         class="flex items-center justify-center border-2 border-gv-border rounded-2 cursor-pointer bg-white hover:bg-gv-hover-effect p-1.5 duration-200"
-                        onclick={() => downloadAttachments(data.id)}
+                        data-id={data.id}
+                        onclick={handleDownloadAttachments}
                     >
                         <span class="material-symbols-rounded text-gv-dark-text text-icon-dt-6">download</span>
                     </button>
@@ -213,7 +219,7 @@
                     <FileSelector
                         validTypes={["pdf", "png", "jpg", "jpeg", "gif", "mp3", "wav", "midi", "mid", "xml", "musicxml", "mxl", "mscz", "mscx", "sib", "musx", "cap", "capx", "gp", "gp5", "gp3", "gp4", "gpx"]}
                         bind:files={workingState} disabled={isSavingAttachments} wrapContent={true}
-                        onChange={(files) => saveAttachmentChanges()}
+                        onChange={saveAttachmentChanges}
                     />
                 </div>
             </div>

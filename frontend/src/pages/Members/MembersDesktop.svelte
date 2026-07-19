@@ -24,6 +24,7 @@
     import ContextMenu from "../../components/ContextMenu.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import AddMemberModal from "../../components/AddMemberModal.svelte";
 
     // ==================
     // MODAL REFERENCES
@@ -31,125 +32,16 @@
     /**
      * Reference to the "Add Member" modal.
      * Controls visibility and lifecycle of the member creation dialog.
-     * @type {import("../../components/Modal.svelte").default}
+     * @type {import("../../components/AddMemberModal.svelte").default}
      */
-    let addMemberModal = $state();
+    let addMemberModal = null;
 
     /**
      * Reference to the delete confirmation modal.
      * Used to initiate and confirm member deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
-    let confirmDeleteMemberModal = $state();
-
-    // ----------------
-    // ADD MEMBER STATE
-    // ----------------
-    /**
-     * Reactive state object representing the input fields
-     * of the "Add Member" form.
-     *
-     * Dropdown values are stored as display labels
-     * and mapped to backend enums on submission.
-     */
-    let memberInput = $state({
-        name: "",
-        surname: "",
-        email: "",
-        phone: "",
-        address: "",
-        voice: null,
-        status: null,
-        role: null,
-        birthdate: "",
-        joined: ""
-    });
-
-    let isSubmitting = $state(false);
-
-    /**
-     * Derived flag determining whether the "Add Member"
-     * submit button should be disabled.
-     *
-     * Disabled if:
-     * - Any required text field is empty
-     * - Any dropdown has no valid selection
-     *
-     * Ensures basic client-side validation before submission.
-     */
-    const addDisabled = $derived.by(() => {
-        const hasEmptyFields = [
-            memberInput.name, memberInput.surname, memberInput.email,
-            memberInput.phone, memberInput.address, memberInput.birthdate, memberInput.joined
-        ].some(val => !val || val.trim() === "");
-
-        const hasUnselectedDropdowns = [
-            memberInput.voice, memberInput.status, memberInput.role
-        ].some(val => !val || val.toLowerCase() === "wählen");
-
-        return hasEmptyFields || hasUnselectedDropdowns || isSubmitting;
-    });
-
-    /**
-     * Resets all input fields of the "Add Member" form
-     * to their initial default values.
-     *
-     * Called after successful submission or when closing the modal.
-     */
-    function resetAddInputs() {
-        memberInput.name = "";
-        memberInput.surname = "";
-        memberInput.email = "";
-        memberInput.phone = "";
-        memberInput.address = "";
-        memberInput.birthdate = "";
-        memberInput.joined = "";
-        memberInput.voice = null;
-        memberInput.status = null;
-        memberInput.role = null;
-    }
-
-    /**
-     * Submits the new member to the backend.
-     *
-     * Workflow:
-     * 1. Map dropdown display values to backend enum values.
-     * 2. Send member payload to API.
-     * 3. Close the modal.
-     * 4. Refresh member list from backend.
-     *
-     * @async
-     * @returns {Promise<void>}
-     */
-    async function submitMember() {
-        isSubmitting = true;
-
-        const payload = {
-            ...$state.snapshot(memberInput),
-            voice: voiceMap[memberInput.voice],
-            status: statusMap[memberInput.status],
-            role: roleMap[memberInput.role]
-        };
-
-        if (!payload.voice || !payload.status || !payload.role) {
-            addToast({
-                title: "Ungültige Auswahl",
-                subTitle: "Bitte prüfen Sie Stimmlage, Status und Rolle.",
-                type: "error",
-            });
-            return;
-        }
-
-        try {
-            await newMember(payload);
-        } finally {
-            isSubmitting = false;
-        }
-
-        addMemberModal.hideModal();
-        await fetchAndSetRaw();
-
-    }
+    let confirmDeleteMemberModal = null;
 
     // -------------------
     // DELETE MEMBER STATE
@@ -216,59 +108,31 @@
         menu.data.activeId = null;
         await fetchAndSetRaw();
     }
+
+    function showAddMemberModal() {
+        if (addMemberModal) {
+            addMemberModal.show();
+        }
+    }
+
+    function handleMenuOpenFromBtn(e) {
+        const memberId = e.currentTarget.dataset.id;
+        menu.openFromButton(e, memberId);
+    }
+
+    function handleMenuOpenFromEvent(e) {
+        const memberId = e.currentTarget.dataset.id;
+        menu.openFromEvent(e, memberId);
+    }
+
+    function closeMenu() { menu.data.open = false; }
 </script>
 
-<svelte:window oncontextmenu={() => (menu.data.open = false)} />
+<svelte:window oncontextmenu={closeMenu} />
 
 <ToastStack />
 
-<Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
-       subTitle="Erfassen Sie hier die Mitgliedsdaten" width={viewport.width > 1300 ? "2/5" : "3/5"}>
-
-    <div class="flex items-center gap-4 mt-5">
-        <Input bind:value={memberInput.name} title="Vorname" placeholder="Max" />
-
-        <Input bind:value={memberInput.surname} title="Nachname" placeholder="Mustermann" />
-    </div>
-
-    <Input bind:value={memberInput.email} marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com" />
-
-    <Input bind:value={memberInput.phone} marginTop="5" title="Telefon" placeholder="01701234 5678" />
-
-    <Input bind:value={memberInput.address} marginTop="5" title="Adresse" placeholder="Hauptstraße 1..." />
-    <div class="w-full flex items-center gap-4 mt-5">
-        <Dropdown onChange={(value) => memberInput.voice = value} title="Stimmlage"
-                  options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} showDropshadow={true} />
-
-        <Dropdown onChange={(value) => memberInput.status = value} title="Status" options={["Aktiv", "Passiv"]} showDropshadow={true} />
-
-        <Dropdown onChange={(value) => memberInput.role = value} title="Rolle"
-                  options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true} showDropshadow={true} />
-    </div>
-
-    <div class="w-full flex items-center gap-4 mt-5 max-[1700px]:flex-col">
-        <div class="flex flex-col items-start w-full">
-            <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>
-            <DefaultDatepicker onChange={(value) => memberInput.birthdate = value} />
-        </div>
-
-        <div class="flex flex-col items-start w-full">
-            <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>
-            <YearDatepicker onChange={(value) => memberInput.joined = value} />
-        </div>
-    </div>
-    <div class="w-full flex items-center justify-end mt-5 gap-4">
-        <Button type="secondary" onclick={() => addMemberModal.hideModal()}>Abbrechen</Button>
-        <Button type="primary" disabled={addDisabled} onclick={submitMember} isSubmit={true}>
-            {#if isSubmitting}
-                <Spinner light={true} />
-                <p>Speichern...</p>
-            {:else}
-                Hinzufügen
-            {/if}
-        </Button>
-    </div>
-</Modal>
+<AddMemberModal bind:this={addMemberModal} />
 
 <ConfirmDeleteModal expectedInput={memberName} id={menu.data.activeId}
                     title="Mitglied löschen" subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?"
@@ -295,7 +159,7 @@
     <div class="flex flex-col w-full h-dvh overflow-hidden p-10 min-h-0">
         <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={viewport.width > 1000}>
             {#if viewport.width > 1000}
-                <Button type="primary" onclick={() => addMemberModal.showModal()}>
+                <Button type="primary" onclick={showAddMemberModal}>
                     <span class="material-symbols-rounded text-icon-dt-4 mr-2">add</span>
                     <p class="text-dt-4 text-nowrap">Mitglied hinzufügen</p>
                 </Button>
@@ -303,7 +167,7 @@
         </PageHeader>
 
         {#if viewport.width <= 1000}
-            <Button type="primary" onclick={() => addMemberModal.showModal()} marginTop="4">
+            <Button type="primary" onclick={showAddMemberModal} marginTop="4">
                 <span class="material-symbols-rounded text-icon-dt-5">add</span>
                 <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
             </Button>
@@ -346,9 +210,10 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {#each membersStore.display as member}
+                            {#each membersStore.display as member (member.id)}
                                 <tr class="border-t-2 border-gv-border"
-                                    oncontextmenu={(e) => menu.openFromEvent(e, member.id)}>
+                                    data-id={member.id}
+                                    oncontextmenu={handleMenuOpenFromEvent}>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col items-start h-full overflow-hidden gap-1">
                                             <p class="min-[1300px]:text-dt-6 text-dt-7 text-gv-dark-text text-nowrap truncate">{`${member.name} ${member.surname}`}</p>
@@ -381,7 +246,8 @@
                                     <td class="px-6 py-4">
                                         <button
                                             class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
-                                            onclick={(e) => menu.openFromButton(e, member.id)}>
+                                            data-id={member.id}
+                                            onclick={handleMenuOpenFromBtn}>
                                                     <span
                                                         class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">
                                                         more_horiz
@@ -393,7 +259,7 @@
                             </tbody>
                         </table>
                     {:else}
-                        {#each membersStore.display as member}
+                        {#each membersStore.display as member (member.id)}
                             <button
                                 class={`flex items-center w-full ${membersStore.display.indexOf(member) !== membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`}
                                 onclick={async () =>  await push(`/members/details?id=${member.id}&editing=false`)}>

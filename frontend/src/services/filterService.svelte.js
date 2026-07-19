@@ -92,7 +92,7 @@ export function resetPageState() {
  *
  * Ensures the `display` array is always a shallow copy to maintain reactivity.
  */
-export function processFilters() {
+function processFilters() {
     if (!entry) return;
 
     let working = entry.store.raw ?? [];

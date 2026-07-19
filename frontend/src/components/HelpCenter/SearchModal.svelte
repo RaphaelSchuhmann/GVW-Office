@@ -5,6 +5,8 @@
     import Card from "../Card.svelte";
     import Spinner from "../Spinner.svelte";
     import { highlight } from "../../services/reportService.svelte.js";
+    import { sanitize } from "../../services/utils.js";
+    import SanitizedHTML from "../SanitizedHTML.svelte";
 
     let {
         isMobile = false,
@@ -17,7 +19,7 @@
     });
 
     let inputEl = $state(null);
-    let closeBtn = $state(null);
+    let closeBtn = null;
 
     let searchSequence = 0;
     let isVisible = $state(false);
@@ -107,45 +109,8 @@
 
                 <div class="flex flex-col items-center w-full h-full overflow-x-hidden overflow-y-auto gap-2">
                     {#if results.length > 0}
-                        {#each results as article}
-                            <button class="w-full cursor-pointer group"
-                                    onclick={async () => {await getArticle($state.snapshot(article.id)); closeSearch();}}>
-                                {#if isMobile}
-                                    <Card>
-                                        <div class="flex flex-col items-start justify-start w-full h-full gap-2">
-                                            <p class="text-gv-dark-text font-bold text-dt-3">{article.title}</p>
-                                            <div class="flex w-full justify-start">
-                                                {@html highlight(article.snippet, searchedTerm)}
-                                            </div>
-                                            <div class="w-full flex items-center justify-start gap-2 flex-wrap">
-                                                {#each article.tags as tag}
-                                                    <Chip text={tag} />
-                                                {/each}
-                                            </div>
-                                        </div>
-                                    </Card>
-                                {:else}
-                                    <Card>
-                                        <div class="flex items-center justify-start gap-4 w-full h-full">
-                                            <div class="flex flex-col items-start justify-start gap-2 max-w-1/3">
-                                                <p class="text-gv-dark-text font-bold text-dt-3">{article.title}</p>
-                                                <div class="flex w-full justify-start">
-                                                    {@html highlight(article.snippet, searchedTerm)}
-                                                </div>
-                                                <div class="w-full flex items-center justify-start gap-2">
-                                                    {#each article.tags as tag}
-                                                        <Chip text={tag} />
-                                                    {/each}
-                                                </div>
-                                            </div>
-                                            <div class="ml-auto h-full flex flex-col items-center justify-center">
-                                    <span
-                                        class="material-symbols-rounded text-icon-dt-4 text-gv-light-text duration-200">chevron_right</span>
-                                            </div>
-                                        </div>
-                                    </Card>
-                                {/if}
-                            </button>
+                        {#each results as article (article.id)}
+                            {@render articleItem(article)}
                         {/each}
                     {:else if isSearching}
                         <div
@@ -167,3 +132,44 @@
         </div>
     </div>
 {/if}
+
+{#snippet articleItem(article)}
+    <button class="w-full cursor-pointer group"
+            onclick={async () => {await getArticle($state.snapshot(article.id)); closeSearch();}}>
+        {#if isMobile}
+            <Card>
+                <div class="flex flex-col items-start justify-start w-full h-full gap-2">
+                    <p class="text-gv-dark-text font-bold text-dt-3">{article.title}</p>
+                    <div class="flex w-full justify-start">
+                        <SanitizedHTML htmlContent={highlight(article.snippet, searchedTerm)} />
+                    </div>
+                    <div class="w-full flex items-center justify-start gap-2 flex-wrap">
+                        {#each article.tags as tag, i (i)}
+                            <Chip text={tag} />
+                        {/each}
+                    </div>
+                </div>
+            </Card>
+        {:else}
+            <Card>
+                <div class="flex items-center justify-start gap-4 w-full h-full">
+                    <div class="flex flex-col items-start justify-start gap-2 max-w-1/3">
+                        <p class="text-gv-dark-text font-bold text-dt-3">{article.title}</p>
+                        <div class="flex w-full justify-start">
+                            <SanitizedHTML htmlContent={highlight(article.snippet, searchedTerm)} />
+                        </div>
+                        <div class="w-full flex items-center justify-start gap-2">
+                            {#each article.tags as tag, i (i)}
+                                <Chip text={tag} />
+                            {/each}
+                        </div>
+                    </div>
+                    <div class="ml-auto h-full flex flex-col items-center justify-center">
+                                    <span
+                                        class="material-symbols-rounded text-icon-dt-4 text-gv-light-text duration-200">chevron_right</span>
+                    </div>
+                </div>
+            </Card>
+        {/if}
+    </button>
+{/snippet}

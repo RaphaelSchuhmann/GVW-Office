@@ -10,9 +10,9 @@
     } = $props();
 
     let open = $state(false);
-    let timepickerRef = $state(null);
-    let hoursRef = $state(null);
-    let minuteRef = $state(null);
+    let timepickerRef = null;
+    let hoursRef = null;
+    let minuteRef = null;
 
     let isAutoScrolling = $state(false);
 
@@ -111,6 +111,24 @@
             scrollToItem(minutes, activeMinute, "minutes");
         }
     }
+
+    function selectMinute(e) {
+        const minute = e.currentTarget.dataset.minute;
+        activeMinute = minute;
+        updateSelection();
+        scrollToItem(minutes, minute, "minutes");
+    }
+
+    function selectHour(e) {
+        const hour = e.currentTarget.dataset.hour;
+        activeHour = hour;
+        updateSelection();
+        scrollToItem(hours, hour, "hours");
+    }
+
+    function handleHourScroll(e) { handleScroll(e, 'h'); }
+
+    function handleMinuteScroll(e) { handleScroll(e, "m"); }
 </script>
 
 <div class="relative w-full {marginMap[marginTop]}" bind:this={timepickerRef}>
@@ -140,13 +158,13 @@
 
                 <div class="flex w-3/4 h-full">
                     <div class="flex-1 overflow-y-auto no-scrollbar scroll-container py-14"
-                         onscroll={(e) => handleScroll(e, 'h')}
-                         onwheel={(e) => handleWheel(e)}
+                         onscroll={handleHourScroll}
+                         onwheel={handleWheel}
                          bind:this={hoursRef}>
-                        {#each hours as hour}
+                        {#each hours as hour, i (i)}
                             <button class="snap-item h-12 w-full shrink-0 flex items-center justify-center text-dt-4
                                           {activeHour === hour ? 'text-gv-dark-text font-bold' : 'text-gv-light-text'}"
-                                    onclick={() => { activeHour = hour; updateSelection(); scrollToItem(hours, hour, "hours"); }}>
+                                    onclick={selectHour}>
                                 {hour}
                             </button>
                         {/each}
@@ -155,13 +173,14 @@
                     <div class="w-4"></div>
 
                     <div class="flex-1 overflow-y-auto no-scrollbar scroll-container py-14"
-                         onscroll={(e) => handleScroll(e, 'm')}
-                         onwheel={(e) => handleWheel(e)}
+                         onscroll={handleMinuteScroll}
+                         onwheel={handleWheel}
                          bind:this={minuteRef}>
-                        {#each minutes as minute}
+                        {#each minutes as minute, i (i)}
                             <button class="snap-item h-12 w-full shrink-0 flex items-center justify-center text-dt-4
                                           {activeMinute === minute ? 'text-gv-dark-text font-bold' : 'text-gv-light-text'}"
-                                    onclick={() => { activeMinute = minute; updateSelection(); scrollToItem(minutes, minute, "minutes"); }}>
+                                    data-minute={minute}
+                                    onclick={selectMinute}>
                                 {minute}
                             </button>
                         {/each}

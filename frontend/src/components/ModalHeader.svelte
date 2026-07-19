@@ -6,7 +6,7 @@
         onclick,
     } = $props();
 
-    let closeBtn = $state(null);
+    let closeBtn = null;
 
     /**
      * Handles keyboard events

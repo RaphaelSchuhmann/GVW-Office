@@ -18,76 +18,6 @@ export function determineChoirType(str) {
     return /\d/.test(str);
 }
 
-const ALLOWED_TAGS = new Set([
-    "b",
-    "i",
-    "u",
-    "strong",
-    "em",
-    "a",
-    "span",
-    "img",
-    "br",
-]);
-
-/**
- * Sanitizes HTML input by normalizing whitespace and removing disallowed tags.
- *
- * This function is designed for contenteditable/editor use cases where the
- * input originates from `innerHTML` and may contain browser-inserted artifacts
- * such as `&nbsp;`, excessive whitespace, or unwanted HTML elements.
- *
- * Processing steps:
- * - Converts `&nbsp;` and non-breaking spaces to normal spaces
- * - Normalizes newline-related whitespace artifacts
- * - Parses the HTML string into a DOM structure
- * - Removes all HTML tags except those explicitly allowed in `ALLOWED_TAGS`
- * - Preserves text content inside disallowed tags
- * - Returns cleaned HTML as a string
- *
- * Allowed tags (via `ALLOWED_TAGS`):
- * - b, i, u, strong, em, br
- *
- * Note:
- * This is not a full security sanitizer against malicious HTML injection.
- * It is intended for controlled editor content where the input source is trusted
- * (e.g. contenteditable blocks), not arbitrary user-generated HTML from external sources.
- *
- * @param {string} html - Raw HTML string (typically from `innerHTML`)
- * @returns {string} Cleaned and normalized HTML string
- */
-export function sanitize(html) {
-    if (!html) return "";
-
-    html = html
-        .replaceAll("&nbsp;", " ")
-        .replaceAll("\u00A0", " ")
-        .replaceAll(/[ \t]+(\r?\n)/g, "$1")
-        .replaceAll(/\n\s+/g, "\n");
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-
-    function clean(node) {
-        [...node.childNodes].forEach(child => {
-            if (child.nodeType === Node.ELEMENT_NODE) {
-                const tag = child.tagName.toLowerCase();
-
-                if (ALLOWED_TAGS.has(tag)) {
-                    clean(child);
-                } else {
-                    // replace disallowed tag with its text content
-                    child.replaceWith(...child.childNodes);
-                }
-            }
-        });
-    }
-
-    clean(doc.body);
-
-    return doc.body.innerHTML.trim();
-}
-
 /**
  * Triggers a browser download for the provided Blob.
  *
@@ -118,4 +48,62 @@ export function triggerFileDownload(blob, zipName) {
 export function renameFile(originalFile, newName) {
     const fileOptions = { type: originalFile.type };
     return new File([originalFile], newName, fileOptions);
+}
+
+const ALLOWED_TAGS = new Set([
+    "b", "i", "u", "strong", "em", "a", "span", "img",
+    "br", "li", "ul", "ol", "dl", "dt", "dd"
+]);
+
+const ALLOWED_ATTR = new Set([
+    "href", "class", "target", "rel", "src", "alt" // Added src/alt since img is allowed!
+]);
+
+/**
+ * Sanitizes HTML input by normalizing whitespace, removing disallowed tags,
+ * and stripping out all non-allowlisted attributes.
+ *
+ * @param {string} html - Raw HTML string (typically from `innerHTML`)
+ * @returns {string} Cleaned and normalized HTML string
+ */
+export function sanitize(html) {
+    if (!html) return "";
+
+    html = html
+        .replaceAll("&nbsp;", " ")
+        .replaceAll("\u00A0", " ")
+        .replaceAll(/[ \t]+(\r?\n)/g, "$1")
+        .replaceAll(/\n\s+/g, "\n");
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    function clean(node) {
+        [...node.childNodes].forEach(child => {
+            if (child.nodeType === Node.ELEMENT_NODE) {
+                const tag = child.tagName.toLowerCase();
+
+                if (ALLOWED_TAGS.has(tag)) {
+                    // --- Attribute Filtering Added Here ---
+                    // Convert NamedNodeMap to an array to safely delete attributes while iterating
+                    [...child.attributes].forEach(attr => {
+                        const attrName = attr.name.toLowerCase();
+                        if (!ALLOWED_ATTR.has(attrName)) {
+                            child.removeAttribute(attrName);
+                        }
+                    });
+
+                    // Continue recursively cleaning children
+                    clean(child);
+                } else {
+                    // Replace disallowed tag with its text/children content
+                    child.replaceWith(...child.childNodes);
+                }
+            }
+        });
+    }
+
+    clean(doc.body);
+
+    return doc.body.innerHTML.trim();
 }

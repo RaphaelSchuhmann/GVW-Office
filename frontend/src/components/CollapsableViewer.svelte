@@ -8,6 +8,8 @@
         children,
         ...restProps
     } = $props();
+
+    function toggleExpanded() { expanded = !expanded; }
 </script>
 
 <div class="w-full flex flex-col gap-2 p-4 items-start justify-start rounded-2 shadow-md bg-white">
@@ -15,7 +17,7 @@
         <button
             type="button"
             class="flex flex-1 items-center cursor-pointer text-left gap-2"
-            onclick={() => expanded = !expanded}
+            onclick={toggleExpanded}
         >
             <span class="text-dt-5 text-gv-dark-text font-semibold text-nowrap truncate">{title}</span>
             <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text ml-auto">

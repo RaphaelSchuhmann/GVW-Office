@@ -13,46 +13,19 @@
 
     const validTypes = ["info", "success", "warning", "error"];
     if (!validTypes.includes(type)) {
-        console.warn(`Type ${type} does not exist`);
         type = "info";
     }
 
     let closeTimer;
 
-    const styles = $derived.by(() => {
-        let icon = "";
-        let iconColor = "";
-        let borderColor = "";
+    const TOAST_STYLE_MAP = {
+        info: { icon: "info", borderColor: "border-gv-toast-info", iconColor: "text-gv-toast-info" },
+        success: { icon: "check_circle", borderColor: "border-gv-toast-success", iconColor: "text-gv-toast-success" },
+        warning: { icon: "warning", borderColor: "border-gv-toast-warning", iconColor: "text-gv-toast-warning" },
+        error: { icon: "cancel", borderColor: "border-gv-toast-error", iconColor: "text-gv-toast-error" }
+    };
 
-        switch (type) {
-            case "info":
-                icon = "info";
-                borderColor = "border-gv-toast-info";
-                iconColor = "text-gv-toast-info";
-                break;
-            case "success":
-                icon = "check_circle";
-                borderColor = "border-gv-toast-success";
-                iconColor = "text-gv-toast-success";
-                break;
-            case "warning":
-                icon = "warning";
-                borderColor = "border-gv-toast-warning";
-                iconColor = "text-gv-toast-warning";
-                break;
-            case "error":
-                icon = "cancel";
-                borderColor = "border-gv-toast-error";
-                iconColor = "text-gv-toast-error";
-                break;
-            default:
-                icon = "info";
-                borderColor = "border-gv-toast-info";
-                iconColor = "text-gv-toast-info";
-                break;
-        }
-        return { icon, iconColor, borderColor };
-    });
+    const styles = $derived(TOAST_STYLE_MAP[type] || TOAST_STYLE_MAP.info);
 
     /**
      * Closes the toast by calling the onClose callback

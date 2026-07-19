@@ -178,5 +178,5 @@ export function formatChangelog(rawText) {
         })
         .join("");
 
-    return DOMPurify.sanitize(html);
+    return html;
 }

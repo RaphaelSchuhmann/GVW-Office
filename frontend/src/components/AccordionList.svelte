@@ -25,9 +25,9 @@
 <div
     class={`w-full h-full flex flex-col items-center overflow-y-auto gap-4 overflow-x-hidden ${viewport.isMobile && usePadding ? "p-1" : "p-2"}`}>
     {#if items.length !== 0}
-        {#each items as item, index (item)}
+        {#each items as item, i (i)}
             <div animate:flip={{ duration: 300 }} class="w-full">
-                <ItemComponent data={item} expanded={expandedId === item.id} onToggle={() => toggleItem(item.id)} />
+                <ItemComponent data={item} expanded={expandedId === item.id} onToggle={toggleItem} />
             </div>
         {/each}
     {:else}

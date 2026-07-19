@@ -63,12 +63,10 @@
         })();
     });
 
-    let isDeleting = $state(false);
-
     $effect(() => {
         const _trigger = lastRefresh.REPORTS;
 
-        if (!ready || isDeleting) return;
+        if (!ready) return;
 
         (async () => {
             const exists = await reportExists(reportId);

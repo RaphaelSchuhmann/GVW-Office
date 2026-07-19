@@ -17,7 +17,7 @@
     let sidebarOpen = $state(false);
 
     /** @type {import("../../components/Modal.svelte").default} */
-    let addChangelogModal = $state();
+    let addChangelogModal = null;
 
     // Add changelog
 
@@ -48,6 +48,8 @@
         addChangelogInputs.version = "";
         addChangelogInputs.content = "";
     }
+
+    function openSidebar() { sidebarOpen = true; }
 </script>
 
 <ToastStack isMobile={true} />
@@ -76,7 +78,7 @@
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full flex-1 overflow-hidden p-7 min-h-0">
             <div class="w-full flex items-center justify-start">
-                <button class="flex items-center justify-center" onclick={() => sidebarOpen = true}>
+                <button class="flex items-center justify-center" onclick={openSidebar}>
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">menu</span>
                 </button>
             </div>

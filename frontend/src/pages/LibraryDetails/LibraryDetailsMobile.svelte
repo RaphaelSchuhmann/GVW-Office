@@ -11,7 +11,6 @@
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
     import Dropdown from "../../components/Dropdown.svelte";
     import TabBar from "../../components/TabBar.svelte";
-    import Checkbox from "../../components/Checkbox.svelte";
     import { determineChoirType } from "../../services/utils.js";
     import FileSelector from "../../components/FileSelector.svelte";
     import { appSettings } from "../../stores/appSettings.svelte";
@@ -34,11 +33,22 @@
     let draft = $state(null);
     let isSubmitting = $state(false);
 
-    let originalSelectedChoirType =  $derived(determineChoirType(scoreData.voices[0]) ? "Männerchor" : "Gemischterchor");
-    let editedSelectedChoirType = $derived(originalSelectedChoirType);
+    let originalSelectedChoirType = $derived(determineChoirType(scoreData.voices[0]) ? "Männerchor" : "Gemischterchor");
+    let editedSelectedChoirType = $state("");
     let editTabBarInitialized = $state(false);
 
-    let originalSelectedChips = $derived(scoreData.voices.map(str => voiceMap[str] ?? str));
+    const chipsCache = [];
+
+    let originalSelectedChips = $derived.by(() => {
+        chipsCache.length = scoreData.voices.length;
+
+        for (let i = 0; i < scoreData.voices.length; i++) {
+            const str = scoreData.voices[i];
+            chipsCache[i] = voiceMap[str] ?? str;
+        }
+
+        return chipsCache;
+    });
     let editSelectedChips = $state([]);
 
     /**
@@ -89,22 +99,12 @@
             : draft.voices.filter((item) => item !== voiceMap[voice]);
     }
 
-    /**
-     * Reactive derived state that determines whether
-     * the current draft can be saved.
-     *
-     * Returns `true` only if:
-     * - A draft and original score data exist
-     * - All required fields are non-null, defined, and non-empty
-     * - The draft differs from the original score data
-     *
-     * Used to enable or disable the save/update action.
-     */
+    const REQUIRED_SCORE_FIELDS = ["title", "artist", "type", "voices"];
+
     const hasChanges = $derived.by(() => {
         if (!draft || !scoreData) return false;
 
-        const requiredFields = ["title", "artist", "type", "voices"];
-        const allFieldsFilled = requiredFields.every(field => {
+        const allFieldsFilled = REQUIRED_SCORE_FIELDS.every(field => {
             const value = draft[field];
 
             if (Array.isArray(value)) {
@@ -114,9 +114,18 @@
             }
         });
 
-        const isDifferent = JSON.stringify(normalizeScore(draft)) !== JSON.stringify(normalizeScore(scoreData));
+        if (!allFieldsFilled) return false;
 
-        return (isDifferent && allFieldsFilled);
+        return REQUIRED_SCORE_FIELDS.some(field => {
+            const v1 = draft[field];
+            const v2 = scoreData[field];
+
+            if (Array.isArray(v1) && Array.isArray(v2)) {
+                return v1.length !== v2.length || v1.some((item, index) => item !== v2[index]);
+            }
+
+            return v1 !== v2;
+        });
     });
 
     /**
@@ -143,7 +152,7 @@
      * @param {Array} [score.files]
      * @returns {Object|undefined|null} A normalized score object, or the
      * original value if `score` is null or undefined.
-    */
+     */
     function normalizeScore(score) {
         if (!score) return score;
 
@@ -154,7 +163,7 @@
 
             voices: [...(score.voices ?? [])].sort(),
 
-            files : score.files ?? []
+            files: score.files ?? []
         };
     }
 
@@ -205,7 +214,7 @@
      * Used to initiate and confirm score deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
-    let confirmDeleteScoreModal = $state();
+    let confirmDeleteScoreModal = null;
 
     /**
      * Navigates back to the library overview page.
@@ -222,6 +231,22 @@
             await push("/library");
         }
     }
+
+    function startDelete() {
+        if (confirmDeleteScoreModal) {
+            isDeleting = true;
+            confirmDeleteScoreModal.startDelete();
+        }
+    }
+
+    function disableIsDeleting() { isDeleting = false; }
+
+    function updateChoirType(value) {
+        editedSelectedChoirType = value;
+        !editTabBarInitialized ? editTabBarInitialized = true : draft.voices = [];
+    }
+
+    function updateCategory(value) { draft.type = appSettings.scoreCategories[value]; }
 </script>
 
 <ToastStack isMobile={true}></ToastStack>
@@ -230,7 +255,7 @@
                     title="Noten löschen" subTitle="Sind Sie sich sicher das Sie diese Noten löschen möchten?"
                     action="deleteLibEntry"
                     onClose={async () => {await routeToLibrary()}}
-                    onCancel={() => {isDeleting = false}}
+                    onCancel={disableIsDeleting}
                     bind:this={confirmDeleteScoreModal} isMobile={true}
 />
 
@@ -259,11 +284,11 @@
             <div class="flex flex-col items-center gap-5 min-[1500px]:w-1/2 min-[1200px]:w-2/3 w-full mt-5">
                 {#if viewport.width < 900 && !isEditing && (user.role === "board_member" || user.role === "admin" || user.role === "librarian" || user.role === "conductor")}
                     <div class="flex items-center gap-2 w-full">
-                        <Button type="delete" onclick={() => {isDeleting = true; confirmDeleteScoreModal.startDelete();}}>
+                        <Button type="delete" onclick={startDelete}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>
-                        <Button type="primary" onclick={() => startEditing()}>
+                        <Button type="primary" onclick={startEditing}>
                             <span class="material-symbols-rounded mr-2">person_edit</span>
                             Bearbeiten
                         </Button>
@@ -279,25 +304,26 @@
 
                 {#if !isEditing}
                     <Input title="Noten ID" placeholder="T01" bind:value={scoreData.scoreId} readonly={true} />
-                    <Input title="Titel" placeholder="The Final Countdown" bind:value={scoreData.title} readonly={true} />
+                    <Input title="Titel" placeholder="The Final Countdown" bind:value={scoreData.title}
+                           readonly={true} />
                     <Input title="Komponist/Band" placeholder="Europe" bind:value={scoreData.artist} readonly={true} />
-                    <Input title="Kategorie" bind:value={appSettings.scoreCategories[scoreData.type]} readonly={true}/>
-                    <TabBar contents={["Männerchor", "Gemischterchor"]} selected={originalSelectedChoirType} disabled={true} />
+                    <Input title="Kategorie" bind:value={appSettings.scoreCategories[scoreData.type]} readonly={true} />
+                    <TabBar contents={["Männerchor", "Gemischterchor"]} selected={originalSelectedChoirType}
+                            disabled={true} />
 
                     <div class="w-full flex items-start justify-start gap-8">
                         {#if originalSelectedChoirType === "Männerchor"}
-                            <ChipPicker title="Stimmen" options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} useLock={true}
-                                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={originalSelectedChips}
+                            <ChipPicker title="Stimmen" options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]}
+                                        useLock={true}
                                         lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern."
                                         disabled={true} />
                         {:else}
                             <ChipPicker title="Stimmen" options={["Tenor", "Bass", "Sopran", "Alt"]} useLock={true}
-                                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={originalSelectedChips}
                                         lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern."
                                         disabled={true} />
                         {/if}
                     </div>
-                
+
                     <FileSelector title="Noten"
                                   validTypes={["pdf", "gp", "gp5", "gp3", "gp4", "gpx", "cap", "capx"]} page="library"
                                   bind:files={scoreData.files} disabled={true} />
@@ -305,24 +331,26 @@
                     <Input title="Noten ID" placeholder="T01" bind:value={draft.scoreId} />
                     <Input title="Titel" placeholder="The Final Countdown" bind:value={draft.title} />
                     <Input title="Komponist/Band" placeholder="Europe" bind:value={draft.artist} />
-                    <Dropdown title="Kategorie" options={getLibraryCategories(false)} selected={appSettings.scoreCategories[draft.type]}
-                              onChange={(value) => draft.type = appSettings.scoreCategories[value]} />
+                    <Dropdown title="Kategorie" options={getLibraryCategories(false)}
+                              selected={appSettings.scoreCategories[draft.type]}
+                              onChange={updateCategory} />
                     <TabBar contents={["Männerchor", "Gemischterchor"]} selected={editedSelectedChoirType}
-                            onChange={(value) => {editedSelectedChoirType = value; !editTabBarInitialized ? editTabBarInitialized = true : draft.voices = [];}}
+                            onChange={updateChoirType}
                             disabled={editSelectedChips.length > 0} />
 
                     <div class="w-full flex items-start justify-start gap-8">
                         {#if editedSelectedChoirType === "Männerchor"}
-                            <ChipPicker title="Stimmen" options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} useLock={true}
-                                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={editSelectedChips}
+                            <ChipPicker title="Stimmen" options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]}
+                                        useLock={true}
+                                        onChange={toggleVoice} bind:selectedOptions={editSelectedChips}
                                         lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern." />
                         {:else}
                             <ChipPicker title="Stimmen" options={["Tenor", "Bass", "Sopran", "Alt"]} useLock={true}
-                                        onChange={(action) => {toggleVoice(action)}} bind:selectedOptions={editSelectedChips}
+                                        onChange={toggleVoice} bind:selectedOptions={editSelectedChips}
                                         lockTooltip="Bitte wählen Sie zuerst alle Stimmen ab, um den Chortyp zu ändern." />
                         {/if}
                     </div>
-                
+
                     <FileSelector title="Noten"
                                   validTypes={["pdf", "gp", "gp5", "gp3", "gp4", "gpx", "cap", "capx"]} page="library"
                                   bind:files={draft.files} />
@@ -330,11 +358,11 @@
 
                 {#if viewport.width > 900 && !isEditing && (user.role === "board_member" || user.role === "admin" || user.role === "librarian" || user.role === "conductor")}
                     <div class="flex items-center gap-4 w-full">
-                        <Button type="delete" onclick={() => {isDeleting = true; confirmDeleteScoreModal.startDelete();}}>
+                        <Button type="delete" onclick={startDelete}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>
-                        <Button type="primary" onclick={() => startEditing()}>
+                        <Button type="primary" onclick={startEditing}>
                             <span class="material-symbols-rounded mr-2">person_edit</span>
                             Bearbeiten
                         </Button>
@@ -350,8 +378,9 @@
 
                 {#if isEditing}
                     <div class="flex items-center w-full gap-2">
-                        <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
-                        <Button type="primary" disabled={!hasChanges || isSubmitting} onclick={async () => await updateScoreData()}>
+                        <Button type="secondary" onclick={cancelEditing} isCancel={true}>Abbrechen</Button>
+                        <Button type="primary" disabled={!hasChanges || isSubmitting}
+                                onclick={async () => await updateScoreData()}>
                             {#if isSubmitting}
                                 <Spinner light={true} />
                                 <p>Speichern...</p>

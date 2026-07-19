@@ -19,18 +19,26 @@
     } = $props();
 
     let open = $state(false);
-    let dropdownRef = $state();
-    let menuRef = $state();
+    let dropdownRef = null;
+    let menuRef = null;
 
     const minWidth = $derived.by(() => {
         if (disableMinWidth || options.length === 0) return 0;
-        const longestOption = options.reduce((a, b) =>
-            a.length > b.length ? a : b, ""
-        );
-        return Math.max(longestOption.length * 8 + 80, 120);
+
+        let longestLength = 0;
+
+        for (const option of options) {
+            if (option.length > longestLength) {
+                longestLength = option.length;
+            }
+        }
+
+        return Math.max(longestLength * 8 + 80, 120);
     });
 
-    function selectOption(option) {
+
+    function selectOption(event) {
+        const option = event.currentTarget.dataset.option;
         selected = option;
         open = false;
 
@@ -78,7 +86,7 @@
         <button
             type="button"
             class={`flex items-center w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${open && options.length > 0 ? !displayTop ? "rounded-t-1" : "rounded-b-1" : "rounded-1"} text-dt-6 ${paddingMap[padding]} pl-3 pr-3 cursor-pointer text-gv-dark-text hover:bg-gv-hover-effect`}
-            style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}
+            {...minWidth > 0 ? { style: `min-width: ${minWidth}px` } : {}}
             onclick={toggleDropdown}
         >
             <div class="flex w-full">
@@ -95,13 +103,14 @@
             <div
                 bind:this={menuRef}
                 class={`absolute ${showDropshadow ? dropShadow : ""} w-full ${bgWhite ? "bg-white" : "bg-gv-input-bg"} ${displayTop ? "bottom-10.5 rounded-t-1" : "rounded-b-1"} max-h-[20vh] flex flex-col items-center z-999 overflow-y-auto`}
-                style={minWidth > 0 ? `min-width: ${minWidth}px` : ""}
+                {...minWidth > 0 ? { style: `min-width: ${minWidth}px` } : {}}
             >
-                {#each options as option}
+                {#each options as option, i (i)}
                     <button
                         type="button"
                         class={`text-left p-2 pl-4 pr-4 cursor-pointer hover:bg-gv-hover-effect w-full rounded-1 ${textWrap ? "text-wrap" : "text-nowrap"}`}
-                        onclick={() => selectOption(option)}
+                        data-option={option}
+                        onclick={selectOption}
                     >
                         {doCapitalizeWords ? capitalizeWords(option) : option}
                     </button>

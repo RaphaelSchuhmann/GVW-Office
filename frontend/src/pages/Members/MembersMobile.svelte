@@ -20,6 +20,7 @@
     import MobileSidebar from "../../components/MobileSidebar.svelte";
     import { addToast } from "../../stores/toasts.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import AddMemberModal from "../../components/AddMemberModal.svelte";
 
     // ==================
     // MODAL REFERENCES
@@ -27,9 +28,9 @@
     /**
      * Reference to the "Add Member" modal.
      * Controls visibility and lifecycle of the member creation dialog.
-     * @type {import("../../components/Modal.svelte").default}
+     * @type {import("../../components/AddMemberModal.svelte").default}
      */
-    let addMemberModal = $state();
+    let addMemberModal = null;
 
     // ----------------
     // ADD MEMBER STATE
@@ -56,25 +57,19 @@
 
     let isSubmitting = $state(true);
 
-    /**
-     * Derived flag determining whether the "Add Member"
-     * submit button should be disabled.
-     *
-     * Disabled if:
-     * - Any required text field is empty
-     * - Any dropdown has no valid selection
-     *
-     * Ensures basic client-side validation before submission.
-     */
-    const addDisabled = $derived.by(() => {
-        const hasEmptyFields = [
-            memberInput.name, memberInput.surname, memberInput.email,
-            memberInput.phone, memberInput.address, memberInput.birthdate, memberInput.joined
-        ].some(val => !val || val.trim() === "");
+    const REQUIRED_MEMBER_FIELDS = ["name", "surname", "email", "phone", "address", "birthdate", "joined"];
+    const DROPDOWN_MEMBER_FIELDS = ["voice", "status", "role"];
 
-        const hasUnselectedDropdowns = [
-            memberInput.voice, memberInput.status, memberInput.role
-        ].some(val => !val || val.toLowerCase() === "wählen");
+    const addDisabled = $derived.by(() => {
+        const hasEmptyFields = REQUIRED_MEMBER_FIELDS.some(key => {
+            const val = memberInput[key];
+            return !val || val.trim() === "";
+        });
+
+        const hasUnselectedDropdowns = DROPDOWN_MEMBER_FIELDS.some(key => {
+            const val = memberInput[key];
+            return !val || val.toLowerCase() === "wählen";
+        });
 
         return hasEmptyFields || hasUnselectedDropdowns || isSubmitting;
     });
@@ -124,7 +119,7 @@
             addToast({
                 title: "Ungültige Auswahl",
                 subTitle: "Bitte prüfen Sie Stimmlage, Status und Rolle.",
-                type: "error",
+                type: "error"
             });
             return;
         }
@@ -140,66 +135,80 @@
     }
 
     let sidebarOpen = $state(false);
+
+    function showAddMemberModal() {
+        if (addMemberModal) {
+            addMemberModal.show();
+        }
+    }
+
+    function openSidebar() {
+        sidebarOpen = true;
+    }
 </script>
 
 <ToastStack isMobile={true} />
 
-<Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"
-       subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5" isMobile={true}>
-    <Input bind:value={memberInput.name} marginTop="5" title="Vorname" placeholder="Max" />
+<!--<Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"-->
+<!--       subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5" isMobile={true}>-->
+<!--    <Input bind:value={memberInput.name} marginTop="5" title="Vorname" placeholder="Max" />-->
 
-    <Input bind:value={memberInput.surname} marginTop="5" title="Nachname" placeholder="Mustermann" />
+<!--    <Input bind:value={memberInput.surname} marginTop="5" title="Nachname" placeholder="Mustermann" />-->
 
-    <Input bind:value={memberInput.email} marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com" />
+<!--    <Input bind:value={memberInput.email} marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com" />-->
 
-    <Input bind:value={memberInput.phone} marginTop="5" title="Telefon" placeholder="01701234 5678" />
+<!--    <Input bind:value={memberInput.phone} marginTop="5" title="Telefon" placeholder="01701234 5678" />-->
 
-    <Input bind:value={memberInput.address} marginTop="5" title="Adresse" placeholder="Hauptstraße 1..." />
+<!--    <Input bind:value={memberInput.address} marginTop="5" title="Adresse" placeholder="Hauptstraße 1..." />-->
 
-    <Dropdown onChange={(value) => memberInput.voice = value} title="Stimmlage"
-              options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} marginTop="5" />
+<!--    <Dropdown onChange={updateVoice} title="Stimmlage"-->
+<!--              options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} marginTop="5" />-->
 
-    <Dropdown onChange={(value) => memberInput.status = value} title="Status" options={["Aktiv", "Passiv"]} marginTop="5" showDropshadow={true} />
+<!--    <Dropdown onChange={updateStatus} title="Status" options={["Aktiv", "Passiv"]}-->
+<!--              marginTop="5" showDropshadow={true} />-->
 
-    <Dropdown onChange={(value) => memberInput.role = value} title="Rolle"
-              options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true} marginTop="5" showDropshadow={true} />
+<!--    <Dropdown onChange={updateRole} title="Rolle"-->
+<!--              options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true}-->
+<!--              marginTop="5" showDropshadow={true} />-->
 
-    <div class="w-full flex items-center gap-4 mt-5 flex-col">
-        <div class="flex flex-col items-start w-full">
-            <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>
-            <DefaultDatepicker onChange={(value) => memberInput.birthdate = value} />
-        </div>
+<!--    <div class="w-full flex items-center gap-4 mt-5 flex-col">-->
+<!--        <div class="flex flex-col items-start w-full">-->
+<!--            <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>-->
+<!--            <DefaultDatepicker onChange={updateBirthdate} />-->
+<!--        </div>-->
 
-        <div class="flex flex-col items-start w-full">
-            <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>
-            <YearDatepicker onChange={(value) => memberInput.joined = value} />
-        </div>
-    </div>
-    <div class="w-full flex items-center justify-end mt-5 gap-4">
-        <Button type="secondary" onclick={() => addMemberModal.hideModal()}>Abbrechen</Button>
-        <Button type="primary" disabled={addDisabled} onclick={submitMember} isSubmit={true}>
-            {#if isSubmitting}
-                <Spinner light={true} />
-                <p>Speichern...</p>
-            {:else}
-                Hinzufügen
-            {/if}
-        </Button>
-    </div>
-</Modal>
+<!--        <div class="flex flex-col items-start w-full">-->
+<!--            <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>-->
+<!--            <YearDatepicker onChange={updateJoined} />-->
+<!--        </div>-->
+<!--    </div>-->
+<!--    <div class="w-full flex items-center justify-end mt-5 gap-4">-->
+<!--        <Button type="secondary" onclick={hideAddMemberModal}>Abbrechen</Button>-->
+<!--        <Button type="primary" disabled={addDisabled} onclick={submitMember} isSubmit={true}>-->
+<!--            {#if isSubmitting}-->
+<!--                <Spinner light={true} />-->
+<!--                <p>Speichern...</p>-->
+<!--            {:else}-->
+<!--                Hinzufügen-->
+<!--            {/if}-->
+<!--        </Button>-->
+<!--    </div>-->
+<!--</Modal>-->
+
+<AddMemberModal bind:this={addMemberModal} isMobile={true} />
 
 <MobileSidebar currentPage="members" bind:isOpen={sidebarOpen} />
 
 <main class="flex overflow-hidden">
     <div class="flex flex-col flex-1 min-h-0 w-full p-7 overflow-y-auto overflow-x-hidden">
         <div class="w-full flex items-center justify-start">
-            <button class="flex items-center justify-center" onclick={() => sidebarOpen = true}>
+            <button class="flex items-center justify-center" onclick={openSidebar}>
                 <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">menu</span>
             </button>
         </div>
         <PageHeader title="Mitglieder" subTitle="Verwaltung aller Vereinsmitglieder" showSlot={false} />
 
-        <Button type="primary" onclick={() => addMemberModal.showModal()} marginTop="4">
+        <Button type="primary" onclick={showAddMemberModal} marginTop="4">
             <span class="material-symbols-rounded text-icon-dt-5">add</span>
             <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Mitglied hinzufügen</p>
         </Button>
@@ -209,10 +218,10 @@
         <Card padding="0" marginTop="5" borderThickness={viewport.width > 1300 ? "2" : "1"}>
             <div class="flex-1 min-h-0 overflow-y-auto w-full">
                 {#if membersStore.display.length !== 0}
-                    {#each membersStore.display as member}
+                    {#each membersStore.display as member (member.id)}
                         <button
                             class={`flex items-center w-full ${membersStore.display.indexOf(member) !== membersStore.display.length - 1 ? "border-b" : "border-none"} border-gv-border p-2`}
-                            onclick={async () =>  await push(`/members/details?id=${member.id}&editing=false`)}>
+                            onclick={async () => await push(`/members/details?id=${member.id}&editing=false`)}>
                             <div class="flex flex-col items-start justify-between mr-auto max-w-3/4">
                                 <p class="text-gv-dark-text text-dt-7">{`${member.name} ${member.surname}`}</p>
                                 <div class="flex items-center justify-start gap-2">

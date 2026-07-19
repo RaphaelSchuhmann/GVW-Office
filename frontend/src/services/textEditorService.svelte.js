@@ -11,7 +11,7 @@ import { renameFile, sanitize } from "./utils.js";
  *
  * @type {Set<string>}
  */
-export const blockTypes = new Set(["text", "image", "file", "blockquote", "h1", "h2", "h3", "h4"]);
+const blockTypes = new Set(["text", "image", "file", "blockquote", "h1", "h2", "h3", "h4"]);
 
 /**
  * Temporary in-memory registry for image files that are not yet uploaded.
@@ -155,7 +155,6 @@ export function insertImageBlock(file, items, insertAfterIndex) {
     const tempId = `temp_${crypto.randomUUID()}.${file.name.split('.').pop()}`;
 
     const renamedFile = renameFile(file, tempId);
-    console.log(renamedFile);
     pendingImages.set(tempId, renamedFile);
     previewUrls.set(tempId, URL.createObjectURL(renamedFile));
 
@@ -356,7 +355,7 @@ export async function handleAutoLink(e, currentBlock, onDataSync) {
  * @param {string} url - URL to resolve
  * @returns {Promise<{title: string, favicon: string}>}
  */
-export async function resolveURL(url) {
+async function resolveURL(url) {
     if (!url) return { title: url, favicon: "icon" };
 
     const { resp, body } = await apiResolveURl(url);
@@ -365,4 +364,119 @@ export async function resolveURL(url) {
     if (handleGlobalApiError(normalized)) return { title: url, favicon: "icon" };
 
     return { title: body.title || url, favicon: body.favicon || "icon" };
+}
+
+/**
+ * Determines active text formatting styles within a selection range.
+ *
+ * Combines caret-based and range-based detection to infer whether
+ * bold, italic, or underline formatting is active.
+ *
+ * @param {Range} range - The current selection range
+ * @returns {{ isBold: boolean, isItalic: boolean, isUnderline: boolean }}
+ */
+export function getActiveStylesInRange(range) {
+    if (range.collapsed) {
+        return getStylesAtCaret(range);
+    }
+
+    const start = getStylesAtNode(range.startContainer);
+    const end = getStylesAtNode(range.endContainer);
+
+    let isBold = start.isBold || end.isBold;
+    let isItalic = start.isItalic || end.isItalic;
+    let isUnderline = start.isUnderline || end.isUnderline;
+
+    let ancestor = range.commonAncestorContainer;
+    let checkEl = ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentElement : ancestor;
+
+    while (checkEl) {
+        if (checkEl.matches?.("strong, b")) isBold = true;
+        if (checkEl.matches?.("em, i")) isItalic = true;
+        if (checkEl.matches?.("u")) isUnderline = true;
+        if (checkEl.getAttribute?.("contenteditable") === "true") break;
+        checkEl = checkEl.parentElement;
+    }
+
+    if (ancestor instanceof HTMLElement || ancestor.nodeType === Node.TEXT_NODE) {
+        const parentNode = ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentElement : ancestor;
+
+        // Grab only formatting elements inside the parent container
+        const subNodes = parentNode.querySelectorAll("strong, b, em, i, u");
+        subNodes.forEach(node => {
+            // Check if this specific formatting node intersects the user's selection range
+            if (range.intersectsNode(node)) {
+                if (node.matches("strong, b")) isBold = true;
+                if (node.matches("em, i")) isItalic = true;
+                if (node.matches("u")) isUnderline = true;
+            }
+        });
+    }
+
+    return { isBold, isItalic, isUnderline };
+}
+
+/**
+ * Retrieves formatting styles at the caret position.
+ *
+ * @param {Range} range - Selection range collapsed at caret
+ * @returns {{ isBold: boolean, isItalic: boolean, isUnderline: boolean }}
+ */
+function getStylesAtCaret(range) {
+    return getStylesAtNode(range.startContainer);
+}
+
+/**
+ * Traverses DOM ancestors to detect active text formatting styles.
+ *
+ * Checks for <b>, <strong>, <i>, <em>, and <u> tags up the DOM tree
+ * until reaching a contenteditable boundary.
+ *
+ * @param {Node} node - DOM node inside selection
+ * @returns {{ isBold: boolean, isItalic: boolean, isUnderline: boolean }}
+ */
+function getStylesAtNode(node) {
+    let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+
+    let isBold = false;
+    let isItalic = false;
+    let isUnderline = false;
+
+    while (el) {
+        if (el.matches?.("strong, b")) isBold = true;
+        if (el.matches?.("em, i")) isItalic = true;
+        if (el.matches?.("u")) isUnderline = true;
+
+        if (el.getAttribute?.("contenteditable") === "true") break;
+
+        el = el.parentElement;
+    }
+
+    return { isBold, isItalic, isUnderline };
+}
+
+/**
+ * Determines whether the caret is near the top or bottom boundary of a block.
+ *
+ * Used for handling arrow key navigation between blocks.
+ *
+ * @param {HTMLElement} el - The block element
+ * @param {"top"|"bottom"} side - Boundary to check
+ * @returns {boolean}
+ */
+export function isCaretAtBoundary(el, side) {
+    const selection = window.getSelection();
+    if (selection.rangeCount === 0) return false;
+
+    const range = selection.getRangeAt(0);
+    const cursorRect = range.getClientRects()[0];
+    const blockRect = el.getBoundingClientRect();
+
+    if (!cursorRect) return true;
+
+    if (side === "top") {
+        return cursorRect.top - blockRect.top < 10;
+    } else {
+        return blockRect.bottom - cursorRect.bottom < 10;
+    }
 }

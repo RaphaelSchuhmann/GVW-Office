@@ -27,14 +27,14 @@
      * Used to programmatically open the add report dialog.
      * @type {import("../../components/Modal.svelte").default}
      */
-    let addReportModal = $state();
+    let addReportModal = null;
 
     /**
      * Reference to the deep search result modal.
      * Used to programmatically open the deep search result dialog.
      * @type {import("../../components/Modal.svelte").default}
      */
-    let deepSearchResultModal = $state();
+    let deepSearchResultModal = null;
 
     // ==========
     // ADD REPORT
@@ -48,14 +48,8 @@
     let isSubmitting = $state(false);
 
     const submitDisabled = $derived.by(() => {
-        const hasEmptyFields = [
-            reportInputs.title
-        ].some(val => !val || val.trim() === "");
-
-        const hasUnselectedDropdowns = [
-            reportInputs.type
-        ].some(val => !val || val.toLowerCase() === "wählen");
-
+        const hasEmptyFields = !reportInputs.title || reportInputs.title.trim() === "";
+        const hasUnselectedDropdowns = !reportInputs.type || reportInputs.type.toLowerCase() === "wählen";
         return hasEmptyFields || hasUnselectedDropdowns || isSubmitting;
     });
 
@@ -88,6 +82,28 @@
         reportInputs.type = "";
         reportInputs.description = "";
     }
+
+    function showAddReportModal() {
+        if (addReportModal) {
+            addReportModal.showModal();
+        }
+    }
+
+    function hideAddReportModal() {
+        if (addReportModal) {
+            addReportModal.hideModal();
+        }
+    }
+
+    function showDeepSearchResultModal() {
+        if (deepSearchResultModal) {
+            deepSearchResultModal.showModal();
+        }
+    }
+
+    function updateReportTypeDropdown(val) {
+        reportInputs.type = reportTypeMap[val] || "other";
+    }
 </script>
 
 <ToastStack />
@@ -97,12 +113,12 @@
     <div class="flex items-center gap-4 w-full">
         <Input bind:value={reportInputs.title} title="Titel" placeholder="Titel" />
         <Dropdown title="Berichttyp" options={["Jahresbericht", "Protokoll", "Versammlungsbericht", "Sonstigerbericht"]}
-                  onChange={(val) => {reportInputs.type = reportTypeMap[val] || "other"}} />
+                  onChange={updateReportTypeDropdown} />
     </div>
     <Input bind:value={reportInputs.description} title="Beschreibung (Optional)" placeholder="Beschreibung"
            marginTop="5" />
     <div class="w-full flex items-center justify-end mt-5 gap-4">
-        <Button type="secondary" onclick={() => addReportModal.hideModal()}>Abbrechen</Button>
+        <Button type="secondary" onclick={hideAddReportModal}>Abbrechen</Button>
         <Button type="primary" disabled={submitDisabled} onclick={submitNewReport} isSubmit={true}>
             {#if isSubmitting}
                 <Spinner light={true} />
@@ -117,7 +133,7 @@
 <Modal bind:this={deepSearchResultModal} width="1/2"
        title="Deep Search Suchergebnisse" subTitle="" hideSubTitle={true}>
     <div class="flex items-center gap-4 w-full">
-        {#each reportDeepSearchStore.data as report}
+        {#each reportDeepSearchStore.data as report (report.id)}
             <ReportItem id={report.id} title={report.title} date={formatISODateString(report.createdAt)}
                         author={report.author} type={report.type} additionalText={highlight(report.snippet, reportDeepSearchStore.query)}
                         isSearchResult={true} />
@@ -131,7 +147,7 @@
         <PageHeader title="Berichte" subTitle="Verwaltung von Vereinsberichten"
                     showSlot={viewport.width > 1300}>
             {#if (user.role === "board_member" || user.role === "admin" || user.role === "secretary") && viewport.width > 1300}
-                <Button type="primary" onclick={() => addReportModal.showModal()}>
+                <Button type="primary" onclick={showAddReportModal}>
                     <span class="material-symbols-rounded text-icon-dt-4 mr-2">add</span>
                     <p class="text-dt-4 text-nowrap">Bericht erstellen</p>
                 </Button>
@@ -139,7 +155,7 @@
         </PageHeader>
 
         {#if (user.role === "board_member" || user.role === "admin" || user.role === "librarian" || user.role === "conductor") && viewport.width < 1300}
-            <Button type="primary" onclick={() => addReportModal.showModal()}>
+            <Button type="primary" onclick={showAddReportModal}>
                 <span class="material-symbols-rounded min-[1000px]:text-icon-dt-4 text-icon-dt-5 mr-2">add</span>
                 <p class="min-[1000px]:text-dt-4 text-dt-5 text-nowrap">Bericht erstellen</p>
             </Button>
@@ -155,13 +171,13 @@
         </div>
 
         {#if reportDeepSearchStore.data.length > 0}
-            <button class="cursor-pointer mt-5" onclick={() => deepSearchResultModal.showModal()}>
+            <button class="cursor-pointer mt-5" onclick={showDeepSearchResultModal}>
                 <Chip fontSize="6" text={`Gefunden in ${reportDeepSearchStore.data.length} ${reportDeepSearchStore.data.length > 1 ? "Berichten" : "Bericht"}`} />
             </button>
         {/if}
 
         <div class="flex-1 min-h-0 overflow-y-auto mt-5 flex flex-col items-center justify-start gap-2">
-            {#each reportsStore.display as report}
+            {#each reportsStore.display as report (report.id)}
                 <ReportItem id={report.id} title={report.title} date={formatISODateString(report.createdAt)}
                             author={report.author} type={report.type} additionalText={report.description} />
             {/each}

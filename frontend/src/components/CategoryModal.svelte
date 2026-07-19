@@ -11,12 +11,12 @@
     } = $props();
 
     /** @type {import("./Modal.svelte").default} */
-    let modal = $state();
+    let modal = null;
 
     let categoryInput = $state("");
     let categories = $derived(getLibraryCategories(false));
 
-    export function openModal() {
+    export function showModal() {
         modal.showModal();
     }
     
@@ -32,7 +32,7 @@
 <Modal title="Kategorien" subTitle="Verwaltung von Kategorien" bind:this={modal} isMobile={isMobile}>
     <div class="flex flex-col items-center border-2 border-gv-border rounded-2 mt-5">
         <div class="max-h-90 overflow-y-auto w-full">
-            {#each categories as category}
+            {#each categories as category, i (i)}
                 <div class="border-b-2 border-gv-border p-2 w-full flex items-center justify-start gap-1">
                     <p class="text-dt-4 p-2">{category}</p>
                     <p class="text-dt-4 p-2">Lieder: {getCategoryCount(category)}</p>

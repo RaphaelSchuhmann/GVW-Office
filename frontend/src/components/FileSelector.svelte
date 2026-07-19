@@ -15,9 +15,15 @@
         ...restProps
     } = $props();
 
-    const activePage = $derived(["library"].includes(page) ? page : "library");
-    const icon = $derived(activePage === "library" ? "audio_file" : "draft");
-    const acceptString = $derived(validTypes.map((t) => `.${t}`).join(","));
+    const icon = activePage === "library" ? "audio_file" : "draft";
+    const activePage = page === "library" ? page : "library";
+    const acceptString = $derived.by(() => {
+        let result = "";
+        for (let i = 0; i < validTypes.length; i++) {
+            result += (i === 0 ? "." : ",.") + validTypes[i];
+        }
+        return result;
+    });
 
     /**
      * Handles file selection via a dynamic input element
@@ -56,9 +62,10 @@
 
     /**
      * Removes a file from the list
-     * @param {File} file - The file to remove
+     * @param {Event} event
      */
-    function removeFile(file) {
+    function removeFile(event) {
+        const file = event.currentTarget.dataset.file;
         files = files.filter((f) => f !== file);
         onChange?.(files);
     }
@@ -84,12 +91,13 @@
             {/if}
 
             {#if files.length > 0}
-                {#each files as file}
+                {#each files as file (file.name)}
                     <button
                         type="button"
                         {disabled}
                         class={`group shrink-0 relative flex items-center justify-center rounded-2 border-2 border-gv-border p-2 ${!disabled ? "hover:bg-gv-input-bg cursor-pointer" : ""} duration-200`}
-                        onclick={() => removeFile(file)}
+                        data-file={file}
+                        onclick={removeFile}
                     >
                         <div class={`flex items-center gap-2 whitespace-nowrap transition-opacity duration-200 ${!disabled ? "group-hover:opacity-0" : ""}`}>
                             <span class="material-symbols-rounded text-icon-dt-6">

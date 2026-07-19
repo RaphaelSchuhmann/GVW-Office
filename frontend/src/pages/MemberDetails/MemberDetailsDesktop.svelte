@@ -50,29 +50,17 @@
         isEditing = false;
     }
 
-    /**
-     * Reactive derived state that determines whether
-     * the current draft can be saved.
-     *
-     * Returns `true` only if:
-     * - A draft and original member data exist
-     * - All required fields are non-null, defined, and non-empty
-     * - The draft differs from the original member data
-     *
-     * Used to enable or disable the save/update action.
-     */
+    const REQUIRED_MEMBER_FIELDS = ["name", "surname", "email", "phone", "address", "voice", "status", "role", "birthdate", "joined"];
+
     const hasChanges = $derived.by(() => {
         if (!draft || !memberData) return false;
-
-        const requiredFields = ["name", "surname", "email", "phone", "address", "voice", "status", "role", "birthdate", "joined"];
-        const allFieldsFilled = requiredFields.every(field => {
+        const allFieldsFilled = REQUIRED_MEMBER_FIELDS.every(field => {
             const value = draft[field];
             return value !== null && value !== undefined && String(value).trim() !== "";
         });
 
-        const isDifferent = JSON.stringify(draft) !== JSON.stringify(memberData);
-
-        return (isDifferent && allFieldsFilled);
+        if (!allFieldsFilled) return false;
+        return REQUIRED_MEMBER_FIELDS.some(field => draft[field] !== memberData[field]);
     });
 
     /**
@@ -129,7 +117,26 @@
      * Used to initiate and confirm member deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
-    let confirmDeleteMemberModal = $state();
+    let confirmDeleteMemberModal = null;
+
+    function startDelete() {
+        if (confirmDeleteMemberModal) {
+            isDeleting = true;
+            confirmDeleteMemberModal.startDelete();
+        }
+    }
+
+    function updateVoice(value) { draft.voice = value; }
+
+    function updateStatus(value) { draft.status = value; }
+
+    function updateRole(value) { draft.role = value; }
+
+    function updateBirthdate(value) { draft.birthdate = value; }
+
+    function updateJoined(value) { draft.joined = value; }
+
+    function disableIsDeleting() { isDeleting = false; }
 </script>
 
 <ToastStack/>
@@ -138,7 +145,7 @@
                     title="Mitglied löschen" subTitle="Sind Sie sich sicher das Sie dieses Mitglied löschen möchten?"
                     action="deleteMember"
                     onClose={async () => {await push("/members")}}
-                    onCancel={() => {isDeleting = false}}
+                    onCancel={disableIsDeleting}
                     bind:this={confirmDeleteMemberModal}
 />
 
@@ -168,11 +175,11 @@
             <div class="flex flex-col items-center gap-5 min-[1500px]:w-1/2 min-[1200px]:w-2/3 w-full mt-5">
                 {#if viewport.width < 900 && !isEditing}
                     <div class="flex items-center gap-2 w-full">
-                        <Button type="delete" onclick={() => {isDeleting = true; confirmDeleteMemberModal.startDelete();}}>
+                        <Button type="delete" onclick={startDelete}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>
-                        <Button type="primary" onclick={() => startEditing()}>
+                        <Button type="primary" onclick={startEditing}>
                             <span class="material-symbols-rounded mr-2">person_edit</span>
                             Bearbeiten
                         </Button>
@@ -233,15 +240,15 @@
                     <Input bind:value={draft.address} title="Adresse" placeholder="Hauptstraße 1..." />
 
                     <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
-                        <Dropdown onChange={(value) => draft.voice = voiceMap[value]} selected={voiceMap[draft.voice]}
+                        <Dropdown onChange={updateVoice} selected={voiceMap[draft.voice]}
                                   title="Stimmlage"
                                   options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} showDropshadow={true} />
 
-                        <Dropdown onChange={(value) => draft.status = statusMap[value]}
+                        <Dropdown onChange={updateStatus}
                                   selected={statusMap[draft.status]} title="Status"
                                   options={["Aktiv", "Passiv"]} showDropshadow={true} />
 
-                        <Dropdown onChange={(value) => draft.role = roleMap[value]} selected={roleMap[draft.role]}
+                        <Dropdown onChange={updateRole} selected={roleMap[draft.role]}
                                   title="Rolle"
                                   options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} showDropshadow={true} />
                     </div>
@@ -249,24 +256,24 @@
                     <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
                         <div class="flex flex-col items-start w-full">
                             <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>
-                            <DefaultDatepicker onChange={(value) => draft.birthdate = value}
+                            <DefaultDatepicker onChange={updateBirthdate}
                                                selected={draft.birthdate} />
                         </div>
 
                         <div class="flex flex-col items-start w-full">
                             <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>
-                            <YearDatepicker onChange={(value) => draft.joined = value} selected={draft.joined} />
+                            <YearDatepicker onChange={updateJoined} selected={draft.joined} />
                         </div>
                     </div>
                 {/if}
 
                 {#if viewport.width > 900 && !isEditing}
                     <div class="flex items-center gap-4 w-full">
-                        <Button type="delete" onclick={() => confirmDeleteMemberModal.startDelete()}>
+                        <Button type="delete" onclick={startDelete}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>
-                        <Button type="primary" onclick={() => startEditing()}>
+                        <Button type="primary" onclick={startEditing}>
                             <span class="material-symbols-rounded mr-2">person_edit</span>
                             Bearbeiten
                         </Button>
@@ -280,7 +287,7 @@
 
                 {#if viewport.width > 900 && isEditing}
                     <div class="flex items-center w-full gap-2">
-                        <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
+                        <Button type="secondary" onclick={cancelEditing} isCancel={true}>Abbrechen</Button>
                         <Button type="primary" disabled={!hasChanges || isSubmitting} onclick={async () => await updateMemberData()}>
                             {#if isSubmitting}
                                 <Spinner light={true} />

@@ -20,7 +20,7 @@
         ...restProps
     } = $props();
 
-    const config = $derived(textEditorConfigs[page]);
+    const config = textEditorConfigs[page];
     let data = $state({
         title: "",
         author: "",
@@ -29,12 +29,6 @@
     });
 
     let activeBlock = $state(null);
-
-    $effect(() => {
-        if (!config) {
-            console.warn(`Unknown editor config page key: ${page}`);
-        }
-    });
 
     $effect(() => {
         if (isEditing) {
@@ -108,6 +102,17 @@
 
     let isBlockquote = $derived(!!draft.content.find(i => i.id === activeBlock && i.type === "blockquote"));
     let activeBlockType = $derived(config?.optionMap[editorSelectionStore.activeStyles.blockType] || config?.optionMap["text"]);
+
+    function changeToBlockQuote(e) {
+        e.preventDefault();
+        changeBlockType("blockquote");
+    }
+
+    function handleApplyStyle(e) {
+        const style = e.currentTarget.dataset.style;
+        e.preventDefault();
+        applyStyleInDOM(style);
+    }
 </script>
 
 <div class="w-full h-full flex-1 flex flex-col items-start justify-start {isMobile ? 'rounded-none' : 'rounded-1 drop-shadow-md'} bg-white  min-h-0">
@@ -116,20 +121,20 @@
             <ButtonSelect
                 bind:selected={activeBlockType}
                 optionMap={config?.optionMap} options={config?.options} fillHeight={true}
-                disabled={activeBlock === null} onChange={(val) => {changeBlockType(val)}} />
+                disabled={activeBlock === null} onChange={changeBlockType} />
 
             <div class="w-0.75 bg-gv-separator h-full rounded-1"></div>
 
             <div class="flex items-center gap-1">
                 <StyleButton icon="format_bold" disabled={activeBlock === null}
-                             bind:isToggled={editorSelectionStore.activeStyles.isBold}
-                             onMouseDown={(e) => {e.preventDefault(); applyStyleInDOM("strong");}} />
+                             bind:isToggled={editorSelectionStore.activeStyles.isBold} {...{ 'data-style': 'strong' }}
+                             onMouseDown={handleApplyStyle} />
                 <StyleButton icon="format_underlined" disabled={activeBlock === null}
-                             bind:isToggled={editorSelectionStore.activeStyles.isUnderline}
-                             onMouseDown={(e) => {e.preventDefault(); applyStyleInDOM("u");}} />
+                             bind:isToggled={editorSelectionStore.activeStyles.isUnderline} {...{ 'data-style': 'u' }}
+                             onMouseDown={handleApplyStyle} />
                 <StyleButton icon="format_italic" disabled={activeBlock === null}
-                             bind:isToggled={editorSelectionStore.activeStyles.isItalic}
-                             onMouseDown={(e) => {e.preventDefault(); applyStyleInDOM("em");}} />
+                             bind:isToggled={editorSelectionStore.activeStyles.isItalic} {...{ 'data-style': 'em' }}
+                             onMouseDown={handleApplyStyle} />
             </div>
 
             <div class="w-0.75 bg-gv-separator h-full rounded-1"></div>
@@ -140,7 +145,7 @@
                              items={data.content} />
                 <!--<LinkItem id={itemData.id} page={page} disabled={true}/> TODO: Coming 1.2-->
                 <StyleButton icon="format_quote" disabled={activeBlock === null} bind:isToggled={isBlockquote}
-                             onMouseDown={(e) => {e.preventDefault(); changeBlockType("blockquote");}} />
+                             onMouseDown={changeToBlockQuote} />
             </div>
 
             <div class="w-0.75 bg-gv-separator h-full rounded-1"></div>

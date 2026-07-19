@@ -13,8 +13,8 @@
     import { handleGlobalApiError } from "../../api/globalErrorHandler.svelte";
     import { normalizeResponse } from "../../api/http.svelte";
 
-    let email = $state("");
-    let password = $state("");
+    let email = "";
+    let password = "";
     let isFetching = $state(false);
 
     $effect(() => {

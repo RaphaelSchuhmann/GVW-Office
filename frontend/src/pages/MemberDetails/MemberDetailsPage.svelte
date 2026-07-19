@@ -20,7 +20,7 @@
 
     const memberId = params.get("id");
 
-    let isEditing = $state(params.get("editing") === "true");
+    let isEditing = params.get("editing") === "true";
 
     const memberData = $derived.by(() => {
         if (!memberId) return null;
@@ -47,7 +47,7 @@
         ready = true;
     });
 
-    let isDeleting = $state(false);
+    let isDeleting = false;
 
     $effect(() => {
         const _trigger = lastRefresh.MEMBERS;

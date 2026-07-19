@@ -44,6 +44,8 @@
 
         loadImage();
     });
+
+    function handleDeleteBlock() { deleteBlock(content, blockId, true); }
 </script>
 
 {#if isLoading}
@@ -55,7 +57,7 @@
         {#if isEditing}
             <button
                 class="absolute top-2 right-2 hidden group-hover:flex items-center justify-center cursor-pointer bg-gv-primary/20 rounded-2 border border-gv-primary p-2 text-gv-dark-text hover:text-gv-delete-hover"
-                onclick={() => deleteBlock(content, blockId, true)}
+                onclick={handleDeleteBlock}
             >
                 <span class="material-symbols-rounded">delete</span>
             </button>
