@@ -26,7 +26,6 @@ export function initSSE() {
 
     eventSource.onerror = async (err) => {
         if (err.status === 401 || err.status === 403) {
-            console.error("[SSE] Auth failed, tearing down...");
             logout();
             await push("/?cpwErr=false");
         }

@@ -57,38 +57,30 @@
         isEditing = false;
     }
 
-    /**
-     * Reactive derived state that determines whether
-     * the current draft can be saved.
-     *
-     * Returns `true` only if:
-     * - A draft and original user data exist
-     * - All required fields are non-null, defined, and non-empty
-     * - The draft differs from the original user data
-     *
-     * Used to enable or disable the save/update action.
-     */
+    const REQUIRED_USER_FIELDS = ["name", "email", "phone", "address", "type"];
+
     const hasChanges = $derived.by(() => {
         if (!draft || !userData) return false;
 
-        const requiredFields = ["name", "email", "phone", "address", "type"];
-        const allFieldsFilled = requiredFields.every(field => {
+        const allFieldsFilled = REQUIRED_USER_FIELDS.every(field => {
             const value = draft[field];
             return value !== null && value !== undefined && String(value).trim() !== "";
         });
 
-        const normalizedOriginal = requiredFields.reduce((acc, f) => {
-            acc[f] = userData[f] ?? "";
-            return acc;
-        }, {});
+        if (!allFieldsFilled) return false;
 
-        const normalizedDraft = requiredFields.reduce((acc, f) => {
-            acc[f] = draft[f] ?? "";
-            return acc;
-        }, {});
-        const isDifferent = JSON.stringify(normalizedDraft) !== JSON.stringify(normalizedOriginal);
+        let isDifferent = false;
+        for (const field of REQUIRED_USER_FIELDS) {
+            const draftVal = draft[field] ?? "";
+            const originalVal = userData[field] ?? "";
 
-        return (isDifferent && allFieldsFilled);
+            if (draftVal !== originalVal) {
+                isDifferent = true;
+                break;
+            }
+        }
+
+        return isDifferent;
     });
 
     /**
@@ -150,7 +142,13 @@
      * Used to initiate and confirm user deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
-    let confirmDeleteUserModal = $state();
+    let confirmDeleteUserModal = null;
+
+    function updateRole(value) { draft.type = roleMap[value]; }
+
+    function disableIsDeleting() { isDeleting = false; }
+
+    function resetUserPassword(e) { resetPassword(e.currentTarget.dataset.id); }
 </script>
 
 <ToastStack isMobile={true}></ToastStack>
@@ -159,7 +157,7 @@
                     title="Benutzer löschen" subTitle="Sind Sie sich sicher das Sie diesen Benutzer löschen möchten?"
                     action="deleteUser"
                     onClose={async () => {await push("/admin/userManagement"); await fetchAndSetRaw();}}
-                    onCancel={() => {isDeleting = false}}
+                    onCancel={disableIsDeleting}
                     bind:this={confirmDeleteUserModal} isMobile={true}
 />
 
@@ -188,17 +186,17 @@
             <div class="flex flex-col items-center gap-5 min-[1500px]:w-1/2 min-[1200px]:w-2/3 w-full mt-5">
                 {#if !isEditing}
                     <div class="flex items-center gap-2 w-full">
-                        <Button type="delete" onclick={() => startDeleting()}>
+                        <Button type="delete" onclick={startDeleting}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>
-                        <Button type="primary" onclick={() => startEditing()}>
+                        <Button type="primary" onclick={startEditing}>
                             <span class="material-symbols-rounded mr-2">person_edit</span>
                             Bearbeiten
                         </Button>
                     </div>
                     <div class="flex items-center w-full">
-                        <Button type="secondary" onclick={async () => await resetPassword(userData.id)}>Passwort
+                        <Button type="secondary" data-id={userData.id} onclick={resetUserPassword}>Passwort
                             Zurücksetzten
                         </Button>
                     </div>
@@ -242,14 +240,14 @@
 
                     <Input bind:value={draft.address} title="Adresse" placeholder="Hauptstraße 1..." />
 
-                    <Dropdown onChange={(value) => draft.type = roleMap[value]} selected={roleMap[draft.type]}
+                    <Dropdown onChange={updateRole} selected={roleMap[draft.type]}
                               title="Rolle"
                               options={["Admin", "Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} />
                 {/if}
 
                 {#if isEditing}
                     <div class="flex items-center w-full gap-2">
-                        <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
+                        <Button type="secondary" onclick={cancelEditing} isCancel={true}>Abbrechen</Button>
                         <Button type="primary" disabled={!hasChanges || isSubmitting} onclick={async () => await updateUserData()}>
                             {#if isSubmitting}
                                 <Spinner light={true} />

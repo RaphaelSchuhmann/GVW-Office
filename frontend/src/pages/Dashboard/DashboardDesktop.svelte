@@ -17,14 +17,20 @@
     import Spinner from "../../components/Spinner.svelte";
 
     /** @type {import("../../components/Modal.svelte").default} */
-    let voiceDistributionSettingsModal = $state();
+    let voiceDistributionSettingsModal = null;
 
     let isSubmitting = $state(false);
 
     let maxMembers = $state("");
 
     let events = $derived(prepareEvents());
-    let activeMembers = $derived(dashboardStore.members.filter(m => m.status === "active").length);
+    let activeMembers = $derived.by(() => {
+        let count = 0;
+        for (const m of dashboardStore.members) {
+            if (m.status === "active") count++;
+        }
+        return count;
+    });
     let voiceCounts = $derived(getVoiceCounts());
 
     async function updateMaxMembersVoiceDistribution() {
@@ -116,7 +122,7 @@
                     </p>
                     <div
                         class="w-full flex-1 min-h-0 overflow-x-hidden overflow-y-auto max-h-[45dvh] flex flex-col items-center pr-2">
-                        {#each events as event}
+                        {#each events as event (event.title)}
                             <ComingEvent margin="5" title={event.title} time={event.time} location={event.location}
                                          type={event.type} />
                         {/each}

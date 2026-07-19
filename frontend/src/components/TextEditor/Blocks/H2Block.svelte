@@ -1,4 +1,6 @@
 <script>
+    import SanitizedHTML from "../../SanitizedHTML.svelte";
+
     let {
         item = $bindable(),
         isEditing,
@@ -9,6 +11,9 @@
         handleDrop,
         ...restProps
     } = $props();
+
+    function handleFocus() { activeBlock = item.id; }
+    function handleBlur() { activeBlock = null; }
 </script>
 
 {#if isEditing}
@@ -21,15 +26,15 @@
         class="w-full leading-none text-gv-dark-text outline-none whitespace-normal break-all overflow-wrap-anywhere text-dt-h2 font-bold"
         class:select-none={!isEditing}
         data-id={item.id}
-        onkeydown={(e) => handleKeyDown(e)}
+        onkeydown={handleKeyDown}
         use:setup={item}
-        onfocus={() => activeBlock = item.id}
-        onblur={() => activeBlock = null}
+        onfocus={handleFocus}
+        onblur={handleBlur}
         onpaste={handlePaste}
         ondrop={handleDrop}
     ></div>
 {:else}
     <div class="w-full leading-none text-gv-dark-text outline-none whitespace-normal break-all overflow-wrap-anywhere text-dt-h2 font-bold">
-        {@html item.data}
+        <SanitizedHTML htmlContent={item.data} />
     </div>
 {/if}

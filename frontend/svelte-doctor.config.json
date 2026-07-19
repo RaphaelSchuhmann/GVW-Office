@@ -1,0 +1,31 @@
+{
+  "lint": true,
+  "deadCode": true,
+  "cache": true,
+  "watch": {
+    "deadCode": "lazy"
+  },
+  "reports": {
+    "html": ".svelte-doctor/report.html",
+    "markdown": ".svelte-doctor/report.md"
+  },
+  "rules": {
+    "categories": [
+      "Correctness",
+      "Performance",
+      "Architecture",
+      "Security",
+      "Accessibility",
+      "State & Reactivity"
+    ]
+  },
+  "ci": {
+    "failOn": "error",
+    "minScore": 80
+  },
+  "ignore": {
+    "files": [
+      "src/components/SanitizedHTML.svelte"
+    ]
+  }
+}

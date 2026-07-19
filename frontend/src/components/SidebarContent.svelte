@@ -12,12 +12,12 @@
         isMobile = false,
         ...restProps
     } = $props();
-    
+
     /** @type {import("../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
+    let changelogModal = null;
 
     /** @type {import("../components/FeedbackModal.svelte").default} */
-    let feedbackModal = $state(null);
+    let feedbackModal = null;
 
     const mitgliederAccess = ["admin", "board_member"];
     const reportsAccess = ["admin", "board_member", "secretary"];
@@ -34,45 +34,56 @@
         logout();
         await push("/");
     }
+
+    function openFeedback() {
+        feedbackModal.showModal();
+        toggleUserOptions();
+    }
 </script>
 
-<ChangelogsModal bind:this={changelogModal} isMobile={isMobile}/>
-<FeedbackModal bind:this={feedbackModal} isMobile={isMobile}/>
+<ChangelogsModal bind:this={changelogModal} isMobile={isMobile} />
+<FeedbackModal bind:this={feedbackModal} isMobile={isMobile} />
 
 <div class="flex flex-col items-center w-full flex-1 overflow-y-auto">
     <div class="flex flex-col items-center w-full h-full flex-1 p-5">
         {#if user.role === "admin"}
-            <SidebarButton selected={currentPage === "adminDashboard"} minimized={minimized} onclick={async () => await push("/admin/overview")}>
+            <SidebarButton selected={currentPage === "adminDashboard"} minimized={minimized}
+                           onclick={async () => await push("/admin/overview")}>
                 <span class="material-symbols-rounded text-icon-dt-4">dashboard_2_gear</span>
                 {#if !minimized}<p class="ml-2">Admin</p>{/if}
             </SidebarButton>
         {/if}
 
-        <SidebarButton selected={currentPage === "dashboard"} minimized={minimized} marginTop="5" onclick={async () => await push("/dashboard")}>
+        <SidebarButton selected={currentPage === "dashboard"} minimized={minimized} marginTop="5"
+                       onclick={async () => await push("/dashboard")}>
             <span class="material-symbols-rounded text-icon-dt-4">dashboard</span>
             {#if !minimized}<p class="ml-2">Dashboard</p>{/if}
         </SidebarButton>
 
         {#if mitgliederAccess.includes(user.role)}
-            <SidebarButton selected={currentPage === "members"} minimized={minimized} marginTop="5" onclick={async () => await push("/members")}>
+            <SidebarButton selected={currentPage === "members"} minimized={minimized} marginTop="5"
+                           onclick={async () => await push("/members")}>
                 <span class="material-symbols-rounded text-icon-dt-4">group</span>
                 {#if !minimized}<p class="ml-2">Mitglieder</p>{/if}
             </SidebarButton>
         {/if}
 
-        <SidebarButton selected={currentPage === "events"} minimized={minimized} marginTop="5" onclick={async () => await push("/events")}>
+        <SidebarButton selected={currentPage === "events"} minimized={minimized} marginTop="5"
+                       onclick={async () => await push("/events")}>
             <span class="material-symbols-rounded text-icon-dt-4">calendar_today</span>
             {#if !minimized}<p class="ml-2">Veranstaltungen</p>{/if}
         </SidebarButton>
 
         {#if reportsAccess.includes(user.role)}
-            <SidebarButton selected={currentPage === "reports"} minimized={minimized} marginTop="5" onclick={async () => await push("/reports")}>
+            <SidebarButton selected={currentPage === "reports"} minimized={minimized} marginTop="5"
+                           onclick={async () => await push("/reports")}>
                 <span class="material-symbols-rounded text-icon-dt-4">docs</span>
                 {#if !minimized}<p class="ml-2">Berichte</p>{/if}
             </SidebarButton>
         {/if}
 
-        <SidebarButton selected={currentPage === "library"} minimized={minimized} marginTop="5" onclick={async () => await push("/library")}>
+        <SidebarButton selected={currentPage === "library"} minimized={minimized} marginTop="5"
+                       onclick={async () => await push("/library")}>
             <span class="material-symbols-rounded text-icon-dt-4">music_note_2</span>
             {#if !minimized}<p class="ml-2">Notenbibliothek</p>{/if}
         </SidebarButton>
@@ -81,7 +92,8 @@
     <div class="flex flex-col items-center w-full mt-auto p-5">
         {#if !minimized}
             <div class="relative inline-block text-left w-full">
-                <button onclick={toggleUserOptions} class="flex w-full items-center bg-white border border-gv-border rounded-1 p-3 cursor-pointer hover:bg-gv-secondary-btn-hover duration-200 overflow-hidden">
+                <button onclick={toggleUserOptions}
+                        class="flex w-full items-center bg-white border border-gv-border rounded-1 p-3 cursor-pointer hover:bg-gv-secondary-btn-hover duration-200 overflow-hidden">
                     <div class="flex flex-col items-start justify-around w-full">
                         {#if user.loaded}
                             <p class="text-dt-5 text-gv-dark-text truncate">{user.name}</p>
@@ -95,13 +107,14 @@
                 </button>
 
                 {#if userOptionsVisible}
-                    <div class="absolute bottom-22 w-full bg-white border border-gv-border rounded-1 p-2 flex flex-col items-center">
+                    <div
+                        class="absolute bottom-22 w-full bg-white border border-gv-border rounded-1 p-2 flex flex-col items-center">
                         <button onclick={async () => {await push("/help"); toggleUserOptions()}}
                                 class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
                             <span class="material-symbols-rounded text-icon-dt-5 mr-2">menu_book</span>
                             Hilfe-Center
                         </button>
-                        <button onclick={() => {feedbackModal.showModal(); toggleUserOptions()}}
+                        <button onclick={openFeedback}
                                 class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
                             <span class="material-symbols-rounded text-icon-dt-5 mr-2">chat_bubble</span>
                             Feedback
@@ -124,7 +137,7 @@
                 <SidebarButton minimized={minimized} onclick={async () => {await push("/help")}}>
                     <span class="material-symbols-rounded text-icon-dt-3">menu_book</span>
                 </SidebarButton>
-                <SidebarButton minimized={minimized} onclick={() => {feedbackModal.showModal()}}>
+                <SidebarButton minimized={minimized} onclick={openFeedback}>
                     <span class="material-symbols-rounded text-icon-dt-3">chat_bubble</span>
                 </SidebarButton>
                 <SidebarButton minimized={minimized} onclick={async () => {await changelogModal.showModal()}}>

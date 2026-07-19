@@ -1,9 +1,7 @@
 <script>
-    import { user } from "../../../stores/user.svelte.js";
     import Card from "../../../components/Card.svelte";
     import { appSettings } from "../../../stores/appSettings.svelte.js";
     import { helpCenterStore } from "../../../stores/helpCenterStore.svelte.js";
-    import Button from "../../../components/Button.svelte";
     import AddArticleModal from "../../../components/HelpCenter/AddArticleModal.svelte";
     import Chip from "../../../components/Chip.svelte";
     import { getArticle } from "../../../services/helpCenterService.svelte.js";
@@ -13,9 +11,11 @@
      * Used to programmatically open the add article dialog.
      * @type {import("../../../components/HelpCenter/AddArticleModal.svelte").default}
      */
-    let addArticleModalRef = $state(null);
+    let addArticleModalRef = null;
 
     const category = appSettings.helpCenterCategories.find(cat => cat.id === helpCenterStore.activeCategory);
+
+    function clearActiveCategory() { helpCenterStore.activeCategory = ""; }
 </script>
 
 <AddArticleModal bind:this={addArticleModalRef} isMobile={true} />
@@ -25,7 +25,7 @@
         <div class="flex flex-col items-start justify-start w-full gap-4 mt-4">
             <div class="w-full flex items-center justify-start">
                 <button class="group cursor-pointer flex items-center justify-start gap-2"
-                        onclick={() => helpCenterStore.activeCategory = ""}>
+                        onclick={clearActiveCategory}>
                     <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_back</span>
                     <span class="text-dt-5 text-gv-dark-text group-hover:underline">Alle Kategorien</span>
                 </button>
@@ -43,7 +43,7 @@
         <div
             class="w-full h-full flex flex-col items-start justify-start gap-2 overflow-y-auto">
             {#if helpCenterStore.articles.length > 0}
-                {#each helpCenterStore.articles as article}
+                {#each helpCenterStore.articles as article (article.id)}
                     <button class="w-full cursor-pointer group"
                             onclick={async () => {await getArticle(article.id)}}>
                         <Card>
@@ -51,7 +51,7 @@
                                 <p class="text-gv-dark-text font-bold text-dt-3">{article.title}</p>
                                 <p class="text-gv-light-text text-dt-5 line-clamp-2 truncate">{article.description}</p>
                                 <div class="w-full flex items-center justify-start gap-2 flex-wrap">
-                                    {#each article.tags as tag}
+                                    {#each article.tags as tag, i (i)}
                                         <Chip text={tag} />
                                     {/each}
                                 </div>

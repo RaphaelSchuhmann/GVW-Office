@@ -16,7 +16,7 @@
         ...restProps
     } = $props();
 
-    let inputEl = $state(null);
+    let inputEl = null;
     let passwordVisible = $state(false);
 
     const isOriginallyPassword = type === "password";
@@ -25,11 +25,10 @@
 
     const validTypes = ["text", "email", "password"];
     if (!validTypes.includes(type)) {
-        console.warn(`Type ${type} is not a valid input type`);
         currentType = "text";
     }
 
-    let icon = $derived(passwordVisible ? "visibility_off" : "visibility");
+    let icon = passwordVisible ? "visibility_off" : "visibility";
 
     /**
      * Toggles password visibility
@@ -61,7 +60,7 @@
             {readonly}
             {disabled}
             {onblur}
-            onchange={(e) => onChange?.(e)}
+            onchange={onChange}
             class="rounded-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary text-dt-6 max-[470px]:text-dt-7"
             {...restProps}
         />
@@ -75,7 +74,7 @@
                 {readonly}
                 {disabled}
                 {onblur}
-                onchange={(e) => onChange?.(e)}
+                onchange={onChange}
                 class="rounded-tl-1 rounded-bl-1 w-full p-2 pl-3 pr-3 bg-gv-input-bg text-black outline-gv-primary text-dt-6 max-[470px]:text-dt-7"
                 {...restProps}
             />

@@ -4,7 +4,6 @@ import { handleGlobalApiError } from "../api/globalErrorHandler.svelte.js";
 import { addToast } from "../stores/toasts.svelte.js";
 import { viewport } from "../stores/viewport.svelte.js";
 import { changelogsStore } from "../stores/changelogs.svelte.js";
-import DOMPurify from "dompurify";
 
 let isFetching = {
     get: false,
@@ -178,5 +177,5 @@ export function formatChangelog(rawText) {
         })
         .join("");
 
-    return DOMPurify.sanitize(html);
+    return html;
 }

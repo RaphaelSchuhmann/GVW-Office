@@ -3,7 +3,7 @@ import { viewport } from "../stores/viewport.svelte";
 import { logout } from "../services/userService.svelte.js";
 import { push } from "svelte-spa-router";
 
-export const DOMAINS = {
+const DOMAINS = {
     "10": { default: "Authentifizierung" },
     "20": {
         default: "Systemeinstellungen",
@@ -30,7 +30,7 @@ export const DOMAINS = {
     }
 };
 
-export const ACTIONS = {
+const ACTIONS = {
     "01": "Laden",
     "02": "Abrufen",
     "03": "Hinzufügen",

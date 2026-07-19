@@ -1,0 +1,15 @@
+name: svelte-doctor
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+      - uses: oven-sh/setup-bun@430581ea8b548b108f902640beed07c4b1842ecb
+      - run: bun install --frozen-lockfile
+      - run: bunx svelte-doctor check --fail-on warning --min-score 80

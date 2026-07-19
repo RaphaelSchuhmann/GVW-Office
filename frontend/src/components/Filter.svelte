@@ -14,14 +14,15 @@
     const validPages = ["events", "reports", "library", "userManager"];
     const activePage = $derived(validPages.includes(page) ? page : "none");
 
-    let regEntry = $derived(filterRegistry[activePage] || {
+    const DEFAULT_FILTER_ENTRY = {
         optionMap: {},
         config: { dropdown: { options: null, customDefault: null } },
         filterState: {
-            update: () => {
-            }
+            update: () => {}
         }
-    });
+    };
+
+    let regEntry = filterRegistry[activePage] || DEFAULT_FILTER_ENTRY;
 
     const usedOptions = $derived(regEntry.config.dropdown.options ?? options);
     const usedDefault = $derived.by(() => {
@@ -56,7 +57,6 @@
         const { optionMap, filterState } = regEntry;
 
         if (!(rawSelected in optionMap)) {
-            console.warn(`Mapping failed for: ${rawSelected}`);
             addToast({
                 title: "Unerwarteter Fehler",
                 subTitle: `Der Filter "${rawSelected}" konnte nicht zugeordnet werden.`,

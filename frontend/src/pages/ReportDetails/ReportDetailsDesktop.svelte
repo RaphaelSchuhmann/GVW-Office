@@ -26,13 +26,13 @@
      * Controls visibility and lifecycle of the viewer dialog.
      * @type {import("../../components/TextEditor/InfoViewer.svelte").default}
      */
-    let infoViewerRef = $state(null);
+    let infoViewerRef = null;
 
     /**
      * Reference to the text editor.
      * @type {import("../../components/TextEditor/TextEditor.svelte").default}
      */
-    let editorRef = $state(null);
+    let editorRef = null;
 
     let isEditing = $state(false);
     let isSubmitting = $state(false);

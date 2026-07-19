@@ -15,7 +15,9 @@
      * Used to programmatically open the search dialog.
      * @type {import("../../components/HelpCenter/SearchModal.svelte").default}
      */
-    let searchModalRef = $state(null);
+    let searchModalRef = null;
+
+    function openSidebar() { sidebarOpen = true; }
 </script>
 
 <ToastStack isMobile={true}/>
@@ -31,7 +33,7 @@
     <div class="flex-1 min-h-0 overflow-y-auto h-screen">
         <div class="flex flex-col w-full flex-1 overflow-hidden p-7 min-h-0 gap-4 h-full">
             <div class="w-full flex flex-col items-start justify-start h-full">
-                <button class="flex items-center justify-center" onclick={() => sidebarOpen = true}>
+                <button class="flex items-center justify-center" onclick={openSidebar}>
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">menu</span>
                 </button>
 

@@ -24,6 +24,11 @@
             isDeleting = false;
         }
     }
+
+    function handleOnClick(event) {
+        const id = event.currentTarget.dataset.id;
+        onclick(id);
+    }
 </script>
 
 <div class="w-full p-3 pl-4 flex items-center justify-start gap-2 border-b-2 border-gv-border">
@@ -32,7 +37,7 @@
             <Spinner/>
         </div>
     {:else}
-        <button class="w-full flex items-center justify-between cursor-pointer" onclick={() => onclick(id)}>
+        <button class="w-full flex items-center justify-between cursor-pointer" data-id={id} onclick={handleOnClick}>
             <span class="text-dt-6 text-gv-dark-text">{title}</span>
             <Chip text={chipText} />
         </button>

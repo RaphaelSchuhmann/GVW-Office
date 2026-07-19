@@ -12,7 +12,7 @@
     } = $props();
 
     /** @type {import("../components/Modal.svelte").default}*/
-    let modal = $state(null);
+    let modal = null;
 
     let isLoading = $state(true);
 

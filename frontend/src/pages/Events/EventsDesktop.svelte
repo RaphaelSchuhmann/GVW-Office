@@ -39,6 +39,7 @@
     import Spinner from "../../components/Spinner.svelte";
     import { formatISODateString } from "../../services/dateTimeUtils.js";
     import TimePicker from "../../components/TimePicker.svelte";
+    import AddEventModal from "../../components/AddEventModal.svelte";
 
     // ================
     // MODAL REFERENCES
@@ -47,125 +48,16 @@
     /**
      * Reference to the "Add Event" modal.
      * Controls visibility and lifecycle of the event creation dialog.
-     * @type {import("../../components/Modal.svelte").default}
+     * @type {import("../../components/AddEventModal.svelte").default}
      */
-    let addEventModal = $state();
+    let addEventModal = null;
 
     /**
      * Reference to the delete confirmation modal.
      * Used to initiate and confirm event deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
-    let confirmDeleteEventModal = $state();
-
-    // =========
-    // ADD EVENT
-    // =========
-    let eventInput = $state({
-        title: "",
-        type: "",
-        status: "",
-        date: "",
-        time: "",
-        location: "",
-        description: "",
-        mode: "single",
-        recurrence: {
-            monthlyKind: "date",
-            dayOfMonth: null,
-            weekDay: null,
-            ordinal: null
-        }
-    });
-
-    let isSubmitting = $state(false);
-
-    const saveDisabled = $derived(!(
-        eventInput.type &&
-        eventInput.status &&
-        eventInput.date &&
-        eventInput.mode &&
-        eventInput.title &&
-        eventInput.time &&
-        eventInput.location
-    ) || isSubmitting);
-
-    const ordinal = $derived(getOrdinalFromDateString(eventInput.date));
-    const weekDay = $derived(getWeekDayFromDateStringMondayFirst(eventInput.date));
-
-    /**
-     * Submits the new event to the backend.
-     *
-     * Workflow:
-     * 1. Map dropdown and recurrence display values to backend enum values.
-     * 2. Send event payload to API.
-     * 3. Close the modal.
-     * 4. Refresh event list from backend.
-     *
-     * @async
-     * @returns {Promise<void>}
-     */
-    async function submitEvent() {
-        isSubmitting = true;
-
-        if (eventInput.mode === "monthly") {
-            if (eventInput.recurrence.monthlyKind === "date") {
-                eventInput.recurrence.dayOfMonth = Number(eventInput.date.split(".")[0]);
-                delete eventInput.recurrence.weekDay;
-                delete eventInput.recurrence.ordinal;
-            } else {
-                eventInput.recurrence.weekDay = weekDay;
-                eventInput.recurrence.ordinal = ordinal;
-                delete eventInput.recurrence.dayOfMonth;
-            }
-        } else {
-            eventInput.recurrence = {
-                monthlyKind: null,
-                dayOfMonth: null,
-                weekDay: null,
-                ordinal: null,
-            };
-        }
-
-        const event = {
-            ...eventInput,
-            description: eventInput.description || "Keine Beschreibung"
-        };
-
-        try {
-            await addEvent(event);
-        } finally {
-            isSubmitting = false;
-        }
-
-        await fetchAndSetRaw();
-        addEventModal?.hideModal();
-    }
-
-    /**
-     * Resets all input fields of the "Add Event" form
-     * to their initial default values.
-     *
-     * Called after successful submission or when closing the modal.
-     */
-    function resetAddInputs() {
-        eventInput = {
-            title: "",
-            type: "",
-            status: "",
-            date: "",
-            time: "",
-            location: "",
-            description: "",
-            mode: "single",
-            recurrence: {
-                monthlyKind: "date",
-                dayOfMonth: null,
-                weekDay: null,
-                ordinal: null
-            }
-        };
-    }
+    let confirmDeleteEventModal = null;
 
     // ============
     // DELETE EVENT
@@ -228,9 +120,27 @@
         menu.data.activeId = null;
         await fetchAndSetRaw();
     }
+
+    function handleMenuOpenFromBtn(e) {
+        const memberId = e.currentTarget.dataset.id;
+        menu.openFromButton(e, memberId);
+    }
+
+    function handleMenuOpenFromEvent(e) {
+        const memberId = e.currentTarget.dataset.id;
+        menu.openFromEvent(e, memberId);
+    }
+
+    function closeMenu() { menu.data.open = false; }
+
+    function showAddEventModal() {
+        if (addEventModal) {
+            addEventModal.show();
+        }
+    }
 </script>
 
-<svelte:window oncontextmenu={() => (menu.data.open = false)} />
+<svelte:window oncontextmenu={closeMenu} />
 
 <ToastStack/>
 
@@ -247,90 +157,6 @@
     {/if}
 </ContextMenu>
 
-<Modal bind:this={addEventModal} extraFunction={resetAddInputs}
-       title="Neue Veranstaltung hinzufügen" subTitle="Erfassen Sie hier die Details der Veranstaltung"
-       width="2/5">
-
-    <Input bind:value={eventInput.title} title="Titel" placeholder="Veranstaltung XYZ" marginTop="5" />
-
-    <div class="w-full flex items-center gap-4 mt-5">
-        <Dropdown title="Typ" options={["Proben", "Meeting", "Konzerte", "Sonstiges"]}
-                  onChange={(value) => eventInput.type = typeMap[value]} showDropshadow={true} />
-        <Dropdown title="Status" options={["Bevorstehend", "Abgeschlossen"]}
-                  onChange={(value) => eventInput.status = statusMap[value]} showDropshadow={true} />
-    </div>
-
-    <Input bind:value={eventInput.location} title="Ort" placeholder="Ort XYZ" marginTop="5" />
-
-    <Textarea bind:value={eventInput.description} title="Beschreibung (Optional)"
-           placeholder="Kurze Beschreibung zur Veranstaltung..." marginTop="5" />
-
-    <div class="w-full flex items-center gap-4 mt-5">
-        <div class="flex flex-col items-start w-full h-full">
-            <p class="text-dt-6 font-medium">Datum</p>
-            <DefaultDatepicker marginTop="1" onChange={(value) => eventInput.date = value} />
-        </div>
-        <div class="flex flex-col items-start w-full h-full">
-            <p class="text-dt-6 font-medium">Uhrzeit</p>
-            <TimePicker marginTop="1" selected={eventInput.time} onChange={(value) => eventInput.time = value} />
-        </div>
-    </div>
-
-    <TabBar
-        marginTop="5"
-        contents={["Einmalig", "Wöchentlich", "Monatlich"]}
-        selected={modeMap[eventInput.mode]}
-        onChange={(val) => eventInput.mode = modeMap[val]}
-    />
-
-    {#if eventInput.mode === "single"}
-        <p class="text-gv-dark-text text-dt-4 text-left w-full mt-5">Diese Veranstaltung findet nur einmal statt.</p>
-    {:else if eventInput.mode === "weekly"}
-        <p class="text-gv-dark-text text-dt-4 text-left w-full mt-5">Jede Woche am {weekDayMap[weekDay]}</p>
-    {:else if eventInput.mode === "monthly"}
-        <div class="w-full flex items-center justify-start gap-4 mt-5">
-            <Checkbox
-                title="Am gleichen Datum"
-                isChecked={eventInput.recurrence.monthlyKind === "date"}
-                onChange={() => {
-                    eventInput.recurrence.monthlyKind = "date";
-                    const [day] = eventInput.date.split(".").map(Number);
-                    eventInput.recurrence.dayOfMonth = day;
-                }}
-            />
-
-            <Checkbox
-                title="Am gleichen Wochentag"
-                isChecked={eventInput.recurrence.monthlyKind === "weekday"}
-                onChange={() => {
-                    eventInput.recurrence.monthlyKind = "weekday";
-                    eventInput.recurrence.weekDay = weekDay;
-                    eventInput.recurrence.ordinal = ordinal;
-                }}
-            />
-        </div>
-
-        {#if eventInput.recurrence.monthlyKind === "weekday"}
-            <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat
-                am {`${ordinalMap[ordinal]} ${weekDayMap[weekDay]}`}.</p>
-        {:else}
-            <p class="text-gv-dark-text text-dt-4 text-left mt-5">Jeden Monat am {formatISODateString(eventInput.date)}.</p>
-        {/if}
-    {/if}
-
-    <div class="w-full flex items-center gap-4 mt-5">
-        <Button type="secondary" onclick={() => addEventModal?.hideModal()}>Abbrechen</Button>
-        <Button type="primary" disabled={saveDisabled} onclick={submitEvent}>
-            {#if isSubmitting}
-                <Spinner light={true} />
-                <p>Speichern...</p>
-            {:else}
-                Hinzufügen
-            {/if}
-        </Button>
-    </div>
-</Modal>
-
 <ConfirmDeleteModal expectedInput={eventTitle} id={menu.data.activeId}
                     title="Veranstaltung löschen"
                     subTitle="Sind Sie sich sicher das Sie diese Veranstaltung löschen möchten?"
@@ -338,6 +164,8 @@
                     onClose={async () => {menu.data.open = false; menu.data.activeId = null; await fetchAndSetRaw();}}
                     bind:this={confirmDeleteEventModal}
 />
+
+<AddEventModal bind:this={addEventModal} />
 
 <!--Switches to mobile page if width is less than 870px!-->
 <main class="flex h-screen overflow-hidden">
@@ -348,7 +176,7 @@
                     showSlot={viewport.width > 1200}>
             {#if viewport.width > 1200}
                 <Button type="primary" disabled={(user.role !== "admin" && user.role !== "board_member")}
-                        onclick={() => addEventModal.showModal()}>
+                        onclick={showAddEventModal}>
                     <span class="material-symbols-rounded min-[1900px]:text-icon-dt-4 text-icon-dt-5 mr-2">add</span>
                     <p class="min-[1900px]:text-dt-4 text-dt-5">Veranstaltung hinzufügen</p>
                 </Button>
@@ -357,7 +185,7 @@
 
         {#if viewport.width < 1200}
             <Button type="primary" disabled={(user.role !== "admin" && user.role !== "board_member")} marginTop="5"
-                    onclick={() => addEventModal.showModal()}>
+                    onclick={showAddEventModal}>
                 <span class="material-symbols-rounded min-[1900px]:text-icon-dt-4 text-icon-dt-5 mr-2">add</span>
                 <p class="min-[1900px]:text-dt-4 text-dt-5">Veranstaltung hinzufügen</p>
             </Button>
@@ -373,8 +201,8 @@
         <div class="flex-1 min-h-0 overflow-y-auto mt-5">
             <div
                 class="min-[1470px]:grid min-[1470px]:grid-cols-2 flex flex-col gap-4 overflow-y-auto overflow-x-hidden">
-                {#each eventsStore.display as event}
-                    <Card oncontextmenu={(e) => menu.openFromEvent(e, event.id)}>
+                {#each eventsStore.display as event (event.id)}
+                    <Card data-id={event.id} oncontextmenu={handleMenuOpenFromEvent}>
                         <div class="flex items-center w-full">
                             <p class="text-gv-dark-text text-dt-3 max-w-3/4 text-nowrap truncate">{event.title}</p>
                             <div class="ml-auto">
@@ -393,7 +221,8 @@
                             </div>
                             <button
                                 class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2 ml-auto"
-                                onclick={(e) => menu.openFromButton(e, event.id)}>
+                                data-id={event.id}
+                                onclick={handleMenuOpenFromBtn}>
                                 <span class="material-symbols-rounded">more_horiz</span>
                             </button>
                         </div>

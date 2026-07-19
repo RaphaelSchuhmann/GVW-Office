@@ -65,8 +65,6 @@ export async function loadAppSettings() {
         if (handleGlobalApiError(normalizedResponse)) return;
 
         Object.assign(appSettings, body);
-    } catch (err) {
-        console.error("Unable to load app settings", err);
     } finally {
         isFetching = false;
     }

@@ -19,12 +19,13 @@
     } = $props();
 
     let open = $state(false);
-    let datepickerRef = $state(null);
+    let datepickerRef = null;
 
     // usedMonth/Year/Date are the "Working State" for the UI
     let usedMonth = $state(currentMonth);
     let usedYear = $state(currentYear);
-    let selectedDay = $state(new Date().getDate());
+    const todayDay = new Date().getDate();
+    let selectedDay = $state(todayDay);
 
     const monthOptions = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
 
@@ -102,7 +103,9 @@
         }
     }
 
-    function itemClicked(day) {
+    function itemClicked(event) {
+        const day = event.currentTarget.dataset.day;
+
         selectedDay = day;
         // Construct the display string and convert to ISO for emission
         const displayStr = `${String(day).padStart(2, '0')}.${String(usedMonth + 1).padStart(2, '0')}.${usedYear}`;
@@ -139,6 +142,10 @@
             current.month === usedMonth &&
             current.year === usedYear;
     }
+
+    function updateUsedYear(val) { usedYear = Number(val); }
+
+    function updateUsedMonth(val) { usedMonth = monthOptions.indexOf(val); }
 </script>
 
 <div class="relative w-full {marginMap[marginTop]}" bind:this={datepickerRef}>
@@ -162,39 +169,7 @@
     {#if open}
         <div class="absolute flex flex-col bottom-full rounded-1 w-max min-w-full bg-gv-input-bg border border-gv-primary p-2 pt-4 gap-2 mb-1">
             <div class="w-full items-center flex flex-col">
-                <table class="w-full border-collapse">
-                    <thead>
-                    <tr class="text-gv-light-text text-dt-8">
-                        <th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {#each calendar as week}
-                        <tr>
-                            {#each week as day}
-                                <td class="text-center p-1">
-                                    {#if day}
-                                        <button
-                                            type="button"
-                                            class="w-10 h-10 rounded-full text-dt-8 cursor-pointer transition-colors"
-                                            class:bg-gv-dark-turquoise={isSelected(day)}
-                                            class:text-white={isSelected(day) || isToday(day, usedMonth, usedYear)}
-                                            class:bg-gv-primary={isToday(day, usedMonth, usedYear) && !isSelected(day)}
-                                            class:text-gv-light-text={!isSelected(day) && !isToday(day, usedMonth, usedYear)}
-                                            class:hover:bg-gv-hover-effect={!isSelected(day)}
-                                            onclick={() => itemClicked(day)}
-                                        >
-                                            {day}
-                                        </button>
-                                    {:else}
-                                        <div class="w-10 h-10"></div>
-                                    {/if}
-                                </td>
-                            {/each}
-                        </tr>
-                    {/each}
-                    </tbody>
-                </table>
+                {@render calendarGrid()}
             </div>
 
             <div class="flex items-center w-full justify-between gap-1">
@@ -212,7 +187,7 @@
                         padding="2"
                         options={monthOptions}
                         selected={monthOptions[usedMonth]}
-                        onChange={(val) => usedMonth = monthOptions.indexOf(val)}
+                        onChange={updateUsedMonth}
                         disableMinWidth={true}
                         displayTop={true}
                     />
@@ -221,7 +196,7 @@
                         padding="2"
                         options={yearOptions}
                         selected={String(usedYear)}
-                        onChange={(val) => usedYear = Number(val)}
+                        onChange={updateUsedYear}
                         disableMinWidth={true}
                         displayTop={true}
                     />
@@ -238,3 +213,40 @@
         </div>
     {/if}
 </div>
+
+{#snippet calendarGrid()}
+    <table class="w-full border-collapse">
+        <thead>
+        <tr class="text-gv-light-text text-dt-8">
+            <th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>So</th>
+        </tr>
+        </thead>
+        <tbody>
+        {#each calendar as week, i (i)}
+            <tr>
+                {#each week as day, j (j)}
+                    <td class="text-center p-1">
+                        {#if day}
+                            <button
+                                type="button"
+                                class="w-10 h-10 rounded-full text-dt-8 cursor-pointer transition-colors"
+                                class:bg-gv-dark-turquoise={isSelected(day)}
+                                class:text-white={isSelected(day) || isToday(day, usedMonth, usedYear)}
+                                class:bg-gv-primary={isToday(day, usedMonth, usedYear) && !isSelected(day)}
+                                class:text-gv-light-text={!isSelected(day) && !isToday(day, usedMonth, usedYear)}
+                                class:hover:bg-gv-hover-effect={!isSelected(day)}
+                                data-day={day}
+                                onclick={itemClicked}
+                            >
+                                {day}
+                            </button>
+                        {:else}
+                            <div class="w-10 h-10"></div>
+                        {/if}
+                    </td>
+                {/each}
+            </tr>
+        {/each}
+        </tbody>
+    </table>
+{/snippet}

@@ -19,7 +19,8 @@
         unselected: "text-gv-dark-text material-symbols-rounded",
     };
 
-    function updateSelected(index) {
+    function updateSelected(event) {
+        const index = event.currentTarget.dataset.index;
         for (let i = 0; i < numberOfStars; i++) {
             savedStates[i] = i <= index ? "selected" : "unselected";
         }
@@ -27,7 +28,8 @@
         selected = index + 1;
     }
 
-    function handleHover(index) {
+    function handleHover(event) {
+        const index = event.currentTarget.dataset.index;
         for (let i = 0; i < numberOfStars; i++) {
             stars[i] = i <= index ? "hoverSelect" : "hoverDeselect";
         }
@@ -47,12 +49,13 @@
         aria-labelledby="sentiment-label"
         onmouseleave={resetHover}
     >
-        {#each stars as state, i}
+        {#each stars as state, i (i)}
             <button
                 type="button"
-                onclick={() => updateSelected(i)}
-                onmouseenter={() => handleHover(i)}
-                onfocus={() => handleHover(i)}
+                data-index={i}
+                onclick={updateSelected}
+                onmouseenter={handleHover}
+                onfocus={handleHover}
                 onblur={resetHover}
                 aria-label="{i + 1} von {numberOfStars} Sternen"
                 aria-pressed={i < selected}

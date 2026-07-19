@@ -15,7 +15,7 @@
         ...restProps
     } = $props();
 
-    let searchEl = $state(null);
+    let searchEl = null;
     let debounce;
     let deepSearchDebounce;
     $effect(() => {
@@ -25,9 +25,7 @@
 
     // Get filter logic from registry based on the "page" key
     const entry = filterRegistry[page];
-    if (!entry) {
-        console.warn(`Unknown SearchBar page key: ${page}`);
-    }
+
     const filterState = entry?.filterState;
     const config = entry?.config ?? {};
 
@@ -35,8 +33,7 @@
     const deepSearchStore = config?.search.deepSearchStore || null;
     let abortController;
 
-    // Use $derived so the placeholder updates automatically if config changes
-    let usedPlaceholder = $derived(config?.search?.placeholder ?? placeholder);
+    let usedPlaceholder = config?.search?.placeholder ?? placeholder;
 
     /**
      * Handles search input with debouncing
@@ -77,7 +74,6 @@
             Object.assign(deepSearchStore, { data: body.data, query: query });
         } catch (err) {
             if (err.name === "AbortError") return; // Expected
-            console.error("Search failed: ", err);
         }
     }
 

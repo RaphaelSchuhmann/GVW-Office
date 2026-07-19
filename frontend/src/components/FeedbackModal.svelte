@@ -18,13 +18,15 @@
     let selectedView = $state("Feedback");
 
     /** @type {import("../components/Modal.svelte").default} */
-    let modal = $state(null);
+    let modal = null;
 
     let isSubmitting = $state(false);
 
     const addDisabled = $derived.by(() => {
-        const hasEmptyFields = [inputs.title, inputs.textarea].some(val => !val || val.trim() === "");
-        const hasUnselectedDropdown = [inputs.dropdown].some(val => !val || val.toLowerCase() === "wählen");
+        const hasEmptyFields = (!inputs.title || inputs.title.trim() === "") ||
+            (!inputs.textarea || inputs.textarea.trim() === "");
+
+        const hasUnselectedDropdown = !inputs.dropdown || inputs.dropdown.toLowerCase() === "wählen";
 
         if (selectedView === "Feedback") {
             return hasEmptyFields || hasUnselectedDropdown || inputs.sentiment <= 0 || isSubmitting;
@@ -32,6 +34,7 @@
             return hasEmptyFields || hasUnselectedDropdown || isSubmitting;
         }
     });
+
 
     let inputs = $state({
         title: "",
@@ -67,14 +70,22 @@
         try {
             await submitNewItem(inputs, selectedView);
         } finally {
-            modal.hideModal();
+            hideModal();
             isSubmitting = false;
         }
     }
 
     export function showModal() {
-        modal.showModal();
+        if (modal) modal.showModal();
     }
+
+    function hideModal() {
+        if (modal) modal.hideModal();
+    }
+
+    function selectSeverity(val) { inputs.dropdown = severityMap[val] || severityMap["_medium"] }
+
+    function selectCategory(val) { inputs.dropdown = appSettings.feedbackCategories[val] || appSettings.feedbackCategories["_other"] }
 </script>
 
 <Modal bind:this={modal} extraFunction={resetInputs} title="Feedback"
@@ -83,7 +94,7 @@
         <TabBar
             contents={["Feedback", "Fehler melden"]}
             selected={selectedView}
-            onChange={(val) => switchView(val)}
+            onChange={switchView}
         />
 
         {#if selectedView === "Feedback"}
@@ -97,7 +108,7 @@
                     options={getDropdownItemsFromMap(appSettings.feedbackCategories)}
                     doCapitalizeWords={false}
                     title="Kategorie"
-                    onChange={(val) => inputs.dropdown = appSettings.feedbackCategories[val] || appSettings.feedbackCategories["_other"]}
+                    onChange={selectCategory}
                     showDropshadow={true}
                 />
             {:else}
@@ -111,7 +122,7 @@
                         options={getDropdownItemsFromMap(appSettings.feedbackCategories)}
                         doCapitalizeWords={false}
                         title="Kategorie"
-                        onChange={(val) => inputs.dropdown = appSettings.feedbackCategories[val] || appSettings.feedbackCategories["_other"]}
+                        onChange={selectCategory}
                         showDropshadow={true}
                     />
                 </div>
@@ -134,7 +145,7 @@
                     options={getDropdownItemsFromMap(severityMap)}
                     doCapitalizeWords={false}
                     title="Schweregrad"
-                    onChange={(val) => inputs.dropdown = severityMap[val] || severityMap["_medium"]}
+                    onChange={selectSeverity}
                     showDropshadow={true}
                 />
             {:else}
@@ -148,7 +159,7 @@
                         options={getDropdownItemsFromMap(severityMap)}
                         doCapitalizeWords={false}
                         title="Schweregrad"
-                        onChange={(val) => inputs.dropdown = severityMap[val] || severityMap["_medium"]}
+                        onChange={selectSeverity}
                         showDropshadow={true}
                     />
                 </div>
@@ -162,7 +173,7 @@
         {/if}
 
         <div class="w-full flex items-center justify-end gap-4">
-            <Button type="secondary" onclick={() => modal.hideModal()}>Abbrechen</Button>
+            <Button type="secondary" onclick={hideModal}>Abbrechen</Button>
             <Button type="primary" disabled={addDisabled} onclick={submit} isSubmit={true}>
                 {#if isSubmitting}
                     <Spinner light={true} />

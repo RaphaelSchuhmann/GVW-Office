@@ -23,7 +23,7 @@
      * Controls visibility and lifecycle of the user creation dialog.
      * @type {import("../../components/Modal.svelte").default}
      */
-    let addUserModal = $state();
+    let addUserModal = null;
 
     let isSubmitting = $state(false);
 
@@ -35,25 +35,16 @@
         role: ""
     });
 
-    /**
-     * Derived flag determining whether the "Add User"
-     * submit button should be disabled.
-     *
-     * Disabled if:
-     * - Any required text field is empty
-     * - Any dropdown has no valid selection
-     *
-     * Ensures basic client-side validation before submission.
-     */
-    const addDisabled = $derived.by(() => {
-        const hasEmptyFields = [
-            userInput.name, userInput.email, userInput.phone, userInput.address
-        ].some(val => !val || val.trim() === "");
+    const addDisabled = $derived(
+        (!userInput.name || userInput.name.trim() === "") ||
+        (!userInput.email || userInput.email.trim() === "") ||
+        (!userInput.phone || userInput.phone.trim() === "") ||
+        (!userInput.address || userInput.address.trim() === "") ||
 
-        const hasUnselectedDropdowns = [userInput.role].some(val => !val || val.toLowerCase() === "wählen");
+        (!userInput.role || userInput.role.toLowerCase() === "wählen") ||
 
-        return hasEmptyFields || hasUnselectedDropdowns || isSubmitting;
-    });
+        isSubmitting
+    );
 
     /**
      * Resets all input fields of the "Add User" form
@@ -88,6 +79,22 @@
 
         addUserModal.hideModal();
     }
+
+    function openSidebar() { sidebarOpen = true; }
+
+    function showAddUserModal() {
+        if (addUserModal) {
+            addUserModal.showModal();
+        }
+    }
+
+    function hideAddUserModal() {
+        if (addUserModal) {
+            addUserModal.hideModal();
+        }
+    }
+
+    function updateRole(value) { userInput.role = value; }
 </script>
 
 <ToastStack isMobile={true} />
@@ -102,11 +109,11 @@
 
     <Input bind:value={userInput.address} marginTop="5" title="Adresse" placeholder="Hauptstraße 1..." />
 
-    <Dropdown onChange={(value) => userInput.role = value} title="Rolle" marginTop="5"
+    <Dropdown onChange={updateRole} title="Rolle" marginTop="5"
                 options={["Admin", "Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true} />
 
     <div class="w-full flex items-center justify-end mt-5 gap-4">
-        <Button type="secondary" onclick={() => addUserModal.hideModal()}>Abbrechen</Button>
+        <Button type="secondary" onclick={hideAddUserModal}>Abbrechen</Button>
         <Button type="primary" disabled={addDisabled} onclick={submitUser} isSubmit={true}>
             {#if isSubmitting}
                 <Spinner light={true} />
@@ -124,7 +131,7 @@
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full flex-1 overflow-hidden p-7 min-h-0 h-full">
             <div class="w-full flex items-center justify-start">
-                <button class="flex items-center justify-center" onclick={() => (sidebarOpen = true)}>
+                <button class="flex items-center justify-center" onclick={openSidebar}>
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">
                         menu
                     </span>
@@ -141,7 +148,7 @@
                 marginTop="5"
             />
 
-            <Button type="primary" onclick={addUserModal?.showModal} marginTop="4">
+            <Button type="primary" onclick={showAddUserModal} marginTop="4">
                 <span class="material-symbols-rounded text-icon-dt-5">add</span>
                 <p class="text-dt-6 text-nowrap max-[430px]:ml-2">Benutzer hinzufügen</p>
             </Button>
@@ -154,7 +161,7 @@
             </div>
 
             <Card padding="0" fillHeight={true} marginTop="2">
-                {#each userManagerStore.display as user, i}
+                {#each userManagerStore.display as user, i (user.id)}
                     <UserManagerListItem 
                         id={user.id}
                         name={user.name} 

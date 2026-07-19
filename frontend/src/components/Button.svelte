@@ -10,11 +10,12 @@
         disabled = false,
         isSubmit = false,
         isCancel = false,
+        onclick,
         children,
         ...restProps
     } = $props();
 
-    let buttonEl = $state(null);
+    let buttonEl = null;
 
     // Validate type (using a derived-like approach or just local variable)
     const validTypes = ["primary", "secondary", "contextMenu", "delete"];
@@ -60,6 +61,7 @@
     disabled={disabled}
     class="{baseClasses} {typeClasses[activeType] || typeClasses.primary} cursor-pointer"
     {...restProps}
+    {onclick}
 >
     {#if children}
         {@render children()}

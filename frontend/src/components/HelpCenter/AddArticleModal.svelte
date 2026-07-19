@@ -12,7 +12,7 @@
         ...restProps
     } = $props();
 
-    let modalRef = $state(null);
+    let modalRef = null;
 
     let inputs = $state({
         title: "",
@@ -42,8 +42,13 @@
         inputs.tags = "";
     }
 
-    export function showModal() { modalRef?.showModal(); }
-    export function hideModal() { modalRef?.hideModal(); }
+    export function showModal() {
+        if (modalRef) modalRef.showModal();
+    }
+
+    export function hideModal() {
+        if (modalRef) modalRef.hideModal();
+    }
 </script>
 
 <Modal bind:this={modalRef} title="Artikel Hinzufügen" hideSubTitle={true} extraFunction={cleanUp} isMobile={isMobile}>
@@ -52,7 +57,7 @@
         <Textarea title="Beschreibung" placeholder="Kurze Beschreibung..." bind:value={inputs.description} />
         <Input title="Tags (Comma Separated)" placeholder="Tag #1, Tag #2" bind:value={inputs.tags} />
         <div class="w-full flex items-center justify-end gap-4">
-            <Button type="secondary" onclick={() => modalRef.hideModal()}>Abbrechen</Button>
+            <Button type="secondary" onclick={hideModal}>Abbrechen</Button>
             <Button type="primary" disabled={addDisabled} onclick={submit} isSubmit={true}>
                 {#if isSubmitting}
                     <Spinner light={true} />

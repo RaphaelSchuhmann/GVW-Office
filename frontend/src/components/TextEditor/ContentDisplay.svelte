@@ -1,5 +1,11 @@
 <script>
-    import { addBlock, bulkInsertImageBlocks, handleAutoLink } from "../../services/textEditorService.svelte";
+    import {
+        addBlock,
+        bulkInsertImageBlocks,
+        getActiveStylesInRange,
+        handleAutoLink,
+        isCaretAtBoundary
+    } from "../../services/textEditorService.svelte";
     import { tick } from "svelte";
     import { editorSelectionStore } from "../../stores/textEditorStore.svelte";
     import TextBlock from "./Blocks/TextBlock.svelte";
@@ -11,6 +17,7 @@
     import BlockQuote from "./Blocks/BlockQuote.svelte";
     import { sanitize } from "../../services/utils.js";
     import { textEditorConfigs } from "../../lib/textEditorConfig.svelte.js";
+    import { createEditorHandlers } from "../../services/editorHandlers.js";
 
     let {
         reportId,
@@ -25,9 +32,11 @@
         ...restProps
     } = $props();
 
-    const showAuthor = $derived(textEditorConfigs[configKey].showAuthor || false);
-
+    const showAuthor = textEditorConfigs[configKey].showAuthor || false;
     let draggedIndex = $state(null);
+
+    const contentStore = { get value() { return content; }, set value(v) { content = v; } };
+    const { handleKeyDown } = createEditorHandlers(contentStore);
 
     /**
      * Sets the drag source index when starting a drag operation.
@@ -36,11 +45,10 @@
      * and configures the DataTransfer object for a move operation.
      *
      * @param {DragEvent} event - The drag start event
-     * @param {number} index - Index of the dragged item in the content array
      */
-    function handleDragStart(event, index) {
+    function handleDragStart(event) {
         if (!isEditing) return;
-        draggedIndex = index;
+        draggedIndex = event.currentTarget.dataset.index;
         event.dataTransfer.effectAllowed = "move";
     }
 
@@ -53,7 +61,9 @@
      * @param {DragEvent} event - The drag start event
      * @param {number} index - Index of the dragged item in the content array
      */
-    function handleDragEnter(event, index) {
+    function handleDragEnter(event) {
+        const index = event.currentTarget.dataset.index;
+
         if (!isEditing || draggedIndex === null || draggedIndex === index) return;
 
         const updatedItems = [...content];
@@ -95,194 +105,7 @@
             node.focus();
         }
 
-        return {
-            update(newData) {
-            }, destroy() {
-            }
-        };
-    }
-
-    /**
-     * Handles keyboard interactions inside an editor block.
-     *
-     * Supports:
-     * - Auto-link detection on space/enter
-     * - Enter key block splitting
-     * - Backspace rich-link deletion handling
-     * - Arrow key navigation between blocks
-     *
-     * Updates the internal `content` array to stay in sync with DOM changes.
-     *
-     * @param {KeyboardEvent} e - The keyboard event
-     * @returns {void}
-     */
-    function handleKeyDown(e) {
-        const currentBlock = e.currentTarget;
-        // @ts-ignore
-        const index = content.findIndex(i => i.id === currentBlock.dataset.id);
-
-        handleAutoLink(e, currentBlock, (updatedHtml) => {
-            content[index].data = updatedHtml;
-        });
-
-        if (e.key === "Enter") {
-            if (e.shiftKey) return;
-
-            e.preventDefault();
-
-            const selection = window.getSelection();
-            const range = selection.getRangeAt(0);
-
-            const splitRange = document.createRange();
-            splitRange.setStart(range.startContainer, range.startOffset);
-            splitRange.selectNodeContents(currentBlock);
-            splitRange.setStart(range.startContainer, range.startOffset);
-
-            const docFragment = splitRange.extractContents();
-
-            // @ts-ignore
-            const id = currentBlock.dataset.id;
-
-            const tempDiv = document.createElement("div");
-            tempDiv.appendChild(docFragment);
-            const newHTML = tempDiv.innerHTML;
-
-            // Update internal data
-            const index = content.findIndex(i => i.id === id);
-            content[index].data = sanitize(currentBlock.innerHTML);
-
-            // Create new block
-            const newBlockId = addBlock(content, index, newHTML, "text");
-            if (newBlockId) {
-                tick().then(() => {
-                    const newBlock = document.querySelector(`[data-id="${newBlockId}"]`);
-                    if (newBlock) {
-                        // @ts-ignore
-                        // can be ignored as only contenteditable divs have the data-id attribute
-                        newBlock.focus();
-                    }
-                });
-            }
-
-            return;
-        }
-
-        if (e.key === "Backspace") {
-            const selection = window.getSelection();
-
-            if (selection && selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                let targetNode = range.startContainer;
-
-                if (targetNode.nodeType === Node.TEXT_NODE && range.startOffset === 0) {
-                    targetNode = targetNode.previousSibling;
-                } else if (targetNode.nodeType === Node.ELEMENT_NODE) {
-                    targetNode = targetNode.childNodes[range.startOffset - 1];
-                }
-
-                // If the element right behind the cursor is a rich link, blow it up entirely
-                // @ts-ignore
-                if (targetNode && targetNode.nodeType === Node.ELEMENT_NODE && targetNode.getAttribute?.("data-rich-link") === "true") {
-                    e.preventDefault();
-                    targetNode.parentNode.removeChild(targetNode);
-
-                    // Sync current state to the Svelte array index item
-                    // @ts-ignore
-                    const id = currentBlock.dataset.id;
-                    const index = content.findIndex(i => i.id === id);
-                    if (index !== -1) {
-                        content[index].data = sanitize(currentBlock.innerHTML);
-                    }
-                    return;
-                }
-            }
-
-            if (currentBlock.textContent.trim().length === 0) {
-                const hasMedia = currentBlock.querySelector("img") !== null;
-
-                if (!hasMedia) {
-                    if (content.length > 1) {
-                        e.preventDefault();
-
-                        // @ts-ignore
-                        const id = currentBlock.dataset.id;
-                        const index = content.findIndex(i => i.id === id);
-
-                        const previousIndex = index > 0 ? index - 1 : 0;
-                        const previousId = content[previousIndex].id;
-
-                        content.splice(index, 1);
-
-                        tick().then(() => {
-                            const prevEl = document.querySelector(`[data-id="${previousId}"]`);
-                            if (prevEl) {
-                                // @ts-ignore
-                                prevEl.focus();
-
-                                // Update caret position smoothly to end of the previous block
-                                const range = document.createRange();
-                                range.selectNodeContents(prevEl);
-                                range.collapse(false);
-                                const sel = window.getSelection();
-                                if (sel) {
-                                    sel.removeAllRanges();
-                                    sel.addRange(range);
-                                }
-                            }
-                        });
-                        return;
-                    }
-                }
-            }
-        }
-
-        if (e.key === "ArrowUp") {
-            if (isCaretAtBoundary(currentBlock, "top")) {
-                e.preventDefault();
-                // @ts-ignore
-                const index = content.findIndex(i => i.id === currentBlock.dataset.id);
-                if (index > 0) {
-                    const block = document.querySelector(`[data-id="${content[index - 1].id}"]`);
-                    if (block) {
-                        // @ts-ignore
-                        block.focus();
-
-                        const selection = window.getSelection();
-                        const range = document.createRange();
-                        range.selectNodeContents(block);
-                        range.collapse(false); // Move to end
-
-                        selection.removeAllRanges();
-                        selection.addRange(range);
-                    }
-                }
-            }
-        }
-
-        if (e.key === "ArrowDown") {
-            if (isCaretAtBoundary(currentBlock, "bottom")) {
-                e.preventDefault();
-                // @ts-ignore
-                const index = content.findIndex(i => i.id === currentBlock.dataset.id);
-                if (index > -1) {
-                    tick().then(() => {
-                        const block = document.querySelector(`[data-id="${content[index + 1].id}"]`);
-                        if (block) {
-                            // @ts-ignore
-                            block.focus();
-
-                            const selection = window.getSelection();
-                            const range = document.createRange();
-                            range.selectNodeContents(block);
-                            range.collapse(true); // Move to start
-
-                            selection.removeAllRanges();
-                            selection.addRange(range);
-                        }
-                    });
-                }
-            }
-        }
+        return { update(newData) {}, destroy() {} };
     }
 
     /**
@@ -346,32 +169,6 @@
     }
 
     /**
-     * Determines whether the caret is near the top or bottom boundary of a block.
-     *
-     * Used for handling arrow key navigation between blocks.
-     *
-     * @param {HTMLElement} el - The block element
-     * @param {"top"|"bottom"} side - Boundary to check
-     * @returns {boolean}
-     */
-    function isCaretAtBoundary(el, side) {
-        const selection = window.getSelection();
-        if (selection.rangeCount === 0) return false;
-
-        const range = selection.getRangeAt(0);
-        const cursorRect = range.getClientRects()[0];
-        const blockRect = el.getBoundingClientRect();
-
-        if (!cursorRect) return true;
-
-        if (side === "top") {
-            return cursorRect.top - blockRect.top < 10;
-        } else {
-            return blockRect.bottom - cursorRect.bottom < 10;
-        }
-    }
-
-    /**
      * Tracks the current text selection and updates the editor selection store.
      *
      * Runs on every `selectionchange` event and determines:
@@ -412,94 +209,9 @@
         return () => document.removeEventListener("selectionchange", handleSelection);
     });
 
-    /**
-     * Determines active text formatting styles within a selection range.
-     *
-     * Combines caret-based and range-based detection to infer whether
-     * bold, italic, or underline formatting is active.
-     *
-     * @param {Range} range - The current selection range
-     * @returns {{ isBold: boolean, isItalic: boolean, isUnderline: boolean }}
-     */
-    function getActiveStylesInRange(range) {
-        if (range.collapsed) {
-            return getStylesAtCaret(range);
-        }
+    function handleDragOver(e) { e.preventDefault(); }
 
-        const start = getStylesAtNode(range.startContainer);
-        const end = getStylesAtNode(range.endContainer);
 
-        let isBold = start.isBold || end.isBold;
-        let isItalic = start.isItalic || end.isItalic;
-        let isUnderline = start.isUnderline || end.isUnderline;
-
-        let ancestor = range.commonAncestorContainer;
-        let checkEl = ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentElement : ancestor;
-
-        while (checkEl) {
-            if (checkEl.matches?.("strong, b")) isBold = true;
-            if (checkEl.matches?.("em, i")) isItalic = true;
-            if (checkEl.matches?.("u")) isUnderline = true;
-            if (checkEl.getAttribute?.("contenteditable") === "true") break;
-            checkEl = checkEl.parentElement;
-        }
-
-        if (ancestor instanceof HTMLElement || ancestor.nodeType === Node.TEXT_NODE) {
-            const parentNode = ancestor.nodeType === Node.TEXT_NODE ? ancestor.parentElement : ancestor;
-
-            // Grab only formatting elements inside the parent container
-            const subNodes = parentNode.querySelectorAll("strong, b, em, i, u");
-            subNodes.forEach(node => {
-                // Check if this specific formatting node intersects the user's selection range
-                if (range.intersectsNode(node)) {
-                    if (node.matches("strong, b")) isBold = true;
-                    if (node.matches("em, i")) isItalic = true;
-                    if (node.matches("u")) isUnderline = true;
-                }
-            });
-        }
-
-        return { isBold, isItalic, isUnderline };
-    }
-
-    /**
-     * Retrieves formatting styles at the caret position.
-     *
-     * @param {Range} range - Selection range collapsed at caret
-     * @returns {{ isBold: boolean, isItalic: boolean, isUnderline: boolean }}
-     */
-    function getStylesAtCaret(range) {
-        return getStylesAtNode(range.startContainer);
-    }
-
-    /**
-     * Traverses DOM ancestors to detect active text formatting styles.
-     *
-     * Checks for <b>, <strong>, <i>, <em>, and <u> tags up the DOM tree
-     * until reaching a contenteditable boundary.
-     *
-     * @param {Node} node - DOM node inside selection
-     * @returns {{ isBold: boolean, isItalic: boolean, isUnderline: boolean }}
-     */
-    function getStylesAtNode(node) {
-        let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-
-        let isBold = false;
-        let isItalic = false;
-        let isUnderline = false;
-
-        while (el) {
-            if (el.matches?.("strong, b")) isBold = true;
-            if (el.matches?.("em, i")) isItalic = true;
-            if (el.matches?.("u")) isUnderline = true;
-
-            if (el.getAttribute?.("contenteditable") === "true") break;
-
-            el = el.parentElement;
-        }
-
-        return { isBold, isItalic, isUnderline };
-    }
 </script>
 
 <div class="h-full flex flex-col items-start justify-start gap-1 w-full overflow-y-auto overflow-x-hidden">
@@ -528,8 +240,9 @@
         <div
             class="group flex items-start justify-start gap-2 p-2 rounded transition-all duration-75 w-full"
             class:opacity-40={draggedIndex === index}
-            ondragenter={(e) => handleDragEnter(e, index)}
-            ondragover={(e) => e.preventDefault()}
+            data-index={index}
+            ondragenter={handleDragEnter}
+            ondragover={handleDragOver}
             aria-label="Draggable item"
             role="group"
         >
@@ -537,7 +250,8 @@
                 <span
                     draggable={isEditing}
                     class="material-symbols-rounded text-gv-light-text cursor-grab active:cursor-grabbing select-none group-hover:opacity-100 opacity-0"
-                    ondragstart={(e) => handleDragStart(e, index)}
+                    data-index={index}
+                    ondragstart={handleDragStart}
                     ondragend={handleDragEnd}
                     aria-label="Drag to reorder"
                     role="presentation"

@@ -13,14 +13,16 @@
         ...restProps
     } = $props();
 
+    const VALID_EVENT_TYPES = ["all", "practice", "meeting", "concert", "other"];
+
     const displayType = $derived.by(() => {
         const raw = String(type ?? "").trim();
-        const canonical = ["all", "practice", "meeting", "concert", "other"].includes(raw)
+
+        const canonical = VALID_EVENT_TYPES.includes(raw)
             ? raw
             : (typeMap[raw] ?? "other");
 
-        if (!["all", "practice", "meeting", "concert", "other"].includes(canonical)) {
-            console.warn(`Type ${type} is not a valid type`);
+        if (!VALID_EVENT_TYPES.includes(canonical)) {
             return typeMap["other"];
         }
 
@@ -36,7 +38,7 @@
         <p class="text-dt-5 text-gv-dark-text text-nowrap truncate">{title}</p>
         <p class="text-dt-6 text-gv-light-text">
             {#if time.includes(' - ')}
-                {time.split(' - ')[0]} - <span style="white-space: nowrap;">{time.split(' - ')[1]}</span>
+                {time.split(' - ')[0]} - <span class="whitespace-nowrap">{time.split(' - ')[1]}</span>
             {:else}
                 {time}
             {/if}

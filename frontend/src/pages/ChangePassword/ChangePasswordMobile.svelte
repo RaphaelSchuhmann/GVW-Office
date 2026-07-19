@@ -15,9 +15,9 @@
 
     let isFetching = $state(false);
 
-    let currentPw = $state("");
-    let newPw = $state("");
-    let confirmNewPw = $state("");
+    let currentPw = "";
+    let newPw = "";
+    let confirmNewPw = "";
 
     /**
      * Validates password change form inputs

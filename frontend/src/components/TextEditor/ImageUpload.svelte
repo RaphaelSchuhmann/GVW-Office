@@ -12,11 +12,17 @@
     let targetBlockId = null;
 
     let isOpen = $state(false);
-    let menuRef = $state();
+    let menuRef = null;
 
     const validTypes = ["png", "jpg", "jpeg"];
 
-    const acceptString = $derived(validTypes.map((t) => `.${t}`).join(","));
+    let acceptString = $derived.by(() => {
+        let result = "";
+        for (let i = 0; i < validTypes.length; i++) {
+            result += (i === 0 ? "." : ",.") + validTypes[i];
+        }
+        return result;
+    });
 
     function selectImage() {
         const input = document.createElement("input");
@@ -60,16 +66,23 @@
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     });
+
+    function handleSelectImage(e) {
+        e.preventDefault();
+        selectImage();
+    }
+
+    function handleToggleOverlay(e) {
+        e.preventDefault();
+        toggleOverlay();
+    }
 </script>
 
 <div class={`flex flex-col items-start justify-start gap-2`} bind:this={menuRef}>
     <div class={`relative inline-block w-full`}>
         <button
             class={`p-2 flex items-center justify-center cursor-pointer rounded-2 hover:bg-gv-hover-effect text-gv-dark-text disabled:text-gv-dark-text/50 disabled:cursor-not-allowed`}
-            onmousedown={(e) => {
-                e.preventDefault();
-                toggleOverlay();
-            }}
+            onmousedown={handleToggleOverlay}
             disabled={disabled}
         >
             <span class="material-symbols-rounded text-icon-dt-4">image</span>
@@ -81,10 +94,7 @@
             >
                 <button
                     class="flex items-center justify-center gap-4 cursor-pointer hover:bg-gv-hover-effect text-gv-dark-text p-2 pl-4 pr-4 rounded-2"
-                    onmousedown={(e) => {
-                        e.preventDefault();
-                        selectImage();
-                    }}
+                    onmousedown={handleSelectImage}
                 >
                     <span class="material-symbols-rounded text-icon-dt-6">upload</span>
                     <span class="text-dt-6 text-nowrap">Bild Hochladen</span>

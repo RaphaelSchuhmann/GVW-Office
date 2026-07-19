@@ -1,10 +1,11 @@
 <script>
-    import { slide } from 'svelte/transition';
-    import { cubicOut } from 'svelte/easing';
+    import { slide } from "svelte/transition";
+    import { cubicOut } from "svelte/easing";
     import { user } from "../stores/user.svelte.js";
     import { formatISODateString } from "../services/dateTimeUtils.js";
     import { deleteChangelog, formatChangelog } from "../services/changelogService.svelte.js";
     import Spinner from "./Spinner.svelte";
+    import SanitizedHTML from "./SanitizedHTML.svelte";
 
     let {
         data,
@@ -25,19 +26,25 @@
             isDeleting = false;
         }
     }
+
+    function handleOnToggle(event) {
+        const id = event.currentTarget.dataset.id;
+        onToggle(id);
+    }
 </script>
 
 <div class="w-full flex flex-col gap-2 p-4 items-start justify-start rounded-2 shadow-md bg-white">
     {#if isDeleting}
         <div class="flex justify-center items-center w-full">
-            <Spinner/>
+            <Spinner />
         </div>
     {:else}
         <div class="flex w-full items-center">
             <button
                 type="button"
                 class="flex flex-1 items-center cursor-pointer text-left gap-2"
-                onclick={onToggle}
+                data-id={data.id}
+                onclick={handleOnToggle}
             >
                 <span class="text-dt-5 text-gv-dark-text font-semibold text-nowrap truncate">{data.title}</span>
                 <span class="material-symbols-rounded text-icon-dt-5 text-gv-dark-text ml-auto">
@@ -61,9 +68,10 @@
         <p class="text-dt-7 text-gv-light-text font-semibold">{formatISODateString(data.timestamp) + " - " + data.version}</p>
 
         {#if expanded}
-            <div transition:slide={{ duration: 200, easing: cubicOut }} class="w-full max-h-[30vh] overflow-y-auto mt-2">
-                <div class="text-gv-dark-text text-dt-7">
-                    {@html formatChangelog(data.content)}
+            <div transition:slide={{ duration: 200, easing: cubicOut }}
+                 class="w-full max-h-[30vh] overflow-y-auto mt-2">
+                <div class="text-gv-dark-text text-dt-7 pl-1">
+                    <SanitizedHTML htmlContent={formatChangelog(data.content)} />
                 </div>
             </div>
         {/if}

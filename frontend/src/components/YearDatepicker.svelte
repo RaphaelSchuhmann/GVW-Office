@@ -9,7 +9,7 @@
     } = $props();
 
     let open = $state(false);
-    let datepickerRef = $state(null);
+    let datepickerRef = null;
 
     // This is the "navigation" state that controls what 12-year block we see
     let navigatedYear = $state(currentYear);
@@ -26,7 +26,16 @@
 
     // The grid now ONLY cares about navigatedYear, not the selection
     let gridStart = $derived(Math.floor(navigatedYear / 12) * 12);
-    let yearsGrid = $derived(Array.from({ length: 12 }, (_, i) => gridStart + i));
+    const yearsCache = new Array(12);
+
+    let yearsGrid = $derived.by(() => {
+        for (let i = 0; i < 12; i++) {
+            yearsCache[i] = gridStart + i;
+        }
+
+        return yearsCache;
+    });
+
 
     $effect(() => {
         const handleClickOutside = (event) => {
@@ -54,12 +63,12 @@
         }
     }
 
-    function selectYear(year) {
+    function selectYear(e) {
+        const year = e.currentTarget.dataset.year;
         updateSelection(year);
         open = false;
     }
 
-    // These now modify navigatedYear directly, and the grid will follow
     function nextRange() {
         navigatedYear += 12;
     }
@@ -92,14 +101,15 @@
         <div class="absolute bottom-full flex flex-col rounded-1 w-full bg-gv-input-bg border border-gv-primary p-4 gap-4 mb-1">
 
             <div class="grid grid-cols-3 gap-2">
-                {#each yearsGrid as year}
+                {#each yearsGrid as year (year)}
                     <button
                         class="py-3 rounded-2 text-dt-6 font-medium transition-all cursor-pointer"
                         class:bg-gv-dark-turquoise={compareSelectedToYear(year)}
                         class:text-white={compareSelectedToYear(year)}
                         class:text-gv-light-text={!compareSelectedToYear(year)}
                         class:hover:bg-gv-hover-effect={!compareSelectedToYear(year)}
-                        onclick={() => selectYear(year)}
+                        data-id={year}
+                        onclick={selectYear}
                     >
                         {year}
                     </button>

@@ -4,11 +4,7 @@
  * @param {string} value - Value to store
  */
 export function setValue(key, value) {
-    try {
-        localStorage.setItem(key, value);
-    } catch (err) {
-        console.error("setValue failed: ", err);
-    }
+    localStorage.setItem(key, value);
 }
 
 /**
@@ -17,13 +13,8 @@ export function setValue(key, value) {
  * @returns {string} Stored value or empty string if not found/error
  */
 export function getValue(key) {
-    try {
-        const value = localStorage.getItem(key);
-        return value ?? "";
-    } catch (err) {
-        console.error("getValue failed: ", err);
-        return "";
-    }
+    const value = localStorage.getItem(key);
+    return value ?? "";
 }
 
 /**
@@ -31,9 +22,5 @@ export function getValue(key) {
  * @param {string} key - Storage key to remove
  */
 export function clearValue(key) {
-    try {
-        localStorage.removeItem(key);
-    } catch (err) {
-        console.error("clearValue failed: ", err);
-    }
+    localStorage.removeItem(key);
 }

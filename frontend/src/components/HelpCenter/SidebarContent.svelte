@@ -16,17 +16,17 @@
     } = $props();
 
     /** @type {import("../../components/ChangelogsModal.svelte").default} */
-    let changelogModal = $state();
+    let changelogModal = null;
 
     /** @type {import("../../components/FeedbackModal.svelte").default} */
-    let feedbackModal = $state(null);
+    let feedbackModal = null;
 
     $effect(() => {
-       if (helpCenterStore.activeCategory === "") {
-           currentCategory = "";
-       } else {
-           currentCategory = buttons.find(cat => cat.id === helpCenterStore.activeCategory)?.title;
-       }
+        if (helpCenterStore.activeCategory === "") {
+            currentCategory = "";
+        } else {
+            currentCategory = buttons.find(cat => cat.id === helpCenterStore.activeCategory)?.title;
+        }
     });
 
     let userOptionsVisible = $state(false);
@@ -41,19 +41,32 @@
         logout();
         await push("/");
     }
+
+    function openFeedbackModal() {
+        feedbackModal.showModal();
+        toggleUserOptions();
+    }
+
+    function selectCategory(event) {
+        const button = event.currentTarget.dataset.button;
+        currentCategory = button.title;
+        helpCenterStore.activeCategory = button.id;
+    }
 </script>
 
-<ChangelogsModal bind:this={changelogModal} isMobile={isMobile}/>
-<FeedbackModal bind:this={feedbackModal} isMobile={isMobile}/>
+<ChangelogsModal bind:this={changelogModal} isMobile={isMobile} />
+<FeedbackModal bind:this={feedbackModal} isMobile={isMobile} />
 
 <div class="flex flex-col items-center w-full flex-1 overflow-hidden">
     <div class="flex flex-col items-center w-full h-full flex-1 p-5 gap-4 overflow-y-auto">
-        <button class="group cursor-pointer w-full flex items-center justify-start gap-2 p-2" onclick={() => push("/dashboard")}>
+        <button class="group cursor-pointer w-full flex items-center justify-start gap-2 p-2"
+                onclick={async () => await push("/dashboard")}>
             <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">arrow_back</span>
             <span class="text-dt-3 text-gv-dark-text group-hover:underline">Dashboard</span>
         </button>
-        {#each buttons as button}
-            <SidebarButton onclick={() => {currentCategory = button.title; helpCenterStore.activeCategory = button.id}} selected={currentCategory === button.title}>
+        {#each buttons as button (button.title)}
+            <SidebarButton onclick={selectCategory} data-button={button}
+                           selected={currentCategory === button.title}>
                 <div class="flex items-center justify-start gap-2">
                     <span class="material-symbols-rounded text-icon-dt-4">{button.icon}</span>
                     <p class="text-dt-3">{button.title}</p>
@@ -65,7 +78,8 @@
 
     <div class="flex flex-col items-center w-full mt-auto p-5">
         <div class="relative inline-block text-left w-full">
-            <button onclick={toggleUserOptions} class="flex w-full items-center bg-white border border-gv-border rounded-1 p-3 cursor-pointer hover:bg-gv-secondary-btn-hover duration-200 overflow-hidden">
+            <button onclick={toggleUserOptions}
+                    class="flex w-full items-center bg-white border border-gv-border rounded-1 p-3 cursor-pointer hover:bg-gv-secondary-btn-hover duration-200 overflow-hidden">
                 <div class="flex flex-col items-start justify-around w-full">
                     {#if user.loaded}
                         <p class="text-dt-5 text-gv-dark-text truncate">{user.name}</p>
@@ -79,8 +93,9 @@
             </button>
 
             {#if userOptionsVisible}
-                <div class="absolute bottom-22 w-full bg-white border border-gv-border rounded-1 p-2 flex flex-col items-center">
-                    <button onclick={() => {feedbackModal.showModal(); toggleUserOptions()}}
+                <div
+                    class="absolute bottom-22 w-full bg-white border border-gv-border rounded-1 p-2 flex flex-col items-center">
+                    <button onclick={openFeedbackModal}
                             class="w-full flex items-center rounded-2 cursor-pointer hover:bg-gv-hover-effect p-2 pl-3 pr-3 duration-150 text-dt-6">
                         <span class="material-symbols-rounded text-icon-dt-5 mr-2">chat_bubble</span>
                         Feedback

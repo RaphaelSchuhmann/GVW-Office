@@ -17,14 +17,14 @@
      * Used to programmatically open the add article dialog.
      * @type {import("../../../components/HelpCenter/AddArticleModal.svelte").default}
      */
-    let addArticleModalRef = $state(null);
+    let addArticleModalRef = null;
 
     /**
      * Reference to the confirm delete modal.
      * Used to programmatically open the confirm deletion dialog.
      * @type {import("../../../components/ConfirmDeleteModal.svelte").default}
      */
-    let confirmDeleteCategoryModal = $state(null);
+    let confirmDeleteCategoryModal = null;
 
     const category = appSettings.helpCenterCategories.find(cat => cat.id === helpCenterStore.activeCategory);
 
@@ -42,6 +42,8 @@
 
         if (category.id === helpCenterStore.activeCategory) confirmDeleteCategoryModal.startDelete();
     }
+
+    function clearActiveCategory() { helpCenterStore.activeCategory = ""; }
 </script>
 
 <AddArticleModal bind:this={addArticleModalRef} isMobile={false} />
@@ -55,7 +57,7 @@
         <div class="flex flex-col items-start justify-start w-full gap-2 ">
             <div class="w-full flex items-center justify-start">
                 <button class="group cursor-pointer flex items-center justify-start gap-2 p-2"
-                        onclick={() => helpCenterStore.activeCategory = ""}>
+                        onclick={clearActiveCategory}>
                     <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_back</span>
                     <span class="text-dt-5 text-gv-dark-text group-hover:underline text-nowrap">Alle Kategorien</span>
                 </button>
@@ -90,7 +92,7 @@
         <div
             class="w-full h-full flex flex-col items-start justify-start gap-2 p-5 bg-white rounded-1 overflow-y-auto drop-shadow-[0_0_5px_rgba(0,0,0,0.2)]">
             {#if helpCenterStore.articles.length > 0}
-                {#each helpCenterStore.articles as article}
+                {#each helpCenterStore.articles as article (article.id)}
                     <button class="w-full cursor-pointer group"
                             onclick={async () => {await getArticle(article.id)}}>
                         <Card>
@@ -99,7 +101,7 @@
                                     <p class="text-gv-dark-text font-bold text-dt-3">{article.title}</p>
                                     <p class="text-gv-light-text text-dt-5 line-clamp-2 truncate">{article.description}</p>
                                     <div class="w-full flex items-center justify-start gap-2">
-                                        {#each article.tags as tag}
+                                        {#each article.tags as tag, i (i)}
                                             <Chip text={tag} />
                                         {/each}
                                     </div>

@@ -21,7 +21,7 @@
 
     const userId = params.get("id");
 
-    let isEditing = $state(params.get("editing") === "true");
+    let isEditing = params.get("editing") === "true";
 
     const userData = $derived.by(() => {
         if (!userId) return null;
@@ -55,7 +55,7 @@
         ready = true;
     });
 
-    let isDeleting = $state(false);
+    let isDeleting = false;
 
     $effect(() => {
         const _trigger = lastRefresh.USER;

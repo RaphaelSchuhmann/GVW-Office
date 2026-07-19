@@ -18,7 +18,9 @@
      * Used to programmatically open the manage category dialog.
      * @type {import("../../../components/HelpCenter/ManageFeaturedCategoriesModal.svelte").default}
      */
-    let manageFeaturedCategoriesModalRef = $state(null);
+    let manageFeaturedCategoriesModalRef = null;
+
+    function setActiveCategory(e) { helpCenterStore.activeArticle = e.currentTarget.dataset.id; }
 </script>
 
 <ManageFeaturedCategoriesModal bind:this={manageFeaturedCategoriesModalRef} isMobile={false} />
@@ -38,18 +40,23 @@
         <div class="flex items-center justify-start w-full">
             <p class="text-dt-3 font-bold">Kategorien</p>
             {#if user.role === "admin"}
-                <button class="flex items-center justify-center ml-auto cursor-pointer hover:bg-gv-hover-effect rounded-2 p-2 duration-75" onclick={manageFeaturedCategoriesModalRef?.showModal}>
+                <button
+                    class="flex items-center justify-center ml-auto cursor-pointer hover:bg-gv-hover-effect rounded-2 p-2 duration-75"
+                    onclick={manageFeaturedCategoriesModalRef?.showModal}>
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">discover_tune</span>
                 </button>
             {/if}
         </div>
-        <div class="min-[1400px]:grid min-[1400px]:grid-cols-3 min-[1400px]:grid-rows-2 max-[1400px]:flex max-[1400px]:flex-col w-full h-full gap-4">
-            {#each appSettings.helpCenterCategories as category}
+        <div
+            class="min-[1400px]:grid min-[1400px]:grid-cols-3 min-[1400px]:grid-rows-2 max-[1400px]:flex max-[1400px]:flex-col w-full h-full gap-4">
+            {#each appSettings.helpCenterCategories as category (category.id)}
                 {#if category.isFeatured}
-                    <button class="h-full w-full cursor-pointer group" onclick={() => helpCenterStore.activeCategory = category.id}>
+                    <button class="h-full w-full cursor-pointer group" data-id={category.id}
+                            onclick={setActiveCategory}>
                         <Card fillHeight={viewport.width > 1400}>
                             <div class="flex flex-col items-start justify-start gap-4 w-full h-full">
-                                <span class="rounded-2 bg-gv-bg-bar p-4 text-icon-dt-2 text-gv-primary material-symbols-rounded">
+                                <span
+                                    class="rounded-2 bg-gv-bg-bar p-4 text-icon-dt-2 text-gv-primary material-symbols-rounded">
                                     {category.icon}
                                 </span>
                                 <div class="flex flex-col items-start justify-start w-full">
@@ -58,7 +65,8 @@
                                 </div>
                                 <div class="flex items-center justify-start gap-2">
                                     <p class="text-gv-light-text text-dt-5">{category.articleCount} Artikel</p>
-                                    <span class="material-symbols-rounded text-icon-dt-6 text-gv-light-text group-hover:ml-1 duration-200">chevron_right</span>
+                                    <span
+                                        class="material-symbols-rounded text-icon-dt-6 text-gv-light-text group-hover:ml-1 duration-200">chevron_right</span>
                                 </div>
                             </div>
                         </Card>

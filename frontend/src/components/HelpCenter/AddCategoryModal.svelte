@@ -17,7 +17,7 @@
      * Used to programmatically open the dialog.
      * @type {import("../../components/Modal.svelte").default}
      */
-    let modalRef = $state(null);
+    let modalRef = null;
 
     let isSubmitting = $state(false);
 
@@ -52,11 +52,11 @@
     }
 
     export function showModal() {
-        modalRef?.showModal();
+        if (modalRef) modalRef.showModal();
     }
 
     export function hideModal() {
-        modalRef?.hideModal();
+        if (modalRef) modalRef.hideModal();
     }
 </script>
 
@@ -76,7 +76,7 @@
         <Textarea bind:value={inputs.description} title="Beschreibung" placeholder="Kurze Beschreibung..." height="h-1/5" />
 
         <div class="w-full flex items-center justify-end gap-4">
-            <Button type="secondary" onclick={() => modalRef.hideModal()}>Abbrechen</Button>
+            <Button type="secondary" onclick={hideModal}>Abbrechen</Button>
             <Button type="primary" disabled={addDisabled || isSubmitting} onclick={submit} isSubmit={true}>
                 {#if isSubmitting}
                     <Spinner light={true} />

@@ -15,9 +15,10 @@
 
     /**
      * Toggles the selection of a certain option.
-     * @param {string} option - The option to toggle
+     * @param {Event} event
      */
-    function toggleChip(option) {
+    function toggleChip(event) {
+        const option = event.currentTarget.dataset.option;
         if (!option) return;
 
         if (selectedOptions.includes(option)) {
@@ -30,6 +31,14 @@
     }
 
     let mobileIsTooltipOpen = $state(false);
+
+    function handleReset() {
+        const removed = [...selectedOptions];
+        selectedOptions = [];
+        removed.forEach((option) => onChange?.(`remove:${option}`));
+    }
+
+    function toggleMobileTooltip() { mobileIsTooltipOpen = !mobileIsTooltipOpen; }
 </script>
 
 <div class="w-full flex flex-col items-start justify-start gap-2">
@@ -45,7 +54,7 @@
                         </div>
                     {/if}
 
-                    <button onclick={() => {mobileIsTooltipOpen = !mobileIsTooltipOpen}}>
+                    <button onclick={toggleMobileTooltip}>
                         <span class="material-symbols-rounded text-icon-dt-6 text-gv-toast-error block cursor-help">
                             lock
                         </span>
@@ -66,7 +75,7 @@
         {/if}
     </div>
     <div class="flex items-start justify-start gap-2 flex-wrap w-full">
-        {#each options as option}
+        {#each options as option, i (i)}
             <button
                 class="group {option.length < 4 ? 'pl-4 pr-4 pt-2 pb-2' : 'p-2'} flex items-center justify-center gap-2 rounded-1 border-2 cursor-pointer disabled:cursor-not-allowed
                        {selectedOptions.includes(option)
@@ -74,7 +83,8 @@
                             : 'border-gv-border hover:bg-gv-hover-effect'
                        }"
                 disabled={disabled}
-                onclick={() => toggleChip(option)}
+                data-option={option}
+                onclick={toggleChip}
             >
                 {#if selectedOptions.includes(option)}
                     <span
@@ -97,11 +107,7 @@
     {#if selectedOptions.length > 0 && !disabled}
         <button
             class="p-2 bg-gv-semi-transparent-red rounded-2 flex items-center justify-center gap-2 text-gv-delete hover:bg-gv-semi-transparent-red-hover cursor-pointer"
-            onclick={() => {
-                const removed = [...selectedOptions];
-                selectedOptions = [];
-                removed.forEach((option) => onChange?.(`remove:${option}`));
-            }}
+            onclick={handleReset}
         >
             <span class="material-symbols-rounded text-icon-dt-6">
                 {useLock ? "lock_open" : "close"}

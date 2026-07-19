@@ -16,7 +16,7 @@
         "deleteLibEntry": deleteScore,
         "deleteUser": deleteUser,
         "deleteHelpCategory": deleteHelpCenterCategory,
-        "deleteHelpArticle": deleteArticle,
+        "deleteHelpArticle": deleteArticle
     };
 
     let {
@@ -33,8 +33,9 @@
     } = $props();
 
     let confirmInput = $state("");
+
     /** @type {import("./Modal.svelte").default} */
-    let confirmDeleteModal = $state();
+    let confirmDeleteModal = null;
 
     let isDeleting = $state(false);
 
@@ -74,6 +75,11 @@
         isDeleting = false;
         onClose();
     }
+
+    function handleCancelDelete() {
+        confirmDeleteModal?.hideModal();
+        onCancel();
+    }
 </script>
 
 <Modal
@@ -95,7 +101,7 @@
     <div class="w-full flex items-center justify-end mt-5 gap-4">
         <Button
             type="secondary"
-            onclick={() => {confirmDeleteModal?.hideModal(); onCancel();}}
+            onclick={handleCancelDelete}
         >
             Abbrechen
         </Button>

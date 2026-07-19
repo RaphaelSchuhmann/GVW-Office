@@ -17,14 +17,20 @@
     import Spinner from "../../components/Spinner.svelte";
 
     /** @type {import("../../components/Modal.svelte").default} */
-    let voiceDistributionSettingsModal = $state();
+    let voiceDistributionSettingsModal = null;
 
     let isSubmitting = $state(false);
 
     let maxMembers = $state("");
 
     let events = $derived(prepareEvents());
-    let activeMembers = $derived(dashboardStore.members.filter(m => m.status === "active").length);
+    let activeMembers = $derived.by(() => {
+        let count = 0;
+        for (const m of dashboardStore.members) {
+            if (m.status === "active") count++;
+        }
+        return count;
+    });
     let voiceCounts = $derived(getVoiceCounts())
 
     /**
@@ -49,6 +55,8 @@
     }
 
     let sidebarOpen = $state(false);
+
+    function openSidebar() { sidebarOpen = true; }
 </script>
 
 <Modal bind:this={voiceDistributionSettingsModal} title="Stimmenverteilung Einstellungen" subTitle="Einstellungen für die Stimmverteilung"
@@ -75,7 +83,7 @@
     <div class="flex-1 min-h-0 overflow-y-auto">
         <div class="flex flex-col w-full flex-1 overflow-hidden p-7 min-h-0">
             <div class="w-full flex items-center justify-start">
-                <button class="flex items-center justify-center" onclick={() => sidebarOpen = true}>
+                <button class="flex items-center justify-center" onclick={openSidebar}>
                     <span class="material-symbols-rounded text-icon-dt-4 text-gv-dark-text">menu</span>
                 </button>
             </div>
@@ -123,7 +131,7 @@
                         <span class="text-gv-light-text text-dt-6">Nächste Veranstaltungen und Proben</span>
                     </p>
                     <div class="w-full flex-1 min-h-0 overflow-x-hidden overflow-y-auto max-h-[47dvh] flex flex-col items-center pr-2">
-                        {#each events as event}
+                        {#each events as event (event.title)}
                             <ComingEvent margin="5" title={event.title} time={event.time} location={event.location}
                                          type={event.type} isMobile={true} />
                         {/each}

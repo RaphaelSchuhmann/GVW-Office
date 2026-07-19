@@ -9,16 +9,24 @@
     } = $props();
 
     const closeSidebar = () => isOpen = false;
+
+    function handleKey(e) {
+        if (e.key === "Escape") {
+            e.preventDefault();
+            closeSidebar();
+        }
+    }
 </script>
 
 {#if isOpen}
-    <div class="fixed inset-0 bg-black/50 z-40"
-         role="button"
-         tabindex="0"
-         aria-label="Close sidebar"
-         onclick={closeSidebar}
-         onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeSidebar(); } }}
-         transition:fade></div>
+    <button class="fixed inset-0 bg-black/50 z-40"
+            role="button"
+            tabindex="-1"
+            aria-label="Close sidebar"
+            onclick={closeSidebar}
+            onkeydown={handleKey}
+            transition:fade>
+    </button>
 
     <div
         class="fixed inset-0 z-50 bg-gv-bg-bar flex flex-col"

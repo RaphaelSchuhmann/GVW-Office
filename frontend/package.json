@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "doctor": "svelte-doctor check",
+    "doctor:fix": "svelte-doctor fix"
   },
   "type": "module",
   "devDependencies": {

@@ -17,9 +17,7 @@
     import HorizontalNavBar from "../../components/AdminHorizontalNavBar.svelte";
 
     /** @type {import("../../components/Modal.svelte").default} */
-    let addChangelogModal = $state();
-
-    // Add changelog
+    let addChangelogModal = null;
 
     let isSubmitting = $state(false);
 
@@ -61,7 +59,7 @@
     <Textarea bind:value={addChangelogInputs.content} title="Inhalt" placeholder="Informationen über Änderungen..." height="h-[20vh]" marginTop="5"/>
     <div class="w-full flex items-center justify-end mt-5 gap-2">
         <Button type="secondary" onclick={addChangelogModal.hideModal}>Abbrechen</Button>
-        <Button type="primary" disabled={addChangelogBtnDisabled} onclick={submitNewChangelog} isSubmit={true}>
+        <Button type="primary" disabled={addChangelogBtnDisabled} onclick={submitNewChangelog}>
             {#if isSubmitting}
                 <Spinner light={true} />
                 <p>Speichern...</p>

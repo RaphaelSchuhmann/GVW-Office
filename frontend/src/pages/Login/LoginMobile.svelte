@@ -12,12 +12,10 @@
     import { normalizeResponse } from "../../api/http.svelte";
     import { handleGlobalApiError } from "../../api/globalErrorHandler.svelte";
 
-    // 1. Reactive State
-    let email = $state("");
-    let password = $state("");
+    let email = "";
+    let password = "";
     let isFetching = $state(false);
 
-    // 2. Svelte 5 Auth Check on Mount
     $effect(() => {
         const checkAuth = async () => {
             const authToken = getValue("authToken");

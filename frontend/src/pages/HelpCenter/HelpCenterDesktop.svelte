@@ -16,14 +16,14 @@
      * Used to programmatically open the add category dialog.
      * @type {import("../../components/HelpCenter/AddCategoryModal.svelte").default}
      */
-    let addCategoryModalRef = $state(null);
+    let addCategoryModalRef = null;
 
     /**
      * Reference to the search modal.
      * Used to programmatically open the search dialog.
      * @type {import("../../components/HelpCenter/SearchModal.svelte").default}
      */
-    let searchModalRef = $state(null);
+    let searchModalRef = null;
 </script>
 
 <ToastStack />

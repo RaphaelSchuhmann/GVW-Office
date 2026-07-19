@@ -38,7 +38,7 @@
     let draft = $state(null);
     let isSubmitting = $state(false);
 
-    const currentDate = $derived(isEditing ? draft?.date : eventData?.date);
+    const currentDate = isEditing ? draft?.date : eventData?.date;
     const ordinal = $derived(getOrdinalFromDateString(currentDate));
     const weekDay = $derived(getWeekDayFromDateStringMondayFirst(currentDate));
 
@@ -64,26 +64,14 @@
         isEditing = false;
     }
 
-    /**
-     * Reactive derived state that determines whether
-     * the current draft can be saved.
-     *
-     * Returns `true` only if:
-     * - A draft and original event data exist
-     * - All required fields are non-null, defined, and non-empty
-     * - The draft differs from the original event data
-     *
-     * Used to enable or disable the save/update action.
-     */
+    const REQUIRED_EVENT_FIELDS = ["title", "type", "status", "location", "date", "time", "mode"];
+
     const hasChanges = $derived.by(() => {
         if (!draft || !eventData) return false;
 
-        // 1. Validation: Ensure required fields aren't empty
-        const requiredFields = ["title", "type", "status", "location", "date", "time", "mode"];
-        const isFilled = requiredFields.every(field => draft[field]?.toString().trim());
+        const isFilled = REQUIRED_EVENT_FIELDS.every(field => draft[field]?.toString().trim());
         if (!isFilled) return false;
 
-        // 2. Comparison: Check top-level fields
         const baseChanged =
             draft.title !== eventData.title ||
             draft.type !== eventData.type ||
@@ -93,22 +81,17 @@
             draft.time !== eventData.time ||
             draft.mode !== eventData.mode;
 
-        // Handle null vs empty string for description
         const descChanged = (draft.description || "") !== (eventData.description || "");
 
         let recurrenceChanged = false;
         if (draft.mode === "monthly") {
-            const dRec = draft.recurrence || {};
-            const eRec = eventData.recurrence || {};
-
             recurrenceChanged =
-                dRec.monthlyKind !== eRec.monthlyKind ||
-                dRec.dayOfMonth !== eRec.dayOfMonth ||
-                dRec.weekDay !== eRec.weekDay ||
-                dRec.ordinal !== eRec.ordinal;
+                draft.recurrence?.monthlyKind !== eventData.recurrence?.monthlyKind ||
+                draft.recurrence?.dayOfMonth !== eventData.recurrence?.dayOfMonth ||
+                draft.recurrence?.weekDay !== eventData.recurrence?.weekDay ||
+                draft.recurrence?.ordinal !== eventData.recurrence?.ordinal;
         }
 
-        // Return TRUE if any part changed
         return baseChanged || descChanged || recurrenceChanged;
     });
 
@@ -166,7 +149,43 @@
      * Used to initiate and confirm event deletion flow.
      * @type {import("../../components/ConfirmDeleteModal.svelte").default}
      */
-    let confirmDeleteEventModal = $state();
+    let confirmDeleteEventModal = null;
+
+    function setMonthlyKindToWeekday() {
+        draft.recurrence.monthlyKind = "weekday";
+        draft.recurrence.weekDay = weekDay;
+        draft.recurrence.ordinal = ordinal;
+    }
+
+    function setMonthlyKindToDate() {
+        draft.recurrence.monthlyKind = "date";
+        draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
+    }
+
+    function changeMode(val) {
+        draft.mode = modeMap[val];
+
+        if (draft.mode === "monthly") {
+            draft.recurrence.monthlyKind = "date";
+        }
+    }
+
+    function updateTime(value) { draft.time = value; }
+
+    function updateDate(value) {
+        draft.date = value
+        if (draft.recurrence.monthlyKind === "date") {
+            draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
+        }
+    }
+
+    function updateStatus(value) { draft.status = statusMap[value]; }
+
+    function updateType(value) { draft.type = typeMap[value]; }
+
+    function startDeletingEvent() { isDeleting = true; confirmDeleteEventModal.startDelete(); }
+
+    function disableIsDeleting() { isDeleting = false; }
 </script>
 
 <ToastStack isMobile={true}></ToastStack>
@@ -176,7 +195,7 @@
                     subTitle="Sind Sie sich sicher das Sie diese Veranstaltung löschen möchten?"
                     action="deleteEvent"
                     onClose={async () => {await push("/events")}}
-                    onCancel={() => {isDeleting = false}}
+                    onCancel={disableIsDeleting}
                     bind:this={confirmDeleteEventModal}
 />
 
@@ -198,11 +217,12 @@
             <div class="flex flex-col items-center gap-5 min-[1500px]:w-1/2 min-[1200px]:w-2/3 w-full mt-5">
                 {#if viewport.width < 900 && !isEditing && (user.role === "board_member" || user.role === "admin")}
                     <div class="flex items-center gap-2 w-full">
-                        <Button type="delete" onclick={() => {isDeleting = true; confirmDeleteEventModal.startDelete();}}>
+                        <Button type="delete"
+                                onclick={startDeletingEvent}>
                             <span class="material-symbols-rounded mr-2">delete</span>
                             Löschen
                         </Button>
-                        <Button type="primary" onclick={() => startEditing()}>
+                        <Button type="primary" onclick={startEditing}>
                             <span class="material-symbols-rounded mr-2">person_edit</span>
                             Bearbeiten
                         </Button>
@@ -260,9 +280,10 @@
                     <Input bind:value={draft.title} title="Titel" placeholder="Veranstaltung XYZ" />
 
                     <Dropdown title="Typ" options={["Proben", "Meeting", "Konzerte", "Sonstiges"]}
-                              onChange={(value) => draft.type = typeMap[value]} selected={typeMap[draft.type]} showDropshadow={true} />
+                              onChange={updateType} selected={typeMap[draft.type]}
+                              showDropshadow={true} />
                     <Dropdown title="Status" options={["Bevorstehend", "Abgeschlossen"]}
-                              onChange={(value) => draft.status = statusMap[value]}
+                              onChange={updateStatus}
                               selected={statusMap[draft.status]} showDropshadow={true} />
 
                     <Input bind:value={draft.location} title="Ort" placeholder="Ort XYZ" />
@@ -272,30 +293,19 @@
 
                     <div class="flex flex-col items-start w-full h-full">
                         <p class="text-dt-6 font-medium">Datum</p>
-                        <DefaultDatepicker marginTop="1" onChange={(value) => {
-                            draft.date = value
-                            if (draft.recurrence.monthlyKind === "date") {
-                                draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
-                            }
-                        }} selected={formatISODateString(draft.date)} />
+                        <DefaultDatepicker marginTop="1" onChange={updateDate} selected={formatISODateString(draft.date)} />
                     </div>
 
                     <div class="flex flex-col items-start w-full h-full">
                         <p class="text-dt-6 font-medium">Uhrzeit</p>
-                        <TimePicker marginTop="1" selected={draft.time} onChange={(value) => {draft.time = value;}} />
+                        <TimePicker marginTop="1" selected={draft.time} onChange={updateTime} />
                     </div>
 
                     <TabBar
                         marginTop="3"
                         contents={["Einmalig", "Wöchentlich", "Monatlich"]}
                         selected={modeMap[draft.mode]}
-                        onChange={(val) => {
-                            draft.mode = modeMap[val];
-
-                            if (draft.mode === 'monthly') {
-                                draft.recurrence.monthlyKind = "date";
-                            }
-                        }}
+                        onChange={changeMode}
                     />
 
                     {#if draft.mode === "single"}
@@ -308,20 +318,13 @@
                             <Checkbox
                                 title="Am gleichen Datum"
                                 isChecked={draft.recurrence.monthlyKind === "date"}
-                                onChange={() => {
-                                    draft.recurrence.monthlyKind = "date";
-                                    draft.recurrence.dayOfMonth = getDayOfMonthFromDate(draft.date);
-                                }}
+                                onChange={setMonthlyKindToDate}
                             />
 
                             <Checkbox
                                 title="Am gleichen Wochentag"
                                 isChecked={draft.recurrence.monthlyKind === "weekday"}
-                                onChange={() => {
-                                    draft.recurrence.monthlyKind = "weekday";
-                                    draft.recurrence.weekDay = weekDay;
-                                    draft.recurrence.ordinal = ordinal;
-                                }}
+                                onChange={setMonthlyKindToWeekday}
                             />
                         </div>
 
@@ -338,7 +341,7 @@
 
                 {#if isEditing}
                     <div class="flex items-center w-full gap-2">
-                        <Button type="secondary" onclick={() => cancelEditing()} isCancel={true}>Abbrechen</Button>
+                        <Button type="secondary" onclick={cancelEditing} isCancel={true}>Abbrechen</Button>
                         <Button type="primary" disabled={!hasChanges || isSubmitting}
                                 onclick={async () => await updateEventData()}>
                             {#if isSubmitting}
