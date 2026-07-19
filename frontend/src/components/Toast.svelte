@@ -2,6 +2,7 @@
     import { marginMap } from "../lib/dynamicStyles";
 
     let {
+        id,
         type = "info",
         marginTop = "",
         title = "Title",
@@ -35,7 +36,7 @@
             clearTimeout(closeTimer);
             closeTimer = null;
         }
-        onClose();
+        onClose(id);
     }
 
     $effect(() => {

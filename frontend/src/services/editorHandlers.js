@@ -73,27 +73,34 @@ function handleEnter(e, currentBlock, content) {
     }
 }
 
+function getPreviousTargetNode(range) {
+    const { startContainer, startOffset } = range;
+
+    if (startContainer.nodeType === Node.TEXT_NODE && startOffset === 0) {
+        return startContainer.previousSibling;
+    }
+    if (startContainer.nodeType === Node.ELEMENT_NODE) {
+        return startContainer.childNodes[startOffset - 1];
+    }
+    return startContainer;
+}
+
 function handleBackspace(e, currentBlock, content) {
     const selection = window.getSelection();
 
-    if (selection && selection.rangeCount > 0) {
+    if (selection?.rangeCount > 0) {
         const range = selection.getRangeAt(0);
-        let targetNode = range.startContainer;
+        const targetNode = getPreviousTargetNode(range);
 
-        if (targetNode.nodeType === Node.TEXT_NODE && range.startOffset === 0) {
-            targetNode = targetNode.previousSibling;
-        } else if (targetNode.nodeType === Node.ELEMENT_NODE) {
-            targetNode = targetNode.childNodes[range.startOffset - 1];
-        }
-
-        // If the element right behind the cursor is a rich link, blow it up entirely
-        if (targetNode?.getAttribute?.("data-rich-link") === "true") {
+        if (targetNode?.getAttribute("data-rich-link") === "true") {
             e.preventDefault();
-            targetNode.remove();
 
-            // Sync current state to the Svelte array index item
-            const id = currentBlock.dataset.id;
-            const index = content.findIndex(i => i.id === id);
+            const childNode = targetNode;
+            if (childNode && typeof childNode.remove === "function") {
+                childNode.remove();
+            }
+
+            const index = content.findIndex(i => i.id === currentBlock.dataset.id);
             if (index !== -1) {
                 content[index].data = sanitize(currentBlock.innerHTML);
             }
@@ -101,39 +108,35 @@ function handleBackspace(e, currentBlock, content) {
         }
     }
 
-    if (currentBlock.textContent.trim().length === 0 && !currentBlock.querySelector("img")) {
-        const hasMedia = currentBlock.querySelector("img") !== null;
+    if (currentBlock.textContent.trim().length > 0 || currentBlock.querySelector("img")) {
+        return;
+    }
 
-        if (!hasMedia) {
-            if (content.length > 1) {
-                e.preventDefault();
+    if (content.length > 1) {
+        e.preventDefault();
 
-                const id = currentBlock.dataset.id;
-                const index = content.findIndex(i => i.id === id);
+        const index = content.findIndex(i => i.id === currentBlock.dataset.id);
+        const previousIndex = index > 0 ? index - 1 : 0;
+        const previousId = content[previousIndex].id;
 
-                const previousIndex = index > 0 ? index - 1 : 0;
-                const previousId = content[previousIndex].id;
+        content.splice(index, 1);
 
-                content.splice(index, 1);
+        tick().then(() => {
+            const prevEl = document.querySelector(`[data-id="${previousId}"]`);
+            if (!prevEl) return;
 
-                tick().then(() => {
-                    const prevEl = document.querySelector(`[data-id="${previousId}"]`);
-                    if (prevEl) {
-                        prevEl.focus();
+            prevEl.focus();
 
-                        // Update caret position smoothly to end of the previous block
-                        const range = document.createRange();
-                        range.selectNodeContents(prevEl);
-                        range.collapse(false);
-                        const sel = window.getSelection();
-                        if (sel) {
-                            sel.removeAllRanges();
-                            sel.addRange(range);
-                        }
-                    }
-                });
+            const range = document.createRange();
+            range.selectNodeContents(prevEl);
+            range.collapse(false);
+
+            const sel = window.getSelection();
+            if (sel) {
+                sel.removeAllRanges();
+                sel.addRange(range);
             }
-        }
+        });
     }
 }
 
