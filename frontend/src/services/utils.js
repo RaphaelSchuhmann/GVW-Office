@@ -56,7 +56,7 @@ const ALLOWED_TAGS = new Set([
 ]);
 
 const ALLOWED_ATTR = new Set([
-    "href", "class", "target", "rel", "src", "alt" // Added src/alt since img is allowed!
+    "href", "class", "target", "rel", "src", "alt", "data-rich-link", "data-id", "contenteditable"
 ]);
 
 /**
