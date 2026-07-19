@@ -92,7 +92,7 @@ function handleBackspace(e, currentBlock, content) {
         const range = selection.getRangeAt(0);
         const targetNode = getPreviousTargetNode(range);
 
-        if (targetNode?.getAttribute("data-rich-link") === "true") {
+        if (targetNode?.dataset?.richLink === "true") {
             e.preventDefault();
 
             const childNode = targetNode;
