@@ -97,7 +97,7 @@ function handleBackspace(e, currentBlock, content) {
         if (structuralLink?.dataset?.richLink === "true" || (structuralLink?.tagName === "A" && structuralLink.querySelector("img, span"))) {
             e.preventDefault();
 
-            const childNode = targetNode;
+            const childNode = structuralLink;
             if (childNode && typeof childNode.remove === "function") {
                 childNode.remove();
             }
