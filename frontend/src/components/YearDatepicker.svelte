@@ -25,15 +25,9 @@
     });
 
     // The grid now ONLY cares about navigatedYear, not the selection
+    const OFFSETS = Array.from({ length: 12 }, (_, i) => i);
     let gridStart = $derived(Math.floor(navigatedYear / 12) * 12);
-    const yearsCache = new Array(12);
-
-    let yearsGrid = $derived.by(() => {
-        for (let i = 0; i < 12; i++) {
-            yearsCache[i] = gridStart + i;
-        }
-        return [...yearsCache];
-    });
+    let yearsGrid = $derived(OFFSETS.map(i => gridStart + i));
 
     $effect(() => {
         const handleClickOutside = (event) => {
