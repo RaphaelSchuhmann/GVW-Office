@@ -1,39 +1,16 @@
 <script>
     import { user } from "../../stores/user.svelte";
     import { eventsStore } from "../../stores/events.svelte";
-    import {
-        ordinalMap,
-        weekDayMap,
-        modeMap,
-        statusMap,
-        typeMap,
-        getEventOccurrenceById,
-        addEvent,
-        getOrdinalFromDateString,
-        getWeekDayFromDateStringMondayFirst
-    } from "../../services/eventsService.svelte";
-    import { viewport } from "../../stores/viewport.svelte";
+    import { typeMap, getEventOccurrenceById, } from "../../services/eventsService.svelte";
 
-    import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
     import Button from "../../components/Button.svelte";
     import Filter from "../../components/Filter.svelte";
     import FilterTabBar from "../../components/FilterTabBar.svelte";
     import Chip from "../../components/Chip.svelte";
     import Card from "../../components/Card.svelte";
-    import Modal from "../../components/Modal.svelte";
-    import Input from "../../components/Input.svelte";
-    import Dropdown from "../../components/Dropdown.svelte";
-    import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
-    import TabBar from "../../components/TabBar.svelte";
-    import Checkbox from "../../components/Checkbox.svelte";
     import { push } from "svelte-spa-router";
-    import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
-    import Textarea from "../../components/Textarea.svelte";
-    import Spinner from "../../components/Spinner.svelte";
-    import { formatISODateString } from "../../services/dateTimeUtils.js";
-    import TimePicker from "../../components/TimePicker.svelte";
     import AddEventModal from "../../components/AddEventModal.svelte";
 
     // ================

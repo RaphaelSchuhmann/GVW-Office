@@ -3,7 +3,7 @@
     import { currentYear, isISOString, getYearFromISOString, yearToISOString } from "../services/dateTimeUtils.js";
 
     let {
-        selected = $bindable(""),
+        selected = $bindable(currentYear),
         marginTop = "",
         onChange = () => {}
     } = $props();
@@ -32,10 +32,8 @@
         for (let i = 0; i < 12; i++) {
             yearsCache[i] = gridStart + i;
         }
-
-        return yearsCache;
+        return [...yearsCache];
     });
-
 
     $effect(() => {
         const handleClickOutside = (event) => {
@@ -98,17 +96,18 @@
     </div>
 
     {#if open}
-        <div class="absolute bottom-full flex flex-col rounded-1 w-full bg-gv-input-bg border border-gv-primary p-4 gap-4 mb-1">
+        <div
+            class="absolute bottom-full flex flex-col rounded-1 w-full bg-gv-input-bg border border-gv-primary p-4 gap-4 mb-1">
 
             <div class="grid grid-cols-3 gap-2">
-                {#each yearsGrid as year (year)}
+                {#each yearsGrid as year, i (i)}
                     <button
                         class="py-3 rounded-2 text-dt-6 font-medium transition-all cursor-pointer"
                         class:bg-gv-dark-turquoise={compareSelectedToYear(year)}
                         class:text-white={compareSelectedToYear(year)}
                         class:text-gv-light-text={!compareSelectedToYear(year)}
                         class:hover:bg-gv-hover-effect={!compareSelectedToYear(year)}
-                        data-id={year}
+                        data-year={year}
                         onclick={selectYear}
                     >
                         {year}
@@ -117,7 +116,8 @@
             </div>
 
             <div class="flex items-center justify-between">
-                <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect" onclick={backRange}>
+                <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
+                        onclick={backRange}>
                     <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_left</span>
                 </button>
 
@@ -125,7 +125,8 @@
                     {yearsGrid[0]} - {yearsGrid[11]}
                 </span>
 
-                <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect" onclick={nextRange}>
+                <button class="flex items-center justify-center p-2 rounded-2 cursor-pointer hover:bg-gv-hover-effect"
+                        onclick={nextRange}>
                     <span class="material-symbols-rounded text-icon-dt-6 text-gv-dark-text">arrow_right</span>
                 </button>
             </div>
