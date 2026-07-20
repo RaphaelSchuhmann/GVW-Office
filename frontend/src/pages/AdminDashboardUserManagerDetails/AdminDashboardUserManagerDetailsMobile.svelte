@@ -16,6 +16,8 @@
         userData,
         isEditing = $bindable(false),
         isDeleting = $bindable(false),
+        onChangeIsEditing = () => {},
+        onChangeIsDeleting = () => {},
         ...restProps
     } = $props();
 
@@ -43,7 +45,7 @@
         });
 
         draft = clone;
-        isEditing = true;
+        onChangeIsEditing(true);
     }
 
     /**
@@ -54,7 +56,7 @@
      */
     function cancelEditing() {
         draft = null;
-        isEditing = false;
+        onChangeIsEditing(false);
     }
 
     const REQUIRED_USER_FIELDS = ["name", "email", "phone", "address", "type"];
@@ -111,7 +113,7 @@
             await updateUser($state.snapshot(draft));
         } finally {
             isSubmitting = false;
-            isEditing = false;
+            onChangeIsEditing(false);
             draft = null;
         }
     }
@@ -130,7 +132,7 @@
     }
 
     function startDeleting() {
-        isDeleting = true;
+        onChangeIsDeleting(true);
         confirmDeleteUserModal.startDelete();
     }
 
@@ -146,7 +148,7 @@
 
     function updateRole(value) { draft.type = roleMap[value]; }
 
-    function disableIsDeleting() { isDeleting = false; }
+    function disableIsDeleting() { onChangeIsDeleting(false); }
 
     function resetUserPassword(e) { resetPassword(e.currentTarget.dataset.id); }
 </script>

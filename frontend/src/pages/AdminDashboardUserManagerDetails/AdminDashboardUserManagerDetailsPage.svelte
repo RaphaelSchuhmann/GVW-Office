@@ -12,6 +12,7 @@
     import AdminDashboardUserManagerDetailsDesktop from "./AdminDashboardUserManagerDetailsDesktop.svelte";
     import AdminDashboardUserManagerDetailsMobile from "./AdminDashboardUserManagerDetailsMobile.svelte";
     import Spinner from "../../components/Spinner.svelte";
+    import LibraryDetailsMobile from "../LibraryDetails/LibraryDetailsMobile.svelte";
 
     let isGlobalLoading = $derived(user.name.length === 0);
 
@@ -21,7 +22,7 @@
 
     const userId = params.get("id");
 
-    let isEditing = params.get("editing") === "true";
+    let isEditing = $state(params.get("editing") === "true");
 
     const userData = $derived.by(() => {
         if (!userId) return null;
@@ -55,7 +56,7 @@
         ready = true;
     });
 
-    let isDeleting = false;
+    let isDeleting = $state(false);
 
     $effect(() => {
         const _trigger = lastRefresh.USER;
@@ -76,14 +77,22 @@
             }
         })();
     });
+
+    function updateIsEditing(val) { isEditing = val; }
+
+    function updateIsDeleting(val) { isDeleting = val; }
 </script>
 
 {#if userData && !isGlobalLoading}
     {#key userData.rev}
         {#if viewport.isMobile}
-            <AdminDashboardUserManagerDetailsMobile {userData} bind:isEditing bind:isDeleting />
+            <AdminDashboardUserManagerDetailsMobile {userData} bind:isEditing bind:isDeleting
+                                                    onChangeIsEditing={updateIsEditing}
+                                                    onChangeIsDeleting={updateIsDeleting} />
         {:else}
-            <AdminDashboardUserManagerDetailsDesktop {userData} bind:isEditing bind:isDeleting />
+            <AdminDashboardUserManagerDetailsDesktop {userData} bind:isEditing bind:isDeleting
+                                                     onChangeIsEditing={updateIsEditing}
+                                                     onChangeIsDeleting={updateIsDeleting} />
         {/if}
     {/key}
 {:else}

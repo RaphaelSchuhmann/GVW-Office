@@ -20,8 +20,10 @@
 
     let {
         memberData,
-        isEditing = $bindable(),
+        isEditing = $bindable(false),
         isDeleting = $bindable(false),
+        onChangeIsEditing = () => {},
+        onChangeIsDeleting = () => {},
         ...restProps
     } = $props();
 
@@ -36,7 +38,7 @@
      */
     function startEditing() {
         draft = JSON.parse(JSON.stringify(memberData));
-        isEditing = true;
+        onChangeIsEditing(true);
     }
 
     /**
@@ -47,7 +49,7 @@
      */
     function cancelEditing() {
         draft = null;
-        isEditing = false;
+        onChangeIsEditing(false);
     }
 
     const REQUIRED_MEMBER_FIELDS = ["name", "surname", "email", "phone", "address", "voice", "status", "role", "birthdate", "joined"];
@@ -91,7 +93,7 @@
             await updateMember($state.snapshot(draft));
         } finally {
             isSubmitting = false;
-            isEditing = false;
+            onChangeIsEditing(false);
             draft = null;
         }
     }
@@ -121,7 +123,7 @@
 
     function startDelete() {
         if (confirmDeleteMemberModal) {
-            isDeleting = true;
+            onChangeIsDeleting(true);
             confirmDeleteMemberModal.startDelete();
         }
     }
@@ -136,7 +138,7 @@
 
     function updateJoined(value) { draft.joined = value; }
 
-    function disableIsDeleting() { isDeleting = false; }
+    function disableIsDeleting() { onChangeIsDeleting(false); }
 </script>
 
 <ToastStack/>
