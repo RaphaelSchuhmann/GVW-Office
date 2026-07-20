@@ -27,8 +27,10 @@
 
     let {
         scoreData,
-        isEditing = $bindable(),
+        isEditing = $bindable(false),
         isDeleting = $bindable(false),
+        onChangeIsEditing = () => {},
+        onChangeIsDeleting = () => {},
         ...restProps
     } = $props();
 
@@ -61,7 +63,7 @@
      */
     function startEditing() {
         draft = JSON.parse(JSON.stringify(scoreData));
-        isEditing = true;
+        onChangeIsEditing(true);
         editTabBarInitialized = false;
         editedSelectedChoirType = originalSelectedChoirType;
         editSelectedChips = [...originalSelectedChips];
@@ -75,7 +77,7 @@
      */
     function cancelEditing() {
         draft = null;
-        isEditing = false;
+        onChangeIsEditing(false);
         editSelectedChips = [];
     }
 
@@ -205,7 +207,7 @@
             await updateScore(score);
         } finally {
             isSubmitting = false;
-            isEditing = false;
+            onChangeIsEditing(false);
             draft = null;
         }
     }
@@ -238,12 +240,12 @@
 
     function startDelete() {
         if (confirmDeleteScoreModal) {
-            isDeleting = true;
+            onChangeIsDeleting(true);
             confirmDeleteScoreModal.startDelete();
         }
     }
 
-    function disableIsDeleting() { isDeleting = false; }
+    function disableIsDeleting() { onChangeIsDeleting(false); }
 
     function updateChoirType(value) {
         editedSelectedChoirType = value;

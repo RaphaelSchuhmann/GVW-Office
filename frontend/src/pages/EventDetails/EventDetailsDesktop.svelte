@@ -32,8 +32,10 @@
 
     let {
         eventData,
-        isEditing = $bindable(),
+        isEditing = $bindable(false),
         isDeleting = $bindable(false),
+        onChangeIsEditing = () => {},
+        onChangeIsDeleting = () => {},
         ...restProps
     } = $props();
 
@@ -52,7 +54,7 @@
      */
     function startEditing() {
         draft = JSON.parse(JSON.stringify(eventData));
-        isEditing = true;
+        onChangeIsEditing(true);
     }
 
     /**
@@ -63,7 +65,7 @@
      */
     function cancelEditing() {
         draft = null;
-        isEditing = false;
+        onChangeIsEditing(false);
     }
 
     const REQUIRED_EVENT_FIELDS = ["title", "type", "status", "location", "date", "time", "mode"];
@@ -125,7 +127,7 @@
             await updateEvent($state.snapshot(draft));
         } finally {
             isSubmitting = false;
-            isEditing = false;
+            onChangeIsEditing(false);
             draft = null;
         }
     }
@@ -185,9 +187,9 @@
 
     function updateType(value) { draft.type = typeMap[value]; }
 
-    function startDeletingEvent() { isDeleting = true; confirmDeleteEventModal.startDelete(); }
+    function startDeletingEvent() { onChangeIsDeleting(true); confirmDeleteEventModal.startDelete(); }
 
-    function disableIsDeleting() { isDeleting = false; }
+    function disableIsDeleting() { onChangeIsDeleting(false); }
 </script>
 
 <ToastStack />

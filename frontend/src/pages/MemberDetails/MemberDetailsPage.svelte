@@ -20,7 +20,7 @@
 
     const memberId = params.get("id");
 
-    let isEditing = params.get("editing") === "true";
+    let isEditing = $state(params.get("editing") === "true");
 
     const memberData = $derived.by(() => {
         if (!memberId) return null;
@@ -41,13 +41,13 @@
         } else if (membersStore.raw.length === 0) {
             init("members");
         } else if (!memberData) {
-            push("/members")
+            push("/members");
         }
 
         ready = true;
     });
 
-    let isDeleting = false;
+    let isDeleting = $state(false);
 
     $effect(() => {
         const _trigger = lastRefresh.MEMBERS;
@@ -68,18 +68,24 @@
             }
         })();
     });
+
+    function updateIsEditing(val) { isEditing = val; }
+
+    function updateIsDeleting(val) { isDeleting = val; }
 </script>
 
 {#if memberData && !isGlobalLoading}
     {#key memberData.rev}
         {#if viewport.isMobile}
-            <MemberDetailsMobile {memberData} bind:isEditing bind:isDeleting />
+            <MemberDetailsMobile {memberData} bind:isEditing bind:isDeleting onChangeIsEditing={updateIsEditing}
+                                 onChangeIsDeleting={updateIsDeleting} />
         {:else}
-            <MemberDetailsDesktop {memberData} bind:isEditing bind:isDeleting />
+            <MemberDetailsDesktop {memberData} bind:isEditing bind:isDeleting onChangeIsEditing={updateIsEditing}
+                                  onChangeIsDeleting={updateIsDeleting} />
         {/if}
     {/key}
 {:else}
     <div class="w-full h-screen flex justify-center items-center">
-        <Spinner title="GVW Office" subTitle="Daten werden geladen..."/>
+        <Spinner title="GVW Office" subTitle="Daten werden geladen..." />
     </div>
 {/if}

@@ -11,6 +11,7 @@
     import { scoreExists } from "../../services/libraryService.svelte.js";
     import { addToast } from "../../stores/toasts.svelte.js";
     import Spinner from "../../components/Spinner.svelte";
+    import EventDetailsMobile from "../EventDetails/EventDetailsMobile.svelte";
 
     let isGlobalLoading = $derived(user.name.length === 0);
 
@@ -45,7 +46,7 @@
         ready = true;
     });
 
-    let isDeleting = false;
+    let isDeleting = $state(false);
 
     $effect(() => {
         const _trigger = lastRefresh.SCORES;
@@ -66,14 +67,20 @@
             }
         })();
     });
+
+    function updateIsEditing(val) { isEditing = val; }
+
+    function updateIsDeleting(val) { isDeleting = val; }
 </script>
 
 {#if scoreData}
     {#key scoreData.rev}
         {#if viewport.width < 800}
-            <LibraryDetailsMobile {scoreData} bind:isEditing bind:isDeleting />
+            <LibraryDetailsMobile {scoreData} bind:isEditing bind:isDeleting onChangeIsEditing={updateIsEditing}
+                                  onChangeIsDeleting={updateIsDeleting} />
         {:else}
-            <LibraryDetailsDesktop {scoreData} bind:isEditing bind:isDeleting />
+            <LibraryDetailsDesktop {scoreData} bind:isEditing bind:isDeleting onChangeIsEditing={updateIsEditing}
+                                   onChangeIsDeleting={updateIsDeleting} />
         {/if}
     {/key}
 {:else}

@@ -11,6 +11,7 @@
     import { eventExists } from "../../services/eventsService.svelte.js";
     import { addToast } from "../../stores/toasts.svelte.js";
     import Spinner from "../../components/Spinner.svelte";
+    import MemberDetailsMobile from "../MemberDetails/MemberDetailsMobile.svelte";
 
     const hash = window.location.hash;
     const queryString = hash.split("?")[1];
@@ -43,7 +44,7 @@
         ready = true;
     });
 
-    let isDeleting = false;
+    let isDeleting = $state(false);
 
     $effect(() => {
         const _trigger = lastRefresh.EVENTS;
@@ -64,14 +65,20 @@
             }
         })();
     });
+
+    function updateIsEditing(val) { isEditing = val; }
+
+    function updateIsDeleting(val) { isDeleting = val; }
 </script>
 
 {#if eventData}
     {#key eventData.rev}
         {#if viewport.isMobile}
-            <EventDetailsMobile {eventData} bind:isEditing bind:isDeleting />
+            <EventDetailsMobile {eventData} bind:isEditing bind:isDeleting onChangeIsEditing={updateIsEditing}
+                                onChangeIsDeleting={updateIsDeleting} />
         {:else}
-            <EventDetailsDesktop {eventData} bind:isEditing bind:isDeleting />
+            <EventDetailsDesktop {eventData} bind:isEditing bind:isDeleting onChangeIsEditing={updateIsEditing}
+                                 onChangeIsDeleting={updateIsDeleting} />
         {/if}
     {/key}
 {:else}
