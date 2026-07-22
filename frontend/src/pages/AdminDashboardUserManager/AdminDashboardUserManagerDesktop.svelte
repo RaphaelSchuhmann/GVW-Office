@@ -1,6 +1,6 @@
 <script>
     import { userManagerStore } from "../../stores/userManager.svelte";
-    import { addUser, roleMap } from "../../services/userService.svelte";
+    import { addUser, roleMapD2I } from "../../services/userService.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import DesktopSidebar from "../../components/DesktopSidebar.svelte";
@@ -67,7 +67,7 @@
             email: userInput.email,
             phone: userInput.phone,
             address: userInput.address,
-            role: roleMap[userInput.role]
+            role: roleMapD2I[userInput.role]
         };
 
         try {

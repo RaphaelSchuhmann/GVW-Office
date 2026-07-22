@@ -1,7 +1,7 @@
 <script>
     import { push } from "svelte-spa-router";
     import { viewport } from "../../stores/viewport.svelte";
-    import { resetPassword, roleMap, updateUser } from "../../services/userService.svelte";
+    import { resetPassword, roleMapD2I, roleMapI2D, updateUser } from "../../services/userService.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -146,7 +146,7 @@
      */
     let confirmDeleteUserModal = null;
 
-    function updateRole(value) { draft.type = roleMap[value]; }
+    function updateRole(value) { draft.type = roleMapD2I[value] || value; }
 
     function disableIsDeleting() { onChangeIsDeleting(false); }
 
@@ -224,7 +224,7 @@
                     <Input value={userData.address || "Unbekannt"} title="Adresse" placeholder="Hauptstraße 1..."
                            readonly={true} />
 
-                    <Input value={roleMap[userData.type]} title="Rolle" readonly={true} />
+                    <Input value={roleMapI2D[userData.type] || userData.type} title="Rolle" readonly={true} />
                 {:else}
                     <div class="flex items-center min-[900px]:gap-4 gap-5 w-full max-[900px]:flex-col">
                         <Input
@@ -242,7 +242,7 @@
 
                     <Input bind:value={draft.address} title="Adresse" placeholder="Hauptstraße 1..." />
 
-                    <Dropdown onChange={updateRole} selected={roleMap[draft.type]}
+                    <Dropdown onChange={updateRole} selected={roleMapI2D[draft.type] || draft.type}
                               title="Rolle"
                               options={["Admin", "Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} />
                 {/if}

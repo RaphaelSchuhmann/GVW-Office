@@ -2,8 +2,8 @@
     import { viewport } from "../stores/viewport.svelte.js";
     import { addToast } from "../stores/toasts.svelte.js";
     import { fetchAndSetRaw } from "../services/filterService.svelte.js";
-    import { voiceMap, statusMap, newMember } from "../services/membersService.svelte.js";
-    import { roleMap } from "../services/userService.svelte.js";
+    import { voiceMapD2I, statusMapD2I, newMember } from "../services/membersService.svelte.js";
+    import { roleMapD2I } from "../services/userService.svelte.js";
     import Dropdown from "./Dropdown.svelte";
     import Spinner from "./Spinner.svelte";
     import DefaultDatepicker from "./DefaultDatepicker.svelte";
@@ -96,9 +96,9 @@
 
         const payload = {
             ...$state.snapshot(memberInput),
-            voice: voiceMap[memberInput.voice],
-            status: statusMap[memberInput.status],
-            role: roleMap[memberInput.role]
+            voice: voiceMapD2I[memberInput.voice],
+            status: statusMapD2I[memberInput.status],
+            role: roleMapD2I[memberInput.role]
         };
 
         if (!payload.voice || !payload.status || !payload.role) {

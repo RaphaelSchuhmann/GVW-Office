@@ -2,8 +2,8 @@
     import { push } from "svelte-spa-router";
     import { resetMemberPassword, updateMember } from "../../services/membersService.svelte";
     import { viewport } from "../../stores/viewport.svelte";
-    import { statusMap, voiceMap } from "../../services/membersService.svelte";
-    import { roleMap } from "../../services/userService.svelte";
+    import { statusMapI2D, statusMapD2I, voiceMapI2D, voiceMapD2I } from "../../services/membersService.svelte";
+    import { roleMapI2D } from "../../services/userService.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -128,11 +128,11 @@
         }
     }
 
-    function updateVoice(value) { draft.voice = value; }
+    function updateVoice(value) { draft.voice = voiceMapD2I[value]; }
 
     function updateStatus(value) { draft.status = value; }
 
-    function updateRole(value) { draft.role = value; }
+    function updateRole(value) { draft.role = statusMapD2I[value]; }
 
     function updateBirthdate(value) { draft.birthdate = value; }
 
@@ -215,9 +215,9 @@
                            readonly={true} />
 
                     <div class="w-full flex items-center gap-4 max-[900px]:flex-col">
-                        <Input value={voiceMap[memberData.voice]} title="Stimmlage" readonly={true} />
-                        <Input value={statusMap[memberData.status]} title="Status" readonly={true} />
-                        <Input value={roleMap[memberData.role]} title="Rolle" readonly={true} />
+                        <Input value={voiceMapI2D[memberData.voice] || memberData.voice} title="Stimmlage" readonly={true} />
+                        <Input value={statusMapI2D[memberData.status] || memberData.status} title="Status" readonly={true} />
+                        <Input value={roleMapI2D[memberData.role] || memberData.role} title="Rolle" readonly={true} />
                     </div>
 
                     <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
@@ -242,15 +242,15 @@
                     <Input bind:value={draft.address} title="Adresse" placeholder="Hauptstraße 1..." />
 
                     <div class="w-full flex items-center min-[900px]:gap-4 gap-5 max-[900px]:flex-col">
-                        <Dropdown onChange={updateVoice} selected={voiceMap[draft.voice]}
+                        <Dropdown onChange={updateVoice} selected={voiceMapI2D[draft.voice] || draft.voice}
                                   title="Stimmlage"
                                   options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} showDropshadow={true} />
 
                         <Dropdown onChange={updateStatus}
-                                  selected={statusMap[draft.status]} title="Status"
+                                  selected={statusMapI2D[draft.status] || draft.status} title="Status"
                                   options={["Aktiv", "Passiv"]} showDropshadow={true} />
 
-                        <Dropdown onChange={updateRole} selected={roleMap[draft.role]}
+                        <Dropdown onChange={updateRole} selected={roleMapI2D[draft.role] || draft.role}
                                   title="Rolle"
                                   options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} showDropshadow={true} />
                     </div>

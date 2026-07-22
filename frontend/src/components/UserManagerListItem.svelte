@@ -1,7 +1,6 @@
 <script>
-    import { roleMap } from "../services/userService.svelte";
+    import { roleMapI2D } from "../services/userService.svelte";
     import Chip from "./Chip.svelte";
-    import Spinner from "./Spinner.svelte";
     import { push } from "svelte-spa-router";
 
     let {
@@ -44,7 +43,7 @@
 
         {#if !isMobile}
             <div class="flex ml-auto items-center gap-2">
-                <Chip text={roleMap[role] ?? role ?? "—"}/>
+                <Chip text={roleMapI2D[role] ?? role ?? "—"}/>
                 {#if isOrphan}
                     <button class="flex items-center justify-center p-2 cursor-pointer hover:bg-gv-hover-effect rounded-2"
                             onclick={async () => await push(`/admin/userManagement/details?id=${id}&editing=false`)}>

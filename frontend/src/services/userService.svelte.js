@@ -19,13 +19,7 @@ import { userManagerStore } from "../stores/userManager.svelte.js";
 
 const USER_CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
-export const roleMap = {
-    "Admin": "admin",
-    "Mitglied": "member",
-    "Vorstand": "board_member",
-    "Schriftführer": "secretary",
-    "Chorleitung": "conductor",
-    "Notenwart": "librarian",
+export const roleMapI2D = {
     "admin": "Admin",
     "secretary": "Schriftführer",
     "board_member": "Vorstand",
@@ -33,6 +27,15 @@ export const roleMap = {
     "conductor": "Chorleitung",
     "librarian": "Notenwart"
 };
+
+export const roleMapD2I = {
+    "Admin": "admin",
+    "Mitglied": "member",
+    "Vorstand": "board_member",
+    "Schriftführer": "secretary",
+    "Chorleitung": "conductor",
+    "Notenwart": "librarian",
+}
 
 export const filterRoleMap = {
     "Alle Rollen": "all",

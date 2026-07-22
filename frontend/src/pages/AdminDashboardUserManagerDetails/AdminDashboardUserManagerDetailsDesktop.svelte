@@ -1,7 +1,7 @@
 <script>
     import { push } from "svelte-spa-router";
     import { viewport } from "../../stores/viewport.svelte";
-    import { resetPassword, roleMap, updateUser } from "../../services/userService.svelte";
+    import { resetPassword, roleMapD2I, roleMapI2D, updateUser } from "../../services/userService.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -10,11 +10,8 @@
     import Input from "../../components/Input.svelte";
     import ConfirmDeleteModal from "../../components/ConfirmDeleteModal.svelte";
     import Dropdown from "../../components/Dropdown.svelte";
-    import YearDatepicker from "../../components/YearDatepicker.svelte";
-    import DefaultDatepicker from "../../components/DefaultDatepicker.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
     import Spinner from "../../components/Spinner.svelte";
-    import { formatISODateString, getYearFromISOString } from "../../services/dateTimeUtils.js";
 
     let {
         userData,
@@ -152,7 +149,7 @@
 
     function resetUserPassword(e) { resetPassword(e.currentTarget.dataset.id); }
 
-    function updateRole(value) { draft.type = roleMap[value]; }
+    function updateRole(value) { draft.type = roleMapD2I[value] || value; }
 
     function disableIsDeleting() { onChangeIsDeleting(false); }
 </script>
@@ -229,7 +226,7 @@
                     <Input value={userData.address || "Unbekannt"} title="Adresse" placeholder="Hauptstraße 1..."
                            readonly={true} />
 
-                    <Input value={roleMap[userData.type]} title="Rolle" readonly={true} />
+                    <Input value={roleMapI2D[userData.type] || userData.type} title="Rolle" readonly={true} />
                 {:else}
                     <div class="flex items-center min-[900px]:gap-4 gap-5 w-full max-[900px]:flex-col">
                         <Input
