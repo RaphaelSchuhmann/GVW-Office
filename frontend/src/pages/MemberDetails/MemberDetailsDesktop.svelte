@@ -174,7 +174,7 @@
         </PageHeader>
 
         <div class="flex-1 min-h-0 overflow-y-auto w-full">
-            <div class="flex flex-col items-center gap-5 min-[1500px]:w-1/2 min-[1200px]:w-2/3 w-full mt-5">
+            <div class="flex flex-col items-center gap-5 min-[1500px]:w-1/2 min-[1200px]:w-2/3 w-full mt-5 pl-1">
                 {#if viewport.width < 900 && !isEditing}
                     <div class="flex items-center gap-2 w-full">
                         <Button type="delete" onclick={startDelete}>

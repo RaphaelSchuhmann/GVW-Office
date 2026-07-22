@@ -2,7 +2,7 @@
     import { viewport } from "../stores/viewport.svelte.js";
     import { addToast } from "../stores/toasts.svelte.js";
     import { fetchAndSetRaw } from "../services/filterService.svelte.js";
-    import { voiceMap, statusMap } from "../services/membersService.svelte.js";
+    import { voiceMap, statusMap, newMember } from "../services/membersService.svelte.js";
     import { roleMap } from "../services/userService.svelte.js";
     import Dropdown from "./Dropdown.svelte";
     import Spinner from "./Spinner.svelte";
