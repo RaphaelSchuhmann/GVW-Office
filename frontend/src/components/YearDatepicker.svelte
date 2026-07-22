@@ -3,7 +3,7 @@
     import { currentYear, isISOString, getYearFromISOString, yearToISOString } from "../services/dateTimeUtils.js";
 
     let {
-        selected = $bindable(currentYear),
+        selected = $bindable(""),
         marginTop = "",
         onChange = () => {}
     } = $props();
