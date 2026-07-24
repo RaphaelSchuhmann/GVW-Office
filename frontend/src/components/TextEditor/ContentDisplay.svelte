@@ -48,7 +48,7 @@
      */
     function handleDragStart(event) {
         if (!isEditing) return;
-        draggedIndex = event.currentTarget.dataset.index;
+        draggedIndex = Number(event.currentTarget.dataset.index);
         event.dataTransfer.effectAllowed = "move";
     }
 
@@ -59,10 +59,9 @@
      * and configures the DataTransfer object for a move operation.
      *
      * @param {DragEvent} event - The drag start event
-     * @param {number} index - Index of the dragged item in the content array
      */
     function handleDragEnter(event) {
-        const index = event.currentTarget.dataset.index;
+        const index = Number(event.currentTarget.dataset.index);
 
         if (!isEditing || draggedIndex === null || draggedIndex === index) return;
 
