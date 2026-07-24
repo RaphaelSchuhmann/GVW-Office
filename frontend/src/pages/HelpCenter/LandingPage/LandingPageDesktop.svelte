@@ -20,7 +20,7 @@
      */
     let manageFeaturedCategoriesModalRef = null;
 
-    function setActiveCategory(e) { helpCenterStore.activeArticle = e.currentTarget.dataset.id; }
+    function setActiveCategory(e) { helpCenterStore.activeCategory = e.currentTarget.dataset.id; }
 </script>
 
 <ManageFeaturedCategoriesModal bind:this={manageFeaturedCategoriesModalRef} isMobile={false} />
