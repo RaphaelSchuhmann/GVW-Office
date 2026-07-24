@@ -19,8 +19,8 @@
         unselected: "text-gv-dark-text material-symbols-rounded",
     };
 
-    function updateSelected(event) {
-        const index = event.currentTarget.dataset.index;
+    function updateSelected(e) {
+        const index = Number(e.currentTarget.dataset.index);
         for (let i = 0; i < numberOfStars; i++) {
             savedStates[i] = i <= index ? "selected" : "unselected";
         }
@@ -28,8 +28,8 @@
         selected = index + 1;
     }
 
-    function handleHover(event) {
-        const index = event.currentTarget.dataset.index;
+    function handleHover(e) {
+        const index = Number(e.currentTarget.dataset.index);
         for (let i = 0; i < numberOfStars; i++) {
             stars[i] = i <= index ? "hoverSelect" : "hoverDeselect";
         }
