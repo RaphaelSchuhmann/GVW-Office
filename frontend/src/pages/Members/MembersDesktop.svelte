@@ -214,7 +214,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{voiceMapI2D[member.voice]}</p>
+                                        <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{voiceMapI2D[member.voice] || member.voice}</p>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col items-start  h-full overflow-hidden gap-2">

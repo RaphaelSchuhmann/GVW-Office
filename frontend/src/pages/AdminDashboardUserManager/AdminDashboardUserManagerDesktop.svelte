@@ -67,7 +67,7 @@
             email: userInput.email,
             phone: userInput.phone,
             address: userInput.address,
-            role: roleMapD2I[userInput.role]
+            role: roleMapD2I[userInput.role] || "member"
         };
 
         try {
