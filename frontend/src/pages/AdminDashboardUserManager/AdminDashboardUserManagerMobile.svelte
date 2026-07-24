@@ -4,13 +4,12 @@
     import PageHeader from "../../components/PageHeader.svelte";
     import HorizontalNavBar from "../../components/AdminHorizontalNavBar.svelte";
     import Button from "../../components/Button.svelte";
-    import { viewport } from "../../stores/viewport.svelte";
     import SearchBar from "../../components/SearchBar.svelte";
     import Filter from "../../components/Filter.svelte";
     import { userManagerStore } from "../../stores/userManager.svelte";
     import Card from "../../components/Card.svelte";
     import UserManagerListItem from "../../components/UserManagerListItem.svelte";
-    import { addUser, roleMap } from "../../services/userService.svelte";
+    import { addUser, roleMapD2I } from "../../services/userService.svelte";
     import Modal from "../../components/Modal.svelte";
     import Input from "../../components/Input.svelte";
     import Dropdown from "../../components/Dropdown.svelte";
@@ -68,7 +67,7 @@
             email: userInput.email,
             phone: userInput.phone,
             address: userInput.address,
-            role: roleMap[userInput.role]
+            role: roleMapD2I[userInput.role] || "member"
         };
 
         try {

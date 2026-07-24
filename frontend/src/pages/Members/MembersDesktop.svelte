@@ -1,8 +1,7 @@
 <script>
     import { push } from "svelte-spa-router";
     import { membersStore } from "../../stores/members.svelte";
-    import { newMember, voiceMap, statusMap, switchMemberStatus } from "../../services/membersService.svelte";
-    import { roleMap } from "../../services/userService.svelte";
+    import { voiceMapI2D, statusMapI2D, switchMemberStatus } from "../../services/membersService.svelte";
     import { addToast } from "../../stores/toasts.svelte";
     import { viewport } from "../../stores/viewport.svelte";
     import { fetchAndSetRaw } from "../../services/filterService.svelte";
@@ -215,7 +214,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{voiceMap[member.voice]}</p>
+                                        <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{voiceMapI2D[member.voice] || member.voice}</p>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col items-start  h-full overflow-hidden gap-2">
@@ -235,7 +234,7 @@
                                         <p class="min-[1300px]:text-dt-4 text-dt-7 text-gv-dark-text text-nowrap truncate">{getYearFromISOString(member.joined)}</p>
                                     </td>
                                     <td class="px-6 py-4">
-                                        <Chip text={statusMap[member.status]} />
+                                        <Chip text={statusMapI2D[member.status] || member.status} />
                                     </td>
                                     <td class="px-6 py-4">
                                         <button
@@ -265,7 +264,7 @@
                                     </div>
                                 </div>
 
-                                <Chip text={statusMap[member.status]} fontSize="7" />
+                                <Chip text={statusMapI2D[member.status] || member.status} fontSize="7" />
                             </button>
                         {/each}
                     {/if}

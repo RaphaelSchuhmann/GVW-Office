@@ -1,10 +1,8 @@
 <script>
     import { push } from "svelte-spa-router";
     import { membersStore } from "../../stores/members.svelte";
-    import { newMember, voiceMap, statusMap } from "../../services/membersService.svelte";
-    import { roleMap } from "../../services/userService.svelte";
+    import { statusMapI2D } from "../../services/membersService.svelte";
     import { viewport } from "../../stores/viewport.svelte";
-    import { fetchAndSetRaw } from "../../services/filterService.svelte";
 
     import ToastStack from "../../components/ToastStack.svelte";
     import PageHeader from "../../components/PageHeader.svelte";
@@ -13,7 +11,6 @@
     import SearchBar from "../../components/SearchBar.svelte";
     import Chip from "../../components/Chip.svelte";
     import MobileSidebar from "../../components/MobileSidebar.svelte";
-    import { addToast } from "../../stores/toasts.svelte";
     import AddMemberModal from "../../components/AddMemberModal.svelte";
 
     // ==================
@@ -25,108 +22,6 @@
      * @type {import("../../components/AddMemberModal.svelte").default}
      */
     let addMemberModal = null;
-
-    // ----------------
-    // ADD MEMBER STATE
-    // ----------------
-    /**
-     * Reactive state object representing the input fields
-     * of the "Add Member" form.
-     *
-     * Dropdown values are stored as display labels
-     * and mapped to backend enums on submission.
-     */
-    let memberInput = $state({
-        name: "",
-        surname: "",
-        email: "",
-        phone: "",
-        address: "",
-        voice: null,
-        status: null,
-        role: null,
-        birthdate: "",
-        joined: ""
-    });
-
-    let isSubmitting = $state(true);
-
-    const REQUIRED_MEMBER_FIELDS = ["name", "surname", "email", "phone", "address", "birthdate", "joined"];
-    const DROPDOWN_MEMBER_FIELDS = ["voice", "status", "role"];
-
-    const addDisabled = $derived.by(() => {
-        const hasEmptyFields = REQUIRED_MEMBER_FIELDS.some(key => {
-            const val = memberInput[key];
-            return !val || val.trim() === "";
-        });
-
-        const hasUnselectedDropdowns = DROPDOWN_MEMBER_FIELDS.some(key => {
-            const val = memberInput[key];
-            return !val || val.toLowerCase() === "wählen";
-        });
-
-        return hasEmptyFields || hasUnselectedDropdowns || isSubmitting;
-    });
-
-    /**
-     * Resets all input fields of the "Add Member" form
-     * to their initial default values.
-     *
-     * Called after successful submission or when closing the modal.
-     */
-    function resetAddInputs() {
-        memberInput.name = "";
-        memberInput.surname = "";
-        memberInput.email = "";
-        memberInput.phone = "";
-        memberInput.address = "";
-        memberInput.birthdate = "";
-        memberInput.joined = "";
-        memberInput.voice = null;
-        memberInput.status = null;
-        memberInput.role = null;
-    }
-
-    /**
-     * Submits the new member to the backend.
-     *
-     * Workflow:
-     * 1. Map dropdown display values to backend enum values.
-     * 2. Send member payload to API.
-     * 3. Close the modal.
-     * 4. Refresh member list from backend.
-     *
-     * @async
-     * @returns {Promise<void>}
-     */
-    async function submitMember() {
-        isSubmitting = true;
-
-        const payload = {
-            ...$state.snapshot(memberInput),
-            voice: voiceMap[memberInput.voice],
-            status: statusMap[memberInput.status],
-            role: roleMap[memberInput.role]
-        };
-
-        if (!payload.voice || !payload.status || !payload.role) {
-            addToast({
-                title: "Ungültige Auswahl",
-                subTitle: "Bitte prüfen Sie Stimmlage, Status und Rolle.",
-                type: "error"
-            });
-            return;
-        }
-
-        try {
-            await newMember(payload);
-        } finally {
-            isSubmitting = false;
-        }
-
-        addMemberModal.hideModal();
-        await fetchAndSetRaw();
-    }
 
     let sidebarOpen = $state(false);
 
@@ -142,52 +37,6 @@
 </script>
 
 <ToastStack isMobile={true} />
-
-<!--<Modal bind:this={addMemberModal} extraFunction={resetAddInputs} title="Neues Mitglied hinzufügen"-->
-<!--       subTitle="Erfassen Sie hier die Mitgliedsdaten" width="2/5" isMobile={true}>-->
-<!--    <Input bind:value={memberInput.name} marginTop="5" title="Vorname" placeholder="Max" />-->
-
-<!--    <Input bind:value={memberInput.surname} marginTop="5" title="Nachname" placeholder="Mustermann" />-->
-
-<!--    <Input bind:value={memberInput.email} marginTop="5" title="E-Mail" placeholder="max.mustermann@email.com" />-->
-
-<!--    <Input bind:value={memberInput.phone} marginTop="5" title="Telefon" placeholder="01701234 5678" />-->
-
-<!--    <Input bind:value={memberInput.address} marginTop="5" title="Adresse" placeholder="Hauptstraße 1..." />-->
-
-<!--    <Dropdown onChange={updateVoice} title="Stimmlage"-->
-<!--              options={["1. Tenor", "2. Tenor", "1. Bass", "2. Bass"]} marginTop="5" />-->
-
-<!--    <Dropdown onChange={updateStatus} title="Status" options={["Aktiv", "Passiv"]}-->
-<!--              marginTop="5" showDropshadow={true} />-->
-
-<!--    <Dropdown onChange={updateRole} title="Rolle"-->
-<!--              options={["Mitglied", "Vorstand", "Schriftführer", "Chorleitung", "Notenwart"]} displayTop={true}-->
-<!--              marginTop="5" showDropshadow={true} />-->
-
-<!--    <div class="w-full flex items-center gap-4 mt-5 flex-col">-->
-<!--        <div class="flex flex-col items-start w-full">-->
-<!--            <p class="text-dt-6 font-medium mb-1">Geburtsdatum</p>-->
-<!--            <DefaultDatepicker onChange={updateBirthdate} />-->
-<!--        </div>-->
-
-<!--        <div class="flex flex-col items-start w-full">-->
-<!--            <p class="text-dt-6 font-medium mb-1">Mitglied seit</p>-->
-<!--            <YearDatepicker onChange={updateJoined} />-->
-<!--        </div>-->
-<!--    </div>-->
-<!--    <div class="w-full flex items-center justify-end mt-5 gap-4">-->
-<!--        <Button type="secondary" onclick={hideAddMemberModal}>Abbrechen</Button>-->
-<!--        <Button type="primary" disabled={addDisabled} onclick={submitMember} isSubmit={true}>-->
-<!--            {#if isSubmitting}-->
-<!--                <Spinner light={true} />-->
-<!--                <p>Speichern...</p>-->
-<!--            {:else}-->
-<!--                Hinzufügen-->
-<!--            {/if}-->
-<!--        </Button>-->
-<!--    </div>-->
-<!--</Modal>-->
 
 <AddMemberModal bind:this={addMemberModal} isMobile={true} />
 
@@ -225,7 +74,7 @@
                                 </div>
                             </div>
 
-                            <Chip text={statusMap[member.status]} fontSize="7" />
+                            <Chip text={statusMapI2D[member.status] || member.status} fontSize="7" />
                         </button>
                     {/each}
                 {:else}

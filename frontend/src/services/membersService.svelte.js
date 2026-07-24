@@ -12,23 +12,29 @@ import { viewport } from "../stores/viewport.svelte";
 import { user } from "../stores/user.svelte.js";
 import { membersStore } from "../stores/members.svelte.js";
 
-export const voiceMap = {
-    "1. Tenor": "tenor1",
-    "2. Tenor": "tenor2",
-    "1. Bass": "bass1",
-    "2. Bass": "bass2",
+export const voiceMapI2D = {
     "tenor1": "1. Tenor",
     "tenor2": "2. Tenor",
     "bass1": "1. Bass",
     "bass2": "2. Bass"
 };
 
-export const statusMap = {
-    "Aktiv": "active",
-    "Passiv": "inactive",
+export const voiceMapD2I = {
+    "1. Tenor": "tenor1",
+    "2. Tenor": "tenor2",
+    "1. Bass": "bass1",
+    "2. Bass": "bass2"
+}
+
+export const statusMapI2D = {
     "active": "Aktiv",
     "inactive": "Passiv"
 };
+
+export const statusMapD2I = {
+    "Aktiv": "active",
+    "Passiv": "inactive",
+}
 
 const isFetching = {
     checkMember: false,
